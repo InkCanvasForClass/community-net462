@@ -31,12 +31,9 @@ jobs:
       
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
-        with:
-          cache: true
-          cache-dependency-path: '**/packages.lock.json'
       
       - name: Restore Package 
-        run: dotnet restore "Ink Canvas.sln" --locked-mode
+        run: dotnet restore "Ink Canvas.sln"
       
       - name: Build the Solution
         env:
