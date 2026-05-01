@@ -27,6 +27,13 @@
 > 由于该版本不受正式支持，仅在该平台上发生的 Bug 将大概率不会被修复。
 > 如果您在使用该版本时遇到任何问题，请前往使用 `net6` 分支的软件构建，感谢您的理解。
 
+> [!NOTE]
+> 您可以从此处下载该版本的最新软件构建：
+>
+> [AnyCPU](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.zip)/[GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.zip)
+> 
+> [x86](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip)/[GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip)
+
 ## 💫 软件说明
 
 使用该版本 InkCanvasForClass，意味着您同意自行承担任何可能存在的问题与风险。建议不要在公众场合（例如公开课，录播课，线上直播课，大型会议）使用未经广泛测试和优化的 Beta 版本，对使用 Beta 版本而带来的任何问题和风险（例如：被班主任批斗，被校长处罚，崩溃而导致的场面混乱，全球海平面上升等），**将由使用者自行承担**，[CJKmkp](https://github.com/CJKmkp) 及其项目的所有维护者不提供任何担保。
