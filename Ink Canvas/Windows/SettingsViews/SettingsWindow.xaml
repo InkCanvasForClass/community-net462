@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
     Title="InkCanvasForClass 设置"
     Width="1138" Height="750"
     MinWidth="270" MinHeight="220"
@@ -118,7 +119,7 @@
                     x:Name="HomeItem"
                     Content="首页"
                     Tag="HomePage"
-                    ToolTipService.ToolTip="首页">
+                    ToolTipService.ToolTip="快速导航">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Home}"/>
                     </ui:NavigationViewItem.Icon>
@@ -128,8 +129,7 @@
                 <ui:NavigationViewItem
                     x:Name="BasicItem"
                     Content="基本"
-                    Tag="BasicPage"
-                    SelectsOnInvoked="True"
+                    SelectsOnInvoked="False"
                     ToolTipService.ToolTip="基本设置">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Home}"/>
@@ -144,90 +144,201 @@
                                 <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
-                    </ui:NavigationViewItem.MenuItems>
-                </ui:NavigationViewItem>
-
-                <!-- 页面2 -->
-                <ui:NavigationViewItem
-                    x:Name="Page2Item"
-                    Content="页面 2"
-                    Tag="Page2Page">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Document" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-
-                <!-- 设计设置 -->
-                <ui:NavigationViewItem
-                    x:Name="DesignItem"
-                    Content="设计"
-                    Tag="DesignPage"
-                    SelectsOnInvoked="True">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Design}"/>
-                    </ui:NavigationViewItem.Icon>
-                    <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
-                            x:Name="IconographyItem"
-                            Content="图标"
-                            Tag="IconographyPage"
-                            ToolTipService.ToolTip="图标设置">
+                            x:Name="PrivacyPageItem"
+                            Content="隐私"
+                            Tag="PrivacyPage"
+                            ToolTipService.ToolTip="隐私与遥测设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AllApps}"/>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
-                            x:Name="TypographyItem"
-                            Content="排版"
-                            Tag="TypographyPage"
-                            ToolTipService.ToolTip="排版设置">
+                            x:Name="SecurityPageItem"
+                            Content="安全"
+                            Tag="SecurityPage"
+                            ToolTipService.ToolTip="安全密码与进程保护">
                             <ui:NavigationViewItem.Icon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Permissions}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
-                <!-- 外观设置 -->
+                <!-- 主界面 -->
                 <ui:NavigationViewItem
-                    x:Name="AppearanceItem"
-                    Content="外观"
-                    Tag="AppearancePage"
-                    SelectsOnInvoked="True">
+                    x:Name="MainInterfaceItem"
+                    Content="主界面"
+                    SelectsOnInvoked="False"
+                    ToolTipService.ToolTip="主界面设置">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TVMonitor}"/>
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
-                            x:Name="ThemeItem"
-                            Content="主题"
-                            Tag="ThemePage"
-                            ToolTipService.ToolTip="主题设置">
+                            x:Name="WindowPageItem"
+                            Content="窗口"
+                            Tag="WindowPage"
+                            ToolTipService.ToolTip="窗口设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DarkTheme_24_Regular}"/>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
-                            x:Name="ColorsItem"
-                            Content="颜色"
-                            Tag="ColorsPage"
-                            ToolTipService.ToolTip="颜色设置">
+                            x:Name="AppearancePageItem"
+                            Content="个性化"
+                            Tag="AppearancePage"
+                            ToolTipService.ToolTip="个性化设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Highlight}"/>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
-                            x:Name="FontsItem"
-                            Content="字体"
-                            Tag="FontsPage"
-                            ToolTipService.ToolTip="字体设置">
+                            x:Name="HotkeyPageItem"
+                            Content="快捷键"
+                            Tag="HotkeyPage"
+                            ToolTipService.ToolTip="快捷键设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.KeyboardStandard}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
+
+                <!-- 画板设置 -->
+                <ui:NavigationViewItem
+                    x:Name="CanvasPageItem"
+                    Content="画板"
+                    SelectsOnInvoked="False"
+                    ToolTipService.ToolTip="画板与墨迹设置">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            x:Name="CanvasSubPageItem"
+                            Content="画板"
+                            Tag="CanvasPage"
+                            ToolTipService.ToolTip="画板设置">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
+                            x:Name="InkRecognitionPageItem"
+                            Content="墨迹纠正"
+                            Tag="InkRecognitionPage"
+                            ToolTipService.ToolTip="墨迹纠正设置">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Draw}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+
+                <!-- PowerPoint -->
+                <ui:NavigationViewItem
+                    x:Name="PowerPointPageItem"
+                    Content="PowerPoint"
+                    Tag="PowerPointPage"
+                    ToolTipService.ToolTip="PowerPoint 设置">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <!-- 更新设置 -->
+                <ui:NavigationViewItem
+                    x:Name="UpdatePageItem"
+                    Content="更新"
+                    Tag="UpdatePage"
+                    ToolTipService.ToolTip="更新设置">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}"/>
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.InfoBadge>
+                        <ui:InfoBadge Style="{DynamicResource AttentionDotInfoBadgeStyle}"
+                                      MinWidth="8" MinHeight="8"
+                                      Visibility="Collapsed"/>
+                    </ui:NavigationViewItem.InfoBadge>
+                </ui:NavigationViewItem>
+
+                <!-- 实验性选项 -->
+                <ui:NavigationViewItem
+                    x:Name="ExperimentalPageItem"
+                    Content="实验性选项"
+                    Tag="ExperimentalPage"
+                    ToolTipService.ToolTip="实验性选项">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <!-- 高级设置 -->
+                <ui:NavigationViewItem
+                    x:Name="AdvancedPageItem"
+                    Content="高级"
+                    Tag="AdvancedPage"
+                    ToolTipService.ToolTip="高级设置">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <!-- 存储管理 -->
+                <ui:NavigationViewItem
+                    x:Name="StoragePageItem"
+                    Content="{i18n:I18n Key=Storage_Title}"
+                    Tag="StoragePage"
+                    ToolTipService.ToolTip="{i18n:I18n Key=Storage_NavTooltip}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <!-- 自动化 -->
+                <ui:NavigationViewItem
+                    x:Name="AutomationPageItem"
+                    Content="自动化"
+                    Tag="AutomationPage"
+                    ToolTipService.ToolTip="自动化设置">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <!-- 随机点名 -->
+                <ui:NavigationViewItem
+                    x:Name="RandomDrawPageItem"
+                    Content="随机点名"
+                    Tag="RandomDrawPage"
+                    ToolTipService.ToolTip="随机点名与计时器">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.People}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <!-- Debug -->
+                <ui:NavigationViewItem
+                    x:Name="DebugPageItem"
+                    Content="Debug"
+                    Tag="DebugPage"
+                    ToolTipService.ToolTip="Debug">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
                 <ui:NavigationViewItemHeader Content="插件设置"/>
+                <ui:NavigationViewItem
+                    x:Name="PluginItem"
+                    Content="插件"
+                    Tag="PluginPage"
+                    ToolTipService.ToolTip="插件管理">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Puzzle}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
 
             <ui:NavigationView.FooterMenuItems>
@@ -242,6 +353,7 @@
             </ui:NavigationView.FooterMenuItems>
 
             <ui:Frame x:Name="rootFrame" Navigated="OnRootFrameNavigated" NavigationUIVisibility="Hidden" />
+            <!--我要玩原神-->
         </ui:NavigationView>
     </Grid>
 </Window>

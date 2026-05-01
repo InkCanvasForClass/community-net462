@@ -43,8 +43,23 @@ namespace Ink_Canvas
                     var basePath = Settings.Automation.AutoSavedStrokesLocation
                         + @"\Auto Saved - BlackBoard Strokes";
                     if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
-                    strokeSavePath = Path.Combine(basePath,
-                        $"{DateTime.Now:yyyy-MM-dd HH-mm-ss-fff} Page-{pageIndexForStrokes} StrokesCount-{strokesToSave.Count}.icstk");
+                    string stem;
+                    if (Settings.Automation.IsUseCustomSaveFileName)
+                    {
+                        stem = SaveFileNameHelper.Render(Settings.Automation.CustomSaveFileNameTemplate,
+                            new SaveFileNameContext
+                            {
+                                Mode = "BlackBoard",
+                                Type = "Auto",
+                                Page = pageIndexForStrokes,
+                                Count = strokesToSave.Count
+                            });
+                    }
+                    else
+                    {
+                        stem = $"{DateTime.Now:yyyy-MM-dd HH-mm-ss-fff} Page-{pageIndexForStrokes} StrokesCount-{strokesToSave.Count}";
+                    }
+                    strokeSavePath = Path.Combine(basePath, stem + ".icstk");
                 }
             }
             catch (Exception ex)
@@ -149,7 +164,7 @@ namespace Ink_Canvas
         {
             var desktopPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
+                $"{GetScreenshotFileNameStem()}.png");
 
             CaptureAndSaveScreenshot(desktopPath, false);
 
@@ -162,10 +177,11 @@ namespace Ink_Canvas
             var originalVisibility = Visibility;
             try
             {
+                var inkOverlayPreview = CreateInkOverlayPreviewBitmapSource();
                 Visibility = Visibility.Hidden;
                 await Task.Delay(200);
 
-                var screenshotResult = await ShowScreenshotSelector();
+                var screenshotResult = await ShowScreenshotSelector(inkOverlayPreview);
 
                 if (!screenshotResult.HasValue)
                 {
@@ -187,7 +203,7 @@ namespace Ink_Canvas
 
                 var desktopPath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
+                    $"{GetScreenshotFileNameStem()}.png");
 
                 using (var originalBitmap = CaptureScreenArea(screenshotResult.Value.Area))
                 {
@@ -202,10 +218,32 @@ namespace Ink_Canvas
 
                     try
                     {
+                        if (screenshotResult.Value.IncludeInk && screenshotResult.Value.InkOverlayBitmapSource != null)
+                        {
+                            var withInkBitmap = OverlayInkOnCapturedBitmap(finalBitmap, screenshotResult.Value.Area, screenshotResult.Value.InkOverlayBitmapSource);
+                            if (withInkBitmap != null && withInkBitmap != finalBitmap)
+                            {
+                                if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                                {
+                                    finalBitmap.Dispose();
+                                }
+                                finalBitmap = withInkBitmap;
+                                needDisposeFinalBitmap = true;
+                            }
+                        }
+
                         if (screenshotResult.Value.Path != null && screenshotResult.Value.Path.Count > 0)
                         {
-                            finalBitmap = ApplyShapeMask(originalBitmap, screenshotResult.Value.Path, screenshotResult.Value.Area);
-                            needDisposeFinalBitmap = true;
+                            var maskedBitmap = ApplyShapeMask(finalBitmap, screenshotResult.Value.Path, screenshotResult.Value.Area);
+                            if (maskedBitmap != null && maskedBitmap != finalBitmap)
+                            {
+                                if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                                {
+                                    finalBitmap.Dispose();
+                                }
+                                finalBitmap = maskedBitmap;
+                                needDisposeFinalBitmap = true;
+                            }
                         }
 
                         var directory = Path.GetDirectoryName(desktopPath);
@@ -275,10 +313,32 @@ namespace Ink_Canvas
 
                     try
                     {
+                        if (screenshotResult.IncludeInk && screenshotResult.InkOverlayBitmapSource != null)
+                        {
+                            var withInkBitmap = OverlayInkOnCapturedBitmap(finalBitmap, screenshotResult.Area, screenshotResult.InkOverlayBitmapSource);
+                            if (withInkBitmap != null && withInkBitmap != finalBitmap)
+                            {
+                                if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                                {
+                                    finalBitmap.Dispose();
+                                }
+                                finalBitmap = withInkBitmap;
+                                needDisposeFinalBitmap = true;
+                            }
+                        }
+
                         if (screenshotResult.Path != null && screenshotResult.Path.Count > 0)
                         {
-                            finalBitmap = ApplyShapeMask(originalBitmap, screenshotResult.Path, screenshotResult.Area);
-                            needDisposeFinalBitmap = true;
+                            var maskedBitmap = ApplyShapeMask(finalBitmap, screenshotResult.Path, screenshotResult.Area);
+                            if (maskedBitmap != null && maskedBitmap != finalBitmap)
+                            {
+                                if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                                {
+                                    finalBitmap.Dispose();
+                                }
+                                finalBitmap = maskedBitmap;
+                                needDisposeFinalBitmap = true;
+                            }
                         }
 
                         bitmapSourceForClipboard = ConvertBitmapToBitmapSource(finalBitmap);
@@ -308,7 +368,7 @@ namespace Ink_Canvas
                 await Task.Delay(150);
             }
 
-            BtnWhiteBoardAdd_Click(null, EventArgs.Empty);
+            BtnWhiteBoardAdd_Click(null, new RoutedEventArgs());
 
             await InsertBitmapSourceToCanvas(bitmapSourceForClipboard);
         }
@@ -392,7 +452,10 @@ namespace Ink_Canvas
         {
             if (string.IsNullOrWhiteSpace(fileName))
             {
-                fileName = DateTime.Now.ToString("HH-mm-ss");
+                fileName = Settings.Automation.IsUseCustomSaveFileName
+                    ? SaveFileNameHelper.Render(Settings.Automation.CustomSaveFileNameTemplate,
+                        new SaveFileNameContext { Mode = "Screenshot", Type = "Auto", Count = inkCanvas?.Strokes?.Count })
+                    : DateTime.Now.ToString("HH-mm-ss");
             }
 
             var basePath = Settings.Automation.AutoSavedStrokesLocation;
@@ -428,7 +491,17 @@ namespace Ink_Canvas
 
             return Path.Combine(
                 screenshotsFolder,
-                $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
+                $"{GetScreenshotFileNameStem()}.png");
+        }
+
+        private string GetScreenshotFileNameStem()
+        {
+            if (Settings.Automation.IsUseCustomSaveFileName)
+            {
+                return SaveFileNameHelper.Render(Settings.Automation.CustomSaveFileNameTemplate,
+                    new SaveFileNameContext { Mode = "Screenshot", Type = "Auto", Count = inkCanvas?.Strokes?.Count });
+            }
+            return DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         }
     }
 }

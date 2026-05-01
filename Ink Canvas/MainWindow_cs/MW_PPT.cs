@@ -14,6 +14,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using File = System.IO.File;
@@ -180,6 +181,7 @@ namespace Ink_Canvas
         /// PowerPoint 全屏放映顶层窗口类名（与编辑态 PPTFrameClass 区分）。
         /// </summary>
         private const string PowerPointSlideShowWindowClassName = "screenClass";
+
         #endregion
 
         #region PPT Managers
@@ -205,6 +207,7 @@ namespace Ink_Canvas
         /// 提供对内部PPT链接管理器的公共访问，用于外部代码与PowerPoint进行交互。
         /// </remarks>
         public IPPTLinkManager PPTManager => _pptManager;
+        public PPTUIManager PPTUIManager => _pptUIManager;
         #endregion
 
         #region PPT Manager Initialization
@@ -214,12 +217,13 @@ namespace Ink_Canvas
         /// <remarks>
         /// 清理并释放现有的 PPT 管理器与 COM/Interop 状态，创建并配置新的 PPT 管理器（ROT 或 COM 实现，取决于设置）、单一的 PPT 墨迹管理器及其自动保存行为，以及 PPT UI 管理器与其显示/按钮位置选项。方法内部会订阅必要的 PPT 事件并记录初始化过程中的错误或警告。同时初始化长按页翻页定时器以支持长按翻页功能。
         /// </remarks>
-        private void InitializePPTManagers()
+        public void InitializePPTManagers()
         {
             try
             {
                 // 初始化长按定时器
                 InitializeLongPressTimer();
+                WirePptNavBars();
 
                 // 完全清理旧模式
                 try
@@ -298,7 +302,7 @@ namespace Ink_Canvas
         /// <remarks>
         /// 只有当Settings.PowerPointSettings.PowerPointSupport为true时才会启动监控，并记录启动事件日志。
         /// </remarks>
-        private void StartPPTMonitoring()
+        public void StartPPTMonitoring()
         {
             if (Settings.PowerPointSettings.PowerPointSupport)
             {
@@ -310,7 +314,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 停止 PowerPoint 相关的监控：停止并清除用于延迟退出 PPT 模式的定时器，并停止 PPT 管理器的监控，同时记录事件日志。
         /// </summary>
-        private void StopPPTMonitoring()
+        public void StopPPTMonitoring()
         {
             try
             {
@@ -328,13 +332,12 @@ namespace Ink_Canvas
         #region PowerPoint Application Management
         /// <summary>
         /// 启动PowerPoint应用程序守护
-        /// <summary>
-        /// 启动对本地 PowerPoint 应用实例的守护监控并在需要时创建应用程序实例。
         /// </summary>
         /// <remarks>
+        /// 启动对本地 PowerPoint 应用实例的守护监控并在需要时创建应用程序实例。
         /// 仅在 PowerPoint 增强功能已启用且未使用 ROT 链接时生效；方法将创建 PowerPoint 应用（若不存在）并启动用于定期检查应用状态的定时器。
         /// </remarks>
-        private void StartPowerPointProcessMonitoring()
+        public void StartPowerPointProcessMonitoring()
         {
             try
             {
@@ -364,7 +367,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 停止PowerPoint应用程序守护
         /// </summary>
-        private void StopPowerPointProcessMonitoring()
+        public void StopPowerPointProcessMonitoring()
         {
             try
             {
@@ -1370,6 +1373,8 @@ namespace Ink_Canvas
         {
             try
             {
+                await Application.Current.Dispatcher.InvokeAsync(() => CollapseAllPptNavBarPreviews());
+
                 if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
@@ -1652,7 +1657,7 @@ namespace Ink_Canvas
                 if (int.TryParse(File.ReadAllText(positionFile), out var page) && page > 0)
                 {
                     _lastPlaybackPage = page;
-                    new YesOrNoNotificationWindow($"上次播放到了第 {page} 页, 是否立即跳转", () =>
+                    var yesNoWindow = new YesOrNoNotificationWindow($"上次播放到了第 {page} 页, 是否立即跳转", () =>
                     {
                         try
                         {
@@ -1674,7 +1679,17 @@ namespace Ink_Canvas
                         {
                             LogHelper.WriteLogToFile($"跳转到第{page}页失败: {ex}", LogHelper.LogType.Error);
                         }
-                    }).ShowDialog();
+                    });
+                    yesNoWindow.Owner = this;
+                    PauseTopmostMaintenance();
+                    try
+                    {
+                        yesNoWindow.ShowDialog();
+                    }
+                    finally
+                    {
+                        ResumeTopmostMaintenance();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1716,7 +1731,7 @@ namespace Ink_Canvas
                 if (hasHiddenSlides && !IsShowingRestoreHiddenSlidesWindow)
                 {
                     IsShowingRestoreHiddenSlidesWindow = true;
-                    new YesOrNoNotificationWindow("检测到此演示文档中包含隐藏的幻灯片，是否取消隐藏？",
+                    var yesNoWindow = new YesOrNoNotificationWindow("检测到此演示文档中包含隐藏的幻灯片，是否取消隐藏？",
                         () =>
                         {
                             try
@@ -1740,7 +1755,17 @@ namespace Ink_Canvas
                             }
                         },
                         () => { IsShowingRestoreHiddenSlidesWindow = false; },
-                        () => { IsShowingRestoreHiddenSlidesWindow = false; }).ShowDialog();
+                        () => { IsShowingRestoreHiddenSlidesWindow = false; });
+                    yesNoWindow.Owner = this;
+                    PauseTopmostMaintenance();
+                    try
+                    {
+                        yesNoWindow.ShowDialog();
+                    }
+                    finally
+                    {
+                        ResumeTopmostMaintenance();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1786,7 +1811,7 @@ namespace Ink_Canvas
                 if (hasSlideTimings && !IsShowingAutoplaySlidesWindow)
                 {
                     IsShowingAutoplaySlidesWindow = true;
-                    new YesOrNoNotificationWindow("检测到此演示文档中自动播放或排练计时已经启用，可能导致幻灯片自动翻页，是否取消？",
+                    var yesNoWindow = new YesOrNoNotificationWindow("检测到此演示文档中自动播放或排练计时已经启用，可能导致幻灯片自动翻页，是否取消？",
                         () =>
                         {
                             try
@@ -1806,7 +1831,17 @@ namespace Ink_Canvas
                             }
                         },
                         () => { IsShowingAutoplaySlidesWindow = false; },
-                        () => { IsShowingAutoplaySlidesWindow = false; }).ShowDialog();
+                        () => { IsShowingAutoplaySlidesWindow = false; });
+                    yesNoWindow.Owner = this;
+                    PauseTopmostMaintenance();
+                    try
+                    {
+                        yesNoWindow.ShowDialog();
+                    }
+                    finally
+                    {
+                        ResumeTopmostMaintenance();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1991,14 +2026,14 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
 
-            Settings.PowerPointSettings.EnablePowerPointEnhancement = ToggleSwitchPowerPointEnhancement.IsOn;
+            var toggle = sender as iNKORE.UI.WPF.Modern.Controls.ToggleSwitch;
+            if (toggle != null)
+                Settings.PowerPointSettings.EnablePowerPointEnhancement = toggle.IsOn;
 
             if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
             {
                 Settings.PowerPointSettings.IsSupportWPS = false;
-                ToggleSwitchSupportWPS.IsOn = false;
 
-                // 更新PPT管理器的WPS支持设置
                 if (_pptManager != null)
                 {
                     _pptManager.IsSupportWPS = false;
@@ -2007,7 +2042,6 @@ namespace Ink_Canvas
 
             SaveSettingsToFile();
 
-            // 启动或停止PowerPoint进程守护
             if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
             {
                 StartPowerPointProcessMonitoring();
@@ -2036,16 +2070,16 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
 
-            Settings.PowerPointSettings.IsSupportWPS = ToggleSwitchSupportWPS.IsOn;
+            var toggle = sender as iNKORE.UI.WPF.Modern.Controls.ToggleSwitch;
+            if (toggle != null)
+                Settings.PowerPointSettings.IsSupportWPS = toggle.IsOn;
 
             if (Settings.PowerPointSettings.IsSupportWPS)
             {
                 if (!Settings.PowerPointSettings.PowerPointSupport)
                 {
                     Settings.PowerPointSettings.PowerPointSupport = true;
-                    ToggleSwitchSupportPowerPoint.IsOn = true;
 
-                    // 启动PPT监控
                     if (_pptManager == null)
                     {
                         InitializePPTManagers();
@@ -2056,12 +2090,10 @@ namespace Ink_Canvas
                 if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
                 {
                     Settings.PowerPointSettings.EnablePowerPointEnhancement = false;
-                    ToggleSwitchPowerPointEnhancement.IsOn = false;
                     StopPowerPointProcessMonitoring();
                 }
             }
 
-            // 更新PPT管理器的WPS支持设置与翻页跳过动画设置
             if (_pptManager != null)
             {
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
@@ -2075,7 +2107,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
 
-            Settings.PowerPointSettings.SkipAnimationsWhenGoNext = ToggleSwitchSkipAnimationsWhenGoNext.IsOn;
+            var toggle = sender as iNKORE.UI.WPF.Modern.Controls.ToggleSwitch;
+            if (toggle != null)
+                Settings.PowerPointSettings.SkipAnimationsWhenGoNext = toggle.IsOn;
 
             if (_pptManager != null)
             {
@@ -2213,100 +2247,14 @@ namespace Ink_Canvas
         /// 2. 检查是否启用了PPT按钮页码点击功能
         /// 3. 根据按下的按钮设置相应的反馈边框透明度
         /// </remarks>
-        private void PPTNavigationBtn_MouseDown(object sender, MouseButtonEventArgs e)
+        private void PPTNavigationBtn_MouseDown(object sender, MouseButtonEventArgs e) { }
+        private void PPTNavigationBtn_MouseLeave(object sender, MouseEventArgs e) { }
+        private void PPTNavigationBtn_MouseUp(object sender, MouseButtonEventArgs e) { }
+
+        /// <summary>由 PptNavBar 控件 PageClick 事件触发的页码点击逻辑。</summary>
+        private async Task OnPptNavBarPageClickAsync(Controls.PptNavBar bar)
         {
-            lastBorderMouseDownObject = sender;
             if (!Settings.PowerPointSettings.EnablePPTButtonPageClickable) return;
-            if (sender == PPTLSPageButton)
-            {
-                PPTLSPageButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTRSPageButton)
-            {
-                PPTRSPageButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTLBPageButton)
-            {
-                PPTLBPageButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTRBPageButton)
-            {
-                PPTRBPageButtonFeedbackBorder.Opacity = 0.15;
-            }
-        }
-
-        /// <summary>
-        /// 处理PPT导航按钮的鼠标离开事件
-        /// </summary>
-        /// <param name="sender">事件的来源对象</param>
-        /// <param name="e">鼠标事件参数</param>
-        /// <remarks>
-        /// 该方法在用户鼠标离开PPT导航按钮时执行以下操作：
-        /// 1. 重置按下的按钮对象为null
-        /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
-        /// </remarks>
-        private void PPTNavigationBtn_MouseLeave(object sender, MouseEventArgs e)
-        {
-            lastBorderMouseDownObject = null;
-            if (sender == PPTLSPageButton)
-            {
-                PPTLSPageButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRSPageButton)
-            {
-                PPTRSPageButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTLBPageButton)
-            {
-                PPTLBPageButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRBPageButton)
-            {
-                PPTRBPageButtonFeedbackBorder.Opacity = 0;
-            }
-        }
-
-        /// <summary>
-        /// 处理PPT导航按钮的鼠标释放事件
-        /// </summary>
-        /// <param name="sender">事件的来源对象</param>
-        /// <param name="e">鼠标按钮事件参数</param>
-        /// <remarks>
-        /// 该方法在用户释放PPT导航按钮时执行以下操作：
-        /// 1. 检查释放的按钮是否与按下的按钮一致
-        /// 2. 隐藏按钮的反馈效果
-        /// 3. 检查是否启用了PPT按钮页码点击功能
-        /// 4. 检查PPT是否已连接且在放映状态
-        /// 5. 设置背景透明度和颜色
-        /// 6. 切换到光标模式
-        /// 7. 尝试显示PPT幻灯片导航
-        /// 8. 如果浮动栏未折叠，则调整其位置
-        /// 9. 捕获并记录可能的异常
-        /// </remarks>
-        private async void PPTNavigationBtn_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            if (lastBorderMouseDownObject != sender) return;
-
-            if (sender == PPTLSPageButton)
-            {
-                PPTLSPageButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRSPageButton)
-            {
-                PPTRSPageButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTLBPageButton)
-            {
-                PPTLBPageButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRBPageButton)
-            {
-                PPTRBPageButtonFeedbackBorder.Opacity = 0;
-            }
-
-            if (!Settings.PowerPointSettings.EnablePPTButtonPageClickable) return;
-
-            // 使用新的PPT管理器检查连接状态
             if (_pptManager?.IsConnected != true || _pptManager?.IsInSlideShow != true)
             {
                 LogHelper.WriteLogToFile("PPT未连接或未在放映状态，无法执行页码点击操作", LogHelper.LogType.Warning);
@@ -2319,22 +2267,52 @@ namespace Ink_Canvas
                 GridTransparencyFakeBackground.Background = new SolidColorBrush(StringToColor("#01FFFFFF"));
                 CursorIcon_Click(null, null);
 
-                // 使用新的PPT管理器显示导航
-                if (_pptManager.TryShowSlideNavigation())
+                if (Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview && bar != null)
                 {
-                    LogHelper.WriteLogToFile("成功显示PPT幻灯片导航", LogHelper.LogType.Trace);
-                    // 若启用了“翻页时跳过PPT动画”，显示导航后把焦点拉回本窗口
-                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
+                    if (bar.IsPreviewExpanded)
                     {
-                        try { this.Activate(); } catch { }
+                        bar.IsPreviewExpanded = false;
+                    }
+                    else
+                    {
+                        var slides = await Task.Run(BuildPptPreviewItems);
+                        if (slides == null || slides.Count == 0)
+                        {
+                            LogHelper.WriteLogToFile("PPT增强预览未生成可用缩略图，改用默认导航", LogHelper.LogType.Warning);
+                            _pptManager.TryShowSlideNavigation();
+                        }
+                        else
+                        {
+                            var items = new List<Controls.PptNavBar.PreviewItem>(slides.Count);
+                            foreach (var s in slides)
+                            {
+                                items.Add(new Controls.PptNavBar.PreviewItem
+                                {
+                                    SlideNumber = s.SlideNumber,
+                                    Thumbnail = s.Thumbnail
+                                });
+                            }
+                            bar.PreviewItems = items;
+                            bar.CurrentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                            bar.IsPreviewExpanded = true;
+                        }
                     }
                 }
                 else
                 {
-                    LogHelper.WriteLogToFile("显示PPT幻灯片导航失败", LogHelper.LogType.Warning);
+                    if (_pptManager.TryShowSlideNavigation())
+                    {
+                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
+                        {
+                            try { this.Activate(); } catch { }
+                        }
+                    }
+                    else
+                    {
+                        LogHelper.WriteLogToFile("显示PPT幻灯片导航失败", LogHelper.LogType.Warning);
+                    }
                 }
 
-                // 控制居中
                 if (!isFloatingBarFolded)
                 {
                     await Task.Delay(100);
@@ -2344,6 +2322,229 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"PPT翻页控件操作失败: {ex}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void OnPptNavBarSlideSelected(Controls.PptNavBar bar, int slideNumber)
+        {
+            try { _pptManager?.TryNavigateToSlide(slideNumber); }
+            catch (Exception ex) { LogHelper.WriteLogToFile($"PPT增强预览跳转异常: {ex}", LogHelper.LogType.Error); }
+            finally { if (bar != null) bar.IsPreviewExpanded = false; }
+        }
+
+        private sealed class PptEnhancedPreviewItem
+        {
+            public int SlideNumber { get; set; }
+            public BitmapImage Thumbnail { get; set; }
+        }
+
+        private void CollapseAllPptNavBarPreviews()
+        {
+            var bars = new[]
+            {
+                LeftBottomPanelForPPTNavigation,
+                RightBottomPanelForPPTNavigation,
+                LeftSidePanelForPPTNavigation,
+                RightSidePanelForPPTNavigation,
+            };
+            foreach (var bar in bars)
+            {
+                if (bar == null) continue;
+                try
+                {
+                    bar.IsPreviewExpanded = false;
+                    bar.PreviewItems = null;
+                }
+                catch { }
+            }
+        }
+
+        /// <summary>在 MainWindow 加载完成后调用,把 4 个 PptNavBar 的事件接到本类。</summary>
+        private void WirePptNavBars()
+        {
+            var bars = new[]
+            {
+                LeftBottomPanelForPPTNavigation,
+                RightBottomPanelForPPTNavigation,
+                LeftSidePanelForPPTNavigation,
+                RightSidePanelForPPTNavigation,
+            };
+            foreach (var bar in bars)
+            {
+                if (bar == null) continue;
+                bar.PreviousClick += (s, e) => BtnPPTSlidesUp_Click(BtnPPTSlidesUp, null);
+                bar.NextClick += (s, e) => BtnPPTSlidesDown_Click(BtnPPTSlidesDown, null);
+                bar.PreviousPressedDown += (s, e) =>
+                {
+                    if (Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn)
+                        StartLongPressDetection(s, false);
+                };
+                bar.NextPressedDown += (s, e) =>
+                {
+                    if (Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn)
+                        StartLongPressDetection(s, true);
+                };
+                bar.PressEnded += (s, e) => StopLongPressDetection();
+                var captured = bar;
+                bar.PageClick += async (s, e) => await OnPptNavBarPageClickAsync(captured);
+                bar.SlideSelected += (s, slideNumber) => OnPptNavBarSlideSelected(captured, slideNumber);
+                bar.PreviewExpandedChanged += (s, expanded) => OnPptNavBarPreviewExpandedChanged(captured, expanded);
+            }
+        }
+
+        private bool _suppressPreviewExpandedSync;
+
+        private void OnPptNavBarPreviewExpandedChanged(Controls.PptNavBar bar, bool expanded)
+        {
+            if (_suppressPreviewExpandedSync) return;
+            try
+            {
+                _suppressPreviewExpandedSync = true;
+
+                if (expanded)
+                {
+                    // 仅允许同时一侧展开
+                    foreach (var other in new[]
+                    {
+                        LeftBottomPanelForPPTNavigation,
+                        RightBottomPanelForPPTNavigation,
+                        LeftSidePanelForPPTNavigation,
+                        RightSidePanelForPPTNavigation,
+                    })
+                    {
+                        if (other == null || ReferenceEquals(other, bar)) continue;
+                        if (other.IsPreviewExpanded) other.IsPreviewExpanded = false;
+                    }
+                }
+
+                // 底部条展开时,隐藏同侧的中部侧边条避免遮挡;收起后还原可见性
+                ApplyBottomBarSideOcclusion();
+            }
+            finally
+            {
+                _suppressPreviewExpandedSync = false;
+            }
+        }
+
+        private void ApplyBottomBarSideOcclusion()
+        {
+            var leftBottomExpanded = LeftBottomPanelForPPTNavigation != null && LeftBottomPanelForPPTNavigation.IsPreviewExpanded;
+            var rightBottomExpanded = RightBottomPanelForPPTNavigation != null && RightBottomPanelForPPTNavigation.IsPreviewExpanded;
+
+            // 同侧的侧边条在底部条展开时隐藏
+            if (LeftSidePanelForPPTNavigation != null)
+            {
+                if (leftBottomExpanded)
+                {
+                    LeftSidePanelForPPTNavigation.Tag = LeftSidePanelForPPTNavigation.Visibility;
+                    LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
+                }
+                else if (LeftSidePanelForPPTNavigation.Tag is Visibility cached)
+                {
+                    LeftSidePanelForPPTNavigation.Visibility = cached;
+                    LeftSidePanelForPPTNavigation.ClearValue(TagProperty);
+                }
+            }
+            if (RightSidePanelForPPTNavigation != null)
+            {
+                if (rightBottomExpanded)
+                {
+                    RightSidePanelForPPTNavigation.Tag = RightSidePanelForPPTNavigation.Visibility;
+                    RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
+                }
+                else if (RightSidePanelForPPTNavigation.Tag is Visibility cached)
+                {
+                    RightSidePanelForPPTNavigation.Visibility = cached;
+                    RightSidePanelForPPTNavigation.ClearValue(TagProperty);
+                }
+            }
+        }
+
+        private List<PptEnhancedPreviewItem> BuildPptPreviewItems()
+        {
+            var result = new List<PptEnhancedPreviewItem>();
+            string tempDir = null;
+            Presentation activePresentation = null;
+            Slides slides = null;
+
+            try
+            {
+                activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
+                if (activePresentation == null)
+                {
+                    return result;
+                }
+
+                slides = activePresentation.Slides;
+                if (slides == null) return result;
+
+                int count = slides.Count;
+                if (count <= 0) return result;
+
+                tempDir = Path.Combine(Path.GetTempPath(), "InkCanvas", "PPTPreviews", Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tempDir);
+
+                for (int i = 1; i <= count; i++)
+                {
+                    Slide slide = null;
+                    try
+                    {
+                        slide = slides[i];
+                        var imagePath = Path.Combine(tempDir, $"slide_{i:0000}.png");
+                        slide.Export(imagePath, "PNG", 480, 270);
+                        var image = LoadBitmapImage(imagePath);
+                        if (image == null) continue;
+
+                        result.Add(new PptEnhancedPreviewItem
+                        {
+                            SlideNumber = i,
+                            Thumbnail = image
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"生成PPT第{i}页缩略图失败: {ex.Message}", LogHelper.LogType.Warning);
+                    }
+                    finally
+                    {
+                        if (slide != null)
+                        {
+                            try { Marshal.ReleaseComObject(slide); } catch { }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"构建PPT增强预览列表失败: {ex}", LogHelper.LogType.Error);
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(tempDir) && Directory.Exists(tempDir))
+                {
+                    try { Directory.Delete(tempDir, true); } catch { }
+                }
+            }
+
+            return result;
+        }
+
+        private static BitmapImage LoadBitmapImage(string path)
+        {
+            try
+            {
+                if (!File.Exists(path)) return null;
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = new Uri(path, UriKind.Absolute);
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -2475,6 +2676,8 @@ namespace Ink_Canvas
         {
             try
             {
+                await Application.Current.Dispatcher.InvokeAsync(() => CollapseAllPptNavBarPreviews());
+
                 if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
@@ -2499,209 +2702,30 @@ namespace Ink_Canvas
         /// </remarks>
         private void GridPPTControlPrevious_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            lastBorderMouseDownObject = sender;
-            if (sender == PPTLSPreviousButtonBorder)
-            {
-                PPTLSPreviousButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTRSPreviousButtonBorder)
-            {
-                PPTRSPreviousButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTLBPreviousButtonBorder)
-            {
-                PPTLBPreviousButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTRBPreviousButtonBorder)
-            {
-                PPTRBPreviousButtonFeedbackBorder.Opacity = 0.15;
-            }
-
-            // 启动长按检测
-            if (Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn)
-            {
-                StartLongPressDetection(sender, false);
-            }
+            // 旧 XAML 入口已废弃，事件由 PptNavBar 控件转发；保留方法签名以兼容潜在外部引用。
         }
-        /// <summary>
-        /// 处理PPT上一页控制按钮的鼠标离开事件
-        /// </summary>
-        /// <param name="sender">事件的来源对象</param>
-        /// <param name="e">鼠标事件参数</param>
-        /// <remarks>
-        /// 该方法在用户鼠标离开PPT上一页控制按钮时执行以下操作：
-        /// 1. 重置按下的按钮对象为null
-        /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
-        /// 3. 停止长按检测
-        /// </remarks>
         private void GridPPTControlPrevious_MouseLeave(object sender, MouseEventArgs e)
         {
-            lastBorderMouseDownObject = null;
-            if (sender == PPTLSPreviousButtonBorder)
-            {
-                PPTLSPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRSPreviousButtonBorder)
-            {
-                PPTRSPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTLBPreviousButtonBorder)
-            {
-                PPTLBPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRBPreviousButtonBorder)
-            {
-                PPTRBPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-
-            // 停止长按检测
             StopLongPressDetection();
         }
-        /// <summary>
-        /// 处理PPT上一页控制按钮的鼠标释放事件
-        /// </summary>
-        /// <param name="sender">事件的来源对象</param>
-        /// <param name="e">鼠标按钮事件参数</param>
-        /// <remarks>
-        /// 该方法在用户释放PPT上一页控制按钮时执行以下操作：
-        /// 1. 检查释放的按钮是否与按下的按钮一致
-        /// 2. 根据释放的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
-        /// 3. 停止长按检测
-        /// 4. 调用上一页按钮的点击事件处理方法，实现切换到上一页的功能
-        /// </remarks>
         private void GridPPTControlPrevious_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (lastBorderMouseDownObject != sender) return;
-            if (sender == PPTLSPreviousButtonBorder)
-            {
-                PPTLSPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRSPreviousButtonBorder)
-            {
-                PPTRSPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTLBPreviousButtonBorder)
-            {
-                PPTLBPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRBPreviousButtonBorder)
-            {
-                PPTRBPreviousButtonFeedbackBorder.Opacity = 0;
-            }
-
-            // 停止长按检测
             StopLongPressDetection();
-
             BtnPPTSlidesUp_Click(BtnPPTSlidesUp, null);
         }
 
 
-        /// <summary>
-        /// 处理PPT下一页控制按钮的鼠标按下事件
-        /// </summary>
-        /// <param name="sender">事件的来源对象</param>
-        /// <param name="e">鼠标按钮事件参数</param>
-        /// <remarks>
-        /// 该方法在用户按下PPT下一页控制按钮时执行以下操作：
-        /// 1. 记录按下的按钮对象
-        /// 2. 根据按下的按钮设置相应的反馈边框透明度
-        /// 3. 如果启用了PPT按钮长按翻页功能，则启动长按检测
-        /// </remarks>
         private void GridPPTControlNext_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            lastBorderMouseDownObject = sender;
-            if (sender == PPTLSNextButtonBorder)
-            {
-                PPTLSNextButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTRSNextButtonBorder)
-            {
-                PPTRSNextButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTLBNextButtonBorder)
-            {
-                PPTLBNextButtonFeedbackBorder.Opacity = 0.15;
-            }
-            else if (sender == PPTRBNextButtonBorder)
-            {
-                PPTRBNextButtonFeedbackBorder.Opacity = 0.15;
-            }
-
-            // 启动长按检测
-            if (Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn)
-            {
-                StartLongPressDetection(sender, true);
-            }
+            // 旧 XAML 入口已废弃，事件由 PptNavBar 控件转发；保留方法签名以兼容潜在外部引用。
         }
-        /// <summary>
-        /// 处理PPT下一页控制按钮的鼠标离开事件
-        /// </summary>
-        /// <param name="sender">事件的来源对象</param>
-        /// <param name="e">鼠标事件参数</param>
-        /// <remarks>
-        /// 该方法在用户鼠标离开PPT下一页控制按钮时执行以下操作：
-        /// 1. 重置按下的按钮对象为null
-        /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
-        /// 3. 停止长按检测
-        /// </remarks>
         private void GridPPTControlNext_MouseLeave(object sender, MouseEventArgs e)
         {
-            lastBorderMouseDownObject = null;
-            if (sender == PPTLSNextButtonBorder)
-            {
-                PPTLSNextButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRSNextButtonBorder)
-            {
-                PPTRSNextButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTLBNextButtonBorder)
-            {
-                PPTLBNextButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRBNextButtonBorder)
-            {
-                PPTRBNextButtonFeedbackBorder.Opacity = 0;
-            }
-
-            // 停止长按检测
             StopLongPressDetection();
         }
-        /// <summary>
-        /// 处理PPT下一页控制按钮的鼠标释放事件
-        /// </summary>
-        /// <param name="sender">事件的来源对象</param>
-        /// <param name="e">鼠标按钮事件参数</param>
-        /// <remarks>
-        /// 该方法在用户释放PPT下一页控制按钮时执行以下操作：
-        /// 1. 检查释放的按钮是否与按下的按钮一致
-        /// 2. 根据释放的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
-        /// 3. 停止长按检测
-        /// 4. 调用下一页按钮的点击事件处理方法，实现切换到下一页的功能
-        /// </remarks>
         private void GridPPTControlNext_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (lastBorderMouseDownObject != sender) return;
-            if (sender == PPTLSNextButtonBorder)
-            {
-                PPTLSNextButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRSNextButtonBorder)
-            {
-                PPTRSNextButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTLBNextButtonBorder)
-            {
-                PPTLBNextButtonFeedbackBorder.Opacity = 0;
-            }
-            else if (sender == PPTRBNextButtonBorder)
-            {
-                PPTRBNextButtonFeedbackBorder.Opacity = 0;
-            }
-
-            // 停止长按检测
             StopLongPressDetection();
-
             BtnPPTSlidesDown_Click(BtnPPTSlidesDown, null);
         }
 

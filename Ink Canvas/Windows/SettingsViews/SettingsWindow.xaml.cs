@@ -2,73 +2,84 @@ using Ink_Canvas.Windows.SettingsViews.Pages;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Navigation;
-using System.Windows.Interop;
-using System.Windows.Input;
 using System.Linq;
-using MessageBox = System.Windows.MessageBox;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Navigation;
+using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Screen = System.Windows.Forms.Screen;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
     public partial class SettingsWindow : Window
     {
-        private readonly Dictionary<string, Type> _pageTypes;
+        private Dictionary<string, Type> _pageTypes;
         private readonly Dictionary<string, object> _pages = new Dictionary<string, object>();
-        
+        private readonly Dictionary<string, Ink_Canvas.Plugins.PluginInfo> _pluginPages = new Dictionary<string, Ink_Canvas.Plugins.PluginInfo>();
+
         // 保存窗口原始位置和大小
         private double _originalLeft;
         private double _originalTop;
         private double _originalWidth;
         private double _originalHeight;
-        
+
         // 标记窗口是否曾经最大化过
         private bool _wasMaximized = false;
+
+        private bool _isNavigating = false;
+        private bool _updateBadgeDismissed = false;
 
         public SettingsWindow()
         {
             InitializeComponent();
 
+            ApplyCurrentTheme();
+
             // 初始化内置页面映射
             _pageTypes = new Dictionary<string, Type>
             {
                 { "HomePage", typeof(HomePage) },
-                { "BasicPage", typeof(BasicPage) },
-                { "Page2Page", typeof(Page2Page) },
-                { "DesignPage", typeof(DesignPage) },
-                { "AppearancePage", typeof(AppearancePage) },
-                { "IconographyPage", typeof(IconographyPage) },
-                { "TypographyPage", typeof(TypographyPage) },
-                { "ThemePage", typeof(ThemePage) },
-                { "ColorsPage", typeof(ColorsPage) },
-                { "FontsPage", typeof(FontsPage) },
                 { "StartupPage", typeof(StartupPage) },
+                { "PrivacyPage", typeof(PrivacyPage) },
+                { "SecurityPage", typeof(SecurityPage) },
+                { "WindowPage", typeof(WindowPage) },
+                { "AppearancePage", typeof(AppearancePage) },
+                { "HotkeyPage", typeof(HotkeyPage) },
+                { "UpdatePage", typeof(UpdatePage) },
+                { "ExperimentalPage", typeof(ExperimentalPage) },
+                { "AdvancedPage", typeof(AdvancedPage) },
+                { "StoragePage", typeof(StoragePage) },
+                { "AutomationPage", typeof(AutomationPage) },
+                { "PowerPointPage", typeof(PowerPointPage) },
+                { "RandomDrawPage", typeof(RandomDrawPage) },
+                { "CanvasPage", typeof(CanvasPage) },
+                { "InkRecognitionPage", typeof(InkRecognitionPage) },
+                { "DebugPage", typeof(DebugPage) },
                 { "AboutPage", typeof(AboutPage) },
-                { "Settings", typeof(SettingsPage) }
+                { "Settings", typeof(SettingsPage) },
+                { "PluginPage", typeof(PluginPage) },
+                { "PluginSettingsPage", typeof(PluginSettingsPage) }
             };
 
             // 默认选中首页
             if (NavigationViewControl.MenuItems.Count > 0)
             {
-                // 首先导航到首页
                 NavigateToPage("HomePage");
-                // 然后选中首页菜单项
                 NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
                 NavigationViewControl.Header = "首页";
             }
 
-            // 初始化标题栏边距
             UpdateAppTitleBarMargin();
 
-            // 窗口生命周期事件注册
+            // 窗口生命周期事件
             this.Loaded += (sender, e) =>
             {
                 SetMaxSizeAndCenter();
                 RegisterDpiChangedListener();
+                LoadPluginSettingsPages();
+                UpdateUpdateBadgeVisibility();
             };
 
-            // 窗口关闭时释放资源
             this.Closed += (sender, e) =>
             {
                 UnregisterDpiChangedListener();
@@ -77,51 +88,39 @@ namespace Ink_Canvas.Windows.SettingsViews
             };
 
             // 修复触摸屏操作后鼠标指针消失的问题
-            FixTouchScreenCursorIssue();
+            this.TouchUp += (s, e) => ShowCursor(true);
+            this.MouseEnter += (s, e) => ShowCursor(true);
+            this.Activated += (s, e) => ShowCursor(true);
 
             // 窗口状态改变时调整大小限制
             this.StateChanged += (sender, e) =>
             {
                 if (this.WindowState == WindowState.Maximized)
                 {
-                    // 保存窗口原始位置和大小
                     _originalLeft = this.Left;
                     _originalTop = this.Top;
                     _originalWidth = this.Width;
                     _originalHeight = this.Height;
-                    
-                    // 标记窗口曾经最大化过
                     _wasMaximized = true;
-                    
-                    // 最大化时清除最大尺寸限制
                     this.MaxWidth = double.PositiveInfinity;
                     this.MaxHeight = double.PositiveInfinity;
                 }
                 else if (this.WindowState == WindowState.Normal && _wasMaximized)
                 {
-                    // 从最大化恢复到正常状态时，恢复窗口原始位置和大小
                     this.Left = _originalLeft;
                     this.Top = _originalTop;
                     this.Width = _originalWidth;
                     this.Height = _originalHeight;
-                    
-                    // 重置标记
                     _wasMaximized = false;
-                    
-                    // 只设置最大尺寸，不改变窗口位置
                     SetMaxSizeOnly();
                 }
                 else if (this.WindowState == WindowState.Normal)
                 {
-                    // 正常状态下只设置最大尺寸限制
                     SetMaxSizeOnly();
                 }
-                
-                // 窗口状态改变时更新标题栏显示
                 UpdateAppTitleBarMargin();
             };
-            
-            // 窗口大小改变时更新标题栏显示
+
             this.SizeChanged += (sender, e) =>
             {
                 if (NavigationViewControl.DisplayMode == NavigationViewDisplayMode.Minimal)
@@ -131,34 +130,49 @@ namespace Ink_Canvas.Windows.SettingsViews
             };
         }
 
-        #region 修复触摸屏鼠标指针消失问题
-        private void FixTouchScreenCursorIssue()
+        public void RefreshTheme()
         {
-            // 触摸结束时强制显示鼠标指针
-            this.TouchUp += (s, e) =>
-            {
-                ShowCursor(true);
-            };
-
-            // 鼠标进入窗口时确保指针可见
-            this.MouseEnter += (s, e) =>
-            {
-                ShowCursor(true);
-            };
-
-            // 窗口激活时确保指针可见
-            this.Activated += (s, e) =>
-            {
-                ShowCursor(true);
-            };
+            ApplyCurrentTheme();
         }
+
+        private void ApplyCurrentTheme()
+        {
+            try
+            {
+                int themeIndex = Helpers.SettingsManager.Settings.Appearance.Theme;
+                var elementTheme = themeIndex switch
+                {
+                    0 => iNKORE.UI.WPF.Modern.ElementTheme.Light,
+                    1 => iNKORE.UI.WPF.Modern.ElementTheme.Dark,
+                    _ => IsSystemThemeLight() ? iNKORE.UI.WPF.Modern.ElementTheme.Light : iNKORE.UI.WPF.Modern.ElementTheme.Dark,
+                };
+                iNKORE.UI.WPF.Modern.ThemeManager.SetRequestedTheme(this, elementTheme);
+            }
+            catch { }
+        }
+
+        private static bool IsSystemThemeLight()
+        {
+            try
+            {
+                using (var themeKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (themeKey?.GetValue("SystemUsesLightTheme") is int v) return v == 1;
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        #region 修复触摸屏鼠标指针消失问题
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern int ShowCursor(bool bShow);
         #endregion
 
         #region 高DPI/多屏自适应窗口控制
-        
+
         /// <summary>
         /// 获取当前窗口所在屏幕的工作区尺寸（DIP单位）
         /// </summary>
@@ -245,7 +259,11 @@ namespace Ink_Canvas.Windows.SettingsViews
         #region 导航逻辑优化（含页面缓存）
         private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            // 处理自带的设置项导航
+            if (_isNavigating)
+            {
+                return;
+            }
+
             if (args.IsSettingsSelected)
             {
                 NavigateToPage("Settings");
@@ -259,35 +277,59 @@ namespace Ink_Canvas.Windows.SettingsViews
                 string tag = selectedItem.Tag as string;
                 if (!string.IsNullOrEmpty(tag) && _pageTypes.ContainsKey(tag))
                 {
-                    // 避免重复导航到当前页面
-                    if (rootFrame.SourcePageType != _pageTypes[tag])
+                    Ink_Canvas.Plugins.PluginInfo pluginInfo = null;
+                    _pluginPages.TryGetValue(tag, out pluginInfo);
+
+                    object cachedPage = null;
+                    _pages.TryGetValue(tag, out cachedPage);
+
+                    if (cachedPage == null || rootFrame.Content != cachedPage)
                     {
-                        NavigateToPage(tag);
+                        NavigateToPage(tag, pluginInfo);
+                    }
+                    else if (cachedPage is PluginSettingsPage pluginSettingsPage && pluginInfo != null)
+                    {
+                        pluginSettingsPage.CurrentPlugin = pluginInfo;
                     }
                     NavigationViewControl.Header = selectedItem.Content;
+
+                    if (tag == "UpdatePage")
+                    {
+                        _updateBadgeDismissed = true;
+                        UpdateUpdateBadgeVisibility();
+                    }
                 }
             }
         }
 
-        public void NavigateToPage(string pageTag)
+        public void NavigateToPage(string pageTag, Ink_Canvas.Plugins.PluginInfo pluginInfo = null)
         {
             if (!_pageTypes.TryGetValue(pageTag, out Type pageType)) return;
 
             try
             {
-                // 页面缓存：已创建的页面直接复用，保留状态，避免重复初始化
+                _isNavigating = true;
+
                 if (!_pages.TryGetValue(pageTag, out var cachedPage))
                 {
                     cachedPage = Activator.CreateInstance(pageType);
                     _pages.Add(pageTag, cachedPage);
                 }
 
-                // 导航到缓存页面
-                rootFrame.Navigate(cachedPage.GetType(), cachedPage);
+                if (cachedPage is PluginSettingsPage pluginSettingsPage && pluginInfo != null)
+                {
+                    pluginSettingsPage.CurrentPlugin = pluginInfo;
+                }
+
+                rootFrame.Navigate(cachedPage);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"导航到页面时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                _isNavigating = false;
             }
         }
 
@@ -298,7 +340,11 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void OnRootFrameNavigated(object sender, NavigationEventArgs e)
         {
-            // 导航后同步导航项选中状态
+            if (_isNavigating)
+            {
+                return;
+            }
+
             Type currentPageType = rootFrame.SourcePageType;
 
             // 处理设置项的选中状态
@@ -341,7 +387,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (sender.DisplayMode == NavigationViewDisplayMode.Minimal)
             {
                 AppTitleBar.Margin = new Thickness((sender.CompactPaneLength * 2), currMargin.Top, currMargin.Right, currMargin.Bottom);
-                
+
                 // 当窗口宽度非常小时，隐藏图标和应用设置文字
                 if (this.ActualWidth < 400)
                 {
@@ -396,37 +442,179 @@ namespace Ink_Canvas.Windows.SettingsViews
         #endregion
 
         #region 搜索框逻辑优化
+
+        private sealed class SearchEntry
+        {
+            public string Text;
+            public string PageTag;
+            public WeakReference<FrameworkElement> Target;
+        }
+
+        private List<SearchEntry> _searchIndex;
+        private bool _indexBuilt;
+
+        private void EnsureSearchIndexBuilt()
+        {
+            if (_indexBuilt && _searchIndex != null) return;
+            _searchIndex = new List<SearchEntry>(256);
+
+            foreach (var item in GetAllNavigationItems())
+            {
+                var text = item.Content?.ToString();
+                var tag = item.Tag as string;
+                if (!string.IsNullOrWhiteSpace(text) && !string.IsNullOrEmpty(tag))
+                {
+                    _searchIndex.Add(new SearchEntry { Text = text.Trim(), PageTag = tag });
+                }
+            }
+
+            foreach (var kv in _pageTypes.ToList())
+            {
+                var tag = kv.Key;
+                if (tag == "Settings") continue;
+                if (kv.Value == typeof(PluginSettingsPage)) continue;
+
+                try
+                {
+                    if (!_pages.TryGetValue(tag, out var page))
+                    {
+                        page = Activator.CreateInstance(kv.Value);
+                        _pages[tag] = page;
+                    }
+                    if (page is FrameworkElement feRoot)
+                    {
+                        if (!feRoot.IsLoaded)
+                        {
+                            try { feRoot.ApplyTemplate(); } catch { }
+                        }
+                        CollectEntriesFromPage(feRoot, tag);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"为页面 {tag} 建索引失败: {ex.Message}");
+                }
+            }
+
+            foreach (var kv in _pluginPages)
+            {
+                var pageTag = kv.Key;
+                var info = kv.Value;
+                var name = info?.Name;
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    _searchIndex.Add(new SearchEntry { Text = $"{name} 设置", PageTag = pageTag });
+                }
+            }
+
+            _indexBuilt = true;
+        }
+
+        private void CollectEntriesFromPage(DependencyObject root, string pageTag)
+        {
+            foreach (var node in EnumerateLogicalDescendants(root))
+            {
+                string header = null;
+                FrameworkElement target = node as FrameworkElement;
+
+                if (node is Ink_Canvas.Controls.LabeledSettingsCard lsc)
+                {
+                    header = lsc.Header;
+                }
+                else if (node is iNKORE.UI.WPF.Modern.Controls.SettingsCard sc)
+                {
+                    header = sc.Header?.ToString();
+                }
+                else if (node is iNKORE.UI.WPF.Modern.Controls.SettingsExpander se)
+                {
+                    header = se.Header?.ToString();
+                }
+
+                if (!string.IsNullOrWhiteSpace(header) && target != null)
+                {
+                    _searchIndex.Add(new SearchEntry
+                    {
+                        Text = header.Trim(),
+                        PageTag = pageTag,
+                        Target = new WeakReference<FrameworkElement>(target)
+                    });
+                }
+            }
+        }
+
+        private static IEnumerable<DependencyObject> EnumerateLogicalDescendants(DependencyObject root)
+        {
+            if (root == null) yield break;
+            var stack = new Stack<DependencyObject>();
+            stack.Push(root);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                yield return node;
+                foreach (var child in LogicalTreeHelper.GetChildren(node))
+                {
+                    if (child is DependencyObject d) stack.Push(d);
+                }
+            }
+        }
+
+        private void NavigateToSearchEntry(SearchEntry entry)
+        {
+            if (entry == null) return;
+
+            NavigateToPage(entry.PageTag);
+            var navItem = FindNavigationViewItemByTag(entry.PageTag);
+            if (navItem != null && NavigationViewControl.SelectedItem != navItem)
+            {
+                NavigationViewControl.SelectedItem = navItem;
+                NavigationViewControl.Header = navItem.Content;
+            }
+
+            if (entry.Target != null && entry.Target.TryGetTarget(out var fe))
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try { fe.BringIntoView(); } catch { }
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+        }
+
         private void OnControlsSearchBoxQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (string.IsNullOrWhiteSpace(args.QueryText)) return;
+            EnsureSearchIndexBuilt();
 
-            string query = args.QueryText.Trim().ToLower();
-            var allNavItems = GetAllNavigationItems();
+            string raw = (args.ChosenSuggestion as string) ?? args.QueryText;
+            if (string.IsNullOrWhiteSpace(raw)) return;
 
-            var targetItem = allNavItems.FirstOrDefault(item =>
-                item.Content?.ToString().ToLower().Contains(query) == true);
+            string query = raw.Trim();
+            string queryLower = query.ToLower();
 
-            if (targetItem != null)
-            {
-                NavigationViewControl.SelectedItem = targetItem;
-            }
+            var entry = _searchIndex.FirstOrDefault(e => e.Text.Equals(query, StringComparison.OrdinalIgnoreCase))
+                        ?? _searchIndex.FirstOrDefault(e => e.Text.ToLower().Contains(queryLower));
+
+            NavigateToSearchEntry(entry);
         }
 
         private void OnControlsSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
 
-            string query = sender.Text.Trim().ToLower();
-            var suggestions = new List<string>();
+            EnsureSearchIndexBuilt();
 
-            if (!string.IsNullOrEmpty(query))
+            string query = sender.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(query))
             {
-                var allNavItems = GetAllNavigationItems();
-                suggestions = allNavItems
-                    .Where(item => item.Content?.ToString().ToLower().Contains(query) == true)
-                    .Select(item => item.Content.ToString())
-                    .ToList();
+                sender.ItemsSource = null;
+                return;
             }
+
+            string queryLower = query.ToLower();
+            var suggestions = _searchIndex
+                .Where(e => e.Text.ToLower().Contains(queryLower))
+                .Select(e => e.Text)
+                .Distinct()
+                .Take(50)
+                .ToList();
 
             sender.ItemsSource = suggestions;
         }
@@ -459,6 +647,65 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             return items;
         }
+
+        private void LoadPluginSettingsPages()
+        {
+            try
+            {
+                var pluginManager = Ink_Canvas.Plugins.PluginManager.Instance;
+                var plugins = pluginManager.Plugins;
+
+                foreach (var plugin in plugins)
+                {
+                    var settingsView = plugin.Instance.GetSettingsView();
+                    if (settingsView != null)
+                    {
+                        var pageTag = string.Format("PluginSettings_{0}", plugin.Id);
+
+                        _pageTypes[pageTag] = typeof(PluginSettingsPage);
+                        _pluginPages[pageTag] = plugin;
+
+                        var navItem = new NavigationViewItem
+                        {
+                            Content = string.Format("{0} 设置", plugin.Name),
+                            Tag = pageTag
+                        };
+
+                        navItem.Icon = new FontIcon
+                        {
+                            Glyph = "\uE713"
+                        };
+
+                        NavigationViewControl.MenuItems.Add(navItem);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("加载插件设置页面时出错: {0}", ex.Message));
+            }
+        }
         #endregion
+
+        public NavigationView GetNavigationView()
+        {
+            return NavigationViewControl;
+        }
+
+        public void UpdateUpdateBadgeVisibility()
+        {
+            try
+            {
+                var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                bool hasUpdate = mainWindow != null && !string.IsNullOrEmpty(mainWindow.AvailableLatestVersion);
+                var item = FindNavigationViewItemByTag("UpdatePage");
+                var badge = item?.InfoBadge;
+                if (badge != null)
+                {
+                    badge.Visibility = (hasUpdate && !_updateBadgeDismissed) ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+            catch { }
+        }
     }
 }

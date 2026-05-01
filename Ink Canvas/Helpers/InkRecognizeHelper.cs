@@ -103,7 +103,6 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                _ = InkRecognitionManager.Instance;
                 if (ShapeRecognitionRouter.ResolveUseWinRt(mode))
                 {
                     WinRtInkShapeRecognizer.Warmup();
@@ -118,7 +117,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        /// <summary>WinRT 手写识别（64 位 + Windows 10+）。</summary>
+        /// <summary>WinRT 手写识别（Windows 10+）。</summary>
         public static Task<HandwritingRecognitionResult> RecognizeHandwritingUnifiedAsync(
             StrokeCollection strokes,
             ShapeRecognitionEngineMode mode) =>
@@ -152,6 +151,9 @@ namespace Ink_Canvas.Helpers
 
             var node = legacy.InkDrawingNode;
             var shape = node.GetShape();
+            if (shape == null)
+                return InkShapeRecognitionResult.Empty;
+
             var hot = ClonePointCollection(node.HotPoints);
             return new InkShapeRecognitionResult(
                 node.GetShapeName(),
@@ -173,6 +175,9 @@ namespace Ink_Canvas.Helpers
 
         public static bool IsContainShapeType(string name)
         {
+            if (string.IsNullOrEmpty(name))
+                return false;
+
             if (name.Contains("Triangle") || name.Contains("Circle") ||
                 name.Contains("Rectangle") || name.Contains("Diamond") ||
                 name.Contains("Parallelogram") || name.Contains("Square")
