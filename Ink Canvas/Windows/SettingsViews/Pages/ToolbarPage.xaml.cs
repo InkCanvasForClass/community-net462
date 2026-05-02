@@ -156,6 +156,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SaveSettings();
         }
 
+        public new void DragEnter(IDropInfo dropInfo) { }
+
+        public new void DragLeave(IDropInfo dropInfo) { }
+
+        public void DropHint(IDropHintInfo dropHintInfo) { }
+
         private static void UpdateOrdersFromCollection(ObservableCollection<ToolbarItemViewModel> collection)
         {
             for (int i = 0; i < collection.Count; i++)
