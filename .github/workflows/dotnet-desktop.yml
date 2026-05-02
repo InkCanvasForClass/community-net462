@@ -26,9 +26,6 @@ jobs:
         with:
           fetch-depth: 1
       
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v3
-      
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
       
@@ -38,7 +35,7 @@ jobs:
       - name: Build the Solution
         env:
           DLASS_SENTRY_DSN: ${{ secrets.DLASS_SENTRY_DSN }}
-        run: msbuild /p:platform="${{ matrix.architecture }}" /p:configuration="Release" /p:GitFlow="$GITFLOW" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal -maxcpucount /p:RunAnalyzers=false
+        run: dotnet msbuild /p:platform="${{ matrix.architecture }}" /p:configuration="Release" /p:GitFlow="$GITFLOW" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal -maxcpucount /p:RunAnalyzers=false
 
       - name: Check if exe file is generated
         id: check-exe
