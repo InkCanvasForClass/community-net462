@@ -40,7 +40,8 @@ jobs:
       - name: Check if exe file is generated
         id: check-exe
         run: |
-          $exePath = "Ink Canvas\bin\Release\${{ matrix.architecture }}\net462\InkCanvasForClass.exe"
+          $arch = "${{ matrix.architecture }}".Replace(" ", "")
+          $exePath = "Ink Canvas\bin\Release\$arch\net462\InkCanvasForClass.exe"
           
           if (Test-Path $exePath) {
             echo "build_success=true" >> $env:GITHUB_OUTPUT
