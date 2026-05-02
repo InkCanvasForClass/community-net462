@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [Any CPU, x86, arm64]
+        architecture: [AnyCPU, x86, arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -35,7 +35,10 @@ jobs:
       - name: Build the Solution
         env:
           DLASS_SENTRY_DSN: ${{ secrets.DLASS_SENTRY_DSN }}
-        run: dotnet build -c Release -p:platform="${{ matrix.architecture }}" -p:GitFlow="$GITFLOW" --no-restore -m
+        run: |
+          $platform = "${{ matrix.architecture }}"
+          if ($platform -eq "AnyCPU") { $platform = "Any CPU" }
+          dotnet build -c Release -p:platform="$platform" -p:GitFlow="$GITFLOW" --no-restore -m
 
       - name: Check if exe file is generated
         id: check-exe
