@@ -660,12 +660,12 @@
   </Target>
 
   <Target Name="CopyIACoreHelper" AfterTargets="Build">
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\x86\$(Configuration)\net462\InkCanvasForClass.IACoreHelper.exe" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\x86\$(Configuration)\net462\InkCanvasForClass.IACoreHelper.exe.config" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\$(Configuration)\x86\net462\win-x86\InkCanvasForClass.IACoreHelper.exe" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\$(Configuration)\x86\net462\win-x86\InkCanvasForClass.IACoreHelper.exe.config" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CopyIACoreHelperPublish" AfterTargets="Publish">
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\x86\$(Configuration)\net462\InkCanvasForClass.IACoreHelper.exe" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\x86\$(Configuration)\net462\InkCanvasForClass.IACoreHelper.exe.config" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\$(Configuration)\x86\net462\win-x86\InkCanvasForClass.IACoreHelper.exe" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\$(Configuration)\x86\net462\win-x86\InkCanvasForClass.IACoreHelper.exe.config" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
   </Target>
 </Project>

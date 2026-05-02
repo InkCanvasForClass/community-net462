@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [AnyCPU, x86, arm64]
+        architecture: [Any CPU, x86, arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
