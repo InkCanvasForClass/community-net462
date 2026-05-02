@@ -666,86 +666,10 @@
                 </Grid>
             </Border>
 
-            <!-- 图片缩放选择点 -->
-            <Canvas Name="ImageResizeHandlesCanvas" 
-                    Visibility="Collapsed" 
-                    Panel.ZIndex="1000">
-                <!-- 四个角控制点 -->
-                <Ellipse Name="ImageTopLeftHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeNWSE"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-                <Ellipse Name="ImageTopRightHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeNESW"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-                <Ellipse Name="ImageBottomLeftHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeNESW"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-                <Ellipse Name="ImageBottomRightHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeNWSE"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-                
-                <!-- 四个边控制点 -->
-                <Ellipse Name="ImageTopHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeNS"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-                <Ellipse Name="ImageBottomHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeNS"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-                <Ellipse Name="ImageLeftHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeWE"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-                <Ellipse Name="ImageRightHandle" 
-                         Width="8" Height="8" 
-                         Fill="White" 
-                         Stroke="#0078D4" 
-                         StrokeThickness="1" 
-                         Cursor="SizeWE"
-                         MouseLeftButtonDown="ImageResizeHandle_MouseLeftButtonDown"
-                         MouseLeftButtonUp="ImageResizeHandle_MouseLeftButtonUp"
-                         MouseMove="ImageResizeHandle_MouseMove" />
-            </Canvas>
+            <!-- 图片选中框（边框 + 四角自由缩放 + 顶部旋转手柄） -->
+            <localControls:ImageSelectionOverlay x:Name="ImageSelectionOverlay"
+                                                 Visibility="Collapsed"
+                                                 Panel.ZIndex="1000" />
 
         </Grid>
 
@@ -2460,7 +2384,7 @@
                             <Image Margin="0"
                                    Name="FloatingbarHeadIconImg"
                                    SnapsToDevicePixels="True"
-                                   RenderOptions.BitmapScalingMode="Fant"
+                                   RenderOptions.BitmapScalingMode="HighQuality"
                                    Source="/Resources/Icons-png/icc.png" />
                         </ikw:SimpleStackPanel>
                     </Border>
@@ -3066,21 +2990,20 @@
                                                 CornerRadius="5" Background="{DynamicResource FloatBarBackground}" Opacity="1" BorderThickness="1"
                                                 BorderBrush="#2563eb">
                                             <ikw:SimpleStackPanel Margin="-1,0,0,0">
-                                                <Border BorderBrush="#1e3a8a" BorderThickness="0,0,0,1"
-                                                        CornerRadius="6,6,0,0" Background="#2563eb" Margin="-1,-1,-1,0"
+                                                <Border BorderBrush="#1e3a8a" BorderThickness="0,0,0,1" Background="#2563eb" Margin="-1,-1,-1,0"
                                                         Padding="1,1,1,0">
-                                                    <ikw:SimpleStackPanel Orientation="Horizontal"
-                                                                         HorizontalAlignment="Stretch">
-                                                        <TextBlock Text="{i18n:I18n Key=Tools_MoreFeaturesTitle}" Foreground="White" Padding="8,5,44,5"
-                                                                   FontSize="11" FontWeight="Bold"
-                                                                   TextAlignment="Center" />
-                                                        <Image Margin="0,0,0,0"
-                                                               Source="/Resources/new-icons/close-white.png"
-                                                               RenderOptions.BitmapScalingMode="HighQuality"
-                                                               Height="16"
-                                                               Width="16" MouseDown="Border_MouseDown"
-                                                               MouseUp="CloseBordertools_MouseUp" />
-                                                    </ikw:SimpleStackPanel>
+                                                    <Grid  Margin="6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{i18n:I18n Key=Tools_MoreFeaturesTitle}"
+                                                                   Foreground="White" FontWeight="Bold"/>
+                                                        <ui:FontIcon Grid.Column="1" Icon="{x:Static ui:SegoeFluentIcons.ChromeCloseContrast}"
+                                                                     Foreground="White" FontSize="12"
+                                                                     MouseDown="Border_MouseDown"
+                                                                     MouseUp="CloseBordertools_MouseUp" />
+                                                    </Grid>
                                                 </Border>
                                                 <!---->
                                                 <ikw:SimpleStackPanel Margin="10,3,10,2" Spacing="2">
@@ -3116,7 +3039,7 @@
                     </Border>
 
                     <ikw:SimpleStackPanel Orientation="{Binding ElementName=StackPanelFloatingBar, Path=Orientation}">
-                        <Border Margin=" 4,0,0,0" x:Name="EnableTwoFingerGestureBorder" Visibility="Visible" Width="36"
+                        <Border Margin="2,0,0,0" x:Name="EnableTwoFingerGestureBorder" Visibility="Visible" Width="36"
                             Height="36" CornerRadius="5" Background="{DynamicResource FloatBarBackground}" BorderBrush="{DynamicResource FloatBarBorderBrush}"
                             BorderThickness="1">
                             <ikw:SimpleStackPanel
@@ -3261,9 +3184,9 @@
                         </Canvas>
                     </ikw:SimpleStackPanel>
                     <!--Visibility="{Binding ElementName=BtnPPTSlideShowEnd, Path=Visibility}">-->
-                    <Border x:Name="BorderFloatingBarExitPPTBtn" Margin="2,0,0,0" Width="34" Height="36"
+                    <Border x:Name="BorderFloatingBarExitPPTBtn" Margin="2,0,0,0" Width="36" Height="36"
                             MouseDown="Border_MouseDown" MouseUp="ImagePPTControlEnd_MouseUp"
-                            Background="{DynamicResource FloatBarBackground}" CornerRadius="4" BorderThickness="1"
+                            Background="{DynamicResource FloatBarBackground}" CornerRadius="5" BorderThickness="1"
                             BorderBrush="{DynamicResource FloatBarBorderBrush}"
                             Visibility="{Binding ElementName=BtnPPTSlideShowEnd, Path=Visibility}">
                         <ikw:SimpleStackPanel Background="Transparent" Orientation="Vertical"
@@ -3272,7 +3195,7 @@
                             <Image Source="{DynamicResource QuickPanelEndSlideshowIcon}"
                                    RenderOptions.BitmapScalingMode="HighQuality" Width="28" Height="17"
                                    Margin="0,3,0,0" />
-                            <TextBlock Text="退出" Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
+                            <TextBlock Text="{i18n:I18n Key=FloatingBar_ExitButton}" Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
                                        TextAlignment="Center" />
                         </ikw:SimpleStackPanel>
                     </Border>

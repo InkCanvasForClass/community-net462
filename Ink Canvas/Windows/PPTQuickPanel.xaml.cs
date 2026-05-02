@@ -118,6 +118,19 @@ namespace Ink_Canvas.Windows
             Loaded += PPTQuickPanel_Loaded;
             Unloaded += PPTQuickPanel_Unloaded;
             IsVisibleChanged += PPTQuickPanel_IsVisibleChanged;
+
+            MagnifierWindow.Closed2 += OnMagnifierClosed;
+        }
+
+        private void OnMagnifierClosed(object sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(SyncMagnifierButtonState));
+        }
+
+        private void SyncMagnifierButtonState()
+        {
+            if (MagnifierToggleButton == null) return;
+            MagnifierToggleButton.Content = MagnifierWindow.HasInstance ? "关闭放大镜" : "开启放大镜";
         }
 
         private void PPTQuickPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -125,6 +138,7 @@ namespace Ink_Canvas.Windows
             if (Visibility == Visibility.Visible)
             {
                 ApplyTheme();
+                SyncMagnifierButtonState();
             }
         }
 
@@ -747,31 +761,34 @@ namespace Ink_Canvas.Windows
 
         private void ArrowButton_MouseEnter(object sender, MouseEventArgs e)
         {
-            // 根据当前主题设置悬停颜色
-            bool isDark = ArrowButtonBackgroundBrush.Color.R < 128;
-            if (isDark)
-            {
-                ArrowButtonBackgroundBrush.Color = Color.FromArgb(230, 32, 32, 32);
-            }
-            else
-            {
-                ArrowButtonBackgroundBrush.Color = Color.FromArgb(230, 255, 255, 255);
-            }
+            ArrowButtonBackgroundBrush.Color = Color.FromArgb(220, 55, 55, 55);
         }
 
         private void ArrowButton_MouseLeave(object sender, MouseEventArgs e)
         {
-            // 恢复主题颜色
-            ApplyTheme();
+            ArrowButtonBackgroundBrush.Color = Color.FromArgb(204, 31, 31, 31);
         }
 
         #endregion
 
         #region 拖动手势
 
+        private static bool IsWithinSlider(object source)
+        {
+            var d = source as DependencyObject;
+            while (d != null)
+            {
+                if (d is Slider) return true;
+                d = (d is System.Windows.Media.Visual || d is System.Windows.Media.Media3D.Visual3D)
+                    ? System.Windows.Media.VisualTreeHelper.GetParent(d)
+                    : LogicalTreeHelper.GetParent(d);
+            }
+            return false;
+        }
+
         private void ContentBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource is Slider) return; // 如果点击的是滑块，不处理拖动
+            if (IsWithinSlider(e.OriginalSource)) return;
 
             _isDragging = true;
             _dragStartPoint = e.GetPosition(MainCanvas);
@@ -816,7 +833,7 @@ namespace Ink_Canvas.Windows
 
         private void ContentBorder_TouchDown(object sender, TouchEventArgs e)
         {
-            if (e.OriginalSource is Slider) return;
+            if (IsWithinSlider(e.OriginalSource)) return;
 
             _isDragging = true;
             _dragStartPoint = e.GetTouchPoint(MainCanvas).Position;
@@ -1835,39 +1852,60 @@ namespace Ink_Canvas.Windows
         {
             try
             {
-                bool isDarkTheme = settings.Appearance.Theme == 1 ||
-                                   (settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
-
-                if (isDarkTheme)
-                {
-                    // 深色主题：使用80%不透明度的深色背景
-                    ArrowButtonBackgroundBrush.Color = Color.FromArgb(204, 32, 32, 32); // #CC202020
-                    ContentBackgroundBrush.Color = Color.FromArgb(204, 32, 32, 32); // #CC202020
-                    ArrowPathFillBrush.Color = Colors.White;
-                    VolumeIconFillBrush.Color = Colors.White;
-                    VolumeIconFillBrush2.Color = Colors.White;
-                    VolumeValueForegroundBrush.Color = Color.FromArgb(200, 255, 255, 255);
-                    MagnifierTitleForegroundBrush.Color = Colors.White;
-                    MagnifierDescForegroundBrush.Color = Color.FromArgb(200, 255, 255, 255);
-                    Separator1BackgroundBrush.Color = Color.FromArgb(128, 255, 255, 255);
-                }
-                else
-                {
-                    // 浅色主题：使用80%不透明度的白色背景
-                    ArrowButtonBackgroundBrush.Color = Color.FromArgb(204, 255, 255, 255); // #CCFFFFFF
-                    ContentBackgroundBrush.Color = Color.FromArgb(204, 255, 255, 255); // #CCFFFFFF
-                    ArrowPathFillBrush.Color = Colors.Black;
-                    VolumeIconFillBrush.Color = Colors.Black;
-                    VolumeIconFillBrush2.Color = Colors.Black;
-                    VolumeValueForegroundBrush.Color = Color.FromArgb(128, 0, 0, 0);
-                    MagnifierTitleForegroundBrush.Color = Colors.Black;
-                    MagnifierDescForegroundBrush.Color = Color.FromArgb(128, 0, 0, 0);
-                    Separator1BackgroundBrush.Color = Color.FromArgb(255, 224, 224, 224);
-                }
+                // Game Bar 风格：始终使用深色半透明外壳，不随系统主题翻转
+                ArrowButtonBackgroundBrush.Color = Color.FromArgb(204, 31, 31, 31);
+                ContentBackgroundBrush.Color = Color.FromArgb(204, 31, 31, 31); // #CC1F1F1F
+                ArrowPathFillBrush.Color = Colors.White;
+                VolumeIconFillBrush.Color = Colors.White;
+                VolumeIconFillBrush2.Color = Colors.White;
+                VolumeValueForegroundBrush.Color = Color.FromArgb(230, 255, 255, 255);
+                MagnifierTitleForegroundBrush.Color = Colors.White;
+                MagnifierDescForegroundBrush.Color = Color.FromArgb(200, 255, 255, 255);
+                Separator1BackgroundBrush.Color = Color.FromArgb(60, 255, 255, 255);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"应用PPT快捷面板主题失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        #endregion
+
+        #region 聚焦放大镜
+
+        private void MagnifierToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (MagnifierWindow.HasInstance)
+                {
+                    MagnifierWindow.HideInstance();
+                    MagnifierToggleButton.Content = "开启放大镜";
+                }
+                else
+                {
+                    MagnifierWindow.Show((float)MagnifierZoomSlider.Value);
+                    if (MagnifierWindow.HasInstance)
+                    {
+                        MagnifierToggleButton.Content = "关闭放大镜";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换聚焦放大镜失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void MagnifierZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (MagnifierZoomValueText != null)
+            {
+                MagnifierZoomValueText.Text = $"{e.NewValue:0.0}x";
+            }
+            if (MagnifierWindow.HasInstance)
+            {
+                MagnifierWindow.SetZoom((float)e.NewValue);
             }
         }
 
@@ -1881,6 +1919,12 @@ namespace Ink_Canvas.Windows
         public void UpdateVisibility(bool isInPPTMode)
         {
             Visibility = isInPPTMode ? Visibility.Visible : Visibility.Collapsed;
+            if (!isInPPTMode && MagnifierWindow.HasInstance)
+            {
+                MagnifierWindow.HideInstance();
+                if (MagnifierToggleButton != null)
+                    MagnifierToggleButton.Content = "开启放大镜";
+            }
         }
 
         #endregion
