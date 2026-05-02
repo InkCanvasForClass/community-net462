@@ -33,6 +33,8 @@
 > [AnyCPU](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.zip)/[GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.zip)
 > 
 > [x86](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip)/[GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip)
+> 
+> [arm64](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.zip)/[GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.zip)
 
 ## 💫 软件说明
 
