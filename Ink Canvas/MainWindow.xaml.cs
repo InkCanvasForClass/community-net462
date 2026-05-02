@@ -100,10 +100,26 @@ namespace Ink_Canvas
             */
             InitializeComponent();
 
+            BoardBorderToolsPopup.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 5),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            BorderTools.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                        PopupPrimaryAxis.Vertical)
+                };
+
             BlackboardLeftSide.Visibility = Visibility.Collapsed;
             BlackboardCenterSide.Visibility = Visibility.Collapsed;
             BlackboardRightSide.Visibility = Visibility.Collapsed;
-            BorderTools.Visibility = Visibility.Collapsed;
+            BorderTools.IsOpen = false;
             LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
             RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
             TwoFingerGestureBorder.Visibility = Visibility.Collapsed;
@@ -1187,6 +1203,8 @@ namespace Ink_Canvas
             // 工具栏插件化按钮先注入到容器，确保 LoadSettings 内部对 Cursor_Icon / Pen_Icon 等的访问非空。
             // Settings.Toolbar 此时尚为默认值（全部可见），与旧 XAML 行为一致。
             InitializeToolbarPlugins();
+            // 初始化 Popup 管理器（置顶 + 拖动跟随）
+            InitializePopupManager();
             //加载设置
             LoadSettings(true);
             ApplyLanguageFromSettings();
@@ -2729,6 +2747,8 @@ namespace Ink_Canvas
                 {
                     PPTTimeCapsuleContainer.Visibility = Visibility.Visible;
                     UpdatePPTTimeCapsulePosition();
+                    UpdatePPTTimeCapsuleOpacity();
+                    UpdatePPTTimeCapsuleScale();
                 }
                 else
                 {
@@ -2787,22 +2807,102 @@ namespace Ink_Canvas
                         PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Left;
                         PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
                         PPTTimeCapsuleContainer.Margin = new Thickness(20, 20, 0, 0);
+                        PPTTimeCapsuleContainer.RenderTransformOrigin = new Point(0, 0);
                         break;
                     case 1: // 右上角
                         PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Right;
                         PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
                         PPTTimeCapsuleContainer.Margin = new Thickness(0, 20, 20, 0);
+                        PPTTimeCapsuleContainer.RenderTransformOrigin = new Point(1, 0);
                         break;
                     case 2: // 顶部居中
                         PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Center;
                         PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
                         PPTTimeCapsuleContainer.Margin = new Thickness(0, 20, 0, 0);
+                        PPTTimeCapsuleContainer.RenderTransformOrigin = new Point(0.5, 0);
                         break;
+                }
+
+                // 应用拖拽偏移
+                if (PPTTimeCapsule != null)
+                {
+                    PPTTimeCapsule.ApplyDragOffset(
+                        Settings.PowerPointSettings.PPTTimeCapsuleOffsetX,
+                        Settings.PowerPointSettings.PPTTimeCapsuleOffsetY);
                 }
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"更新PPT时间胶囊位置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新PPT时间胶囊的透明度
+        /// </summary>
+        public void UpdatePPTTimeCapsuleOpacity()
+        {
+            try
+            {
+                if (PPTTimeCapsuleContainer == null) return;
+                PPTTimeCapsuleContainer.Opacity = Settings.PowerPointSettings.PPTTimeCapsuleOpacity;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT时间胶囊透明度时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新PPT时间胶囊的大小
+        /// </summary>
+        public void UpdatePPTTimeCapsuleScale()
+        {
+            try
+            {
+                if (PPTTimeCapsuleScaleTransform == null) return;
+                double scale = Settings.PowerPointSettings.PPTTimeCapsuleScale;
+                PPTTimeCapsuleScaleTransform.ScaleX = scale;
+                PPTTimeCapsuleScaleTransform.ScaleY = scale;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT时间胶囊大小时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 保存PPT时间胶囊拖拽偏移量
+        /// </summary>
+        public void SavePPTTimeCapsuleOffset(double offsetX, double offsetY)
+        {
+            try
+            {
+                Settings.PowerPointSettings.PPTTimeCapsuleOffsetX = offsetX;
+                Settings.PowerPointSettings.PPTTimeCapsuleOffsetY = offsetY;
+                SaveSettingsToFile();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"保存PPT时间胶囊位置偏移时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 重置PPT时间胶囊拖拽偏移量
+        /// </summary>
+        public void ResetPPTTimeCapsuleOffset()
+        {
+            try
+            {
+                Settings.PowerPointSettings.PPTTimeCapsuleOffsetX = 0;
+                Settings.PowerPointSettings.PPTTimeCapsuleOffsetY = 0;
+                PPTTimeCapsule?.ResetDragOffset();
+                SaveSettingsToFile();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"重置PPT时间胶囊位置时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

@@ -31,6 +31,21 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             LoadSettings();
             _isLoaded = true;
+            UpdateAllSliderTexts();
+        }
+
+        private void UpdateAllSliderTexts()
+        {
+            UpdateSliderText(ViewboxFloatingBarScaleTransformValueSlider, ViewboxFloatingBarScaleSliderText, "{0:F2}x)");
+            UpdateSliderText(ViewboxFloatingBarOpacityValueSlider, ViewboxFloatingBarOpacityText, "{0:F2}");
+            UpdateSliderText(ViewboxFloatingBarOpacityInPPTValueSlider, ViewboxFloatingBarOpacityInPPTText, "{0:F2}");
+            UpdateSliderText(ViewboxBlackBoardScaleTransformValueSlider, ViewboxBlackBoardScaleText, "{0:F2}");
+        }
+
+        private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
+        {
+            if (slider == null || textBlock == null) return;
+            textBlock.Text = string.Format(format, slider.Value);
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
@@ -107,6 +122,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             ComboBoxEraserDisplayOption.SelectedIndex = settings.Appearance.EraserDisplayOption;
 
             CardEnableTrayIcon.IsOn = settings.Appearance.EnableTrayIcon;
+
+            ComboBoxTrayLeftClickAction.SelectedIndex = (int)settings.Appearance.TrayLeftClickAction;
+            ComboBoxTrayRightClickAction.SelectedIndex = (int)settings.Appearance.TrayRightClickAction;
 
             if (BtnHitokotoCustomize != null)
                 BtnHitokotoCustomize.Visibility = settings.Appearance.ChickenSoupSource == 3 ? Visibility.Visible : Visibility.Collapsed;
@@ -227,6 +245,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void ViewboxFloatingBarScaleTransformValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(ViewboxFloatingBarScaleTransformValueSlider, ViewboxFloatingBarScaleSliderText, "{0:F2}x)");
             if (!_isLoaded) return;
             var slider = ViewboxFloatingBarScaleTransformValueSlider;
             var val = Math.Round(slider.Value, 2);
@@ -238,11 +257,18 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
             SettingsManager.Settings.Appearance.ViewboxFloatingBarScaleTransformValue = val;
             SettingsManager.SaveSettingsToFile();
+
+            // 计算并显示实际缩放倍率（基础 1.5 × 用户设置）
+            double clampedVal = (val > 0.5 && val < 1.25) ? val : val <= 0.5 ? 0.5 : val >= 1.25 ? 1.25 : 1.0;
+            double actualScale = 1.5 * clampedVal;
+            ViewboxFloatingBarActualScaleText.Text = $"{actualScale:F2}x";
+
             var mw = GetMainWindow();
             if (mw != null)
             {
-                mw.ViewboxFloatingBarScaleTransform.ScaleX = val > 0.5 && val < 1.25 ? val : val <= 0.5 ? 0.5 : 1.25;
-                mw.ViewboxFloatingBarScaleTransform.ScaleY = val > 0.5 && val < 1.25 ? val : val <= 0.5 ? 0.5 : 1.25;
+                // 应用实际缩放值（基础 1.5 × 用户设置）
+                mw.ViewboxFloatingBarScaleTransform.ScaleX = actualScale;
+                mw.ViewboxFloatingBarScaleTransform.ScaleY = actualScale;
                 if (mw.BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
                     mw.ViewboxFloatingBarMarginAnimation(60);
                 else
@@ -252,6 +278,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void ViewboxFloatingBarOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(ViewboxFloatingBarOpacityValueSlider, ViewboxFloatingBarOpacityText, "{0:F2}");
             if (!_isLoaded) return;
             var slider = ViewboxFloatingBarOpacityValueSlider;
             var val = Math.Round(slider.Value, 2);
@@ -268,6 +295,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void ViewboxFloatingBarOpacityInPPTValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(ViewboxFloatingBarOpacityInPPTValueSlider, ViewboxFloatingBarOpacityInPPTText, "{0:F2}");
             if (!_isLoaded) return;
             var slider = ViewboxFloatingBarOpacityInPPTValueSlider;
             var val = Math.Round(slider.Value, 2);
@@ -305,6 +333,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void ViewboxBlackBoardScaleTransformValueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            UpdateSliderText(ViewboxBlackBoardScaleTransformValueSlider, ViewboxBlackBoardScaleText, "{0:F2}");
             if (!_isLoaded) return;
             var slider = ViewboxBlackBoardScaleTransformValueSlider;
             var val = Math.Round(slider.Value, 2);
@@ -548,6 +577,20 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                     fe.Visibility = CardEnableTrayIcon.IsOn ? Visibility.Visible : Visibility.Collapsed;
             }
             catch { }
+        }
+
+        private void ComboBoxTrayLeftClickAction_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.TrayLeftClickAction = (TrayClickAction)ComboBoxTrayLeftClickAction.SelectedIndex;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void ComboBoxTrayRightClickAction_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.TrayRightClickAction = (TrayClickAction)ComboBoxTrayRightClickAction.SelectedIndex;
+            SettingsManager.SaveSettingsToFile();
         }
 
         #endregion
