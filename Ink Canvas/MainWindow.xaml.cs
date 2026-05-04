@@ -38,7 +38,7 @@ using VerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace Ink_Canvas
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Ink_Canvas.Helpers.PerformanceTransparentWin
     {
         // 每一页一个Canvas对象
         private List<System.Windows.Controls.Canvas> whiteboardPages = new List<System.Windows.Controls.Canvas>();
@@ -83,7 +83,183 @@ namespace Ink_Canvas
 
         internal ToolbarHost ToolbarHost { get; private set; }
 
+        // Board-prefixed buttons: originally XAML auto-generated fields, now delegated to BoardToolsPopupContent
+        internal ToolMenuButton BoardTimerToolBtn => BoardToolsPopupContent?.TimerBtn;
+        internal ToolMenuButton BoardRandomDrawToolBtn => BoardToolsPopupContent?.RandomDrawBtn;
+        internal ToolMenuButton BoardSingleDrawToolBtn => BoardToolsPopupContent?.SingleDrawBtn;
+        internal ToolMenuButton BoardSaveToolBtn => BoardToolsPopupContent?.SaveBtn;
+        internal ToolMenuButton BoardOpenToolBtn => BoardToolsPopupContent?.OpenBtn;
+        internal ToolMenuButton BoardReplayToolBtn => BoardToolsPopupContent?.ReplayBtn;
+        internal ToolMenuButton BoardScreenshotToolBtn => BoardToolsPopupContent?.ScreenshotBtn;
+        internal ToolMenuButton BoardManualToolBtn => BoardToolsPopupContent?.ManualBtn;
+        internal ToolMenuButton BoardSettingsToolBtn => BoardToolsPopupContent?.SettingsBtn;
+
+        // Non-Board buttons: originally XAML auto-generated fields, now delegated to MainToolsPopupContent
+        internal ToolMenuButton TimerToolBtn => MainToolsPopupContent?.TimerBtn;
+        internal ToolMenuButton RandomDrawToolBtn => MainToolsPopupContent?.RandomDrawBtn;
+        internal ToolMenuButton SingleDrawToolBtn => MainToolsPopupContent?.SingleDrawBtn;
+        internal ToolMenuButton SaveToolBtn => MainToolsPopupContent?.SaveBtn;
+        internal ToolMenuButton OpenToolBtn => MainToolsPopupContent?.OpenBtn;
+        internal ToolMenuButton ReplayToolBtn => MainToolsPopupContent?.ReplayBtn;
+        internal ToolMenuButton ScreenshotToolBtn => MainToolsPopupContent?.ScreenshotBtn;
+        internal ToolMenuButton ManualToolBtn => MainToolsPopupContent?.ManualBtn;
+        internal ToolMenuButton SettingsToolBtn => MainToolsPopupContent?.SettingsBtn;
+
+        internal Image LeftUnFoldBtnImgChevron => LeftSidePanel?.ChevronIcon;
+        internal Image RightUnFoldBtnImgChevron => RightSidePanel?.ChevronIcon;
+
+        internal bool IsInPptPresentationMode { get; set; }
+        internal bool ArePptControlsVisible { get; set; }
+
+        internal static readonly DependencyProperty IsUndoEnabledProperty =
+            DependencyProperty.Register(nameof(IsUndoEnabled), typeof(bool), typeof(MainWindow),
+                new PropertyMetadata(true));
+        internal bool IsUndoEnabled
+        {
+            get => (bool)GetValue(IsUndoEnabledProperty);
+            set => SetValue(IsUndoEnabledProperty, value);
+        }
+
+        internal static readonly DependencyProperty IsRedoEnabledProperty =
+            DependencyProperty.Register(nameof(IsRedoEnabled), typeof(bool), typeof(MainWindow),
+                new PropertyMetadata(true));
+        internal bool IsRedoEnabled
+        {
+            get => (bool)GetValue(IsRedoEnabledProperty);
+            set => SetValue(IsRedoEnabledProperty, value);
+        }
+
         #region Window Initialization
+
+        private bool _toolsPopupEventsWired;
+        private bool _backgroundPaletteEventsWired;
+
+        private void WireUpToolsPopupContentEvents()
+        {
+            if (_toolsPopupEventsWired) return;
+            _toolsPopupEventsWired = true;
+
+            WireUpSingleToolsPopupContent(BoardToolsPopupContent);
+            WireUpSingleToolsPopupContent(MainToolsPopupContent);
+        }
+
+        private void WireUpSingleToolsPopupContent(ToolsPopupContent content)
+        {
+            if (content == null) return;
+
+            content.TimerBtn.ButtonMouseUp += ImageCountdownTimer_MouseUp;
+            content.RandomDrawBtn.ButtonMouseUp += SymbolIconRand_MouseUp;
+            content.SingleDrawBtn.ButtonMouseUp += SymbolIconRandOne_MouseUp;
+            content.SaveBtn.ButtonMouseDown += Border_MouseDown;
+            content.SaveBtn.ButtonMouseUp += SymbolIconSaveStrokes_MouseUp;
+            content.OpenBtn.ButtonMouseDown += Border_MouseDown;
+            content.OpenBtn.ButtonMouseUp += SymbolIconOpenStrokes_MouseUp;
+            content.ReplayBtn.ButtonMouseUp += GridInkReplayButton_MouseUp;
+            content.ScreenshotBtn.ButtonMouseUp += SymbolIconScreenshot_MouseUp;
+            content.ManualBtn.ButtonMouseUp += OperatingGuideWindowIcon_MouseUp;
+            content.SettingsBtn.ButtonMouseUp += SymbolIconSettings_Click;
+            content.CloseFontIcon.MouseDown += Border_MouseDown;
+            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+        }
+
+        private void WireUpBackgroundPaletteEvents()
+        {
+            if (_backgroundPaletteEventsWired) return;
+            _backgroundPaletteEventsWired = true;
+
+            if (BackgroundPalettePopupContent == null) return;
+
+            var content = BackgroundPalettePopupContent;
+            content.WhiteboardBtn.MouseUp += WhiteboardModeBtn_MouseUp;
+            content.BlackboardBtn.MouseUp += BlackboardModeBtn_MouseUp;
+            content.RSlider.ValueChanged += BackgroundRSlider_ValueChanged;
+            content.GSlider.ValueChanged += BackgroundGSlider_ValueChanged;
+            content.BSlider.ValueChanged += BackgroundBSlider_ValueChanged;
+            content.ApplyBtn.Click += ApplyBackgroundColorBtn_Click;
+        }
+
+        private void WireUpBoardShapeDrawPopupContentEvents()
+        {
+            if (_boardShapeDrawPopupEventsWired) return;
+            _boardShapeDrawPopupEventsWired = true;
+
+            var content = BoardShapeDrawPopupContent;
+            if (content == null) return;
+
+            content.DrawLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawLineBtn.ButtonMouseUp += BtnDrawLine_Click;
+            content.DrawDashedLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawDashedLineBtn.ButtonMouseUp += BtnDrawDashedLine_Click;
+            content.DrawDotLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawDotLineBtn.ButtonMouseUp += BtnDrawDotLine_Click;
+            content.DrawArrowBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawArrowBtn.ButtonMouseUp += BtnDrawArrow_Click;
+            content.DrawParallelLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawParallelLineBtn.ButtonMouseUp += BtnDrawParallelLine_Click;
+            content.DrawRectangleCenterBtn.ButtonMouseUp += BtnDrawRectangleCenter_Click;
+            content.DrawCircleBtn.ButtonMouseUp += BtnDrawCircle_Click;
+            content.DrawDashedCircleBtn.ButtonMouseUp += BtnDrawDashedCircle_Click;
+            content.DrawEllipseCenterBtn.ButtonMouseUp += BtnDrawCenterEllipse_Click;
+            content.DrawCuboidBtn.ButtonMouseUp += BtnDrawCuboid_Click;
+            content.DrawRectangleBtn.ButtonMouseUp += BtnDrawRectangle_Click;
+            content.DrawCylinderBtn.ButtonMouseUp += BtnDrawCylinder_Click;
+            content.DrawConeBtn.ButtonMouseUp += BtnDrawCone_Click;
+            content.DrawCoordinate1Btn.ButtonMouseUp += BtnDrawCoordinate1_Click;
+            content.DrawCoordinate2Btn.ButtonMouseUp += BtnDrawCoordinate2_Click;
+            content.DrawCoordinate3Btn.ButtonMouseUp += BtnDrawCoordinate3_Click;
+            content.DrawCoordinate4Btn.ButtonMouseUp += BtnDrawCoordinate4_Click;
+            content.DrawCoordinate5Btn.ButtonMouseUp += BtnDrawCoordinate5_Click;
+            content.DrawHyperbolaBtn.ButtonMouseUp += BtnDrawHyperbola_Click;
+            content.DrawHyperbolaWithFocalPointBtn.ButtonMouseUp += BtnDrawHyperbolaWithFocalPoint_Click;
+            content.DrawParabola1Btn.ButtonMouseUp += BtnDrawParabola1_Click;
+            content.DrawParabolaWithFocalPointBtn.ButtonMouseUp += BtnDrawParabolaWithFocalPoint_Click;
+            content.DrawParabola2Btn.ButtonMouseUp += BtnDrawParabola2_Click;
+            content.CloseFontIcon.MouseDown += Border_MouseDown;
+            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+        }
+
+        private bool _shapeDrawPopupEventsWired;
+        private bool _boardShapeDrawPopupEventsWired;
+
+        private void WireUpShapeDrawPopupContentEvents()
+        {
+            if (_shapeDrawPopupEventsWired) return;
+            _shapeDrawPopupEventsWired = true;
+
+            var content = ShapeDrawPopupContent;
+            if (content == null) return;
+
+            content.DrawLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawLineBtn.ButtonMouseUp += BtnDrawLine_Click;
+            content.DrawDashedLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawDashedLineBtn.ButtonMouseUp += BtnDrawDashedLine_Click;
+            content.DrawDotLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawDotLineBtn.ButtonMouseUp += BtnDrawDotLine_Click;
+            content.DrawArrowBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawArrowBtn.ButtonMouseUp += BtnDrawArrow_Click;
+            content.DrawParallelLineBtn.ButtonMouseDown += Image_MouseDown;
+            content.DrawParallelLineBtn.ButtonMouseUp += BtnDrawParallelLine_Click;
+            content.DrawRectangleCenterBtn.ButtonMouseUp += BtnDrawRectangleCenter_Click;
+            content.DrawCircleBtn.ButtonMouseUp += BtnDrawCircle_Click;
+            content.DrawDashedCircleBtn.ButtonMouseUp += BtnDrawDashedCircle_Click;
+            content.DrawEllipseCenterBtn.ButtonMouseUp += BtnDrawCenterEllipse_Click;
+            content.DrawCuboidBtn.ButtonMouseUp += BtnDrawCuboid_Click;
+            content.DrawRectangleBtn.ButtonMouseUp += BtnDrawRectangle_Click;
+            content.DrawCylinderBtn.ButtonMouseUp += BtnDrawCylinder_Click;
+            content.DrawConeBtn.ButtonMouseUp += BtnDrawCone_Click;
+            content.DrawCoordinate1Btn.ButtonMouseUp += BtnDrawCoordinate1_Click;
+            content.DrawCoordinate2Btn.ButtonMouseUp += BtnDrawCoordinate2_Click;
+            content.DrawCoordinate3Btn.ButtonMouseUp += BtnDrawCoordinate3_Click;
+            content.DrawCoordinate4Btn.ButtonMouseUp += BtnDrawCoordinate4_Click;
+            content.DrawCoordinate5Btn.ButtonMouseUp += BtnDrawCoordinate5_Click;
+            content.DrawHyperbolaBtn.ButtonMouseUp += BtnDrawHyperbola_Click;
+            content.DrawHyperbolaWithFocalPointBtn.ButtonMouseUp += BtnDrawHyperbolaWithFocalPoint_Click;
+            content.DrawParabola1Btn.ButtonMouseUp += BtnDrawParabola1_Click;
+            content.DrawParabolaWithFocalPointBtn.ButtonMouseUp += BtnDrawParabolaWithFocalPoint_Click;
+            content.DrawParabola2Btn.ButtonMouseUp += BtnDrawParabola2_Click;
+            content.CloseFontIcon.MouseDown += Border_MouseDown;
+            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+        }
 
         /// <summary>
         /// 初始化主窗口实例，构建并配置界面元素、初始页面和应用程序运行时状态。
@@ -100,6 +276,15 @@ namespace Ink_Canvas
             */
             InitializeComponent();
 
+            if (BorderTools.Child is FrameworkElement btChild) btChild.Visibility = Visibility.Collapsed;
+            if (BorderDrawShape.Child is FrameworkElement bdsChild) bdsChild.Visibility = Visibility.Collapsed;
+            if (BoardBorderToolsPopup.Child is FrameworkElement bbtpChild) bbtpChild.Visibility = Visibility.Collapsed;
+            if (BoardBorderDrawShape.Child is FrameworkElement bbdsChild) bbdsChild.Visibility = Visibility.Collapsed;
+
+            WireUpToolsPopupContentEvents();
+            WireUpShapeDrawPopupContentEvents();
+            WireUpBoardShapeDrawPopupContentEvents();
+            WireUpBackgroundPaletteEvents();
             BoardBorderToolsPopup.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
@@ -116,22 +301,102 @@ namespace Ink_Canvas
                         PopupPrimaryAxis.Vertical)
                 };
 
+            BorderDrawShape.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            BoardBorderDrawShape.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 5),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            PenPalette.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            BoardPenPalette.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 5),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            EraserSizePanel.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            BoardEraserSizePanel.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 5),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            BoardImageOptionsPanel.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 5),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            TwoFingerGestureBorder.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            BoardTwoFingerGestureBorder.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 5),
+                        PopupPrimaryAxis.Vertical)
+                };
+
+            BackgroundPalette.CustomPopupPlacementCallback =
+                (popupSize, targetSize, offset) => new[]
+                {
+                    new CustomPopupPlacement(
+                        new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 5),
+                        PopupPrimaryAxis.Vertical)
+                };
+
             BlackboardLeftSide.Visibility = Visibility.Collapsed;
             BlackboardCenterSide.Visibility = Visibility.Collapsed;
             BlackboardRightSide.Visibility = Visibility.Collapsed;
             BorderTools.IsOpen = false;
             LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
             RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-            TwoFingerGestureBorder.Visibility = Visibility.Collapsed;
-            BoardTwoFingerGestureBorder.Visibility = Visibility.Collapsed;
-            BorderDrawShape.Visibility = Visibility.Collapsed;
-            BoardBorderDrawShape.Visibility = Visibility.Collapsed;
+            TwoFingerGestureBorder.IsOpen = false;
+            BoardTwoFingerGestureBorder.IsOpen = false;
+            BorderDrawShape.IsOpen = false;
+            BoardBorderDrawShape.IsOpen = false;
             GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
 
             //if (!App.StartArgs.Contains("-o"))
 
-            ViewBoxStackPanelMain.Visibility = Visibility.Collapsed;
-            ViewBoxStackPanelShapes.Visibility = Visibility.Collapsed;
+            // Old UI removed: ViewBoxStackPanelMain.Visibility = Visibility.Collapsed;
+            // Old UI removed: ViewBoxStackPanelShapes.Visibility = Visibility.Collapsed;
             var workingArea = Screen.PrimaryScreen.WorkingArea;
             // 考虑快捷调色盘的宽度，确保浮动栏有足够空间
             double floatingBarWidth = 284; // 基础宽度
@@ -1088,8 +1353,8 @@ namespace Ink_Canvas
                 foreach (var gest in gestures)
                     //Trace.WriteLine(string.Format("Gesture: {0}, Confidence: {1}", gest.ApplicationGesture, gest.RecognitionConfidence));
                     // 只有在PPT放映模式下才响应翻页手势
-                    if (StackPanelPPTControls.Visibility == Visibility.Visible &&
-                        BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
+                    if (ArePptControlsVisible &&
+                        IsInPptPresentationMode &&
                         PPTManager?.IsInSlideShow == true)
                     {
                         if (gest.ApplicationGesture == ApplicationGesture.Left)
@@ -1109,6 +1374,12 @@ namespace Ink_Canvas
         {
             var inkCanvas1 = sender as InkCanvas;
             if (inkCanvas1 == null) return;
+            if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas1.EditingMode))
+            {
+                TryBlockFrozenPageMutation("修改冻结页面");
+                inkCanvas1.EditingMode = InkCanvasEditingMode.None;
+                return;
+            }
 
             // 使用辅助方法设置光标
             SetCursorBasedOnEditingMode(inkCanvas1);
@@ -1302,7 +1573,7 @@ namespace Ink_Canvas
                     // 模拟点击切换按钮进入黑板模式
                     if (GridTransparencyFakeBackground.Background != Brushes.Transparent)
                     {
-                        BtnSwitch_Click(BtnSwitch, null);
+                        SwitchBackground(null, null);
                     }
 
                     // 确保背景颜色正确设置为黑板颜色
@@ -1378,7 +1649,7 @@ namespace Ink_Canvas
                             TimerContainer.Visibility = Visibility.Collapsed;
 
                             if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
-                                BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
+                                IsInPptPresentationMode &&
                                 PPTTimeCapsule != null)
                             {
                                 MinimizedTimerContainer.Visibility = Visibility.Collapsed;
@@ -1411,7 +1682,7 @@ namespace Ink_Canvas
                     {
                         // 如果启用了PPT时间胶囊且在PPT模式下，触发完成动画
                         if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
-                            BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
+                            IsInPptPresentationMode &&
                             PPTTimeCapsule != null)
                         {
                             PPTTimeCapsule.OnTimerCompleted();
@@ -1457,7 +1728,7 @@ namespace Ink_Canvas
                 Dispatcher.Invoke(() =>
                 {
                     isFloatingBarOutsideScreen = IsOutsideOfScreenHelper.IsOutsideOfScreen(ViewboxFloatingBar);
-                    isInPPTPresentationMode = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    isInPPTPresentationMode = IsInPptPresentationMode;
                 });
                 if (isFloatingBarOutsideScreen) dpiChangedDelayAction.DebounceAction(3000, null, () =>
                 {
@@ -1495,7 +1766,7 @@ namespace Ink_Canvas
                     Dispatcher.Invoke(() =>
                     {
                         isFloatingBarOutsideScreen = IsOutsideOfScreenHelper.IsOutsideOfScreen(ViewboxFloatingBar);
-                        isInPPTPresentationMode = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                        isInPPTPresentationMode = IsInPptPresentationMode;
                     });
                     if (isFloatingBarOutsideScreen) dpiChangedDelayAction.DebounceAction(3000, null, () =>
                     {
@@ -1547,10 +1818,10 @@ namespace Ink_Canvas
             }
 
             if (!_forceCloseFromExitOrRestartButton &&
-                BtnPPTSlideShowEnd != null && BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                IsInPptPresentationMode)
             {
                 e.Cancel = true;
-                BtnPPTSlideShowEnd_Click(BtnPPTSlideShowEnd, null);
+                ExitPptPresentation();
                 LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
                 return;
             }
@@ -2008,6 +2279,13 @@ namespace Ink_Canvas
         // 鼠标输入
         private void inkCanvas_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas.EditingMode))
+            {
+                TryBlockFrozenPageMutation("修改冻结页面");
+                e.Handled = true;
+                return;
+            }
+
             // 使用辅助方法设置光标
             SetCursorBasedOnEditingMode(sender as InkCanvas);
 
@@ -2036,6 +2314,13 @@ namespace Ink_Canvas
         // 手写笔输入
         private void inkCanvas_StylusDown(object sender, StylusDownEventArgs e)
         {
+            if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas.EditingMode))
+            {
+                TryBlockFrozenPageMutation("修改冻结页面");
+                e.Handled = true;
+                return;
+            }
+
             // 使用辅助方法设置光标
             SetCursorBasedOnEditingMode(sender as InkCanvas);
         }
@@ -2145,7 +2430,7 @@ namespace Ink_Canvas
         private void ExitPPTSlideShow_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // 直接调用PPT放映结束按钮的逻辑
-            BtnPPTSlideShowEnd_Click(BtnPPTSlideShowEnd, null);
+            ExitPptPresentation();
         }
 
         private void HistoryRollbackButton_Click(object sender, RoutedEventArgs e)
@@ -2268,15 +2553,15 @@ namespace Ink_Canvas
 
         private void Window_Activated(object sender, EventArgs e)
         {
-            // 窗口激活时，如果启用了置顶功能，重新应用置顶设置
             if (Settings.Advanced.IsAlwaysOnTop)
             {
-                // 使用Dispatcher.BeginInvoke确保在UI线程上执行
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     ApplyAlwaysOnTop();
                 }), DispatcherPriority.Loaded);
             }
+
+            _popupManager?.OnOwnerActivated();
         }
 
         private async Task RunDeferredStartupPhaseBAsync()
@@ -2647,7 +2932,7 @@ namespace Ink_Canvas
                 SaveSettingsToFile();
 
                 // 如果当前在PPT放映模式，需要立即更新手势按钮的显示状态
-                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                if (IsInPptPresentationMode)
                 {
                     UpdateGestureButtonVisibilityInPPTMode();
                 }
@@ -2670,7 +2955,7 @@ namespace Ink_Canvas
                 SaveSettingsToFile();
 
                 // 如果当前在PPT放映模式，需要立即更新时间胶囊和快捷面板的显示状态
-                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                if (IsInPptPresentationMode)
                 {
                     UpdatePPTTimeCapsuleVisibility();
                     UpdatePPTQuickPanelVisibility();
@@ -2695,7 +2980,7 @@ namespace Ink_Canvas
                     Settings.PowerPointSettings.PPTTimeCapsulePosition = comboBox.SelectedIndex;
                     SaveSettingsToFile();
 
-                    if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                    if (IsInPptPresentationMode)
                     {
                         UpdatePPTTimeCapsulePosition();
                     }
@@ -2743,7 +3028,7 @@ namespace Ink_Canvas
                 if (PPTTimeCapsuleContainer == null || PPTTimeCapsule == null) return;
 
                 if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
-                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                    IsInPptPresentationMode)
                 {
                     PPTTimeCapsuleContainer.Visibility = Visibility.Visible;
                     UpdatePPTTimeCapsulePosition();
@@ -2771,7 +3056,7 @@ namespace Ink_Canvas
                 if (PPTQuickPanelContainer == null || PPTQuickPanel == null) return;
 
                 // 仅在 PPT 模式下且用户开启“PPT 放映时显示快速面板”时显示
-                bool inSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                bool inSlideShow = IsInPptPresentationMode;
                 bool showQuickPanel = Settings.PowerPointSettings.ShowPPTSidebarByDefault;
                 if (inSlideShow && showQuickPanel)
                 {
@@ -2957,10 +3242,16 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="newMode">新的编辑模式</param>
         /// <param name="additionalActions">可选的额外操作委托</param>
-        internal void SetCurrentToolMode(InkCanvasEditingMode newMode, Action additionalActions = null)
+        internal bool SetCurrentToolMode(InkCanvasEditingMode newMode, Action additionalActions = null)
         {
             try
             {
+                if (IsCurrentPageFrozen && IsFreezeMutatingMode(newMode))
+                {
+                    TryBlockFrozenPageMutation("切换到编辑工具");
+                    return false;
+                }
+
                 // 如果切换到非橡皮擦模式，禁用橡皮擦覆盖层并重置橡皮擦状态
                 if (newMode != InkCanvasEditingMode.EraseByPoint && newMode != InkCanvasEditingMode.EraseByStroke)
                 {
@@ -2980,18 +3271,20 @@ namespace Ink_Canvas
                 }
 
                 // 在PPT放映模式下，工具模式切换时需要更新手势按钮的显示状态
-                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                if (IsInPptPresentationMode)
                 {
                     UpdateGestureButtonVisibilityInPPTMode();
                 }
 
                 // 执行额外的操作（如果有）
                 additionalActions?.Invoke();
+                return true;
 
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"设置工具模式时出错: {ex.Message}", LogHelper.LogType.Error);
+                return false;
             }
         }
 
@@ -3284,7 +3577,7 @@ namespace Ink_Canvas
                     }
 
                     // 仅PPT模式：以 COM/UI 状态为主，Win32 检测全屏放映窗口（screenClass）作兜底，避免 COM 异常时无法唤出
-                    bool comUiSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    bool comUiSlideShow = IsInPptPresentationMode;
                     bool win32SlideShow = IsPowerPointSlideshowSurfacePresentWin32();
                     bool isInSlideShow = comUiSlideShow || win32SlideShow;
                     if (isInSlideShow && !IsVisible)

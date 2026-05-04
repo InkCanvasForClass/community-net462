@@ -18,7 +18,7 @@ using MenuItem = System.Windows.Controls.MenuItem;
 
 namespace Ink_Canvas
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Ink_Canvas.Helpers.PerformanceTransparentWin
     {
         /// <summary>
         /// 剪贴板更新消息常量
@@ -274,6 +274,7 @@ namespace Ink_Canvas
         /// </remarks>
         private Task PasteImageFromClipboard(Point? position = null)
         {
+            if (TryBlockFrozenPageMutation("粘贴图片")) return Task.CompletedTask;
             try
             {
                 if (!Clipboard.ContainsImage())

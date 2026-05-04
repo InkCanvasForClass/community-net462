@@ -1,3 +1,4 @@
+using Ink_Canvas.Helpers;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,6 +14,7 @@ namespace Ink_Canvas.Windows
         public OobePresetWindow()
         {
             InitializeComponent();
+            WindowBackdropHelper.Apply(this);
         }
 
         private void SelectPreset(PresetKind kind)
@@ -72,8 +74,9 @@ namespace Ink_Canvas.Windows
             settings.Startup.IsFoldAtStartup = true;
             settings.Startup.IsAutoUpdate = true;
             settings.Startup.CrashAction = 0; // 静默重启
-            settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
-            settings.Startup.HasAcceptedTelemetryPrivacy = true;
+            settings.Startup.TelemetryUploadLevel = settings.Startup.HasAcceptedTelemetryPrivacy
+                ? TelemetryUploadLevel.Basic
+                : TelemetryUploadLevel.None;
 
             // 画板与墨迹
             settings.Canvas.IsShowCursor = false;
@@ -91,6 +94,7 @@ namespace Ink_Canvas.Windows
 
             // 个性化
             settings.Appearance.Theme = 2; // 跟随系统
+            settings.Appearance.WindowBackdrop = "None";
             settings.Appearance.EnableSplashScreen = false;
             settings.Appearance.EnableTrayIcon = true;
             settings.Appearance.IsShowQuickPanel = true;
@@ -129,7 +133,6 @@ namespace Ink_Canvas.Windows
             settings.Startup.IsAutoUpdate = true;
             settings.Startup.CrashAction = 0;
             settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.None;
-            settings.Startup.HasAcceptedTelemetryPrivacy = true;
 
             // 画板与墨迹
             settings.Canvas.IsShowCursor = false;
@@ -147,6 +150,7 @@ namespace Ink_Canvas.Windows
 
             // 个性化
             settings.Appearance.Theme = 2; // 跟随系统
+            settings.Appearance.WindowBackdrop = "None";
             settings.Appearance.EnableSplashScreen = false;
             settings.Appearance.EnableTrayIcon = true;
             settings.Appearance.IsShowQuickPanel = false;

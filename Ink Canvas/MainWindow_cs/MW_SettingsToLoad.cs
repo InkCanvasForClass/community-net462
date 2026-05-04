@@ -17,7 +17,7 @@ using WinForms = System.Windows.Forms;
 
 namespace Ink_Canvas
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Ink_Canvas.Helpers.PerformanceTransparentWin
     {
         /// <summary>
         /// 从配置文件加载用户设置并将其应用到主窗口和相关控件的状态（包括启动、外观、画布、手势、PPT、自动化等各项配置）。
@@ -260,13 +260,13 @@ namespace Ink_Canvas
                 {
                     double userVal = Settings.Appearance.ViewboxFloatingBarScaleTransformValue;
                     // 限制用户设置值在有效范围内
-                    double clampedUserVal = (userVal > 0.5 && userVal < 1.25) ? userVal : 
-                                               userVal <= 0.5 ? 0.5 : 
+                    double clampedUserVal = (userVal > 0.5 && userVal < 1.25) ? userVal :
+                                               userVal <= 0.5 ? 0.5 :
                                                userVal >= 1.25 ? 1.25 : 1.0;
-                    
+
                     // 实际缩放 = 基础倍率(1.5) × 用户设置倍率
                     double actualScale = 1.5 * clampedUserVal;
-                    
+
                     // 最终范围限制：0.75x ~ 1.875x
                     ViewboxFloatingBarScaleTransform.ScaleX = actualScale;
                     ViewboxFloatingBarScaleTransform.ScaleY = actualScale;
@@ -307,13 +307,11 @@ namespace Ink_Canvas
 
                 if (Settings.Appearance.IsTransparentButtonBackground)
                 {
-                    BtnExit.Background = new SolidColorBrush(StringToColor("#7F909090"));
+                    { /* Old UI removed */ }
                 }
                 else
                 {
-                    BtnExit.Background = BtnSwitchTheme.Content.ToString() == "深色"
-                        ? new SolidColorBrush(StringToColor("#FFCCCCCC"))
-                        : new SolidColorBrush(StringToColor("#FF555555"));
+                    { /* Old UI removed */ }
                 }
 
                 if (Settings.Appearance.FloatingBarImg >= 12 + Settings.Appearance.CustomFloatingBarImgs.Count)
@@ -608,7 +606,7 @@ namespace Ink_Canvas
             }
 
             // auto align
-            if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+            if (IsInPptPresentationMode)
             {
                 ViewboxFloatingBarMarginAnimation(60);
             }

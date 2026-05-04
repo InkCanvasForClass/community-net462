@@ -9,18 +9,6 @@ using System.Runtime.InteropServices;
 
 namespace Ink_Canvas.Helpers
 {
-    /// <summary>
-    /// WPF Popup 管理器 - 提供置顶和拖动跟随功能
-    /// 
-    /// 功能：
-    /// 1. Topmost 管理：确保 Popup 始终在其他控件之上
-    /// 2. 拖动跟随：让 Popup 在父容器拖动时平滑跟随移动
-    /// 
-    /// 使用方式：
-    /// var manager = new PopupManagerHelper();
-    /// manager.Initialize();
-    /// manager.RegisterPopup(myPopup);
-    /// </summary>
     public class PopupManagerHelper
     {
         #region Win32 API
@@ -29,83 +17,64 @@ namespace Ink_Canvas.Helpers
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll")]
-        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+        private static readonly IntPtr HWND_TOP = IntPtr.Zero;
         private const uint SWP_NOMOVE = 0x0002;
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOACTIVATE = 0x0010;
-        private const uint SWP_SHOWWINDOW = 0x0040;
-
-        #endregion
-
-        #region 配置
-
-        /// <summary>
-        /// PopupManagerHelper 配置选项
-        /// </summary>
-        public class Config
-        {
-            public int TopmostCheckInterval { get; set; } = 10; // 每 N 帧检查一次置顶（默认10帧≈160ms）
-            public bool UseRenderingSync { get; set; } = true; // 是否使用渲染同步
-            public int InitialTopmostAttempts { get; set; } = 3; // 初始显示时的置顶次数
-        }
+        private const uint SWP_NOOWNERZORDER = 0x0200;
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TOPMOST = 0x00000008;
 
         #endregion
 
         #region 状态管理
 
+        private static readonly List<PopupManagerHelper> _activeInstances = new List<PopupManagerHelper>();
+
         private readonly List<Popup> _registeredPopups = new List<Popup>();
-        private readonly Config _config;
+        private Window _ownerWindow;
+        private IntPtr _ownerHwnd = IntPtr.Zero;
         private bool _isInitialized = false;
         private bool _needsUpdate = false;
-        private int _topmostCounter = 0;
-        private bool _offsetToggle = true;
+        private int _topmostCheckCounter = 0;
+        private const int TopmostCheckInterval = 15;
 
         #endregion
 
-        #region 构造函数
+        #region 条件置顶回调
 
-        /// <summary>
-        /// 创建 PopupManagerHelper 实例（使用默认配置）
-        /// </summary>
-        public PopupManagerHelper() : this(new Config()) { }
+        public Func<bool> ShouldBeTopmost { get; set; }
 
-        /// <summary>
-        /// 创建 PopupManagerHelper 实例（自定义配置）
-        /// </summary>
-        /// <param name="config">配置选项</param>
-        public PopupManagerHelper(Config config)
+        private bool CheckShouldBeTopmost()
         {
-            _config = config ?? new Config();
+            return ShouldBeTopmost == null || ShouldBeTopmost();
         }
 
         #endregion
 
         #region 初始化与注册
 
-        /// <summary>
-        /// 初始化管理器（订阅渲染事件，通常在 Window_Loaded 中调用一次）
-        /// </summary>
-        public void Initialize()
+        public void Initialize(Window ownerWindow)
         {
             if (_isInitialized) return;
 
+            _ownerWindow = ownerWindow;
+            if (_ownerWindow != null)
+            {
+                _ownerHwnd = new WindowInteropHelper(_ownerWindow).Handle;
+            }
+
             try
             {
-                if (_config.UseRenderingSync)
-                {
-                    CompositionTarget.Rendering += OnRendering;
-                }
+                CompositionTarget.Rendering += OnRendering;
+                _activeInstances.Add(this);
                 _isInitialized = true;
             }
             catch (Exception ex)
@@ -114,72 +83,96 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        /// <summary>
-        /// 注册需要管理的 Popup 控件
-        /// </summary>
-        /// <param name="popup">要管理的 Popup</param>
         public void RegisterPopup(Popup popup)
         {
             if (popup == null || _registeredPopups.Contains(popup)) return;
 
             _registeredPopups.Add(popup);
+            popup.Opened += OnPopupOpened;
+            popup.Closed += OnPopupClosed;
 
-            // 如果 Popup 已经打开，立即执行强力置顶
-            if (popup.IsOpen)
+            if (popup.Child is FrameworkElement child && !popup.IsOpen)
             {
-                BringToFront(popup);
+                child.Visibility = Visibility.Collapsed;
             }
 
             System.Diagnostics.Debug.WriteLine($"[PopupManager] Registered popup: {popup.Name ?? "unnamed"}");
         }
 
-        /// <summary>
-        /// 注销不再管理的 Popup 控件
-        /// </summary>
-        /// <param name="popup">要注销的 Popup</param>
         public void UnregisterPopup(Popup popup)
         {
             if (popup == null) return;
 
+            popup.Opened -= OnPopupOpened;
+            popup.Closed -= OnPopupClosed;
             _registeredPopups.Remove(popup);
-            System.Diagnostics.Debug.WriteLine($"[PopupManager] Unregistered popup: {popup.Name ?? "unnamed"}");
+        }
+
+        private void OnPopupOpened(object sender, EventArgs e)
+        {
+            var popup = sender as Popup;
+            if (popup == null) return;
+
+            if (popup.Child is FrameworkElement child)
+            {
+                child.Visibility = Visibility.Visible;
+            }
+
+            FixPopupZOrder(popup);
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                FixPopupZOrder(popup);
+            }), DispatcherPriority.Loaded);
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                FixPopupZOrder(popup);
+            }), DispatcherPriority.Background);
+        }
+
+        private void OnPopupClosed(object sender, EventArgs e)
+        {
+            var popup = sender as Popup;
+            if (popup == null) return;
+
+            if (popup.Child is FrameworkElement child)
+            {
+                child.Visibility = Visibility.Collapsed;
+            }
         }
 
         #endregion
 
-        #region 公共 API - 供外部调用
+        #region 公共 API
 
-        /// <summary>
-        /// 标记需要更新位置（在拖动事件中调用）
-        /// </summary>
         public void MarkNeedsUpdate()
         {
             _needsUpdate = true;
         }
 
-        /// <summary>
-        /// 强制将 Popup 提升到最顶层（多次调用确保生效）
-        /// 用于初始显示或动画完成后
-        /// </summary>
-        /// <param name="popup">要置顶的 Popup</param>
         public void BringToFront(Popup popup)
         {
-            BringToFrontInternal(popup, _config.InitialTopmostAttempts);
+            if (popup?.Child == null) return;
+
+            FixPopupZOrder(popup);
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                FixPopupZOrder(popup);
+            }), DispatcherPriority.Render);
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                FixPopupZOrder(popup);
+            }), DispatcherPriority.Background);
         }
 
-        /// <summary>
-        /// 轻量级置顶（单次调用，用于拖动时或定期保顶）
-        /// </summary>
-        /// <param name="popup">要置顶的 Popup</param>
         public void BringToFrontLight(Popup popup)
         {
-            BringToFrontAsync(popup);
+            BringToFront(popup);
         }
 
-        /// <summary>
-        /// 更新 Popup 位置（通过 Offset 微调，不重建窗口）
-        /// </summary>
-        /// <param name="popup">要更新位置的 Popup</param>
         public void UpdatePosition(Popup popup)
         {
             if (popup == null || !popup.IsOpen || popup.PlacementTarget == null) return;
@@ -189,18 +182,8 @@ namespace Ink_Canvas.Helpers
                 var hOffset = popup.HorizontalOffset;
                 var vOffset = popup.VerticalOffset;
 
-                if (_offsetToggle)
-                {
-                    popup.HorizontalOffset = hOffset + 0.001;
-                    popup.VerticalOffset = vOffset + 0.001;
-                }
-                else
-                {
-                    popup.HorizontalOffset = hOffset - 0.001;
-                    popup.VerticalOffset = vOffset - 0.001;
-                }
-
-                _offsetToggle = !_offsetToggle;
+                popup.HorizontalOffset = hOffset + 0.001;
+                popup.VerticalOffset = vOffset + 0.001;
             }
             catch (Exception ex)
             {
@@ -208,29 +191,54 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        public void OnOwnerActivated()
+        {
+            foreach (var popup in _registeredPopups)
+            {
+                if (popup.IsOpen)
+                {
+                    FixPopupZOrder(popup);
+                }
+            }
+        }
+
+        public static void NotifyTopmostMaintained()
+        {
+            for (int i = 0; i < _activeInstances.Count; i++)
+            {
+                _activeInstances[i].OnOwnerActivated();
+            }
+        }
+
         #endregion
 
         #region 内部实现 - 渲染回调
 
-        /// <summary>
-        /// 渲染周期回调（每帧自动触发）
-        /// 处理位置更新和置顶维护
-        /// </summary>
         private void OnRendering(object sender, EventArgs e)
         {
             try
             {
                 if (_needsUpdate)
                 {
-                    // 拖动中：更新位置 + 同步置顶
-                    UpdateAllPositions();
-                    BringAllToFrontSync();
+                    foreach (var popup in _registeredPopups)
+                    {
+                        UpdatePosition(popup);
+                    }
                     _needsUpdate = false;
-                    return;
                 }
 
-                // 静止时：低频保顶（使用计数器节流）
-                MaintainTopmostForAll();
+                _topmostCheckCounter++;
+                if (_topmostCheckCounter >= TopmostCheckInterval)
+                {
+                    _topmostCheckCounter = 0;
+                    foreach (var popup in _registeredPopups)
+                    {
+                        if (popup.IsOpen)
+                        {
+                            FixPopupZOrder(popup);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -238,60 +246,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        /// <summary>
-        /// 更新所有已注册 Popup 的位置
-        /// </summary>
-        private void UpdateAllPositions()
-        {
-            foreach (var popup in _registeredPopups)
-            {
-                UpdatePosition(popup);
-            }
-        }
-
-        /// <summary>
-        /// 为所有打开的 Popup 执行轻量级置顶（拖动时每帧调用）
-        /// 使用同步调用确保时序正确
-        /// </summary>
-        private void BringAllToFrontSync()
-        {
-            foreach (var popup in _registeredPopups)
-            {
-                if (popup.IsOpen && popup.PlacementTarget != null)
-                {
-                    BringToFrontSync(popup);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 为所有已注册的打开的 Popup 维持置顶状态
-        /// 使用计数器降低调用频率，使用同步调用避免闪烁
-        /// </summary>
-        private void MaintainTopmostForAll()
-        {
-            _topmostCounter++;
-            if (_topmostCounter < _config.TopmostCheckInterval) return;
-            _topmostCounter = 0;
-
-            foreach (var popup in _registeredPopups)
-            {
-                if (popup.IsOpen && popup.PlacementTarget != null)
-                {
-                    BringToFrontSync(popup);  // 改用同步版本
-                }
-            }
-        }
-
         #endregion
 
-        #region 内部实现 - Win32 操作
+        #region 核心：修复 Popup Z-Order
 
-        /// <summary>
-        /// 同步置顶（直接调用，无异步延迟）
-        /// 用于拖动时和定期保顶，确保时序正确
-        /// </summary>
-        private void BringToFrontSync(Popup popup)
+        private void FixPopupZOrder(Popup popup)
         {
             if (popup?.Child == null) return;
 
@@ -300,100 +259,42 @@ namespace Ink_Canvas.Helpers
                 var source = PresentationSource.FromVisual(popup.Child) as HwndSource;
                 if (source?.Handle == null) return;
 
-                SetWindowPos(
-                    source.Handle,
-                    HWND_TOPMOST,
-                    0, 0, 0, 0,
-                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                var popupHwnd = source.Handle;
+                var shouldBeTopmost = CheckShouldBeTopmost();
+
+                if (shouldBeTopmost)
+                {
+                    SetWindowPos(popupHwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+
+                    if (_ownerHwnd != IntPtr.Zero)
+                    {
+                        SetWindowPos(_ownerHwnd, popupHwnd, 0, 0, 0, 0,
+                            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                    }
+                }
+                else
+                {
+                    int exStyle = GetWindowLong(popupHwnd, GWL_EXSTYLE);
+                    if ((exStyle & WS_EX_TOPMOST) != 0)
+                    {
+                        SetWindowLong(popupHwnd, GWL_EXSTYLE, exStyle & ~WS_EX_TOPMOST);
+                    }
+
+                    SetWindowPos(popupHwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PopupManager] BringToFrontSync failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[PopupManager] FixPopupZOrder failed: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// 多次尝试将 Popup 置顶（异步版本，仅用于初始显示）
-        /// </summary>
-        private void BringToFrontInternal(Popup popup, int attempts)
-        {
-            if (popup?.Child == null) return;
-
-            Action bringToTopAction = () =>
-            {
-                try
-                {
-                    var source = PresentationSource.FromVisual(popup.Child) as HwndSource;
-                    if (source?.Handle == null) return;
-
-                    SetWindowPos(
-                        source.Handle,
-                        HWND_TOPMOST,
-                        0, 0, 0, 0,
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-
-                    System.Diagnostics.Debug.WriteLine($"[PopupManager] Set TOPMOST for {popup.Name ?? "unnamed"}");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PopupManager] BringToFront failed: {ex.Message}");
-                }
-            };
-
-            for (int i = 0; i < attempts; i++)
-            {
-                DispatcherPriority priority;
-                switch (i)
-                {
-                    case 0:
-                        priority = DispatcherPriority.Render;
-                        break;
-                    case 1:
-                        priority = DispatcherPriority.Normal;
-                        break;
-                    default:
-                        priority = DispatcherPriority.Background;
-                        break;
-                }
-
-                Application.Current.Dispatcher.BeginInvoke(bringToTopAction, priority);
-            }
-        }
-
-        /// <summary>
-        /// 异步轻量级置顶（单次调用）
-        /// </summary>
-        private void BringToFrontAsync(Popup popup)
-        {
-            if (popup?.Child == null) return;
-
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                try
-                {
-                    var source = PresentationSource.FromVisual(popup.Child) as HwndSource;
-                    if (source?.Handle == null) return;
-
-                    SetWindowPos(
-                        source.Handle,
-                        HWND_TOPMOST,
-                        0, 0, 0, 0,
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PopupManager] BringToFrontLight failed: {ex.Message}");
-                }
-            }), DispatcherPriority.Render);
         }
 
         #endregion
 
         #region 清理
 
-        /// <summary>
-        /// 清理资源（在窗口关闭时调用）
-        /// </summary>
         public void Cleanup()
         {
             if (!_isInitialized) return;
@@ -401,7 +302,13 @@ namespace Ink_Canvas.Helpers
             try
             {
                 CompositionTarget.Rendering -= OnRendering;
+                foreach (var popup in _registeredPopups)
+                {
+                    popup.Opened -= OnPopupOpened;
+                    popup.Closed -= OnPopupClosed;
+                }
                 _registeredPopups.Clear();
+                _activeInstances.Remove(this);
                 _isInitialized = false;
             }
             catch (Exception ex)

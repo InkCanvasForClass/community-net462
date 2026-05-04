@@ -1,5 +1,8 @@
+using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -40,6 +43,7 @@ namespace Ink_Canvas.Windows
 
             _settings = settings;
             InitializeComponent();
+            WindowBackdropHelper.Apply(this, _settings);
 
             Opacity = 0;
 
@@ -128,6 +132,7 @@ namespace Ink_Canvas.Windows
                     int themeIndex = _settings.Appearance.Theme;
                     if (themeIndex < 0 || themeIndex > 2) themeIndex = 2;
                     ComboBoxTheme.SelectedIndex = themeIndex;
+                    SelectComboBoxItemByTag(ComboBoxWindowBackdrop, _settings.Appearance.WindowBackdrop);
                     CardEnableSplashScreen.IsOn = _settings.Appearance.EnableSplashScreen;
                     CardEnableTrayIcon.IsOn = _settings.Appearance.EnableTrayIcon;
                     CardShowQuickPanel.IsOn = _settings.Appearance.IsShowQuickPanel;
@@ -239,6 +244,7 @@ namespace Ink_Canvas.Windows
                     int themeIndex = ComboBoxTheme.SelectedIndex;
                     if (themeIndex < 0) themeIndex = 2;
                     _settings.Appearance.Theme = themeIndex;
+                    _settings.Appearance.WindowBackdrop = GetSelectedComboBoxTag(ComboBoxWindowBackdrop, "None");
                     _settings.Appearance.EnableSplashScreen = CardEnableSplashScreen.IsOn;
                     _settings.Appearance.EnableTrayIcon = CardEnableTrayIcon.IsOn;
                     _settings.Appearance.IsShowQuickPanel = CardShowQuickPanel.IsOn;
@@ -292,6 +298,29 @@ namespace Ink_Canvas.Windows
                 }
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+        }
+
+        private static void SelectComboBoxItemByTag(ComboBox comboBox, string tag)
+        {
+            if (comboBox == null) return;
+
+            var selectedItem = comboBox.Items
+                .OfType<ComboBoxItem>()
+                .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), tag, StringComparison.OrdinalIgnoreCase))
+                ?? comboBox.Items.OfType<ComboBoxItem>().FirstOrDefault();
+
+            comboBox.SelectedItem = selectedItem;
+        }
+
+        private static string GetSelectedComboBoxTag(ComboBox comboBox, string fallback)
+        {
+            return (comboBox?.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? fallback;
+        }
+
+        private void ComboBoxWindowBackdrop_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ComboBoxWindowBackdrop == null) return;
+            WindowBackdropHelper.Apply(this, GetSelectedComboBoxTag(ComboBoxWindowBackdrop, "None"));
         }
 
         #endregion
@@ -589,6 +618,7 @@ namespace Ink_Canvas.Windows
             }
 
             string themeText;
+            string backdropText = GetSelectedComboBoxContent(ComboBoxWindowBackdrop, Strings.GetString("Theme_WindowBackdrop_None") ?? "None");
             switch (ComboBoxTheme.SelectedIndex)
             {
                 case 0: themeText = "浅色"; break;
@@ -599,6 +629,7 @@ namespace Ink_Canvas.Windows
             AddSummaryRow(SegoeFluentIcons.Shield, "遥测级别", telemetryText);
             AddSummaryRow(SegoeFluentIcons.Sync, "自动检查更新", BoolText(CardAutoUpdate.IsOn));
             AddSummaryRow(SegoeFluentIcons.Personalize, "应用主题", themeText);
+            AddSummaryRow(SegoeFluentIcons.FullScreen, Strings.GetString("Theme_WindowBackdrop") ?? "Theme_WindowBackdrop", backdropText);
             AddSummaryRow(SegoeFluentIcons.Slideshow, "PowerPoint / WPS 联动", BoolText(CardPptSupport.IsOn));
             AddSummaryRow(SegoeFluentIcons.TouchPointer, "双指缩放 / 平移",
                 $"{BoolText(CardTwoFingerZoom.IsOn)} / {BoolText(CardTwoFingerTranslate.IsOn)}");
@@ -607,6 +638,11 @@ namespace Ink_Canvas.Windows
         }
 
         private static string BoolText(bool value) => value ? "已启用" : "已关闭";
+
+        private static string GetSelectedComboBoxContent(ComboBox comboBox, string fallback)
+        {
+            return (comboBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? fallback;
+        }
 
         private void AddSummaryRow(FontIconData icon, string label, string value)
         {

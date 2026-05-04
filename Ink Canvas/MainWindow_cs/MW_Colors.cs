@@ -10,7 +10,7 @@ using System.Windows.Media.Imaging;
 
 namespace Ink_Canvas
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Ink_Canvas.Helpers.PerformanceTransparentWin
     {
         /// <summary>
         /// 当前墨水颜色
@@ -53,7 +53,7 @@ namespace Ink_Canvas
                     SyncPdfPageSidebarWithCanvas();
                 }
 
-                BtnHideInkCanvas_Click(BtnHideInkCanvas, null);
+                BtnHideInkCanvas_Click(null, null);
             }
 
             var strokes = inkCanvas.GetSelectedStrokes();

@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Ink_Canvas
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Ink_Canvas.Helpers.PerformanceTransparentWin
     {
         /// <summary>
         /// 处理背景颜色按钮点击事件，显示或隐藏背景颜色选项面板
@@ -27,27 +27,17 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
 
-            if (BackgroundPalette.Visibility == Visibility.Visible)
+            if (BackgroundPalette.IsOpen)
             {
-                AnimationsHelper.HideWithSlideAndFade(BackgroundPalette);
+                AnimationsHelper.HidePopupWithSlideAndFade(BackgroundPalette);
             }
             else
             {
-                AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-                AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
-                AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
-                AnimationsHelper.HideWithSlideAndFade(PenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);
-                AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
-                AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
-
+                HideSubPanels();
                 LoadCustomBackgroundColor();
                 UpdateBackgroundButtonsState();
-                AnimationsHelper.ShowWithSlideFromBottomAndFade(BackgroundPalette);
+                AnimationsHelper.ShowPopupWithSlideAndFade(BackgroundPalette);
+                _popupManager?.BringToFront(BackgroundPalette);
             }
         }
 
@@ -312,6 +302,8 @@ namespace Ink_Canvas
         /// </remarks>
         private void BoardLassoIcon_Click(object sender, RoutedEventArgs e)
         {
+            if (TryBlockFrozenPageMutation("切换到选择工具")) return;
+
             forceEraser = false;
             forcePointEraser = false;
             drawingShapeMode = 0;
@@ -344,6 +336,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BoardSymbolIconDelete_MouseUp(object sender, RoutedEventArgs e)
         {
+            if (TryBlockFrozenPageMutation("清除冻结页面内容")) return;
             PenIcon_Click(null, null);
             SymbolIconDelete_MouseUp(null, null);
 
@@ -381,6 +374,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BoardSymbolIconDeleteInkAndHistories_MouseUp(object sender, RoutedEventArgs e)
         {
+            if (TryBlockFrozenPageMutation("清除冻结页面内容")) return;
             PenIcon_Click(null, null);
             SymbolIconDelete_MouseUp(null, null);
             if (!Settings.Canvas.ClearCanvasAndClearTimeMachine) timeMachine.ClearStrokeHistory();

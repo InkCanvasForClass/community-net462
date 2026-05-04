@@ -51,6 +51,10 @@ namespace Ink_Canvas
         public string PasswordSalt { get; set; } = "";
         [JsonProperty("passwordHash")]
         public string PasswordHash { get; set; } = "";
+        [JsonProperty("totpEnabled")]
+        public bool TotpEnabled { get; set; } = false;
+        [JsonProperty("totpSecret")]
+        public string TotpSecret { get; set; } = "";
         [JsonProperty("requirePasswordOnExit")]
         public bool RequirePasswordOnExit { get; set; } = false;
         [JsonProperty("requirePasswordOnEnterSettings")]
@@ -258,6 +262,8 @@ namespace Ink_Canvas
         public bool HasAcceptedTelemetryPrivacy { get; set; } = false;
         [JsonProperty("hasShownOobe")]
         public bool HasShownOobe { get; set; } = false;
+        [JsonProperty("enableWindowChromeRendering")]
+        public bool EnableWindowChromeRendering { get; set; } = false;
     }
 
     public enum TrayClickAction
@@ -330,6 +336,8 @@ namespace Ink_Canvas
         public bool IsShowModeFingerToggleSwitch { get; set; } = true;
         [JsonProperty("theme")]
         public int Theme { get; set; } = 2;
+        [JsonProperty("windowBackdrop")]
+        public string WindowBackdrop { get; set; } = "Mica";
 
         // 浮动栏按钮显示控制
         [JsonProperty("useLegacyFloatingBarUI")]
