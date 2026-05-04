@@ -1821,7 +1821,7 @@ namespace Ink_Canvas
                 IsInPptPresentationMode)
             {
                 e.Cancel = true;
-                ExitPptPresentation();
+                _ = ExitPptPresentation();
                 LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
                 return;
             }
@@ -2430,7 +2430,7 @@ namespace Ink_Canvas
         private void ExitPPTSlideShow_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // 直接调用PPT放映结束按钮的逻辑
-            ExitPptPresentation();
+            _ = ExitPptPresentation();
         }
 
         private void HistoryRollbackButton_Click(object sender, RoutedEventArgs e)

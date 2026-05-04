@@ -2799,7 +2799,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void ImagePPTControlEnd_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            ExitPptPresentation();
+            _ = ExitPptPresentation();
         }
     }
 }

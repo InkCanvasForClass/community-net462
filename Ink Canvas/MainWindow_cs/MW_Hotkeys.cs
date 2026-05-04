@@ -96,7 +96,7 @@ namespace Ink_Canvas
                 return;
             }
 
-            if (IsInPptPresentationMode) ExitPptPresentation();
+            if (IsInPptPresentationMode) _ = ExitPptPresentation();
         }
 
         /// <summary>
