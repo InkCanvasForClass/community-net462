@@ -23,7 +23,7 @@
 
 > [!IMPORTANT]
 > 该分支 `net462` 为 `net6` 分支的微调，使其在 .Net Framework 4.6.2 以及以上版本上运行。
-> 受 .Net Framework 版本的限制，该版本 InkCanvasForClass 不支持插件功能。
+> 受 .Net Framework 的限制，该版本 InkCanvasForClass 对插件功能的支持极其有限(使用`Assembly.LoadFrom()`而不是`AssemblyLoadContext`且不支持热重载插件)。
 > 由于该版本不受正式支持，仅在该平台上发生的 Bug 将大概率不会被修复。
 > 如果您在使用该版本时遇到任何问题，请前往使用 `net6` 分支的软件构建，感谢您的理解。
 

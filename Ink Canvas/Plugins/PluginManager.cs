@@ -33,7 +33,7 @@ namespace Ink_Canvas.Plugins
 #if NETCOREAPP
         private readonly Dictionary<string, AssemblyLoadContext> _assemblyContexts = new Dictionary<string, AssemblyLoadContext>();
 #else
-        private readonly Dictionary<string, object> _assemblyContexts = new Dictionary<string, object>();
+        private readonly Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>();
 #endif
 
         public IReadOnlyList<PluginInfo> Plugins
@@ -57,7 +57,6 @@ namespace Ink_Canvas.Plugins
 
         public async Task LoadAllAsync()
         {
-#if NETCOREAPP
             try
             {
                 if (!Directory.Exists(_pluginsDirectory))
@@ -124,10 +123,6 @@ namespace Ink_Canvas.Plugins
             {
                 LogError("Failed to load plugins", ex);
             }
-#else
-            Log("Plugin loading is not supported on .NET Framework");
-            await Task.CompletedTask;
-#endif
         }
 
 #if NETCOREAPP
@@ -187,6 +182,59 @@ namespace Ink_Canvas.Plugins
 
             await Task.CompletedTask;
         }
+#else
+        private Task LoadPluginAsync(string pluginFile)
+        {
+            var fileName = Path.GetFileName(pluginFile);
+            Log(string.Format("Loading plugin: {0}", fileName));
+
+            try
+            {
+                var assembly = Assembly.LoadFrom(pluginFile);
+                var pluginTypes = assembly.GetTypes()
+                    .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass);
+
+                foreach (var pluginType in pluginTypes)
+                {
+                    var pluginInstance = Activator.CreateInstance(pluginType) as IPlugin;
+                    if (pluginInstance == null) continue;
+
+                    var pluginInfo = new PluginInfo
+                    {
+                        Id = pluginInstance.Id,
+                        Name = pluginInstance.Name,
+                        Version = pluginInstance.Version,
+                        Description = pluginInstance.Description,
+                        Author = pluginInstance.Author,
+                        Order = pluginInstance.Order,
+                        Instance = pluginInstance,
+                        IsLoaded = true
+                    };
+
+                    _plugins.Add(pluginInfo);
+                    _loadedAssemblies[pluginInfo.Id] = assembly;
+
+                    try
+                    {
+                        pluginInstance.Initialize(this);
+                        Log(string.Format("Plugin loaded: {0} v{1} by {2}", pluginInfo.Name, pluginInfo.Version, pluginInfo.Author));
+                        OnPluginLoaded(pluginInfo);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError(string.Format("Failed to initialize plugin {0}", pluginInfo.Name), ex);
+                        _plugins.Remove(pluginInfo);
+                        _loadedAssemblies.Remove(pluginInfo.Id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(string.Format("Failed to load plugin from {0}", fileName), ex);
+            }
+
+            return Task.CompletedTask;
+        }
 #endif
 
         public void UnloadPlugin(PluginInfo plugin)
@@ -204,7 +252,7 @@ namespace Ink_Canvas.Plugins
                     alc.Unload();
                 }
 #else
-                _assemblyContexts.Remove(plugin.Id);
+                _loadedAssemblies.Remove(plugin.Id);
 #endif
 
                 Log(string.Format("Plugin unloaded: {0}", plugin.Name));
