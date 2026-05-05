@@ -31,6 +31,13 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void InitializeAvatarData()
         {
+            if (BuildConfigHelper.IsMinimized)
+            {
+                DeveloperItemsControl.ItemsSource = null;
+                ContributorItemsControl.ItemsSource = null;
+                return;
+            }
+
             var developers = new ObservableCollection<AvatarItem>
             {
                 new AvatarItem { AvatarPath = "/Resources/DeveloperAvatars/CJKmkp.jpg", Name = "CJK_mkp", Role = LocalizationHelper.GetString("About_Dev_ICCCE") },

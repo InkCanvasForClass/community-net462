@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Ink_Canvas.Helpers;
 
 namespace Ink_Canvas.Windows
 {
@@ -231,20 +232,40 @@ namespace Ink_Canvas.Windows
         /// <returns>实际选择的样式</returns>
         public int LoadSplashImageWithStyle()
         {
+            if (BuildConfigHelper.IsMinimized)
+            {
+                try
+                {
+                    StartupImage.Visibility = Visibility.Collapsed;
+                }
+                catch { }
+                return 0;
+            }
+
             try
             {
                 int actualStyle;
                 string imagePath = GetSplashImagePath(out actualStyle);
-                if (!string.IsNullOrEmpty(imagePath))
+                if (!string.IsNullOrEmpty(imagePath) && BuildConfigHelper.IsResourceAvailable(imagePath))
                 {
                     StartupImage.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(imagePath));
+                }
+                else
+                {
+                    StartupImage.Visibility = Visibility.Collapsed;
+                    actualStyle = 0;
                 }
                 return actualStyle;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"加载启动图片失败: {ex.Message}");
-                return GetActualStyle(1);
+                try
+                {
+                    StartupImage.Visibility = Visibility.Collapsed;
+                }
+                catch { }
+                return 0;
             }
         }
 

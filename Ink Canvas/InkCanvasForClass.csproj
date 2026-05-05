@@ -52,6 +52,10 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\icc.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <Minimize Condition="'$(Minimize)' == ''">false</Minimize>
+    <DefineConstants Condition="'$(Minimize)' == 'true'">MINIMIZE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
     <DebugType>embedded</DebugType>
@@ -188,14 +192,14 @@
   <ItemGroup>
     <Resource Include="Resources\Cursors\Cursor.cur" />
     <Resource Include="Resources\Cursors\Pen.cur" />
-    <Resource Include="Resources\DeveloperAvatars\aaaaaaccd.jpg" />
-    <Resource Include="Resources\DeveloperAvatars\Alan-CRL.png" />
-    <Resource Include="Resources\DeveloperAvatars\NetheriteBowl.png" />
-    <Resource Include="Resources\DeveloperAvatars\NotYoojun.png" />
-    <Resource Include="Resources\DeveloperAvatars\RaspberryKan.jpg" />
-    <Resource Include="Resources\DeveloperAvatars\wwei.png" />
-    <Resource Include="Resources\DeveloperAvatars\yuwenhui2020.png" />
-    <Resource Include="Resources\DeveloperAvatars\CJKmkp.jpg" />
+    <Resource Include="Resources\DeveloperAvatars\aaaaaaccd.jpg" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\Alan-CRL.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\NetheriteBowl.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\NotYoojun.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\RaspberryKan.jpg" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\wwei.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\yuwenhui2020.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\CJKmkp.jpg" Condition="'$(Minimize)' != 'true'" />
     <Resource Include="Resources\icc.ico" />
     <Resource Include="Resources\Icons-png\AdmoxBooth.png" />
     <Resource Include="Resources\Icons-png\AdmoxWhiteboard.png" />
@@ -243,16 +247,16 @@
     <Resource Include="Resources\Icons-png\close-circle.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\DeveloperAvatars\ChangSakura.png" />
-    <Resource Include="Resources\DeveloperAvatars\clover-yan.png" />
-    <Resource Include="Resources\DeveloperAvatars\CN-Ironegg.jpg" />
-    <Resource Include="Resources\DeveloperAvatars\jiajiaxd.jpg" />
-    <Resource Include="Resources\DeveloperAvatars\kengwang.png" />
-    <Resource Include="Resources\DeveloperAvatars\STBBRD.png" />
-    <Resource Include="Resources\DeveloperAvatars\WXRIW.png" />
-    <Resource Include="Resources\DeveloperAvatars\PrefacedCorg.jpg" />
-    <Resource Include="Resources\DeveloperAvatars\PANDA-JSR.jpg" />
-    <Resource Include="Resources\DeveloperAvatars\Super-Yyt.png" />
+    <Resource Include="Resources\DeveloperAvatars\ChangSakura.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\clover-yan.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\CN-Ironegg.jpg" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\jiajiaxd.jpg" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\kengwang.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\STBBRD.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\WXRIW.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\PrefacedCorg.jpg" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\PANDA-JSR.jpg" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\Super-Yyt.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-png\down.png" />
@@ -414,7 +418,7 @@
     <Resource Include="Resources\new-icons\cursor-clear.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\DeveloperAvatars\dubi906w.jpg" />
+    <Resource Include="Resources\DeveloperAvatars\dubi906w.jpg" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\new-icons\gesture.png" />
@@ -520,7 +524,7 @@
     <Resource Include="Resources\Icons-png\WPS.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\hatsune-miku1.png" />
+    <Resource Include="Resources\hatsune-miku1.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\party.png" />
@@ -614,13 +618,13 @@
     <Resource Include="Resources\Icons-png\idt.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Fonts\LXGWWenKaiTC-Regular.ttf" />
-    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Black.ttf" />
-    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Bold.ttf" />
-    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Light.ttf" />
-    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Medium.ttf" />
-    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Regular.ttf" />
-    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Thin.ttf" />
+    <Resource Include="Resources\Fonts\LXGWWenKaiTC-Regular.ttf" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Black.ttf" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Bold.ttf" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Light.ttf" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Medium.ttf" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Regular.ttf" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Fonts\HarmonyOS_SansSC_Thin.ttf" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-png\HiteAnnotation.png" />
@@ -633,11 +637,11 @@
     <Resource Include="Resources\PresentationExample\sidebar-dark.png" />
     <Resource Include="Resources\PresentationExample\sidebar-white.png" />
     <Resource Include="Resources\PresentationExample\toolbar.png" />
-    <Resource Include="Resources\Startup-animation\ICC Spring.png" />
-    <Resource Include="Resources\Startup-animation\ICC Summer.png" />
-    <Resource Include="Resources\Startup-animation\ICC Autumn.png" />
-    <Resource Include="Resources\Startup-animation\ICC Winter.png" />
-    <Resource Include="Resources\Startup-animation\ICC Horse.png" />
+    <Resource Include="Resources\Startup-animation\ICC Spring.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Startup-animation\ICC Summer.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Startup-animation\ICC Autumn.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Startup-animation\ICC Winter.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Startup-animation\ICC Horse.png" Condition="'$(Minimize)' != 'true'" />
     <Resource Include="Resources\Icons-Fluent\ic_fluent_copy_24_regular_white.png" />
     <Resource Include="Resources\Icons-Fluent\ic_fluent_copy_add_24_regular_white.png" />
     <Resource Include="Resources\Icons-Fluent\ic_fluent_flip_horizontal_24_regular_white.png" />

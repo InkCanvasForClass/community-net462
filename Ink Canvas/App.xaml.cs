@@ -592,6 +592,11 @@ namespace Ink_Canvas
 
         private static bool ShouldShowSplashScreen()
         {
+            if (BuildConfigHelper.IsMinimized)
+            {
+                return false;
+            }
+
             try
             {
                 // 检查设置文件中的启动动画开关
