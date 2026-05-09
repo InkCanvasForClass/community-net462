@@ -2822,7 +2822,6 @@ namespace Ink_Canvas
         private void HideFloatingBarExitPPTBtn()
         {
             BorderFloatingBarExitPPTBtn.Visibility = Visibility.Collapsed;
->>>>>>> net6
         }
     }
 }
