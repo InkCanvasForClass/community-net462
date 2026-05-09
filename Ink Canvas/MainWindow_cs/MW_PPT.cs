@@ -843,6 +843,9 @@ namespace Ink_Canvas
                         _exitPPTModeAfterDisconnectTimer = null;
                         _pptUIManager?.UpdateSlideShowStatus(false);
                         _pptUIManager?.UpdateSidebarExitButtons(false);
+
+                        // 隐藏浮动栏退出PPT按钮
+                        HideFloatingBarExitPPTBtn();
                         ResetPPTStateVariables();
                         _ = HandleManualSlideShowEnd();
                         if (Settings.PowerPointSettings.UseRotPptLink)
@@ -1154,6 +1157,9 @@ namespace Ink_Canvas
 
                     // 显示侧边栏退出按钮
                     _pptUIManager?.UpdateSidebarExitButtons(true);
+
+                    // 显示浮动栏退出PPT按钮
+                    ShowFloatingBarExitPPTBtn();
 
                     // 处理画板显示
                     if (Settings.PowerPointSettings.IsShowCanvasAtNewSlideShow &&
@@ -1513,6 +1519,10 @@ namespace Ink_Canvas
                         // 更新UI状态
                         _pptUIManager?.UpdateSlideShowStatus(false);
                         _pptUIManager?.UpdateSidebarExitButtons(false);
+
+                        // 隐藏浮动栏退出PPT按钮
+                        HideFloatingBarExitPPTBtn();
+
                         _pptUIManager?.SetMainPanelMargin(new Thickness(10, 10, 10, 55));
                         _pptUIManager?.SetFloatingBarOpacity(Settings.Appearance.ViewboxFloatingBarOpacityValue);
 
@@ -2673,6 +2683,7 @@ namespace Ink_Canvas
                     {
                         _pptUIManager?.UpdateSlideShowStatus(false);
                         _pptUIManager?.UpdateSidebarExitButtons(false);
+                        HideFloatingBarExitPPTBtn();
                         LogHelper.WriteLogToFile("手动更新放映结束UI状态", LogHelper.LogType.Trace);
                         CheckMainWindowVisibility();
                     });
@@ -2707,6 +2718,7 @@ namespace Ink_Canvas
                 {
                     _pptUIManager?.UpdateSlideShowStatus(false);
                     _pptUIManager?.UpdateSidebarExitButtons(false);
+                    HideFloatingBarExitPPTBtn();
                     CheckMainWindowVisibility();
                 });
 
@@ -2797,9 +2809,20 @@ namespace Ink_Canvas
         /// <remarks>
         /// 该方法在用户释放PPT结束控制按钮时调用BtnPPTSlideShowEnd_Click方法，实现结束幻灯片放映的功能
         /// </remarks>
-        private void ImagePPTControlEnd_MouseUp(object sender, MouseButtonEventArgs e)
+        private async void ImagePPTControlEnd_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            _ = ExitPptPresentation();
+            await ExitPptPresentation();
+        }
+
+        private void ShowFloatingBarExitPPTBtn()
+        {
+            BorderFloatingBarExitPPTBtn.Visibility = Visibility.Visible;
+        }
+
+        private void HideFloatingBarExitPPTBtn()
+        {
+            BorderFloatingBarExitPPTBtn.Visibility = Visibility.Collapsed;
+>>>>>>> net6
         }
     }
 }

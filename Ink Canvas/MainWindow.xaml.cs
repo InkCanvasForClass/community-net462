@@ -218,6 +218,122 @@ namespace Ink_Canvas
             content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
         }
 
+        private bool _penPaletteEventsWired;
+        private bool _eraserPopupEventsWired;
+        private bool _gesturePopupEventsWired;
+
+        private void WireUpPenPaletteEvents()
+        {
+            if (_penPaletteEventsWired) return;
+            _penPaletteEventsWired = true;
+
+            WireUpSinglePenPaletteEvents(PenPalettePopupContent);
+            WireUpSinglePenPaletteEvents(BoardPenPalettePopupContent);
+        }
+
+        private void WireUpSinglePenPaletteEvents(PenPalettePopupContent content)
+        {
+            if (content == null) return;
+
+            content.PenStyleComboBox.SelectionChanged += ComboBoxPenStyle_SelectionChanged;
+            content.NibModeToggle.Toggled += ToggleSwitchEnableNibMode_Toggled;
+            content.InkToShapeToggle.Toggled += ToggleSwitchEnableInkToShape_Toggled;
+            content.InkFadeToggle.Toggled += ToggleSwitchInkFadeInPanel_Toggled;
+            content.InkWidthSlider.ValueChanged += InkWidthSlider_ValueChanged;
+            content.InkAlphaSlider.ValueChanged += InkAlphaSlider_ValueChanged;
+            content.HighlighterWidthSlider.ValueChanged += HighlighterWidthSlider_ValueChanged;
+            content.BrushModeBtn.Click += BoardBrushModeButton_Click;
+            content.BrushModeBtn.MouseUp += BoardBrushModeButton_MouseUp;
+
+            content.TabBar.SelectedIndexChanged += (s, idx) =>
+            {
+                if (idx == 0) SwitchToDefaultPen(s, null);
+                else if (idx == 1) SwitchToHighlighterPen(s, null);
+            };
+
+            content.DefaultPenColorBlack.ButtonMouseUp += BtnColorBlack_Click;
+            content.DefaultPenColorWhite.ButtonMouseUp += BtnColorWhite_Click;
+            content.DefaultPenColorRed.ButtonMouseUp += BtnColorRed_Click;
+            content.DefaultPenColorYellow.ButtonMouseUp += BtnColorYellow_Click;
+            content.DefaultPenColorGreen.ButtonMouseUp += BtnColorGreen_Click;
+            content.DefaultPenColorBlue.ButtonMouseUp += BtnColorBlue_Click;
+            content.DefaultPenColorPink.ButtonMouseUp += BtnColorPink_Click;
+            content.DefaultPenColorTeal.ButtonMouseUp += BtnColorTeal_Click;
+            content.DefaultPenColorOrange.ButtonMouseUp += BtnColorOrange_Click;
+
+            content.HighlighterPenColorBlack.ButtonMouseUp += BtnHighlighterColorBlack_Click;
+            content.HighlighterPenColorWhite.ButtonMouseUp += BtnHighlighterColorWhite_Click;
+            content.HighlighterPenColorRed.ButtonMouseUp += BtnHighlighterColorRed_Click;
+            content.HighlighterPenColorYellow.ButtonMouseUp += BtnHighlighterColorYellow_Click;
+            content.HighlighterPenColorGreen.ButtonMouseUp += BtnHighlighterColorGreen_Click;
+            content.HighlighterPenColorZinc.ButtonMouseUp += BtnHighlighterColorZinc_Click;
+            content.HighlighterPenColorBlue.ButtonMouseUp += BtnHighlighterColorBlue_Click;
+            content.HighlighterPenPenColorPurple.ButtonMouseUp += BtnHighlighterColorPurple_Click;
+            content.HighlighterPenColorTeal.ButtonMouseUp += BtnHighlighterColorTeal_Click;
+            content.HighlighterPenColorOrange.ButtonMouseUp += BtnHighlighterColorOrange_Click;
+
+            content.ColorThemeSwitch.MouseUp += ColorThemeSwitch_MouseUp;
+        }
+
+        private void WireUpEraserPopupContentEvents()
+        {
+            if (_eraserPopupEventsWired) return;
+            _eraserPopupEventsWired = true;
+
+            WireUpSingleEraserPopupContentEvents(EraserPopupContent);
+            WireUpSingleEraserPopupContentEvents(BoardEraserPopupContent);
+        }
+
+        private void WireUpSingleEraserPopupContentEvents(EraserPopupContent content)
+        {
+            if (content == null) return;
+
+            content.EraserSizeComboBox.SelectionChanged += ComboBoxEraserSizeFloatingBar_SelectionChanged;
+            content.CircleTab.MouseUp += SwitchToCircleEraser;
+            content.RectangleTab.MouseUp += SwitchToRectangleEraser;
+            content.ClearInkBtn.Click += EraserPanelSymbolIconDelete_MouseUp;
+            content.ClearInkAndHistoryBtn.Click += BoardSymbolIconDeleteInkAndHistories_MouseUp;
+            content.CloseFontIcon.MouseDown += Border_MouseDown;
+            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+        }
+
+        private void WireUpGesturePopupContentEvents()
+        {
+            if (_gesturePopupEventsWired) return;
+            _gesturePopupEventsWired = true;
+
+            WireUpSingleGesturePopupContentEvents(FloatingBarGesturePopupContent);
+            WireUpSingleGesturePopupContentEvents(BoardGesturePopupContent);
+        }
+
+        private void WireUpSingleGesturePopupContentEvents(GesturePopupContent content)
+        {
+            if (content == null) return;
+
+            content.MultiTouchToggle.Toggled += ToggleSwitchEnableMultiTouchMode_Toggled;
+            content.TwoFingerTranslateToggle.Toggled += ToggleSwitchEnableTwoFingerTranslate_Toggled;
+            content.TwoFingerZoomToggle.Toggled += ToggleSwitchEnableTwoFingerZoom_Toggled;
+            content.TwoFingerRotationToggle.Toggled += ToggleSwitchEnableTwoFingerRotation_Toggled;
+            content.CloseFontIcon.MouseDown += Border_MouseDown;
+            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+        }
+
+        private bool _imageOptionsPopupEventsWired;
+
+        private void WireUpImageOptionsPopupContentEvents()
+        {
+            if (_imageOptionsPopupEventsWired) return;
+            _imageOptionsPopupEventsWired = true;
+
+            var content = BoardImageOptionsPopupContent;
+            if (content == null) return;
+
+            content.ScreenshotOption.MouseUp += ImageOptionScreenshot_MouseUp;
+            content.SelectFileOption.MouseUp += ImageOptionSelectFile_MouseUp;
+            content.CloseFontIcon.MouseDown += Border_MouseDown;
+            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+        }
+
         private bool _shapeDrawPopupEventsWired;
         private bool _boardShapeDrawPopupEventsWired;
 
@@ -285,6 +401,10 @@ namespace Ink_Canvas
             WireUpShapeDrawPopupContentEvents();
             WireUpBoardShapeDrawPopupContentEvents();
             WireUpBackgroundPaletteEvents();
+            WireUpPenPaletteEvents();
+            WireUpEraserPopupContentEvents();
+            WireUpGesturePopupContentEvents();
+            WireUpImageOptionsPopupContentEvents();
             BoardBorderToolsPopup.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
@@ -1807,123 +1927,125 @@ namespace Ink_Canvas
         /// </remarks>
         /// <param name="sender">触发关闭事件的源对象（通常为窗口本身）。</param>
         /// <param name="e">关闭事件参数；方法会在需要中止关闭时将 <c>e.Cancel</c> 设为 <c>true</c>。</param>
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
-            LogHelper.WriteLogToFile("Ink Canvas closing", LogHelper.LogType.Event);
-
-            if (_allowCloseAfterExitVerification)
-            {
-                _allowCloseAfterExitVerification = false;
-                return;
-            }
-
-            if (!_forceCloseFromExitOrRestartButton &&
-                IsInPptPresentationMode)
-            {
-                e.Cancel = true;
-                _ = ExitPptPresentation();
-                LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
-                return;
-            }
-            if (!_forceCloseFromExitOrRestartButton && currentMode != 0)
-            {
-                e.Cancel = true;
-                CloseWhiteboardImmediately();
-                LogHelper.WriteLogToFile("Ink Canvas closing converted to exit whiteboard", LogHelper.LogType.Event);
-                return;
-            }
-
             try
             {
-                // 快抽按钮现在集成在主窗口中，不需要单独关闭
+                LogHelper.WriteLogToFile("Ink Canvas closing", LogHelper.LogType.Event);
+
+                if (_allowCloseAfterExitVerification)
+                {
+                    _allowCloseAfterExitVerification = false;
+                    return;
+                }
+
+                if (!_forceCloseFromExitOrRestartButton &&
+                    IsInPptPresentationMode)
+                {
+                    e.Cancel = true;
+                    await ExitPptPresentation();
+                    LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
+                    return;
+                }
+                if (!_forceCloseFromExitOrRestartButton && currentMode != 0)
+                {
+                    e.Cancel = true;
+                    CloseWhiteboardImmediately();
+                    LogHelper.WriteLogToFile("Ink Canvas closing converted to exit whiteboard", LogHelper.LogType.Event);
+                    return;
+                }
+
+                try
+                {
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"关闭快抽悬浮按钮时出错: {ex.Message}", LogHelper.LogType.Error);
+                }
+
+                try
+                {
+                    if (!App.IsUpdateInstalling && SecurityManager.IsPasswordRequiredForExit(Settings))
+                    {
+                        e.Cancel = true;
+                        if (_isExitVerificationInProgress) return;
+
+                        _isExitVerificationInProgress = true;
+                        await Dispatcher.BeginInvoke(new Action(async () =>
+                        {
+                            try
+                            {
+                                bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "退出验证", "请输入安全密码以退出软件。");
+                                if (!ok)
+                                {
+                                    _forceCloseFromExitOrRestartButton = false;
+                                    LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
+                                    return;
+                                }
+
+                                _allowCloseAfterExitVerification = true;
+                                Close();
+                            }
+                            catch
+                            {
+                            }
+                            finally
+                            {
+                                _isExitVerificationInProgress = false;
+                            }
+                        }), DispatcherPriority.Normal);
+                        return;
+                    }
+                }
+                catch
+                {
+                }
+
+                if (!CloseIsFromButton && Settings.Advanced.IsSecondConfirmWhenShutdownApp)
+                {
+                    var result1 = MessageBox.Show("是否继续关闭 InkCanvasForClass，这将丢失当前未保存的墨迹。", "InkCanvasForClass",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+
+                    if (result1 == MessageBoxResult.Cancel)
+                    {
+                        _forceCloseFromExitOrRestartButton = false;
+                        e.Cancel = true;
+                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled at first confirmation", LogHelper.LogType.Event);
+                        return;
+                    }
+
+                    var result2 = MessageBox.Show("真的狠心关闭 InkCanvasForClass吗？", "InkCanvasForClass",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Error);
+
+                    if (result2 == MessageBoxResult.Cancel)
+                    {
+                        _forceCloseFromExitOrRestartButton = false;
+                        e.Cancel = true;
+                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled at second confirmation", LogHelper.LogType.Event);
+                        return;
+                    }
+
+                    var result3 = MessageBox.Show("最后确认：确定要关闭 InkCanvasForClass 吗？", "InkCanvasForClass",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
+                    if (result3 == MessageBoxResult.Cancel)
+                    {
+                        _forceCloseFromExitOrRestartButton = false;
+                        e.Cancel = true;
+                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled at final confirmation", LogHelper.LogType.Event);
+                        return;
+                    }
+
+                    e.Cancel = false;
+                    LogHelper.WriteLogToFile("Ink Canvas closing confirmed by user", LogHelper.LogType.Event);
+                }
+
+                if (e.Cancel) LogHelper.WriteLogToFile("Ink Canvas closing cancelled", LogHelper.LogType.Event);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"关闭快抽悬浮按钮时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"关闭异常: {ex}", LogHelper.LogType.Error);
             }
-
-            try
-            {
-                if (!App.IsUpdateInstalling && SecurityManager.IsPasswordRequiredForExit(Settings))
-                {
-                    e.Cancel = true;
-                    if (_isExitVerificationInProgress) return;
-
-                    _isExitVerificationInProgress = true;
-                    Dispatcher.BeginInvoke(new Action(async () =>
-                    {
-                        try
-                        {
-                            bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "退出验证", "请输入安全密码以退出软件。");
-                            if (!ok)
-                            {
-                                _forceCloseFromExitOrRestartButton = false;
-                                LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
-                                return;
-                            }
-
-                            _allowCloseAfterExitVerification = true;
-                            Close();
-                        }
-                        catch
-                        {
-                        }
-                        finally
-                        {
-                            _isExitVerificationInProgress = false;
-                        }
-                    }), DispatcherPriority.Normal);
-                    return;
-                }
-            }
-            catch
-            {
-            }
-
-            if (!CloseIsFromButton && Settings.Advanced.IsSecondConfirmWhenShutdownApp)
-            {
-                // 第一个确认对话框
-                var result1 = MessageBox.Show("是否继续关闭 InkCanvasForClass，这将丢失当前未保存的墨迹。", "InkCanvasForClass",
-                    MessageBoxButton.OKCancel, MessageBoxImage.Warning);
-
-                if (result1 == MessageBoxResult.Cancel)
-                {
-                    _forceCloseFromExitOrRestartButton = false;
-                    e.Cancel = true;
-                    LogHelper.WriteLogToFile("Ink Canvas closing cancelled at first confirmation", LogHelper.LogType.Event);
-                    return;
-                }
-
-                // 第二个确认对话框
-                var result2 = MessageBox.Show("真的狠心关闭 InkCanvasForClass吗？", "InkCanvasForClass",
-                    MessageBoxButton.OKCancel, MessageBoxImage.Error);
-
-                if (result2 == MessageBoxResult.Cancel)
-                {
-                    _forceCloseFromExitOrRestartButton = false;
-                    e.Cancel = true;
-                    LogHelper.WriteLogToFile("Ink Canvas closing cancelled at second confirmation", LogHelper.LogType.Event);
-                    return;
-                }
-
-                // 第三个最终确认对话框
-                var result3 = MessageBox.Show("最后确认：确定要关闭 InkCanvasForClass 吗？", "InkCanvasForClass",
-                    MessageBoxButton.OKCancel, MessageBoxImage.Question);
-
-                if (result3 == MessageBoxResult.Cancel)
-                {
-                    _forceCloseFromExitOrRestartButton = false;
-                    e.Cancel = true;
-                    LogHelper.WriteLogToFile("Ink Canvas closing cancelled at final confirmation", LogHelper.LogType.Event);
-                    return;
-                }
-
-                // 所有确认都通过，允许关闭
-                e.Cancel = false;
-                LogHelper.WriteLogToFile("Ink Canvas closing confirmed by user", LogHelper.LogType.Event);
-            }
-
-            if (e.Cancel) LogHelper.WriteLogToFile("Ink Canvas closing cancelled", LogHelper.LogType.Event);
         }
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -2427,10 +2549,9 @@ namespace Ink_Canvas
             ShowPage(currentPageIndex);
         }
         // 快速面板退出PPT放映按钮事件
-        private void ExitPPTSlideShow_MouseUp(object sender, MouseButtonEventArgs e)
+        private async void ExitPPTSlideShow_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            // 直接调用PPT放映结束按钮的逻辑
-            _ = ExitPptPresentation();
+            await ExitPptPresentation();
         }
 
         private void HistoryRollbackButton_Click(object sender, RoutedEventArgs e)
@@ -2518,6 +2639,7 @@ namespace Ink_Canvas
         public void ApplyAlwaysOnTop()
         {
             WindowSettingsHelper.ApplyAlwaysOnTop(this);
+            _popupManager?.OnTopmostSettingChanged();
         }
 
         private void StartTopmostMaintenance()

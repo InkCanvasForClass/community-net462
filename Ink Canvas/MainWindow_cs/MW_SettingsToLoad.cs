@@ -264,10 +264,9 @@ namespace Ink_Canvas
                                                userVal <= 0.5 ? 0.5 :
                                                userVal >= 1.25 ? 1.25 : 1.0;
 
-                    // 实际缩放 = 基础倍率(1.5) × 用户设置倍率
-                    double actualScale = 1.5 * clampedUserVal;
+                    double actualScale = clampedUserVal;
 
-                    // 最终范围限制：0.75x ~ 1.875x
+                    // 最终范围限制：0.5x ~ 1.25x
                     ViewboxFloatingBarScaleTransform.ScaleX = actualScale;
                     ViewboxFloatingBarScaleTransform.ScaleY = actualScale;
                 }
@@ -304,6 +303,8 @@ namespace Ink_Canvas
 
                 ViewboxBlackboardCenterSideScaleTransform.ScaleX = Settings.Appearance.ViewboxBlackBoardScaleTransformValue;
                 ViewboxBlackboardCenterSideScaleTransform.ScaleY = Settings.Appearance.ViewboxBlackBoardScaleTransformValue;
+
+                ApplyQuickPanelBottomOffset(Settings.Appearance.QuickPanelBottomOffset);
 
                 if (Settings.Appearance.IsTransparentButtonBackground)
                 {
@@ -351,21 +352,7 @@ namespace Ink_Canvas
             }
 
             // Gesture
-            if (Settings.Gesture != null)
-            {
-                if (Settings.Gesture.AutoSwitchTwoFingerGesture)
-                {
-                    if (Topmost)
-                    {
-                        Settings.Gesture.IsEnableTwoFingerTranslate = false;
-                    }
-                    else
-                    {
-                        Settings.Gesture.IsEnableTwoFingerTranslate = true;
-                    }
-                }
-            }
-            else
+            if (Settings.Gesture == null)
             {
                 Settings.Gesture = new Gesture();
             }
@@ -813,6 +800,26 @@ namespace Ink_Canvas
                 userObj.Remove(key);
                 hasChanges = true;
             }
+        }
+
+        internal void ApplyQuickPanelBottomOffset(double offset)
+        {
+            LeftSidePanel.BeginAnimation(FrameworkElement.MarginProperty, null);
+            RightSidePanel.BeginAnimation(FrameworkElement.MarginProperty, null);
+            LeftUnFoldButtonQuickPanel.BeginAnimation(FrameworkElement.MarginProperty, null);
+            RightUnFoldButtonQuickPanel.BeginAnimation(FrameworkElement.MarginProperty, null);
+
+            var leftPanelMargin = LeftSidePanel.Margin;
+            LeftSidePanel.Margin = new Thickness(leftPanelMargin.Left, leftPanelMargin.Top, leftPanelMargin.Right, offset);
+
+            var rightPanelMargin = RightSidePanel.Margin;
+            RightSidePanel.Margin = new Thickness(rightPanelMargin.Left, rightPanelMargin.Top, rightPanelMargin.Right, offset);
+
+            var leftQuickPanelMargin = LeftUnFoldButtonQuickPanel.Margin;
+            LeftUnFoldButtonQuickPanel.Margin = new Thickness(leftQuickPanelMargin.Left, leftQuickPanelMargin.Top, leftQuickPanelMargin.Right, offset);
+
+            var rightQuickPanelMargin = RightUnFoldButtonQuickPanel.Margin;
+            RightUnFoldButtonQuickPanel.Margin = new Thickness(rightQuickPanelMargin.Left, rightQuickPanelMargin.Top, rightQuickPanelMargin.Right, offset);
         }
     }
 }

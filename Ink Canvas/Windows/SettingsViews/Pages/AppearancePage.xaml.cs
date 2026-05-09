@@ -40,6 +40,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             UpdateSliderText(ViewboxFloatingBarOpacityValueSlider, ViewboxFloatingBarOpacityText, "{0:F2}");
             UpdateSliderText(ViewboxFloatingBarOpacityInPPTValueSlider, ViewboxFloatingBarOpacityInPPTText, "{0:F2}");
             UpdateSliderText(ViewboxBlackBoardScaleTransformValueSlider, ViewboxBlackBoardScaleText, "{0:F2}");
+            UpdateSliderText(QuickPanelBottomOffsetSlider, QuickPanelBottomOffsetText, "{0:F0}");
+            UpdateFloatingBarActualScaleText();
+        }
+
+        private void UpdateFloatingBarActualScaleText()
+        {
+            if (ViewboxFloatingBarScaleTransformValueSlider == null || ViewboxFloatingBarActualScaleText == null) return;
+            double val = ViewboxFloatingBarScaleTransformValueSlider.Value;
+            double clampedVal = (val > 0.5 && val < 1.25) ? val : val <= 0.5 ? 0.5 : val >= 1.25 ? 1.25 : 1.0;
+            double actualScale = clampedVal;
+            ViewboxFloatingBarActualScaleText.Text = $"{actualScale:F2}x";
         }
 
         private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
@@ -107,6 +118,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
 
             CardEnableQuickPanel.IsOn = settings.Appearance.IsShowQuickPanel;
+            QuickPanelBottomOffsetSlider.Value = settings.Appearance.QuickPanelBottomOffset;
             ComboBoxUnFoldBtnImg.SelectedIndex = settings.Appearance.UnFoldButtonImageType;
 
             CardUseLegacyFloatingBarUI.IsOn = settings.Appearance.UseLegacyFloatingBarUI;
@@ -293,15 +305,13 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.Settings.Appearance.ViewboxFloatingBarScaleTransformValue = val;
             SettingsManager.SaveSettingsToFile();
 
-            // 计算并显示实际缩放倍率（基础 1.5 × 用户设置）
             double clampedVal = (val > 0.5 && val < 1.25) ? val : val <= 0.5 ? 0.5 : val >= 1.25 ? 1.25 : 1.0;
-            double actualScale = 1.5 * clampedVal;
-            ViewboxFloatingBarActualScaleText.Text = $"{actualScale:F2}x";
+            double actualScale = clampedVal;
+            UpdateFloatingBarActualScaleText();
 
             var mw = GetMainWindow();
             if (mw != null)
             {
-                // 应用实际缩放值（基础 1.5 × 用户设置）
                 mw.ViewboxFloatingBarScaleTransform.ScaleX = actualScale;
                 mw.ViewboxFloatingBarScaleTransform.ScaleY = actualScale;
                 if (mw.IsInPptPresentationMode)
@@ -501,6 +511,22 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             SettingsManager.Settings.Appearance.IsShowQuickPanel = CardEnableQuickPanel.IsOn;
             SettingsManager.SaveSettingsToFile();
+        }
+
+        private void QuickPanelBottomOffsetSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateSliderText(QuickPanelBottomOffsetSlider, QuickPanelBottomOffsetText, "{0:F0}");
+            if (!_isLoaded) return;
+            var val = Math.Round(QuickPanelBottomOffsetSlider.Value);
+            if (QuickPanelBottomOffsetSlider.Value != val)
+            {
+                QuickPanelBottomOffsetSlider.Value = val;
+                return;
+            }
+            SettingsManager.Settings.Appearance.QuickPanelBottomOffset = val;
+            SettingsManager.SaveSettingsToFile();
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyQuickPanelBottomOffset(val);
         }
 
         private void ComboBoxUnFoldBtnImg_SelectionChanged(object sender, SelectionChangedEventArgs e)
