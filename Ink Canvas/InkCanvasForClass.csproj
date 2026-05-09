@@ -266,7 +266,7 @@
     <Resource Include="Resources\Icons-png\EasiCamera.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-png\Desmos.png" />
+    <Resource Include="Resources\Icons-png\Desmos.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_cursor_24_regular.png" />
@@ -305,20 +305,20 @@
     <Resource Include="Resources\Icons-Fluent\ic_fluent_weather_sunny_24_regular_white.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_signature_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_signature_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_save_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_save_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_camera_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_camera_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_copy_24_regular.png" />
     <Resource Include="Resources\Icons-Fluent\ic_fluent_copy_add_24_regular.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_add_circle_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_add_circle_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_flip_horizontal_24_regular.png" />
@@ -328,7 +328,7 @@
     <Resource Include="Resources\Icons-Fluent\ic_fluent_edit_24_regular.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_folder_open_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_folder_open_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_people_money_24_regular.png" />
@@ -340,33 +340,33 @@
     <Resource Include="Resources\Icons-Fluent\ic_fluent_scale_fit_24_regular_white.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_scales_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_scales_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_arrow_clockwise_24_regular.png" />
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_calendar_sync_24_regular.png" />
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_dismiss_circle_24_regular.png" />
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_drag_24_regular.png" />
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_shapes_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_arrow_clockwise_24_regular.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_calendar_sync_24_regular.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_dismiss_circle_24_regular.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_drag_24_regular.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_shapes_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_power_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_power_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_clock_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_clock_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\ic_fluent_keyboard_24_regular.png" />
+    <Resource Include="Resources\Icons-Fluent\ic_fluent_keyboard_24_regular.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_control_button_24_regular.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_people_24_regular.png" />
-    <Resource Include="Resources\Icons-png\VComYouJiao.png" />
-    <Resource Include="Resources\Icons-png\WenXiang.png" />
-    <Resource Include="Resources\Icons-png\YiYunVisualPresenter.png" />
-    <Resource Include="Resources\Icons-png\YiYunWhiteboard.png" />
+    <Resource Include="Resources\Icons-png\VComYouJiao.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-png\WenXiang.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-png\YiYunVisualPresenter.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-png\YiYunWhiteboard.png" Condition="'$(Minimize)' != 'true'" />
     <Resource Include="Resources\new-icons\chevron-left.png" />
     <Resource Include="Resources\new-icons\end-slides-show.png">
       <CopyToOutputDirectory></CopyToOutputDirectory>
@@ -378,20 +378,20 @@
     <Resource Include="Resources\new-icons\osu-lazer-triangles.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\pen-lined.png" />
-    <Resource Include="Resources\new-icons\pen-solid.png" />
+    <Resource Include="Resources\new-icons\pen-lined.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\new-icons\pen-solid.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\cursor-lined.png" />
-    <Resource Include="Resources\new-icons\cursor-solid.png" />
+    <Resource Include="Resources\new-icons\cursor-lined.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\new-icons\cursor-solid.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\eraser-lined.png" />
-    <Resource Include="Resources\new-icons\eraser-solid.png" />
+    <Resource Include="Resources\new-icons\eraser-lined.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\new-icons\eraser-solid.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\circle-eraser-lined.png" />
-    <Resource Include="Resources\new-icons\circle-eraser-solid.png" />
+    <Resource Include="Resources\new-icons\circle-eraser-lined.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\new-icons\circle-eraser-solid.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\new-icons\lasso-select-lined.png" />
@@ -400,22 +400,22 @@
     <Resource Include="Resources\new-icons\rotate.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\trash.png" />
+    <Resource Include="Resources\new-icons\trash.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\shapes.png" />
+    <Resource Include="Resources\new-icons\shapes.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\new-icons\eye-off.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\grid.png" />
+    <Resource Include="Resources\new-icons\grid.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\new-icons\blackboard.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\new-icons\cursor-clear.png" />
+    <Resource Include="Resources\new-icons\cursor-clear.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\DeveloperAvatars\dubi906w.jpg" Condition="'$(Minimize)' != 'true'" />
@@ -527,7 +527,7 @@
     <Resource Include="Resources\hatsune-miku1.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-Fluent\party.png" />
+    <Resource Include="Resources\Icons-Fluent\party.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\new-icons\redo.png" />
@@ -615,7 +615,7 @@
     <None Remove="Resources\PresentationExample\toolbar.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-png\idt.png" />
+    <Resource Include="Resources\Icons-png\idt.png" Condition="'$(Minimize)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Fonts\LXGWWenKaiTC-Regular.ttf" Condition="'$(Minimize)' != 'true'" />
@@ -672,7 +672,7 @@
 
   <Target Name="CopyIACoreHelper" AfterTargets="Build">
     <ItemGroup>
-      <IACoreHelperFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\$(Configuration)\*.*" />
+      <IACoreHelperFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\$(Configuration)\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(IACoreHelperFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="'@(IACoreHelperFiles)' != ''" />
   </Target>
