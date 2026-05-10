@@ -68,11 +68,18 @@ jobs:
           $version = "debug-$shortSha-$env:GITHUB_RUN_NUMBER"
           echo "archive_name=$version" >> $env:GITHUB_OUTPUT
       
-      - name: Upload Artifact (if build succeeded)
-        if: steps.check-exe.outputs.build_success == 'true'
+      - name: Upload Artifact ( minimize )
+        if: steps.check-exe.outputs.build_success == 'true' && matrix.minimize == 'true'
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.minimize == 'true' && format('InkCanvasForClass.CE.{0}.minimize', matrix.architecture) || format('InkCanvasForClass.CE.{0}', matrix.architecture) }}
+          name: InkCanvasForClass.CE.${{ matrix.architecture }}.minimize
+          path: "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/*"
+
+      - name: Upload Artifact ( normal )
+        if: steps.check-exe.outputs.build_success == 'true' && matrix.minimize == 'false'
+        uses: actions/upload-artifact@v7
+        with:
+          name: InkCanvasForClass.CE.${{ matrix.architecture }}
           path: "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/*"
 
       - name: Create Summary
@@ -93,7 +100,8 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "[Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "[Nightly.link Download](https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/${{ matrix.minimize == 'true' && format('InkCanvasForClass.CE.{0}.minimize.zip', matrix.architecture) || format('InkCanvasForClass.CE.{0}.zip', matrix.architecture) }}) \([GhProxy Fastly Mirror](https://cdn.gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/${{ matrix.minimize == 'true' && format('InkCanvasForClass.CE.{0}.minimize.zip', matrix.architecture) || format('InkCanvasForClass.CE.{0}.zip', matrix.architecture) }}) / [GhProxy Mirror](https://gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/${{ matrix.minimize == 'true' && format('InkCanvasForClass.CE.{0}.minimize.zip', matrix.architecture) || format('InkCanvasForClass.CE.{0}.zip', matrix.architecture) }})\)" >> $GITHUB_STEP_SUMMARY
+            $suffix = "${{ matrix.minimize }}" == "true" ? ".minimize" : ""
+            echo "[Nightly.link Download](https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) \([GhProxy Fastly Mirror](https://cdn.gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) / [GhProxy Mirror](https://gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip)\)" >> $GITHUB_STEP_SUMMARY
           else
             echo "## ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
