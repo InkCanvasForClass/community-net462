@@ -5,7 +5,7 @@
     <TargetFramework>net462</TargetFramework>
     <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <RootNamespace>InkCanvasForClass.IACoreHelper</RootNamespace>
-    <AssemblyName>InkCanvasForClass.IACoreHelper</AssemblyName>
+    <AssemblyName>InkCanvas.IACoreHelper</AssemblyName>
     <Deterministic>true</Deterministic>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
