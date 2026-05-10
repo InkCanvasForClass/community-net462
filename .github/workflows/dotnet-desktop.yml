@@ -72,11 +72,13 @@ jobs:
         if: steps.check-exe.outputs.build_success
         uses: actions/upload-artifact@v7
         with:
-          name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ matrix.minimize == 'true' && '.minimize' || '' }}
+          name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ case(matrix.minimize == true, '.minimize', '') }}
           path: "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/*"
 
       - name: Create Summary
         if: always()
+        env:
+          MINIMIZE: ${{ matrix.minimize }}
         shell: bash
         run: |
           echo "# Build Summary" >> $GITHUB_STEP_SUMMARY
@@ -89,11 +91,11 @@ jobs:
             echo "**Run:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
             echo "**Version:** ${{ steps.create-archive.outputs.archive_name }}" >> $GITHUB_STEP_SUMMARY
             echo "**Architecture:** ${{ matrix.architecture }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Minimize:** ${{ matrix.minimize }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Minimize:** $MINIMIZE" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "[Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            if [ "${{ matrix.minimize }}" = "true" ]; then
+            if [ "$MINIMIZE" = "true" ]; then
               suffix=".minimize"
             else
               suffix=""
@@ -105,7 +107,7 @@ jobs:
             echo "**Event:** ${{ github.event_name }} (${{ github.event.action || 'N/A' }})" >> $GITHUB_STEP_SUMMARY
             echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
             echo "**Architecture:** ${{ matrix.architecture }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Minimize:** ${{ matrix.minimize }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Minimize:** $MINIMIZE" >> $GITHUB_STEP_SUMMARY
             echo "**Run:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Check build logs for details." >> $GITHUB_STEP_SUMMARY
