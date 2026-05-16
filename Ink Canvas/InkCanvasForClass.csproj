@@ -363,10 +363,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_people_24_regular.png" />
-    <Resource Include="Resources\Icons-png\VComYouJiao.png" Condition="'$(Minimize)' != 'true'" />
-    <Resource Include="Resources\Icons-png\WenXiang.png" Condition="'$(Minimize)' != 'true'" />
-    <Resource Include="Resources\Icons-png\YiYunVisualPresenter.png" Condition="'$(Minimize)' != 'true'" />
-    <Resource Include="Resources\Icons-png\YiYunWhiteboard.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-png\VComYouJiao.png" />
+    <Resource Include="Resources\Icons-png\WenXiang.png" />
+    <Resource Include="Resources\Icons-png\YiYunVisualPresenter.png" />
+    <Resource Include="Resources\Icons-png\YiYunWhiteboard.png" />
     <Resource Include="Resources\new-icons\chevron-left.png" />
     <Resource Include="Resources\new-icons\end-slides-show.png">
       <CopyToOutputDirectory></CopyToOutputDirectory>
@@ -615,7 +615,7 @@
     <None Remove="Resources\PresentationExample\toolbar.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons-png\idt.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\Icons-png\idt.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Fonts\LXGWWenKaiTC-Regular.ttf" Condition="'$(Minimize)' != 'true'" />
