@@ -24,7 +24,7 @@ namespace Ink_Canvas.Helpers
 
             try
             {
-                var uri = new Uri(resourcePath, UriKind.Relative);
+                var uri = new Uri(resourcePath, UriKind.Absolute);
                 var streamInfo = Application.GetResourceStream(uri);
                 return streamInfo != null;
             }
