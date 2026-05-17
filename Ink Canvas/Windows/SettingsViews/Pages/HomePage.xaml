@@ -124,11 +124,34 @@
                     </ui:SettingsCard>
 
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="PPT联动" />
+                    <ui:SettingsCard Header="PPT联动" Description="PPT联动设置"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="PowerPointPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="其他" />
                     <ui:SettingsCard Header="更新" Description="更新设置"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="UpdatePage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="{i18n:I18n Key=Notification_PageTitle}" Description="{i18n:I18n Key=Notification_NavTooltip}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="NotificationPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Message}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="{i18n:I18n Key=Announcement_CenterTitle}" Description="{i18n:I18n Key=Announcement_CenterHint}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AnnouncementCenterPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BulletedList}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -150,6 +173,13 @@
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="StoragePage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="{i18n:I18n Key=CloudStorage_Manage}" Description="Dlass 与 WebDav 上传设置"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="CloudStoragePage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cloud}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 

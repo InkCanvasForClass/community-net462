@@ -1,3 +1,4 @@
+using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
@@ -212,6 +213,11 @@ namespace Ink_Canvas
                         BlackBoardWaterMark.Text = "一言功能不可用";
                     }
                 }
+                else if (Settings.Appearance.ChickenSoupSource == 4)
+                {
+                    int randChickenSoupIndex = new Random().Next(ChickenSoup.PhigrosTips.Length);
+                    BlackBoardWaterMark.Text = ChickenSoup.PhigrosTips[randChickenSoupIndex];
+                }
             }
             catch (Exception ex)
             {
@@ -238,6 +244,7 @@ namespace Ink_Canvas
         /// </remarks>
         public void UpdateFloatingBarIcon()
         {
+            if (FloatingbarHeadIconImg == null) return;
             int index = Settings.Appearance.FloatingBarImg;
 
             if (index == 0)
@@ -563,14 +570,48 @@ namespace Ink_Canvas
         private void InkAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
-            // if (sender == BoardInkWidthSlider) InkWidthSlider.Value = ((Slider)sender).Value;
-            // if (sender == InkWidthSlider) BoardInkWidthSlider.Value = ((Slider)sender).Value;
             var NowR = drawingAttributes.Color.R;
             var NowG = drawingAttributes.Color.G;
             var NowB = drawingAttributes.Color.B;
-            // Trace.WriteLine(BitConverter.GetBytes(((Slider)sender).Value));
             drawingAttributes.Color = Color.FromArgb((byte)((Slider)sender).Value, NowR, NowG, NowB);
             Settings.Canvas.InkAlpha = ((Slider)sender).Value;
+            SaveSettingsToFile();
+        }
+
+        private void LaserPenWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!isLoaded) return;
+            if (penType == 2)
+            {
+                drawingAttributes.Width = ((Slider)sender).Value;
+                drawingAttributes.Height = ((Slider)sender).Value;
+            }
+            Settings.Canvas.LaserPenWidth = ((Slider)sender).Value;
+            SaveSettingsToFile();
+        }
+
+        private void LaserPenAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!isLoaded) return;
+            if (penType == 2)
+            {
+                var NowR = drawingAttributes.Color.R;
+                var NowG = drawingAttributes.Color.G;
+                var NowB = drawingAttributes.Color.B;
+                drawingAttributes.Color = Color.FromArgb((byte)((Slider)sender).Value, NowR, NowG, NowB);
+            }
+            Settings.Canvas.LaserPenAlpha = (int)((Slider)sender).Value;
+            SaveSettingsToFile();
+        }
+
+        private void LaserPenFadeTimeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!isLoaded) return;
+            Settings.Canvas.InkFadeTime = (int)((Slider)sender).Value * 1000;
+            if (_inkFadeManager != null)
+            {
+                _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
+            }
             SaveSettingsToFile();
         }
 
@@ -622,7 +663,7 @@ namespace Ink_Canvas
 
         private void ToggleSwitchEnableMultiTouchMode_Toggled(object sender, RoutedEventArgs e)
         {
-            //if (!isLoaded) return;
+            if (!isLoaded) return;
             var toggle = (iNKORE.UI.WPF.Modern.Controls.ToggleSwitch)sender;
             bool isOn = toggle.IsOn;
             bool isBoardSender = sender == BoardToggleSwitchEnableMultiTouchMode;
@@ -964,7 +1005,7 @@ namespace Ink_Canvas
             {
                 if (sender != null && Ink_Canvas.Helpers.SecurityManager.IsPasswordRequiredForResetConfig(Settings))
                 {
-                    bool ok = await Ink_Canvas.Helpers.SecurityManager.PromptAndVerifyAsync(Settings, this, "重置配置验证", "请输入安全密码以确认重置配置。");
+                    bool ok = await Ink_Canvas.Helpers.SecurityManager.PromptAndVerifyPasswordOrTotpAsync(Settings, this, "重置配置验证", "请输入安全密码或 TOTP 验证码以确认重置配置。");
                     if (!ok) return;
                 }
             }
@@ -982,7 +1023,7 @@ namespace Ink_Canvas
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
-            ShowNotification("设置已重置为默认推荐设置~");
+            try { ShowNotification("设置已重置为默认推荐设置~"); } catch { }
         }
 
         private async void SpecialVersionResetToSuggestion_Click()
@@ -1007,67 +1048,42 @@ namespace Ink_Canvas
 
         public void UpdateFloatingBarIcons()
         {
-            string currentMode = GetCurrentSelectedMode();
-
-            bool isCursorSolid = currentMode == "cursor";
-            bool isPenSolid = currentMode == "pen" || currentMode == "color";
-            bool isCircleEraserSolid = currentMode == "eraser";
-            bool isStrokeEraserSolid = currentMode == "eraserByStrokes";
-            bool isLassoSolid = currentMode == "select";
-
-            if (Settings.Appearance.UseLegacyFloatingBarUI)
+            try
             {
-                Cursor_Icon.Icon.Geometry = Geometry.Parse(
-                    isCursorSolid
-                        ? XamlGraphicsIconGeometries.LegacySolidCursorIcon
-                        : XamlGraphicsIconGeometries.LegacyLinedCursorIcon);
+                string currentMode = GetCurrentSelectedMode();
 
-                Pen_Icon.Icon.Geometry = Geometry.Parse(
-                    isPenSolid
-                        ? XamlGraphicsIconGeometries.LegacySolidPenIcon
-                        : XamlGraphicsIconGeometries.LegacyLinedPenIcon);
+                bool isCursorSolid = currentMode == "cursor";
+                bool isPenSolid = currentMode == "pen" || currentMode == "color";
+                bool isCircleEraserSolid = currentMode == "eraser";
+                bool isStrokeEraserSolid = currentMode == "eraserByStrokes";
+                bool isLassoSolid = currentMode == "select";
 
-                EraserByStrokes_Icon.Icon.Geometry = Geometry.Parse(
-                    isStrokeEraserSolid
-                        ? XamlGraphicsIconGeometries.LegacySolidEraserStrokeIcon
-                        : XamlGraphicsIconGeometries.LegacyLinedEraserStrokeIcon);
+                void SetIcon(ToolbarImageButton btn, bool isSolid, string solidGeom, string linedGeom)
+                {
+                    if (btn == null) return;
+                    btn.Icon.Geometry = Geometry.Parse(isSolid ? solidGeom : linedGeom);
+                }
 
-                Eraser_Icon.Icon.Geometry = Geometry.Parse(
-                    isCircleEraserSolid
-                        ? XamlGraphicsIconGeometries.LegacySolidEraserCircleIcon
-                        : XamlGraphicsIconGeometries.LegacyLinedEraserCircleIcon);
-
-                SymbolIconSelect.Icon.Geometry = Geometry.Parse(
-                    isLassoSolid
-                        ? XamlGraphicsIconGeometries.LegacySolidLassoSelectIcon
-                        : XamlGraphicsIconGeometries.LegacyLinedLassoSelectIcon);
+                if (Settings.Appearance.UseLegacyFloatingBarUI)
+                {
+                    SetIcon(Cursor_Icon, isCursorSolid, XamlGraphicsIconGeometries.LegacySolidCursorIcon, XamlGraphicsIconGeometries.LegacyLinedCursorIcon);
+                    SetIcon(Pen_Icon, isPenSolid, XamlGraphicsIconGeometries.LegacySolidPenIcon, XamlGraphicsIconGeometries.LegacyLinedPenIcon);
+                    SetIcon(EraserByStrokes_Icon, isStrokeEraserSolid, XamlGraphicsIconGeometries.LegacySolidEraserStrokeIcon, XamlGraphicsIconGeometries.LegacyLinedEraserStrokeIcon);
+                    SetIcon(Eraser_Icon, isCircleEraserSolid, XamlGraphicsIconGeometries.LegacySolidEraserCircleIcon, XamlGraphicsIconGeometries.LegacyLinedEraserCircleIcon);
+                    SetIcon(SymbolIconSelect, isLassoSolid, XamlGraphicsIconGeometries.LegacySolidLassoSelectIcon, XamlGraphicsIconGeometries.LegacyLinedLassoSelectIcon);
+                }
+                else
+                {
+                    SetIcon(Cursor_Icon, isCursorSolid, XamlGraphicsIconGeometries.SolidCursorIcon, XamlGraphicsIconGeometries.LinedCursorIcon);
+                    SetIcon(Pen_Icon, isPenSolid, XamlGraphicsIconGeometries.SolidPenIcon, XamlGraphicsIconGeometries.LinedPenIcon);
+                    SetIcon(EraserByStrokes_Icon, isStrokeEraserSolid, XamlGraphicsIconGeometries.SolidEraserStrokeIcon, XamlGraphicsIconGeometries.LinedEraserStrokeIcon);
+                    SetIcon(Eraser_Icon, isCircleEraserSolid, XamlGraphicsIconGeometries.SolidEraserCircleIcon, XamlGraphicsIconGeometries.LinedEraserCircleIcon);
+                    SetIcon(SymbolIconSelect, isLassoSolid, XamlGraphicsIconGeometries.SolidLassoSelectIcon, XamlGraphicsIconGeometries.LinedLassoSelectIcon);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Cursor_Icon.Icon.Geometry = Geometry.Parse(
-                    isCursorSolid
-                        ? XamlGraphicsIconGeometries.SolidCursorIcon
-                        : XamlGraphicsIconGeometries.LinedCursorIcon);
-
-                Pen_Icon.Icon.Geometry = Geometry.Parse(
-                    isPenSolid
-                        ? XamlGraphicsIconGeometries.SolidPenIcon
-                        : XamlGraphicsIconGeometries.LinedPenIcon);
-
-                EraserByStrokes_Icon.Icon.Geometry = Geometry.Parse(
-                    isStrokeEraserSolid
-                        ? XamlGraphicsIconGeometries.SolidEraserStrokeIcon
-                        : XamlGraphicsIconGeometries.LinedEraserStrokeIcon);
-
-                Eraser_Icon.Icon.Geometry = Geometry.Parse(
-                    isCircleEraserSolid
-                        ? XamlGraphicsIconGeometries.SolidEraserCircleIcon
-                        : XamlGraphicsIconGeometries.LinedEraserCircleIcon);
-
-                SymbolIconSelect.Icon.Geometry = Geometry.Parse(
-                    isLassoSolid
-                        ? XamlGraphicsIconGeometries.SolidLassoSelectIcon
-                        : XamlGraphicsIconGeometries.LinedLassoSelectIcon);
+                LogHelper.WriteLogToFile($"UpdateFloatingBarIcons 失败: {ex.Message}", LogHelper.LogType.Warning);
             }
         }
 
@@ -1115,147 +1131,22 @@ namespace Ink_Canvas
 
         internal void UpdateFloatingBarButtonsVisibility()
         {
-            // 根据设置更新浮动栏按钮的可见性
             try
             {
-                // 形状按钮
-                if (ShapeDrawFloatingBarBtn != null)
-                    ShapeDrawFloatingBarBtn.Visibility = Settings.Appearance.IsShowShapeButton ? Visibility.Visible : Visibility.Collapsed;
+                UpdateToolbarComponentVisibility();
 
-                // 撤销按钮
-                if (SymbolIconUndo != null)
-                    SymbolIconUndo.Visibility = Settings.Appearance.IsShowUndoButton ? Visibility.Visible : Visibility.Collapsed;
-
-                // 重做按钮
-                if (SymbolIconRedo != null)
-                    SymbolIconRedo.Visibility = Settings.Appearance.IsShowRedoButton ? Visibility.Visible : Visibility.Collapsed;
-
-                // 清空按钮
-                if (SymbolIconDelete != null)
-                    SymbolIconDelete.Visibility = Settings.Appearance.IsShowClearButton ? Visibility.Visible : Visibility.Collapsed;
-
-                // 白板按钮
-                if (WhiteboardFloatingBarBtn != null)
-                    WhiteboardFloatingBarBtn.Visibility = Settings.Appearance.IsShowWhiteboardButton ? Visibility.Visible : Visibility.Collapsed;
-
-                // 隐藏按钮
-                if (Fold_Icon != null)
-                    Fold_Icon.Visibility = Settings.Appearance.IsShowHideButton ? Visibility.Visible : Visibility.Collapsed;
-
-                // 快捷调色盘
-                if (QuickColorPalettePanel != null && QuickColorPaletteSingleRowPanel != null)
-                {
-                    bool shouldShow = Settings.Appearance.IsShowQuickColorPalette && inkCanvas.EditingMode == InkCanvasEditingMode.Ink;
-                    bool wasVisible = QuickColorPalettePanel.Visibility == Visibility.Visible || QuickColorPaletteSingleRowPanel.Visibility == Visibility.Visible;
-
-                    if (shouldShow)
-                    {
-                        // 根据显示模式选择显示哪个面板
-                        if (Settings.Appearance.QuickColorPaletteDisplayMode == 0)
-                        {
-                            // 单行显示模式
-                            QuickColorPalettePanel.Visibility = Visibility.Collapsed;
-                            QuickColorPaletteSingleRowPanel.Visibility = Visibility.Visible;
-                        }
-                        else
-                        {
-                            // 双行显示模式
-                            QuickColorPalettePanel.Visibility = Visibility.Visible;
-                            QuickColorPaletteSingleRowPanel.Visibility = Visibility.Collapsed;
-                        }
-                    }
-                    else
-                    {
-                        QuickColorPalettePanel.Visibility = Visibility.Collapsed;
-                        QuickColorPaletteSingleRowPanel.Visibility = Visibility.Collapsed;
-                    }
-
-                    // 如果快捷调色盘的可见性发生变化，重新计算浮动栏位置
-                    if (wasVisible != shouldShow && !isFloatingBarFolded)
-                    {
-                        if (IsInPptPresentationMode)
-                            ViewboxFloatingBarMarginAnimation(60);
-                        else
-                        {
-                            // 根据显示模式调整动画参数
-                            if (Settings.Appearance.QuickColorPaletteDisplayMode == 0)
-                            {
-                                // 单行显示模式，动画参数较小
-                                ViewboxFloatingBarMarginAnimation(60, true);
-                            }
-                            else
-                            {
-                                // 双行显示模式，动画参数较大
-                                ViewboxFloatingBarMarginAnimation(100, true);
-                            }
-                        }
-                    }
-                }
-
-                // 套索选择按钮
-                if (SymbolIconSelect != null)
-                    SymbolIconSelect.Visibility = Settings.Appearance.IsShowLassoSelectButton ? Visibility.Visible : Visibility.Collapsed;
-
-                // 清并鼠按钮
-                if (CursorWithDelFloatingBarBtn != null)
-                    CursorWithDelFloatingBarBtn.Visibility = Settings.Appearance.IsShowClearAndMouseButton ? Visibility.Visible : Visibility.Collapsed;
-
-                // 橡皮按钮显示控制
-                if (Eraser_Icon != null && EraserByStrokes_Icon != null)
-                {
-                    switch (Settings.Appearance.EraserDisplayOption)
-                    {
-                        case 0: // 两个都显示
-                            Eraser_Icon.Visibility = Visibility.Visible;
-                            EraserByStrokes_Icon.Visibility = Visibility.Visible;
-                            break;
-                        case 1: // 仅显示面积擦
-                            Eraser_Icon.Visibility = Visibility.Visible;
-                            EraserByStrokes_Icon.Visibility = Visibility.Collapsed;
-                            break;
-                        case 2: // 仅显示线擦
-                            Eraser_Icon.Visibility = Visibility.Collapsed;
-                            EraserByStrokes_Icon.Visibility = Visibility.Visible;
-                            break;
-                        case 3: // 都不显示
-                            Eraser_Icon.Visibility = Visibility.Collapsed;
-                            EraserByStrokes_Icon.Visibility = Visibility.Collapsed;
-                            break;
-                    }
-                }
-
-                // 在按钮可见性更新后，重新计算当前高光位置
-                // 延迟执行以确保UI更新完成
                 Dispatcher.BeginInvoke(new Action(async () =>
                 {
                     try
                     {
-                        // 等待UI完全更新
                         await Task.Delay(100);
-
-                        // 获取当前选中的模式并重新设置高光位置
                         string selectedToolMode = GetCurrentSelectedMode();
                         if (!string.IsNullOrEmpty(selectedToolMode))
-                        {
                             SetFloatingBarHighlightPosition(selectedToolMode);
-                        }
-
-                        // 重新计算浮动栏位置，因为按钮可见性变化会影响浮动栏宽度
-                        if (currentMode == 0) // 只在屏幕模式下重新计算浮动栏位置
-                        {
-                            if (IsInPptPresentationMode)
-                            {
-                                ViewboxFloatingBarMarginAnimation(60);
-                            }
-                            else
-                            {
-                                ViewboxFloatingBarMarginAnimation(100, true);
-                            }
-                        }
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"重新计算高光位置和浮动栏位置失败: {ex.Message}", LogHelper.LogType.Error);
+                        LogHelper.WriteLogToFile($"重新计算高光位置失败: {ex.Message}", LogHelper.LogType.Error);
                     }
                 }), DispatcherPriority.Loaded);
             }

@@ -39,8 +39,71 @@ namespace Ink_Canvas
         [JsonProperty("security")]
         public Security Security { get; set; } = new Security();
 
+        [JsonProperty("notification")]
+        public NotificationSettings Notification { get; set; } = new NotificationSettings();
+
         [JsonProperty("toolbar")]
         public ToolbarLayoutSettings Toolbar { get; set; } = new ToolbarLayoutSettings();
+
+        [JsonProperty("toolbarConfigName")]
+        public string ToolbarConfigName { get; set; } = "default";
+    }
+
+    public class NotificationSettings
+    {
+        [JsonProperty("isAnnouncementEnabled")]
+        public bool IsAnnouncementEnabled { get; set; } = true;
+
+        [JsonProperty("isDynamicNotificationEnabled")]
+        public bool IsDynamicNotificationEnabled { get; set; } = true;
+
+        [JsonProperty("isWindowsToastEnabled")]
+        public bool IsWindowsToastEnabled { get; set; } = true;
+
+        [JsonProperty("isForcePopupEnabled")]
+        public bool IsForcePopupEnabled { get; set; } = true;
+
+        [JsonProperty("announcementApiBaseUrl")]
+        public string AnnouncementApiBaseUrl { get; set; } = "https://dev-api.dy.ci/api/announcement/client/announcements/";
+
+        [JsonProperty("announcementWebSocketUrl")]
+        public string AnnouncementWebSocketUrl { get; set; } = string.Empty;
+
+        [JsonProperty("announcementSoftwareToken")]
+        public string AnnouncementSoftwareToken { get; set; } = "d7dd5a04175844318da871a40b7bc59d";
+
+        [JsonProperty("placement")]
+        public string Placement { get; set; } = "TopCenter";
+
+        [JsonProperty("animationMode")]
+        public string AnimationMode { get; set; } = "Standard";
+
+        [JsonProperty("updateDurationSeconds")]
+        public int UpdateDurationSeconds { get; set; } = 5;
+
+        [JsonProperty("urgentDurationSeconds")]
+        public int UrgentDurationSeconds { get; set; } = 10;
+
+        [JsonProperty("importantDurationSeconds")]
+        public int ImportantDurationSeconds { get; set; } = 10;
+
+        [JsonProperty("reminderDurationSeconds")]
+        public int ReminderDurationSeconds { get; set; } = 10;
+
+        [JsonProperty("otherDurationSeconds")]
+        public int OtherDurationSeconds { get; set; } = 5;
+
+        [JsonProperty("readAnnouncementIds")]
+        public List<string> ReadAnnouncementIds { get; set; } = new List<string>();
+
+        [JsonProperty("isDictationDoNotDisturbEnabled")]
+        public bool IsDictationDoNotDisturbEnabled { get; set; } = false;
+
+        [JsonProperty("isDictationDoNotDisturbInPptEnabled")]
+        public bool IsDictationDoNotDisturbInPptEnabled { get; set; } = true;
+
+        [JsonProperty("isDictationDoNotDisturbInWhiteboardEnabled")]
+        public bool IsDictationDoNotDisturbInWhiteboardEnabled { get; set; } = true;
     }
 
     public class Security
@@ -55,6 +118,8 @@ namespace Ink_Canvas
         public bool TotpEnabled { get; set; } = false;
         [JsonProperty("totpSecret")]
         public string TotpSecret { get; set; } = "";
+        [JsonProperty("totpOnlyMode")]
+        public bool TotpOnlyMode { get; set; } = false;
         [JsonProperty("requirePasswordOnExit")]
         public bool RequirePasswordOnExit { get; set; } = false;
         [JsonProperty("requirePasswordOnEnterSettings")]
@@ -136,12 +201,16 @@ namespace Ink_Canvas
         public bool ClearCanvasAlsoClearImages { get; set; } = true;
         [JsonProperty("showCircleCenter")]
         public bool ShowCircleCenter { get; set; }
+        [JsonProperty("showCoordinateUnitMarks")]
+        public bool ShowCoordinateUnitMarks { get; set; }
         [JsonProperty("enableInkFade")]
         public bool EnableInkFade { get; set; } = false;
         [JsonProperty("inkFadeTime")]
-        public int InkFadeTime { get; set; } = 3000; // 墨迹渐隐时间（毫秒）
-        [JsonProperty("hideInkFadeControlInPenMenu")]
-        public bool HideInkFadeControlInPenMenu { get; set; } = false; // 是否在笔工具菜单中隐藏墨迹渐隐控制开关
+        public int InkFadeTime { get; set; } = 3000;
+        [JsonProperty("laserPenWidth")]
+        public double LaserPenWidth { get; set; } = 5;
+        [JsonProperty("laserPenAlpha")]
+        public int LaserPenAlpha { get; set; } = 128;
         [JsonProperty("enableBrushAutoRestore")]
         public bool EnableBrushAutoRestore { get; set; } = false;
         [JsonProperty("brushAutoRestoreDelaySeconds")]
@@ -257,6 +326,8 @@ namespace Ink_Canvas
         public UpdateChannel UpdateChannel { get; set; } = UpdateChannel.Release;
         [JsonProperty("updatePackageArchitecture")]
         public UpdatePackageArchitecture UpdatePackageArchitecture { get; set; } = UpdatePackageArchitecture.X86;
+        [JsonProperty("isSmartUpdate")]
+        public bool IsSmartUpdate { get; set; } = true;
         [JsonProperty("skippedVersion")]
         public string SkippedVersion { get; set; } = "";
         [JsonProperty("autoUpdatePauseUntilDate")]
@@ -266,7 +337,7 @@ namespace Ink_Canvas
         [JsonProperty("isFoldAtStartup")]
         public bool IsFoldAtStartup { get; set; }
         [JsonProperty("crashAction")]
-        public int CrashAction { get; set; }
+        public int CrashAction { get; set; } = 2;
         [JsonProperty("telemetryUploadLevel")]
         public TelemetryUploadLevel TelemetryUploadLevel { get; set; } = TelemetryUploadLevel.None;
         [JsonProperty("hasAcceptedTelemetryPrivacy")]
@@ -337,6 +408,10 @@ namespace Ink_Canvas
         public bool EnableSplashScreen { get; set; } = false;
         [JsonProperty("splashScreenStyle")]
         public int SplashScreenStyle { get; set; } = 1; // 0-随机, 1-跟随四季, 2-春季, 3-夏季, 4-秋季, 5-冬季, 6-马年限定 
+        [JsonProperty("customSplashImagePath")]
+        public string CustomSplashImagePath { get; set; } = string.Empty;
+        [JsonProperty("customSplashTextPosition")]
+        public int CustomSplashTextPosition { get; set; } = 1; // 0-左下, 1-中下, 2-右下
         [JsonProperty("isShowQuickPanel")]
         public bool IsShowQuickPanel { get; set; } = true;
         [JsonProperty("chickenSoupSource")]
@@ -379,6 +454,8 @@ namespace Ink_Canvas
         public bool EnableHotkeysInMouseMode { get; set; } = false;
         [JsonProperty("language")]
         public string Language { get; set; } = "";
+        [JsonProperty("use24HourTimeFormat")]
+        public bool Use24HourTimeFormat { get; set; } = false;
 
         [JsonProperty("quickPanelBottomOffset")]
         public double QuickPanelBottomOffset { get; set; } = -150;
@@ -469,8 +546,6 @@ namespace Ink_Canvas
         public bool IsAlwaysGoToFirstPageOnReenter { get; set; }
         [JsonProperty("enablePowerPointEnhancement")]
         public bool EnablePowerPointEnhancement { get; set; } = false;
-        [JsonProperty("showGestureButtonInSlideShow")]
-        public bool ShowGestureButtonInSlideShow { get; set; } = false;
         [JsonProperty("skipAnimationsWhenGoNext")]
         public bool SkipAnimationsWhenGoNext { get; set; } = false;
         [JsonProperty("enablePPTTimeCapsule")]

@@ -46,7 +46,10 @@ namespace Ink_Canvas
                     mutex = null;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, "释放互斥体失败（重启时）", LogHelper.LogType.Warning);
+            }
         }
 
         public static string[] StartArgs;
@@ -694,7 +697,7 @@ namespace Ink_Canvas
         }
 
         // 增加字段保存崩溃后操作设置
-        public static CrashActionType CrashAction = CrashActionType.SilentRestart;
+        public static CrashActionType CrashAction = CrashActionType.ShowCrashWindow;
 
         public static void SyncCrashActionFromSettings()
         {
@@ -706,8 +709,8 @@ namespace Ink_Canvas
                 {
                     var json = File.ReadAllText(settingsPath);
                     dynamic obj = JsonConvert.DeserializeObject(json);
-                    int crashAction = 0;
-                    try { crashAction = (int)(obj["startup"]["crashAction"] ?? 0); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                    int crashAction = 2;
+                    try { crashAction = (int)(obj["startup"]["crashAction"] ?? 2); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     CrashAction = (CrashActionType)crashAction;
                 }
                 // 从主窗口同步
@@ -782,6 +785,19 @@ namespace Ink_Canvas
             e.Handled = true;
 
             SyncCrashActionFromSettings(); // 崩溃时同步最新设置
+
+            if (CrashAction == CrashActionType.ShowCrashWindow)
+            {
+                try
+                {
+                    new CrashWindow
+                    {
+                        CrashInfo = lastErrorMessage
+                    }.ShowDialog();
+                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                return;
+            }
 
             if (CrashAction == CrashActionType.SilentRestart && !IsAppExitByUser)
             {
@@ -1246,11 +1262,11 @@ namespace Ink_Canvas
         {
             try
             {
-                await Task.Delay(1200);
+                await Task.Delay(400);
 
                 try
                 {
-                    IACoreDllExtractor.ExtractIACoreDlls();
+                    await IACoreDllExtractor.ExtractIACoreDllsAsync();
                 }
                 catch (Exception ex)
                 {
@@ -1261,7 +1277,7 @@ namespace Ink_Canvas
                 {
                     var shapeMode = ShapeRecognitionRouter.FromSettingsInt(
                         Ink_Canvas.Windows.SettingsViews.Helpers.SettingsManager.Settings?.InkToShape?.ShapeRecognitionEngine ?? 0);
-                    if (!ShapeRecognitionRouter.ResolveUseWinRt(shapeMode))
+                    if (!ShapeRecognitionRouter.ResolveUseWinRt(shapeMode) && IpcIACoreClient.Instance.IsHelperExecutableAvailable)
                     {
                         LogHelper.WriteLogToFile("启动 IACore IPC 辅助进程");
                         bool ipcStarted = IpcIACoreClient.Instance.Start();
@@ -1317,7 +1333,6 @@ namespace Ink_Canvas
 
                 try
                 {
-                    await Task.Delay(1500);
                     DeviceIdentifier.RecordAppLaunch();
                     var systemVersion = DeviceIdentifier.GetSystemVersion();
                     if (!string.IsNullOrWhiteSpace(systemVersion))
@@ -1395,7 +1410,8 @@ namespace Ink_Canvas
         public enum CrashActionType
         {
             SilentRestart,
-            NoAction
+            NoAction,
+            ShowCrashWindow
         }
 
         // 心跳相关
@@ -1406,6 +1422,7 @@ namespace Ink_Canvas
         private static DateTime startupCompleteHeartbeat = DateTime.MinValue;
         private static DateTime splashScreenStartTime = DateTime.MinValue;
         private static DateTime appStartupStartTime = DateTime.MinValue;
+        private static volatile bool isAppExiting = false;
 
         /// <summary>
         /// 启动并管理应用的心跳与守护检查定时器，监测启动阶段与主线程是否无响应，并在符合配置的情况下尝试静默重启应用。
@@ -1417,6 +1434,7 @@ namespace Ink_Canvas
         /// - 对连续重启次数有保护：若重启计数达到或超过5次，会弹出提示并停止自动重启（重置重启计数并退出进程）。  
         /// - 在 OOBE（首次引导）展示期间不执行守护检查。  
         /// - 该方法会产生外部可观察的副作用：可能启动新进程并调用 Environment.Exit 终止当前进程，或显示消息框。
+        /// - 重启前会等待1秒以确保旧进程资源已释放，避免多实例竞争条件。
         /// </remarks>
         private void StartHeartbeatMonitor()
         {
@@ -1429,6 +1447,8 @@ namespace Ink_Canvas
 
             watchdogTimer = new Timer(_ =>
             {
+                if (isAppExiting)
+                    return;
                 if (IsOobeShowing)
                     return;
 
@@ -1493,6 +1513,7 @@ namespace Ink_Canvas
                             try
                             {
                                 string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                                Thread.Sleep(1000);
                                 Process.Start(exePath);
                             }
                             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
@@ -1647,11 +1668,30 @@ namespace Ink_Canvas
 
         private void App_Exit(object sender, ExitEventArgs e)
         {
+            isAppExiting = true;
+
+            try { heartbeatTimer?.Stop(); } catch { }
+            try { watchdogTimer?.Change(Timeout.Infinite, Timeout.Infinite); watchdogTimer?.Dispose(); } catch { }
+
             CleanupTerminationMonitoring();
 
             try
             {
                 IpcIACoreClient.Instance.Dispose();
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, "释放 IpcIACoreClient 失败", LogHelper.LogType.Warning);
+            }
+
+            try
+            {
+                if (mutex != null)
+                {
+                    mutex.ReleaseMutex();
+                    mutex.Dispose();
+                    mutex = null;
+                }
             }
             catch { }
 

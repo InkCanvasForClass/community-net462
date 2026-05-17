@@ -174,7 +174,14 @@ namespace Ink_Canvas
             // Startup
             if (isStartup)
             {
-                CursorIcon_Click(null, null);
+                try
+                {
+                    CursorIcon_Click(null, null);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"启动时切换光标模式失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
             }
 
             try
@@ -248,8 +255,10 @@ namespace Ink_Canvas
             }
 
             // Appearance - UI initialization (settings loading moved to AppearancePage)
-            if (Settings.Appearance != null)
+            try
             {
+                if (Settings.Appearance != null)
+                {
                 if (!Settings.Appearance.IsEnableDisPlayNibModeToggler)
                 {
                     NibModeSimpleStackPanel.Visibility = Visibility.Collapsed;
@@ -329,10 +338,15 @@ namespace Ink_Canvas
                     fe.Visibility = Settings.Appearance.EnableTrayIcon ? Visibility.Visible : Visibility.Collapsed;
 
                 SystemEvents_UserPreferenceChanged(null, null);
+                }
+                else
+                {
+                    Settings.Appearance = new Appearance();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Settings.Appearance = new Appearance();
+                LogHelper.WriteLogToFile($"加载外观设置失败: {ex.Message}", LogHelper.LogType.Error);
             }
 
             // PowerPointSettings
@@ -355,6 +369,47 @@ namespace Ink_Canvas
             if (Settings.Gesture == null)
             {
                 Settings.Gesture = new Gesture();
+            }
+
+            try
+            {
+                if (FloatingBarGesturePopupContent != null)
+                {
+                    FloatingBarGesturePopupContent.MultiTouchToggle.IsOn = Settings.Gesture.IsEnableMultiTouchMode;
+                    FloatingBarGesturePopupContent.TwoFingerTranslateToggle.IsOn = Settings.Gesture.IsEnableTwoFingerTranslate;
+                    FloatingBarGesturePopupContent.TwoFingerZoomToggle.IsOn = Settings.Gesture.IsEnableTwoFingerZoom;
+                    FloatingBarGesturePopupContent.TwoFingerRotationToggle.IsOn = Settings.Gesture.IsEnableTwoFingerRotation;
+                }
+
+                if (BoardGesturePopupContent != null)
+                {
+                    BoardGesturePopupContent.MultiTouchToggle.IsOn = Settings.Gesture.IsEnableMultiTouchModeBoard;
+                    BoardGesturePopupContent.TwoFingerTranslateToggle.IsOn = Settings.Gesture.IsEnableTwoFingerTranslateBoard;
+                    BoardGesturePopupContent.TwoFingerZoomToggle.IsOn = Settings.Gesture.IsEnableTwoFingerZoomBoard;
+                    BoardGesturePopupContent.TwoFingerRotationToggle.IsOn = Settings.Gesture.IsEnableTwoFingerRotationBoard;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"同步手势开关状态失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            // 快捷调色盘
+            try
+            {
+                if (QuickColorPalette != null)
+                {
+                    // 注意：不调用 QuickColorPalette.SyncFromSettings()
+                    // 因为工具栏构建时已经通过 ApplyComponentSettings 应用了组件设置中的 DisplayMode
+                    // 这里只设置可见性
+                    QuickColorPalette.Visibility = Settings.Appearance.IsShowQuickColorPalette 
+                        ? Visibility.Visible 
+                        : Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"同步快捷调色盘状态失败: {ex.Message}", LogHelper.LogType.Error);
             }
 
             // Canvas
@@ -592,17 +647,20 @@ namespace Ink_Canvas
                 Settings.Automation = new Automation();
             }
 
-            // auto align
-            if (IsInPptPresentationMode)
-            {
-                ViewboxFloatingBarMarginAnimation(60);
-            }
-            else
-            {
-                ViewboxFloatingBarMarginAnimation(100, true);
-            }
-
             RefreshFloatingBarScreenFollowState();
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (IsInPptPresentationMode)
+                    ViewboxFloatingBarMarginAnimation(60);
+                else
+                    ViewboxFloatingBarMarginAnimation(100, true);
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                UpdateQuickColorPaletteIndicator(inkCanvas.DefaultDrawingAttributes.Color);
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
 
         }
 
@@ -638,32 +696,24 @@ namespace Ink_Canvas
         {
             try
             {
-
-                // 同步批注子面板中的开关状态
-                if (ToggleSwitchInkFadeInPanel != null)
-                {
-                    ToggleSwitchInkFadeInPanel.IsOn = Settings.Canvas.EnableInkFade;
-                }
-
-                // 同步普通画笔面板中的开关状态
-                if (ToggleSwitchInkFadeInPanel2 != null)
-                {
-                    ToggleSwitchInkFadeInPanel2.IsOn = Settings.Canvas.EnableInkFade;
-                }
-
-
-
-
-                // 同步墨迹渐隐管理器的状态
                 if (_inkFadeManager != null)
                 {
                     _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
                     _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
                 }
 
-
-                // 根据设置更新墨迹渐隐控制开关的可见性
-                UpdateInkFadeControlVisibility();
+                if (LaserPenWidthSlider != null)
+                    LaserPenWidthSlider.Value = Settings.Canvas.LaserPenWidth;
+                if (LaserPenAlphaSlider != null)
+                    LaserPenAlphaSlider.Value = Settings.Canvas.LaserPenAlpha;
+                if (LaserPenFadeTimeSlider != null)
+                    LaserPenFadeTimeSlider.Value = Math.Max(1, Math.Min(15, Settings.Canvas.InkFadeTime / 1000));
+                if (BoardLaserPenWidthSlider != null)
+                    BoardLaserPenWidthSlider.Value = Settings.Canvas.LaserPenWidth;
+                if (BoardLaserPenAlphaSlider != null)
+                    BoardLaserPenAlphaSlider.Value = Settings.Canvas.LaserPenAlpha;
+                if (BoardLaserPenFadeTimeSlider != null)
+                    BoardLaserPenFadeTimeSlider.Value = Math.Max(1, Math.Min(15, Settings.Canvas.InkFadeTime / 1000));
 
                 LogHelper.WriteLogToFile("墨迹渐隐设置已加载", LogHelper.LogType.Trace);
             }

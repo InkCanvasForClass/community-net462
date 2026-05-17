@@ -2,7 +2,6 @@ using Ink_Canvas.Controls;
 using Ink_Canvas.Controls.Toolbar;
 using Ink_Canvas.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -24,8 +23,20 @@ namespace Ink_Canvas
         internal ToolbarImageButton ToolsFloatingBarBtn { get; private set; }
         internal ToolbarImageButton Fold_Icon { get; private set; }
         internal ToolbarImageButton Freeze_Icon { get; private set; }
+        internal ToolbarImageButton Gesture_Icon { get; private set; }
+        internal ToolbarImageButton Exit_Icon { get; private set; }
 
-        internal Panel FloatingBarRootPanel => BorderFloatingBarMoveControls?.Parent as Panel;
+        internal Panel FloatingBarRootPanel => StackPanelFloatingBarRoot;
+
+        internal double FloatingBarSelectionBGLeft => GetSelectionBGLeft();
+        internal bool FloatingBarSelectionBGIsHidden
+        {
+            get
+            {
+                var (selectionBG, _, _) = GetFirstContentBorderElements();
+                return selectionBG == null || selectionBG.Visibility != Visibility.Visible;
+            }
+        }
         internal iNKORE.UI.WPF.Modern.Controls.ToggleSwitch ToggleSwitchDrawShapeBorderAutoHide { get; } =
             new iNKORE.UI.WPF.Modern.Controls.ToggleSwitch { IsOn = true };
 
@@ -62,6 +73,8 @@ namespace Ink_Canvas
             BorderTools.PlacementTarget = btn;
         }
         internal void AttachFoldIcon(ToolbarImageButton btn) => Fold_Icon = btn;
+        internal void AttachGestureBtn(ToolbarImageButton btn) { Gesture_Icon = btn; TwoFingerGestureBorder.PlacementTarget = btn; }
+        internal void AttachExitBtn(ToolbarImageButton btn) => Exit_Icon = btn;
 
         #region PenPalette property mappings
         internal ComboBox ComboBoxPenStyle => PenPalettePopupContent?.PenStyleComboBox ?? BoardPenPalettePopupContent?.PenStyleComboBox;
@@ -70,14 +83,18 @@ namespace Ink_Canvas
         internal iNKORE.UI.WPF.Modern.Controls.ToggleSwitch BoardToggleSwitchEnableNibMode => BoardPenPalettePopupContent?.NibModeToggle;
         internal iNKORE.UI.WPF.Modern.Controls.ToggleSwitch FloatingBarToggleSwitchEnableInkToShape => PenPalettePopupContent?.InkToShapeToggle;
         internal iNKORE.UI.WPF.Modern.Controls.ToggleSwitch BoardToggleSwitchEnableInkToShape => BoardPenPalettePopupContent?.InkToShapeToggle;
-        internal iNKORE.UI.WPF.Modern.Controls.ToggleSwitch ToggleSwitchInkFadeInPanel => PenPalettePopupContent?.InkFadeToggle;
-        internal iNKORE.UI.WPF.Modern.Controls.ToggleSwitch ToggleSwitchInkFadeInPanel2 => PenPalettePopupContent?.InkFadeToggle2;
         internal Slider InkWidthSlider => PenPalettePopupContent?.InkWidthSlider;
         internal Slider BoardInkWidthSlider => BoardPenPalettePopupContent?.InkWidthSlider;
         internal Slider InkAlphaSlider => PenPalettePopupContent?.InkAlphaSlider;
         internal Slider BoardInkAlphaSlider => BoardPenPalettePopupContent?.InkAlphaSlider;
         internal Slider HighlighterWidthSlider => PenPalettePopupContent?.HighlighterWidthSlider;
         internal Slider BoardHighlighterWidthSlider => BoardPenPalettePopupContent?.HighlighterWidthSlider;
+        internal Slider LaserPenWidthSlider => PenPalettePopupContent?.LaserPenWidthSlider ?? BoardPenPalettePopupContent?.LaserPenWidthSlider;
+        internal Slider LaserPenAlphaSlider => PenPalettePopupContent?.LaserPenAlphaSlider ?? BoardPenPalettePopupContent?.LaserPenAlphaSlider;
+        internal Slider LaserPenFadeTimeSlider => PenPalettePopupContent?.LaserPenFadeTimeSlider ?? BoardPenPalettePopupContent?.LaserPenFadeTimeSlider;
+        internal Slider BoardLaserPenWidthSlider => BoardPenPalettePopupContent?.LaserPenWidthSlider;
+        internal Slider BoardLaserPenAlphaSlider => BoardPenPalettePopupContent?.LaserPenAlphaSlider;
+        internal Slider BoardLaserPenFadeTimeSlider => BoardPenPalettePopupContent?.LaserPenFadeTimeSlider;
         internal Button BoardBrushModeButton => PenPalettePopupContent?.BrushModeBtn;
         internal System.Windows.Shapes.Path BoardBrushModeIcon => PenPalettePopupContent?.BrushModeIcon;
 
@@ -100,13 +117,17 @@ namespace Ink_Canvas
 
         internal FrameworkElement DefaultPenPropsPanel => PenPalettePopupContent?.DefaultPenPropsPanel ?? BoardPenPalettePopupContent?.DefaultPenPropsPanel;
         internal FrameworkElement HighlighterPenPropsPanel => PenPalettePopupContent?.HighlighterPenPropsPanel ?? BoardPenPalettePopupContent?.HighlighterPenPropsPanel;
+        internal FrameworkElement LaserPenPropsPanel => PenPalettePopupContent?.LaserPenPropsPanel ?? BoardPenPalettePopupContent?.LaserPenPropsPanel;
         internal FrameworkElement DefaultPenColorsPanel => PenPalettePopupContent?.DefaultPenColorsPanel ?? BoardPenPalettePopupContent?.DefaultPenColorsPanel;
         internal FrameworkElement HighlighterPenColorsPanel => PenPalettePopupContent?.HighlighterPenColorsPanel ?? BoardPenPalettePopupContent?.HighlighterPenColorsPanel;
+        internal FrameworkElement LaserPenColorsPanel => PenPalettePopupContent?.LaserPenColorsPanel ?? BoardPenPalettePopupContent?.LaserPenColorsPanel;
 
         internal FrameworkElement BoardDefaultPenPropsPanel => BoardPenPalettePopupContent?.DefaultPenPropsPanel;
         internal FrameworkElement BoardHighlighterPenPropsPanel => BoardPenPalettePopupContent?.HighlighterPenPropsPanel;
+        internal FrameworkElement BoardLaserPenPropsPanel => BoardPenPalettePopupContent?.LaserPenPropsPanel;
         internal FrameworkElement BoardDefaultPenColorsPanel => BoardPenPalettePopupContent?.DefaultPenColorsPanel;
         internal FrameworkElement BoardHighlighterPenColorsPanel => BoardPenPalettePopupContent?.HighlighterPenColorsPanel;
+        internal FrameworkElement BoardLaserPenColorsPanel => BoardPenPalettePopupContent?.LaserPenColorsPanel;
 
 
 
@@ -152,17 +173,41 @@ namespace Ink_Canvas
         internal PenColorButton BoardHighlighterPenColorTeal => BoardPenPalettePopupContent?.HighlighterPenColorTeal;
         internal PenColorButton BoardHighlighterPenColorOrange => BoardPenPalettePopupContent?.HighlighterPenColorOrange;
 
+        internal PenColorButton LaserPenColorBlack => PenPalettePopupContent?.LaserPenColorBlack ?? BoardPenPalettePopupContent?.LaserPenColorBlack;
+        internal PenColorButton LaserPenColorWhite => PenPalettePopupContent?.LaserPenColorWhite ?? BoardPenPalettePopupContent?.LaserPenColorWhite;
+        internal PenColorButton LaserPenColorRed => PenPalettePopupContent?.LaserPenColorRed ?? BoardPenPalettePopupContent?.LaserPenColorRed;
+        internal PenColorButton LaserPenColorYellow => PenPalettePopupContent?.LaserPenColorYellow ?? BoardPenPalettePopupContent?.LaserPenColorYellow;
+        internal PenColorButton LaserPenColorGreen => PenPalettePopupContent?.LaserPenColorGreen ?? BoardPenPalettePopupContent?.LaserPenColorGreen;
+        internal PenColorButton LaserPenColorBlue => PenPalettePopupContent?.LaserPenColorBlue ?? BoardPenPalettePopupContent?.LaserPenColorBlue;
+        internal PenColorButton LaserPenColorPink => PenPalettePopupContent?.LaserPenColorPink ?? BoardPenPalettePopupContent?.LaserPenColorPink;
+        internal PenColorButton LaserPenColorTeal => PenPalettePopupContent?.LaserPenColorTeal ?? BoardPenPalettePopupContent?.LaserPenColorTeal;
+        internal PenColorButton LaserPenColorOrange => PenPalettePopupContent?.LaserPenColorOrange ?? BoardPenPalettePopupContent?.LaserPenColorOrange;
+
+        internal PenColorButton BoardLaserPenColorBlack => BoardPenPalettePopupContent?.LaserPenColorBlack;
+        internal PenColorButton BoardLaserPenColorWhite => BoardPenPalettePopupContent?.LaserPenColorWhite;
+        internal PenColorButton BoardLaserPenColorRed => BoardPenPalettePopupContent?.LaserPenColorRed;
+        internal PenColorButton BoardLaserPenColorYellow => BoardPenPalettePopupContent?.LaserPenColorYellow;
+        internal PenColorButton BoardLaserPenColorGreen => BoardPenPalettePopupContent?.LaserPenColorGreen;
+        internal PenColorButton BoardLaserPenColorBlue => BoardPenPalettePopupContent?.LaserPenColorBlue;
+        internal PenColorButton BoardLaserPenColorPink => BoardPenPalettePopupContent?.LaserPenColorPink;
+        internal PenColorButton BoardLaserPenColorTeal => BoardPenPalettePopupContent?.LaserPenColorTeal;
+        internal PenColorButton BoardLaserPenColorOrange => BoardPenPalettePopupContent?.LaserPenColorOrange;
+
         internal Border ColorThemeSwitch => PenPalettePopupContent?.ColorThemeSwitch ?? BoardPenPalettePopupContent?.ColorThemeSwitch;
         internal Image ColorThemeSwitchIcon => PenPalettePopupContent?.ColorThemeSwitchIcon ?? BoardPenPalettePopupContent?.ColorThemeSwitchIcon;
         internal TextBlock ColorThemeSwitchTextBlock => PenPalettePopupContent?.ColorThemeSwitchText ?? BoardPenPalettePopupContent?.ColorThemeSwitchText;
         internal Border BoardColorThemeSwitch => BoardPenPalettePopupContent?.ColorThemeSwitch;
         internal Image BoardColorThemeSwitchIcon => BoardPenPalettePopupContent?.ColorThemeSwitchIcon;
         internal TextBlock BoardColorThemeSwitchTextBlock => BoardPenPalettePopupContent?.ColorThemeSwitchText;
+        internal Border LaserPenColorThemeSwitch => PenPalettePopupContent?.LaserPenColorThemeSwitch ?? BoardPenPalettePopupContent?.LaserPenColorThemeSwitch;
+        internal Image LaserPenColorThemeSwitchIcon => PenPalettePopupContent?.LaserPenColorThemeSwitchIcon ?? BoardPenPalettePopupContent?.LaserPenColorThemeSwitchIcon;
+        internal TextBlock LaserPenColorThemeSwitchTextBlock => PenPalettePopupContent?.LaserPenColorThemeSwitchText ?? BoardPenPalettePopupContent?.LaserPenColorThemeSwitchText;
+        internal Border BoardLaserPenColorThemeSwitch => BoardPenPalettePopupContent?.LaserPenColorThemeSwitch;
+        internal Image BoardLaserPenColorThemeSwitchIcon => BoardPenPalettePopupContent?.LaserPenColorThemeSwitchIcon;
+        internal TextBlock BoardLaserPenColorThemeSwitchTextBlock => BoardPenPalettePopupContent?.LaserPenColorThemeSwitchText;
 
         internal FrameworkElement NibModeSimpleStackPanel => PenPalettePopupContent?.NibModePanel ?? BoardPenPalettePopupContent?.NibModePanel;
         internal FrameworkElement BoardNibModeSimpleStackPanel => BoardPenPalettePopupContent?.NibModePanel;
-        internal FrameworkElement InkFadeControlPanel1 => PenPalettePopupContent?.InkFadeControlPanel ?? BoardPenPalettePopupContent?.InkFadeControlPanel;
-        internal FrameworkElement InkFadeControlPanel2 => PenPalettePopupContent?.InkFadeControlPanel2 ?? BoardPenPalettePopupContent?.InkFadeControlPanel2;
         #endregion
 
         #region Eraser property mappings
@@ -207,21 +252,51 @@ namespace Ink_Canvas
         internal Border BlackboardModeBtn => BackgroundPalettePopupContent?.BlackboardBtn;
         #endregion
 
+        #region QuickColorPalette property mappings
+        private QuickColorPaletteControl _quickColorPalette;
+
+        internal QuickColorPaletteControl QuickColorPalette
+        {
+            get
+            {
+                if (_quickColorPalette != null) return _quickColorPalette;
+                if (ToolbarHost != null)
+                {
+                    _quickColorPalette = ToolbarHost.FindView("builtin.quickColorPalette") as QuickColorPaletteControl;
+                    if (_quickColorPalette != null) return _quickColorPalette;
+                }
+                if (StackPanelFloatingBarRoot != null)
+                {
+                    _quickColorPalette = FindDescendant<QuickColorPaletteControl>(StackPanelFloatingBarRoot);
+                }
+                return _quickColorPalette;
+            }
+        }
+
+        private static T FindDescendant<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) return null;
+            var childrenCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T result) return result;
+                var descendant = FindDescendant<T>(child);
+                if (descendant != null) return descendant;
+            }
+            return null;
+        }
+        #endregion
+
         internal void InitializeToolbarPlugins()
         {
             LogHelper.WriteLogToFile("MW_Toolbar: InitializeToolbarPlugins 开始", LogHelper.LogType.Info);
             try
             {
+                ToolbarRegistry.EnsureDefaultConfigExists();
                 ToolbarHost = new ToolbarHost(this);
-                var slots = new Dictionary<ToolbarSlot, Panel>
-                {
-                    { ToolbarSlot.FloatingBarMain, StackPanelFloatingBar },
-                    { ToolbarSlot.FloatingBarCanvasControls, StackPanelCanvasControls },
-                    { ToolbarSlot.FloatingBarEnd, StackPanelFloatingBarEnd },
-                    { ToolbarSlot.BlackboardLeft, BlackboardLeftSide },
-                    { ToolbarSlot.BlackboardRight, BlackboardRightSide }
-                };
-                ToolbarRegistry.Populate(ToolbarHost, slots, Settings?.Toolbar);
+                var layout = ToolbarRegistry.LoadActiveConfig();
+                ToolbarRegistry.Populate(ToolbarHost, StackPanelFloatingBarRoot, layout);
                 LogHelper.WriteLogToFile("MW_Toolbar: InitializeToolbarPlugins 完成", LogHelper.LogType.Info);
             }
             catch (Exception ex)
@@ -235,18 +310,33 @@ namespace Ink_Canvas
             LogHelper.WriteLogToFile("MW_Toolbar: RebuildToolbar 开始", LogHelper.LogType.Info);
             try
             {
-                ToolbarRegistry.ClearInjected(StackPanelFloatingBar);
-                ToolbarRegistry.ClearInjected(StackPanelCanvasControls);
-                ToolbarRegistry.ClearInjected(StackPanelFloatingBarEnd);
-                ToolbarRegistry.ClearInjected(BlackboardLeftSide);
-                ToolbarRegistry.ClearInjected(BlackboardRightSide);
+                _lastHighlightButton = null;
+                _quickColorPalette = null;
+                ToolbarRegistry.ClearInjected(StackPanelFloatingBarRoot);
                 InitializeToolbarPlugins();
+                UpdateToolbarComponentVisibility();
+                ApplyFloatingBarIconHighlightImmediate(_currentToolMode);
+                RefreshFloatingBarButtonColors();
+                RefreshGestureButtonIcon();
+                SetFloatingBarHighlightPosition(_currentToolMode);
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    UpdateQuickColorPaletteIndicator(inkCanvas.DefaultDrawingAttributes.Color);
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
                 LogHelper.WriteLogToFile("MW_Toolbar: RebuildToolbar 完成", LogHelper.LogType.Info);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"MW_Toolbar: RebuildToolbar 异常: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", LogHelper.LogType.Error);
             }
+        }
+
+        internal bool IsAnnotating => _currentToolMode != "cursor";
+
+        internal void UpdateToolbarComponentVisibility()
+        {
+            var isPpt = IsInPptPresentationMode;
+            ToolbarRegistry.UpdateVisibilityByMode(StackPanelFloatingBarRoot, IsAnnotating, isPpt);
         }
     }
 }

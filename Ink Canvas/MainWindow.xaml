@@ -791,6 +791,10 @@
                                                                  Label="{i18n:I18n Key=Board_Pen}"
                                                                  IconGeometry="F1 M24,24z M0,0z M20.4786,1.42438C19.9985,1.23743 19.4847,1.15194 18.9698,1.17319 18.4549,1.19444 17.9499,1.32197 17.4869,1.54789 17.0368,1.76752 16.6358,2.07554 16.3083,2.45361L3.85516,14.9067 9.08243,20.134 21.5311,7.68529C21.9113,7.36382 22.223,6.96912 22.447,6.52438 22.6786,6.06462 22.8113,5.56167 22.8365,5.04763 22.8616,4.5336 22.7787,4.02012 22.593,3.54002 22.4073,3.05994 22.1232,2.62403 21.759,2.25988 21.3949,1.89574 20.9587,1.61132 20.4786,1.42438z M7.28056,21.1605L2.8286,16.7086 1.15912,22.83 7.28056,21.1605z"
                                                                  ButtonMouseUp="PenIcon_Click" />
+                                    <controls:BoardToolbarButton x:Name="BoardInkFreeze"
+                                                                 Label="冻结"
+                                                                 IconGeometry="F1 M24,24z M0,0z M12.875,3.42617C12.875,2.94292 12.4833,2.55117 12,2.55117 11.5168,2.55117 11.125,2.94292 11.125,3.42617L11.125,4.58253 10.6766,4.35831C10.2444,4.1422 9.71878,4.31739 9.50266,4.74962 9.28655,5.18185 9.46174,5.70744 9.89398,5.92356L11.125,6.53909 11.125,8.48547 9.39973,9.48835 7.70825,8.51174 7.79073,7.13797C7.81969,6.65559 7.45212,6.24107 6.96974,6.21211 6.48736,6.18315 6.07283,6.55072 6.04387,7.0331L6.01383,7.53344 5.01252,6.95531C4.59401,6.71368 4.05887,6.85707 3.81724,7.27557 3.57561,7.69407 3.71899,8.22922 4.1375,8.47085L5.13889,9.04902 4.72043,9.3253C4.31715,9.59156 4.20607,10.1343 4.47233,10.5376 4.73859,10.9409 5.28136,11.052 5.68464,10.7857L6.83331,10.0273 8.51897,11.0006 8.52474,12.9961 6.83321,13.9727 5.68464,13.2144C5.28136,12.9481 4.73859,13.0592 4.47233,13.4625 4.20607,13.8658 4.31715,14.4085 4.72043,14.6748L5.13879,14.951 4.1375,15.5291C3.71899,15.7708 3.57561,16.3059 3.81724,16.7244 4.05887,17.1429 4.59401,17.2863 5.01252,17.0447L6.01383,16.4665 6.04387,16.967C6.07283,17.4494 6.48736,17.8169 6.96974,17.788 7.45212,17.759 7.81969,17.3445 7.79073,16.8621L7.70825,15.4882 9.39365,14.5151 11.125,15.5078 11.125,17.4609 9.89398,18.0764C9.46174,18.2925 9.28655,18.8181 9.50266,19.2503 9.71878,19.6826 10.2444,19.8578 10.6766,19.6417L11.125,19.4174 11.125,20.5738C11.125,21.0571 11.5168,21.4488 12,21.4488 12.4833,21.4488 12.875,21.0571 12.875,20.5738L12.875,19.4174 13.3235,19.6417C13.7557,19.8578 14.2813,19.6826 14.4974,19.2503 14.7136,18.8181 14.5384,18.2925 14.1061,18.0764L12.875,17.4609 12.875,15.5145 14.6003,14.5116 16.2918,15.4883 16.2094,16.8621C16.1804,17.3445 16.548,17.759 17.0304,17.788 17.5127,17.8169 17.9273,17.4494 17.9562,16.967L17.9863,16.4666 18.9875,17.0447C19.406,17.2863 19.9411,17.1429 20.1828,16.7244 20.4244,16.3059 20.281,15.7708 19.8625,15.5291L18.8612,14.951 19.2797,14.6748C19.6829,14.4085 19.794,13.8658 19.5278,13.4625 19.2615,13.0592 18.7187,12.9481 18.3154,13.2144L17.1668,13.9727 15.4808,12.9993 15.475,11.0039 17.1668,10.0273 18.3154,10.7857C18.7187,11.052 19.2615,10.9409 19.5278,10.5376 19.794,10.1343 19.6829,9.59156 19.2797,9.3253L18.8612,9.04902 19.8625,8.47085C20.281,8.22922 20.4244,7.69407 20.1828,7.27557 19.9411,6.85707 19.406,6.71368 18.9875,6.95531L17.9863,7.53344 17.9562,7.0331C17.9273,6.55072 17.5127,6.18315 17.0304,6.21211 16.548,6.24107 16.1804,6.65559 16.2094,7.13797L16.2918,8.51174 14.6003,9.48835 12.875,8.48547 12.875,6.53909 14.1061,5.92356C14.5384,5.70744 14.7136,5.18185 14.4974,4.74962 14.2813,4.31739 13.7557,4.1422 13.3235,4.35831L12.875,4.58253 12.875,3.42617z"
+                                                                 ButtonMouseUp="BoardInkFreeze_MouseUp" />
                                     
                                     <controls:BoardToolbarButton x:Name="BoardEraser"
                                                                  Label="{i18n:I18n Key=Board_Eraser}"
@@ -1113,195 +1117,54 @@
                 <Viewbox.LayoutTransform>
                     <ScaleTransform x:Name="ViewboxFloatingBarScaleTransform" ScaleX="1" ScaleY="1" />
                 </Viewbox.LayoutTransform>
-                <ikw:SimpleStackPanel Orientation="Horizontal">
-                    <!--拖动图标-->
-                    <Border x:Name="BorderFloatingBarMoveControls" Width="54" Height="54" CornerRadius="8"
-                            Background="{DynamicResource FloatBarBackground}" BorderThickness="2" BorderBrush="{DynamicResource FloatBarBorderBrush}"
-                            MouseDown="SymbolIconEmoji_MouseDown" MouseUp="SymbolIconEmoji_MouseUp"
-                            d:Background="Red" d:BorderBrush="Green">
-                        <ikw:SimpleStackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Image Margin="0"
-                                   Name="FloatingbarHeadIconImg"
+                <Grid Name="GridFloatingBarContainer">
+                    <ikw:SimpleStackPanel Name="StackPanelFloatingBarRoot" Orientation="Horizontal" MaxHeight="58">
+                        <Border Name="BorderFloatingBarMoveControls" Margin="0" Padding="0"
+                                Width="58" Height="58"
+                                Background="{DynamicResource FloatBarBackground}"
+                                CornerRadius="8"
+                                BorderThickness="2"
+                                BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                                MouseDown="SymbolIconEmoji_MouseDown"
+                                MouseUp="SymbolIconEmoji_MouseUp">
+                            <Image Name="FloatingbarHeadIconImg" Margin="0.5"
                                    SnapsToDevicePixels="True"
-                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                   Source="/Resources/Icons-png/icc.png" />
-                        </ikw:SimpleStackPanel>
-                    </Border>
-                    <!--内容区域-->
-                    <Border Padding="2" Visibility="Visible" Height="54"
-                            Name="BorderFloatingBarMainControls" Background="{DynamicResource FloatBarBackground}" CornerRadius="8"
-                            BorderThickness="2" Margin="3,0,0,0"
-                            BorderBrush="{DynamicResource FloatBarBorderBrush}"
-                            HorizontalAlignment="Left"
-                            d:Background="Red" d:BorderBrush="Green">
-                        <Viewbox Stretch="UniformToFill">
-                            <Grid Height="31">
-                                <Canvas Name="FloatingbarSelectionBGCanvas" Margin="2,0,2,0">
-                                    <Border Name="FloatingbarSelectionBG" Visibility="Hidden" d:Visibility="Visible" Width="28" Height="34"
-                                            Canvas.Left="28" Margin="0,-2,0,-2" Background="#153b82f6">
-                                        <Canvas>
-                                            <Border Canvas.Bottom="1" Canvas.Left="8" Width="12" Height="2"
-                                                    CornerRadius="1,1,0,0" Background="#2563eb" />
-                                        </Canvas>
-                                    </Border>
-                                </Canvas>
-                                <ikw:SimpleStackPanel Margin="2,0" Name="StackPanelFloatingBar" Orientation="Horizontal" Cursor="Arrow" HorizontalAlignment="Left">
-                                    <!-- Cursor_Icon / Pen_Icon 由 ToolbarRegistry 动态注入（见 Controls/Toolbar/Items/*） -->
-                                    <!-- 快捷调色盘 - 双行显示模式 -->
-                                    <ikw:SimpleStackPanel Name="QuickColorPalettePanel" 
-                                                         Visibility="Collapsed"  d:Visibility="Visible"
-                                                         Orientation="Vertical" 
-                                                         HorizontalAlignment="Center" 
-                                                         Margin="4,0,4,0"
-                                                         
-                                                         
-                                                         
-                                                         
-                                                         >
-                                        <!-- 第一行：黑、白、红、橙 -->
-                                        <ikw:SimpleStackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                            <controls:ColorPickerButton x:Name="QuickColorBlack" Color="Black" CheckIconFill="White" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorBlack_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Black}"/>
-                                            <controls:ColorPickerButton x:Name="QuickColorWhite" Color="White" CheckIconFill="Black" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorWhite_Click" ToolTip="{i18n:I18n Key=Canvas_Color_White}"/>
-                                            <controls:ColorPickerButton x:Name="QuickColorRed" Color="#FF0000" CheckIconFill="White" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorRed_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Red}"/>
-                                            <controls:ColorPickerButton x:Name="QuickColorOrange" Color="#FFA500" CheckIconFill="Black" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorOrange_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Orange}"/>
-                                        </ikw:SimpleStackPanel>
-
-                                        <!-- 第二行：黄、绿、蓝、紫 -->
-                                        <ikw:SimpleStackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                            <controls:ColorPickerButton x:Name="QuickColorYellow" Color="#FFFF00" CheckIconFill="Black" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorYellow_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Yellow}"/>
-                                            <controls:ColorPickerButton x:Name="QuickColorGreen" Color="#16A34A" CheckIconFill="Black" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorGreen_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Green}"/>
-                                            <controls:ColorPickerButton x:Name="QuickColorBlue" Color="#2563EB" CheckIconFill="White" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorBlue_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Blue}"/>
-                                            <controls:ColorPickerButton x:Name="QuickColorPurple" Color="#9333EA" CheckIconFill="White" ButtonSize="13" CheckIconSize="8"
-                                                                        ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorPurple_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Purple}"/>
-                                        </ikw:SimpleStackPanel>
-                                    </ikw:SimpleStackPanel>
-                                    <!-- 快捷调色盘 - 单行显示模式 -->
-                                    <ikw:SimpleStackPanel Name="QuickColorPaletteSingleRowPanel" 
-                                                         Visibility="Collapsed"  d:Visibility="Visible"
-                                                         Orientation="Horizontal" 
-                                                         HorizontalAlignment="Center" 
-                                                         Margin="4,0,4,0"
-                                                         
-                                                         
-                                                         >
-                                        <!-- 单行显示：黑、白、红、橙、黄、绿 -->
-                                        <controls:ColorPickerButton x:Name="QuickColorBlackSingle" Color="Black" CheckIconFill="White" ButtonSize="18" CheckIconSize="10"
-                                                                    ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorBlack_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Black}"/>
-                                        <controls:ColorPickerButton x:Name="QuickColorWhiteSingle" Color="White" CheckIconFill="Black" ButtonSize="18" CheckIconSize="10"
-                                                                    ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorWhite_Click" ToolTip="{i18n:I18n Key=Canvas_Color_White}"/>
-                                        <controls:ColorPickerButton x:Name="QuickColorRedSingle" Color="#FF0000" CheckIconFill="White" ButtonSize="18" CheckIconSize="10"
-                                                                    ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorRed_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Red}"/>
-                                        <controls:ColorPickerButton x:Name="QuickColorOrangeSingle" Color="#FFA500" CheckIconFill="Black" ButtonSize="18" CheckIconSize="10"
-                                                                    ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorOrange_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Orange}"/>
-                                        <controls:ColorPickerButton x:Name="QuickColorYellowSingle" Color="#FFFF00" CheckIconFill="Black" ButtonSize="18" CheckIconSize="10"
-                                                                    ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorYellow_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Yellow}"/>
-                                        <controls:ColorPickerButton x:Name="QuickColorGreenSingle" Color="#16A34A" CheckIconFill="Black" ButtonSize="18" CheckIconSize="10"
-                                                                    ButtonMouseDown="FloatingBarToolBtnMouseDownFeedback_Panel" ButtonMouseLeave="FloatingBarToolBtnMouseLeaveFeedback_Panel" ButtonMouseUp="QuickColorGreen_Click" ToolTip="{i18n:I18n Key=Canvas_Color_Green}"/>
-                                    </ikw:SimpleStackPanel>
-                                    <!-- SymbolIconDelete 由 ClearToolItem 动态注入（BeforeAnchor=StackPanelCanvasControls） -->
-                                    <ikw:SimpleStackPanel Name="StackPanelCanvasControls" Visibility="Visible"
-                                                         Orientation="{Binding ElementName=StackPanelFloatingBar, Path=Orientation}">
-
-
-                                        <!-- Eraser_Icon / EraserByStrokes_Icon / SymbolIconSelect / ShapeDrawFloatingBarBtn 由 ToolbarRegistry 注入（Prepend） -->
-
-                                        <!-- SymbolIconUndo / SymbolIconRedo / CursorWithDelFloatingBarBtn 由 ToolbarRegistry 注入（Append） -->
-                                    </ikw:SimpleStackPanel>
-                                    <ikw:SimpleStackPanel x:Name="StackPanelFloatingBarEnd"
-                                            Orientation="{Binding ElementName=StackPanelFloatingBar, Path=Orientation}">
-                                        <Border x:Name="FloatingBarEndSeparator" Margin="2,0,2,0" BorderBrush="#71717a" BorderThickness="1,0,0,0" />
-                                        <!-- WhiteboardFloatingBarBtn / ToolsFloatingBarBtn / Fold_Icon 由 ToolbarRegistry 注入（AfterAnchor=FloatingBarEndSeparator） -->
-                                        <Grid Width="0" d:Visibility="Visible">
-                                        </Grid>
-                                    </ikw:SimpleStackPanel>
-                                </ikw:SimpleStackPanel>
-                            </Grid>
-                        </Viewbox>
-                    </Border>
-                    <!--手势图标-->
-                    <ikw:SimpleStackPanel Orientation="{Binding ElementName=StackPanelFloatingBar, Path=Orientation}">
-                        <Border x:Name="EnableTwoFingerGestureBorder" Visibility="Visible" Width="54"
-                            Height="54" CornerRadius="8" Background="{DynamicResource FloatBarBackground}" BorderBrush="{DynamicResource FloatBarBorderBrush}"
-                            BorderThickness="2" d:Background="Red" d:BorderBrush="Green" Margin="3,0,0,0">
-                            <ikw:SimpleStackPanel
-                                MouseUp="TwoFingerGestureBorder_MouseUp" Background="Transparent"
-                                Orientation="Vertical" HorizontalAlignment="Center" Width="54">
-                                <Image x:Name="EnableTwoFingerGestureBtn" Source="{DynamicResource GestureIcon}"
-                                       RenderOptions.BitmapScalingMode="HighQuality" Width="42" Height="27"
-                                       Margin="0,6,0,0" />
-                                <TextBlock x:Name="gestureiconText"
-                                           Text="{i18n:I18n Key=FloatingBar_GestureButton}"
-                                           Foreground="{DynamicResource FloatBarForeground}"
-                                           FontSize="12"
-                                           TextAlignment="Center" />
-                            </ikw:SimpleStackPanel>
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   RenderOptions.BitmapScalingMode="HighQuality" />
                         </Border>
                     </ikw:SimpleStackPanel>
-                    <!--退出图标-->
-                    <Border x:Name="BorderFloatingBarExitPPTBtn" Width="54" Height="54" Margin="3,0,0,0"
-                            MouseDown="Border_MouseDown" MouseUp="ImagePPTControlEnd_MouseUp"
-                            Background="{DynamicResource FloatBarBackground}" CornerRadius="8" BorderThickness="2"
-                            BorderBrush="{DynamicResource FloatBarBorderBrush}" d:Background="Red" d:BorderBrush="Green"
-                            Visibility="Collapsed"  d:Visibility="Visible">
-                        <ikw:SimpleStackPanel Background="Transparent" Orientation="Vertical"
-                                             HorizontalAlignment="Center"
-                                             Width="54">
-                            <Image Source="{DynamicResource QuickPanelEndSlideshowIcon}"
-                                   RenderOptions.BitmapScalingMode="HighQuality" Width="42" Height="27"
-                                   Margin="0,6,0,0" />
-                            <TextBlock Text="{i18n:I18n Key=FloatingBar_ExitButton}"
-                                       Foreground="{DynamicResource FloatBarForeground}"
-                                       FontSize="12"
-                                       TextAlignment="Center" />
-                        </ikw:SimpleStackPanel>
-                    </Border>
-                </ikw:SimpleStackPanel>
+                    <Canvas Name="CanvasFloatingBarSelection" IsHitTestVisible="False">
+                        <Border Name="SelectionBGFloatingBar"
+                                Visibility="Hidden"
+                                Width="44" Height="43"
+                                CornerRadius="4"
+                                Background="#303B82F6"
+                                Canvas.Left="0" Canvas.Top="0" />
+                        <Border Name="IndicatorBarFloatingBar"
+                                Visibility="Hidden"
+                                Width="16" Height="3"
+                                CornerRadius="2"
+                                Background="#2563EB"
+                                Canvas.Left="14" Canvas.Bottom="2" />
+                    </Canvas>
+                </Grid>
             </Viewbox>
         </Grid>
         <!--浮动工具栏菜单-->
         <Grid>
-
-            <Popup x:Name="PenPalette"
-                                           Placement="Custom"
-                                           AllowsTransparency="True"
-                                           StaysOpen="True"
-                                           IsOpen="False">
+            <Popup x:Name="PenPalette" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
                 <localControls:PenPalettePopupContent x:Name="PenPalettePopupContent" />
             </Popup>
-            <Popup x:Name="EraserSizePanel"
-                                           Placement="Custom"
-                                           AllowsTransparency="True"
-                                           StaysOpen="True"
-                                           IsOpen="False">
+            <Popup x:Name="EraserSizePanel" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
                 <localControls:EraserPopupContent x:Name="EraserPopupContent" />
             </Popup>
-            <Popup x:Name="BorderTools"
-                                           Placement="Custom"
-                                           AllowsTransparency="True"
-                                           StaysOpen="True"
-                                           IsOpen="False">
+            <Popup x:Name="BorderTools" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
                 <localControls:ToolsPopupContent x:Name="MainToolsPopupContent" />
             </Popup>
-            <Popup x:Name="BorderDrawShape"
-                                           Placement="Custom"
-                                           AllowsTransparency="True"
-                                           StaysOpen="True"
-                                           IsOpen="False">
+            <Popup x:Name="BorderDrawShape" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
                 <localControls:ShapeDrawPopupContent x:Name="ShapeDrawPopupContent" />
             </Popup>
-            <Popup x:Name="TwoFingerGestureBorder"
-                               Placement="Custom"
-                               AllowsTransparency="True"
-                               StaysOpen="True"
-                               PlacementTarget="{Binding ElementName=EnableTwoFingerGestureBorder}"
-                               IsOpen="False">
+            <Popup x:Name="TwoFingerGestureBorder" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
                 <localControls:GesturePopupContent x:Name="FloatingBarGesturePopupContent" />
             </Popup>
         </Grid>
@@ -1737,7 +1600,7 @@
             <Windows:PPTTimeCapsule x:Name="PPTTimeCapsule"/>
         </Border>
         <!-- 包装层：PPT 放映快捷面板，代码中 4 处控制 Visibility/位置，非死代码 -->
-        <Border x:Name="PPTQuickPanelContainer" 
+        <Border x:Name="PPTQuickPanelContainer"
                 Visibility="Collapsed"  d:Visibility="Visible"
                 Panel.ZIndex="999"
                 HorizontalAlignment="Right"
@@ -1745,5 +1608,9 @@
                 Margin="0,50,0,0">
             <Windows:PPTQuickPanel x:Name="PPTQuickPanel"/>
         </Border>
+        <localControls:DynamicNotificationControl x:Name="DynamicNotification"
+                Panel.ZIndex="1100"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top" />
     </Grid>
 </helpers:PerformanceTransparentWin>

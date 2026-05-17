@@ -1,7 +1,9 @@
 using Ink_Canvas.Controls;
 using Ink_Canvas.Controls.Toolbar;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Models;
 using Ink_Canvas.Windows;
+using Ink_Canvas.Windows.SettingsViews;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -51,6 +53,8 @@ namespace Ink_Canvas
 
         // 墨迹渐隐管理器
         private InkFadeManager _inkFadeManager;
+        private readonly CancellationTokenSource _notificationProviderCancellation = new CancellationTokenSource();
+        private AnnouncementService _announcementService;
 
         // 悬浮窗拦截管理器
         public FloatingWindowInterceptorManager _floatingWindowInterceptorManager;
@@ -113,7 +117,7 @@ namespace Ink_Canvas
 
         internal static readonly DependencyProperty IsUndoEnabledProperty =
             DependencyProperty.Register(nameof(IsUndoEnabled), typeof(bool), typeof(MainWindow),
-                new PropertyMetadata(true));
+                new PropertyMetadata(false));
         internal bool IsUndoEnabled
         {
             get => (bool)GetValue(IsUndoEnabledProperty);
@@ -122,7 +126,7 @@ namespace Ink_Canvas
 
         internal static readonly DependencyProperty IsRedoEnabledProperty =
             DependencyProperty.Register(nameof(IsRedoEnabled), typeof(bool), typeof(MainWindow),
-                new PropertyMetadata(true));
+                new PropertyMetadata(false));
         internal bool IsRedoEnabled
         {
             get => (bool)GetValue(IsRedoEnabledProperty);
@@ -158,8 +162,7 @@ namespace Ink_Canvas
             content.ScreenshotBtn.ButtonMouseUp += SymbolIconScreenshot_MouseUp;
             content.ManualBtn.ButtonMouseUp += OperatingGuideWindowIcon_MouseUp;
             content.SettingsBtn.ButtonMouseUp += SymbolIconSettings_Click;
-            content.CloseFontIcon.MouseDown += Border_MouseDown;
-            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         private void WireUpBackgroundPaletteEvents()
@@ -176,6 +179,7 @@ namespace Ink_Canvas
             content.GSlider.ValueChanged += BackgroundGSlider_ValueChanged;
             content.BSlider.ValueChanged += BackgroundBSlider_ValueChanged;
             content.ApplyBtn.Click += ApplyBackgroundColorBtn_Click;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         private void WireUpBoardShapeDrawPopupContentEvents()
@@ -214,8 +218,7 @@ namespace Ink_Canvas
             content.DrawParabola1Btn.ButtonMouseUp += BtnDrawParabola1_Click;
             content.DrawParabolaWithFocalPointBtn.ButtonMouseUp += BtnDrawParabolaWithFocalPoint_Click;
             content.DrawParabola2Btn.ButtonMouseUp += BtnDrawParabola2_Click;
-            content.CloseFontIcon.MouseDown += Border_MouseDown;
-            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         private bool _penPaletteEventsWired;
@@ -238,10 +241,12 @@ namespace Ink_Canvas
             content.PenStyleComboBox.SelectionChanged += ComboBoxPenStyle_SelectionChanged;
             content.NibModeToggle.Toggled += ToggleSwitchEnableNibMode_Toggled;
             content.InkToShapeToggle.Toggled += ToggleSwitchEnableInkToShape_Toggled;
-            content.InkFadeToggle.Toggled += ToggleSwitchInkFadeInPanel_Toggled;
             content.InkWidthSlider.ValueChanged += InkWidthSlider_ValueChanged;
             content.InkAlphaSlider.ValueChanged += InkAlphaSlider_ValueChanged;
             content.HighlighterWidthSlider.ValueChanged += HighlighterWidthSlider_ValueChanged;
+            content.LaserPenWidthSlider.ValueChanged += LaserPenWidthSlider_ValueChanged;
+            content.LaserPenAlphaSlider.ValueChanged += LaserPenAlphaSlider_ValueChanged;
+            content.LaserPenFadeTimeSlider.ValueChanged += LaserPenFadeTimeSlider_ValueChanged;
             content.BrushModeBtn.Click += BoardBrushModeButton_Click;
             content.BrushModeBtn.MouseUp += BoardBrushModeButton_MouseUp;
 
@@ -249,6 +254,7 @@ namespace Ink_Canvas
             {
                 if (idx == 0) SwitchToDefaultPen(s, null);
                 else if (idx == 1) SwitchToHighlighterPen(s, null);
+                else if (idx == 2) SwitchToLaserPen(s, null);
             };
 
             content.DefaultPenColorBlack.ButtonMouseUp += BtnColorBlack_Click;
@@ -272,7 +278,19 @@ namespace Ink_Canvas
             content.HighlighterPenColorTeal.ButtonMouseUp += BtnHighlighterColorTeal_Click;
             content.HighlighterPenColorOrange.ButtonMouseUp += BtnHighlighterColorOrange_Click;
 
+            content.LaserPenColorBlack.ButtonMouseUp += BtnLaserPenColorBlack_Click;
+            content.LaserPenColorWhite.ButtonMouseUp += BtnLaserPenColorWhite_Click;
+            content.LaserPenColorRed.ButtonMouseUp += BtnLaserPenColorRed_Click;
+            content.LaserPenColorYellow.ButtonMouseUp += BtnLaserPenColorYellow_Click;
+            content.LaserPenColorGreen.ButtonMouseUp += BtnLaserPenColorGreen_Click;
+            content.LaserPenColorBlue.ButtonMouseUp += BtnLaserPenColorBlue_Click;
+            content.LaserPenColorPink.ButtonMouseUp += BtnLaserPenColorPink_Click;
+            content.LaserPenColorTeal.ButtonMouseUp += BtnLaserPenColorTeal_Click;
+            content.LaserPenColorOrange.ButtonMouseUp += BtnLaserPenColorOrange_Click;
+
             content.ColorThemeSwitch.MouseUp += ColorThemeSwitch_MouseUp;
+            content.LaserPenColorThemeSwitch.MouseUp += ColorThemeSwitch_MouseUp;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         private void WireUpEraserPopupContentEvents()
@@ -293,8 +311,7 @@ namespace Ink_Canvas
             content.RectangleTab.MouseUp += SwitchToRectangleEraser;
             content.ClearInkBtn.Click += EraserPanelSymbolIconDelete_MouseUp;
             content.ClearInkAndHistoryBtn.Click += BoardSymbolIconDeleteInkAndHistories_MouseUp;
-            content.CloseFontIcon.MouseDown += Border_MouseDown;
-            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         private void WireUpGesturePopupContentEvents()
@@ -314,8 +331,7 @@ namespace Ink_Canvas
             content.TwoFingerTranslateToggle.Toggled += ToggleSwitchEnableTwoFingerTranslate_Toggled;
             content.TwoFingerZoomToggle.Toggled += ToggleSwitchEnableTwoFingerZoom_Toggled;
             content.TwoFingerRotationToggle.Toggled += ToggleSwitchEnableTwoFingerRotation_Toggled;
-            content.CloseFontIcon.MouseDown += Border_MouseDown;
-            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         private bool _imageOptionsPopupEventsWired;
@@ -330,8 +346,7 @@ namespace Ink_Canvas
 
             content.ScreenshotOption.MouseUp += ImageOptionScreenshot_MouseUp;
             content.SelectFileOption.MouseUp += ImageOptionSelectFile_MouseUp;
-            content.CloseFontIcon.MouseDown += Border_MouseDown;
-            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         private bool _shapeDrawPopupEventsWired;
@@ -373,8 +388,7 @@ namespace Ink_Canvas
             content.DrawParabola1Btn.ButtonMouseUp += BtnDrawParabola1_Click;
             content.DrawParabolaWithFocalPointBtn.ButtonMouseUp += BtnDrawParabolaWithFocalPoint_Click;
             content.DrawParabola2Btn.ButtonMouseUp += BtnDrawParabola2_Click;
-            content.CloseFontIcon.MouseDown += Border_MouseDown;
-            content.CloseFontIcon.MouseUp += CloseBordertools_MouseUp;
+            content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
         /// <summary>
@@ -518,31 +532,35 @@ namespace Ink_Canvas
             // Old UI removed: ViewBoxStackPanelMain.Visibility = Visibility.Collapsed;
             // Old UI removed: ViewBoxStackPanelShapes.Visibility = Visibility.Collapsed;
             var workingArea = Screen.PrimaryScreen.WorkingArea;
-            // 考虑快捷调色盘的宽度，确保浮动栏有足够空间
-            double floatingBarWidth = 284; // 基础宽度
+
+            double dpiScaleX = 1, dpiScaleY = 1;
+            var source = PresentationSource.FromVisual(this);
+            if (source != null)
+            {
+                dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+                dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+            }
+
+            double logicalScreenWidth = workingArea.Width / dpiScaleX;
+            double logicalScreenBottom = workingArea.Bottom / dpiScaleY;
+            double logicalScreenTop = workingArea.Top / dpiScaleY;
+
+            double floatingBarWidth = 284;
             if (Settings.Appearance.IsShowQuickColorPalette)
             {
-                // 根据显示模式调整宽度
                 if (Settings.Appearance.QuickColorPaletteDisplayMode == 0)
                 {
-                    // 单行显示模式，自适应宽度，但需要足够空间显示6个颜色
                     floatingBarWidth = Math.Max(floatingBarWidth, 120);
                 }
                 else
                 {
-                    // 双行显示模式，宽度较大
                     floatingBarWidth = Math.Max(floatingBarWidth, 820);
                 }
             }
             ViewboxFloatingBar.Margin = new Thickness(
-                (workingArea.Width - floatingBarWidth) / 2,
-                workingArea.Bottom - 60 - workingArea.Top,
+                (logicalScreenWidth - floatingBarWidth) / 2,
+                logicalScreenBottom - 60 - logicalScreenTop,
                 -2000, -200);
-            // 新增：只在屏幕模式下初始化浮动栏动画
-            if (currentMode == 0)
-            {
-                ViewboxFloatingBarMarginAnimation(100, true);
-            }
 
             try
             {
@@ -1594,11 +1612,19 @@ namespace Ink_Canvas
             // 工具栏插件化按钮先注入到容器，确保 LoadSettings 内部对 Cursor_Icon / Pen_Icon 等的访问非空。
             // Settings.Toolbar 此时尚为默认值（全部可见），与旧 XAML 行为一致。
             InitializeToolbarPlugins();
+            AttachBoardInkFreezeBtn(BoardInkFreeze);
             // 初始化 Popup 管理器（置顶 + 拖动跟随）
             InitializePopupManager();
             //加载设置
             LoadSettings(true);
+            // 启动时直接设置浮动栏位置，跳过动画
+            if (currentMode == 0)
+            {
+                if (IsInPptPresentationMode) ViewboxFloatingBarMarginAnimation(60, skipAnimation: true);
+                else ViewboxFloatingBarMarginAnimation(100, true, skipAnimation: true);
+            }
             ApplyLanguageFromSettings();
+            InitializeNotificationProviders();
 
             // 启动时根据设置恢复调试控制台显示状态
             if (Settings?.Advanced != null && Settings.Advanced.IsDebugConsoleEnabled)
@@ -1837,31 +1863,14 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="sender">触发事件的源对象（通常由系统事件触发）。</param>
         /// <param name="e">事件参数（未使用）。</param>
+        public DelayAction dpiChangedDelayAction = new DelayAction();
+
         private void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e)
         {
             if (!Settings.Advanced.IsEnableResolutionChangeDetection) return;
             ShowNotification($"检测到显示器信息变化，变为{Screen.PrimaryScreen.Bounds.Width}x{Screen.PrimaryScreen.Bounds.Height}）");
-            new Thread(() =>
-            {
-                var isFloatingBarOutsideScreen = false;
-                var isInPPTPresentationMode = false;
-                Dispatcher.Invoke(() =>
-                {
-                    isFloatingBarOutsideScreen = IsOutsideOfScreenHelper.IsOutsideOfScreen(ViewboxFloatingBar);
-                    isInPPTPresentationMode = IsInPptPresentationMode;
-                });
-                if (isFloatingBarOutsideScreen) dpiChangedDelayAction.DebounceAction(3000, null, () =>
-                {
-                    if (!isFloatingBarFolded)
-                    {
-                        if (isInPPTPresentationMode) ViewboxFloatingBarMarginAnimation(60);
-                        else ViewboxFloatingBarMarginAnimation(100, true);
-                    }
-                });
-            }).Start();
+            HandleFloatingBarRecovery();
         }
-
-        public DelayAction dpiChangedDelayAction = new DelayAction();
 
         private void MainWindow_OnDpiChanged(object sender, DpiChangedEventArgs e)
         {
@@ -1869,7 +1878,6 @@ namespace Ink_Canvas
             {
                 ShowNotification($"系统DPI发生变化，从 {e.OldDpi.DpiScaleX}x{e.OldDpi.DpiScaleY} 变化为 {e.NewDpi.DpiScaleX}x{e.NewDpi.DpiScaleY}");
 
-                // 如果TimerContainer可见，调整其尺寸
                 Dispatcher.Invoke(() =>
                 {
                     var timerContainer = FindName("TimerContainer") as FrameworkElement;
@@ -1879,7 +1887,15 @@ namespace Ink_Canvas
                     }
                 });
 
-                new Thread(() =>
+                HandleFloatingBarRecovery();
+            }
+        }
+
+        private void HandleFloatingBarRecovery()
+        {
+            new Thread(() =>
+            {
+                try
                 {
                     var isFloatingBarOutsideScreen = false;
                     var isInPPTPresentationMode = false;
@@ -1896,8 +1912,12 @@ namespace Ink_Canvas
                             else ViewboxFloatingBarMarginAnimation(100, true);
                         }
                     });
-                }).Start();
-            }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"浮动工具栏恢复失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
+            }).Start();
         }
 
         /// <summary>
@@ -1935,7 +1955,33 @@ namespace Ink_Canvas
 
                 if (_allowCloseAfterExitVerification)
                 {
-                    _allowCloseAfterExitVerification = false;
+                    e.Cancel = true;
+                    if (_isExitVerificationInProgress) return;
+
+                    _isExitVerificationInProgress = true;
+                    await Dispatcher.BeginInvoke(new Action(async () =>
+                    {
+                        try
+                        {
+                            bool ok = await SecurityManager.PromptAndVerifyPasswordOrTotpAsync(Settings, this, "退出验证", "请输入安全密码或 TOTP 验证码以退出软件。");
+                            if (!ok)
+                            {
+                                _forceCloseFromExitOrRestartButton = false;
+                                LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
+                                return;
+                            }
+
+                            _allowCloseAfterExitVerification = true;
+                            Close();
+                        }
+                        catch
+                        {
+                        }
+                        finally
+                        {
+                            _isExitVerificationInProgress = false;
+                        }
+                    }), DispatcherPriority.Normal);
                     return;
                 }
 
@@ -2204,119 +2250,166 @@ namespace Ink_Canvas
 
         public async void AutoUpdate()
         {
-            if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
+            try
             {
-                if (DateTime.TryParse(Settings.Startup.AutoUpdatePauseUntilDate, out DateTime pauseUntilDate))
+                if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
                 {
-                    if (DateTime.Now < pauseUntilDate)
+                    if (DateTime.TryParse(Settings.Startup.AutoUpdatePauseUntilDate, out DateTime pauseUntilDate))
                     {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 自动更新已暂停，直到 {pauseUntilDate:yyyy-MM-dd}");
+                        if (DateTime.Now < pauseUntilDate)
+                        {
+                            LogHelper.WriteLogToFile($"AutoUpdate | 自动更新已暂停，直到 {pauseUntilDate:yyyy-MM-dd}");
+                            return;
+                        }
+                        else
+                        {
+                            LogHelper.WriteLogToFile($"AutoUpdate | 暂停期已过，恢复自动更新检查");
+                            Settings.Startup.AutoUpdatePauseUntilDate = "";
+                            try { await Dispatcher.InvokeAsync(() => SaveSettingsToFile()); } catch (TaskCanceledException) { } catch (ObjectDisposedException) { }
+                        }
+                    }
+                }
+
+                // 清除之前的更新状态，确保使用新通道重新检查
+                AvailableLatestVersion = null;
+                AvailableLatestLineGroup = null;
+                AvailableLatestReleaseNotes = null;
+
+                // 使用当前选择的更新通道检查更新
+                var (remoteVersion, lineGroup, apiReleaseNotes) = await AutoUpdateHelper.CheckForUpdates(Settings.Startup.UpdateChannel);
+                AvailableLatestVersion = remoteVersion;
+                AvailableLatestLineGroup = lineGroup;
+                AvailableLatestReleaseNotes = apiReleaseNotes;
+
+                // 声明下载状态变量，用于整个方法
+                bool isDownloadSuccessful = false;
+
+                bool hasValidLineGroup = lineGroup != null;
+
+                if (AvailableLatestVersion != null)
+                {
+                    try
+                    {
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            timerCheckAutoUpdateRetry.Stop();
+                            updateCheckRetryCount = 0;
+                        });
+                    }
+                    catch (TaskCanceledException) { }
+                    catch (ObjectDisposedException) { }
+
+                    // 检测到新版本
+                    LogHelper.WriteLogToFile($"AutoUpdate | New version available: {AvailableLatestVersion}");
+
+                    var updateMessage = new NotificationMessage
+                    {
+                        Id = "update-" + AvailableLatestVersion,
+                        Type = NotificationMessageType.Update,
+                        Level = NotificationMessageLevel.Normal,
+                        Title = Ink_Canvas.Properties.Strings.GetString("Notification_UpdateTitle") ?? "发现新版本",
+                        Summary = string.Format(Ink_Canvas.Properties.Strings.GetString("Notification_NewVersion") ?? "发现新版本：{0}", AvailableLatestVersion),
+                        Content = AvailableLatestReleaseNotes ?? string.Empty,
+                        Icon = "Update",
+                        ActionText = Ink_Canvas.Properties.Strings.GetString("Notification_ViewDetails") ?? "查看详情",
+                        DisplaySeconds = Settings?.Notification?.UpdateDurationSeconds > 0 ? Settings.Notification.UpdateDurationSeconds : 5,
+                        Source = "update",
+                        Action = () =>
+                        {
+                            try
+                            {
+                                var settingsWindow = new SettingsWindow();
+                                settingsWindow.Show();
+                                settingsWindow.NavigateToPage("UpdatePage");
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.WriteLogToFile($"打开更新设置页失败: {ex.Message}", LogHelper.LogType.Warning);
+                            }
+                        }
+                    };
+
+                    NotificationCenterService.Enqueue(updateMessage);
+
+                    // 检查是否是用户选择跳过的版本
+                    if (!string.IsNullOrEmpty(Settings.Startup.SkippedVersion) &&
+                        Settings.Startup.SkippedVersion == AvailableLatestVersion)
+                    {
+                        LogHelper.WriteLogToFile($"AutoUpdate | Version {AvailableLatestVersion} was marked to be skipped by the user");
+                        return; // 跳过此版本，不执行更新操作
+                    }
+
+                    // 如果检测到的版本与跳过的版本不同，则清除跳过版本记录
+                    // 这确保用户只能跳过当前最新版本，而不是永久跳过所有更新
+                    if (!string.IsNullOrEmpty(Settings.Startup.SkippedVersion) &&
+                        Settings.Startup.SkippedVersion != AvailableLatestVersion)
+                    {
+                        LogHelper.WriteLogToFile($"AutoUpdate | Detected new version {AvailableLatestVersion} different from skipped version {Settings.Startup.SkippedVersion}, clearing skip record");
+                        Settings.Startup.SkippedVersion = "";
+                        try { await Dispatcher.InvokeAsync(() => SaveSettingsToFile()); } catch (TaskCanceledException) { } catch (ObjectDisposedException) { }
+                    }
+
+                    // 如果启用了静默更新，则自动下载更新而不显示提示
+                    if (Settings.Startup.IsAutoUpdateWithSilence)
+                    {
+                        LogHelper.WriteLogToFile("AutoUpdate | Silent update enabled, downloading update automatically without notification");
+
+                        // 静默下载更新，使用多线路组下载功能
+                        isDownloadSuccessful = await DownloadUpdateWithFallback(AvailableLatestVersion, AvailableLatestLineGroup, Settings.Startup.UpdateChannel);
+
+                        if (isDownloadSuccessful)
+                        {
+                            LogHelper.WriteLogToFile("AutoUpdate | Update downloaded successfully, will install when conditions are met");
+
+                            // 启动检查定时器，定期检查是否可以安装
+                            try { await Dispatcher.InvokeAsync(() => timerCheckAutoUpdateWithSilence.Start()); } catch (TaskCanceledException) { } catch (ObjectDisposedException) { }
+                        }
+                        else
+                        {
+                            LogHelper.WriteLogToFile("AutoUpdate | Silent update download failed", LogHelper.LogType.Error);
+                        }
+
                         return;
                     }
-                    else
+
+                    // 如果没有启用静默更新，则记录日志并依赖 Toast 通知用户。
+                    // 用户可在 设置 → 更新 中查看版本说明并选择更新方式。
+                    LogHelper.WriteLogToFile(
+                        $"AutoUpdate | New version {AvailableLatestVersion} available; user notified via toast, will act from settings page.");
+                }
+                else if (hasValidLineGroup)
+                {
+                    LogHelper.WriteLogToFile("AutoUpdate | Current version is already the latest, no retry needed");
+
+                    try
                     {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 暂停期已过，恢复自动更新检查");
-                        Settings.Startup.AutoUpdatePauseUntilDate = "";
-                        SaveSettingsToFile();
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            timerCheckAutoUpdateRetry.Stop();
+                            updateCheckRetryCount = 0;
+                        });
                     }
+                    catch (TaskCanceledException) { }
+                    catch (ObjectDisposedException) { }
+                }
+                else
+                {
+                    // 检查更新失败，启动重试定时器
+                    LogHelper.WriteLogToFile("AutoUpdate | Update check failed, starting retry timer");
+
+                    // 重置重试计数
+                    updateCheckRetryCount = 0;
+
+                    // 启动重试定时器，10分钟后重新检查
+                    try { await Dispatcher.InvokeAsync(() => timerCheckAutoUpdateRetry.Start()); } catch (TaskCanceledException) { } catch (ObjectDisposedException) { }
+
+                    // 清理更新文件夹
+                    AutoUpdateHelper.DeleteUpdatesFolder();
                 }
             }
-
-            // 清除之前的更新状态，确保使用新通道重新检查
-            AvailableLatestVersion = null;
-            AvailableLatestLineGroup = null;
-            AvailableLatestReleaseNotes = null;
-
-            // 使用当前选择的更新通道检查更新
-            var (remoteVersion, lineGroup, apiReleaseNotes) = await AutoUpdateHelper.CheckForUpdates(Settings.Startup.UpdateChannel);
-            AvailableLatestVersion = remoteVersion;
-            AvailableLatestLineGroup = lineGroup;
-            AvailableLatestReleaseNotes = apiReleaseNotes;
-
-            // 声明下载状态变量，用于整个方法
-            bool isDownloadSuccessful = false;
-
-            bool hasValidLineGroup = lineGroup != null;
-
-            if (AvailableLatestVersion != null)
+            catch (Exception ex)
             {
-                // 检测到新版本，停止重试定时器
-                timerCheckAutoUpdateRetry.Stop();
-                updateCheckRetryCount = 0;
-
-                // 检测到新版本
-                LogHelper.WriteLogToFile($"AutoUpdate | New version available: {AvailableLatestVersion}");
-
-                // 通过 Windows 系统通知提示有新版本
-                WindowsNotificationHelper.ShowNewVersionToast(AvailableLatestVersion);
-
-                // 检查是否是用户选择跳过的版本
-                if (!string.IsNullOrEmpty(Settings.Startup.SkippedVersion) &&
-                    Settings.Startup.SkippedVersion == AvailableLatestVersion)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | Version {AvailableLatestVersion} was marked to be skipped by the user");
-                    return; // 跳过此版本，不执行更新操作
-                }
-
-                // 如果检测到的版本与跳过的版本不同，则清除跳过版本记录
-                // 这确保用户只能跳过当前最新版本，而不是永久跳过所有更新
-                if (!string.IsNullOrEmpty(Settings.Startup.SkippedVersion) &&
-                    Settings.Startup.SkippedVersion != AvailableLatestVersion)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | Detected new version {AvailableLatestVersion} different from skipped version {Settings.Startup.SkippedVersion}, clearing skip record");
-                    Settings.Startup.SkippedVersion = "";
-                    SaveSettingsToFile();
-                }
-
-                // 如果启用了静默更新，则自动下载更新而不显示提示
-                if (Settings.Startup.IsAutoUpdateWithSilence)
-                {
-                    LogHelper.WriteLogToFile("AutoUpdate | Silent update enabled, downloading update automatically without notification");
-
-                    // 静默下载更新，使用多线路组下载功能
-                    isDownloadSuccessful = await DownloadUpdateWithFallback(AvailableLatestVersion, AvailableLatestLineGroup, Settings.Startup.UpdateChannel);
-
-                    if (isDownloadSuccessful)
-                    {
-                        LogHelper.WriteLogToFile("AutoUpdate | Update downloaded successfully, will install when conditions are met");
-
-                        // 启动检查定时器，定期检查是否可以安装
-                        timerCheckAutoUpdateWithSilence.Start();
-                    }
-                    else
-                    {
-                        LogHelper.WriteLogToFile("AutoUpdate | Silent update download failed", LogHelper.LogType.Error);
-                    }
-
-                    return;
-                }
-
-                // 如果没有启用静默更新，则记录日志并依赖 Toast 通知用户。
-                // 用户可在 设置 → 更新 中查看版本说明并选择更新方式。
-                LogHelper.WriteLogToFile(
-                    $"AutoUpdate | New version {AvailableLatestVersion} available; user notified via toast, will act from settings page.");
-            }
-            else if (hasValidLineGroup)
-            {
-                LogHelper.WriteLogToFile("AutoUpdate | Current version is already the latest, no retry needed");
-
-                // 停止重试定时器
-                timerCheckAutoUpdateRetry.Stop();
-                updateCheckRetryCount = 0;
-            }
-            else
-            {
-                // 检查更新失败，启动重试定时器
-                LogHelper.WriteLogToFile("AutoUpdate | Update check failed, starting retry timer");
-
-                // 重置重试计数
-                updateCheckRetryCount = 0;
-
-                // 启动重试定时器，10分钟后重新检查
-                timerCheckAutoUpdateRetry.Start();
-
-                // 清理更新文件夹
-                AutoUpdateHelper.DeleteUpdatesFolder();
+                LogHelper.WriteLogToFile($"AutoUpdate | Error in AutoUpdate: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -2688,7 +2781,7 @@ namespace Ink_Canvas
 
         private async Task RunDeferredStartupPhaseBAsync()
         {
-            await Task.Delay(1200);
+            await Task.Delay(600);
 
             try
             {
@@ -2794,11 +2887,11 @@ namespace Ink_Canvas
             if (_pendingStartupAutoUpdateCheck && Settings.Startup?.IsAutoUpdate == true)
             {
                 _pendingStartupAutoUpdateCheck = false;
-                await Task.Delay(3000);
+                await Task.Delay(8000);
                 _ = Dispatcher.BeginInvoke(new Action(() =>
                 {
                     LogHelper.WriteLogToFile("AutoUpdate | Running deferred auto-update check at UI idle");
-                    AutoUpdate();
+                    _ = Task.Run(() => AutoUpdate());
                 }), DispatcherPriority.ApplicationIdle);
             }
         }
@@ -2963,31 +3056,6 @@ namespace Ink_Canvas
             }
         }
 
-        private void ToggleSwitchInkFadeInPanel_Toggled(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var toggle = sender as ToggleSwitch;
-                if (toggle == null) return;
-                Settings.Canvas.EnableInkFade = toggle.IsOn;
-                if (_inkFadeManager != null)
-                {
-                    _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
-                }
-
-                if (ToggleSwitchInkFadeInPanel2 != null)
-                {
-                    ToggleSwitchInkFadeInPanel2.IsOn = Settings.Canvas.EnableInkFade;
-                }
-
-                SaveSettingsToFile();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换墨迹渐隐功能时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
         private void ComboBoxEraserSizeFloatingBar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
@@ -3011,59 +3079,6 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"切换橡皮擦大小时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 更新墨迹渐隐控制开关的可见性
-        /// </summary>
-        private void UpdateInkFadeControlVisibility()
-        {
-            try
-            {
-                bool isHidden = Settings.Canvas.HideInkFadeControlInPenMenu;
-
-                // 控制 InkFadeControlPanel1（批注子面板中）的可见性
-                if (InkFadeControlPanel1 != null)
-                {
-                    InkFadeControlPanel1.Visibility = isHidden ? Visibility.Collapsed : Visibility.Visible;
-                }
-
-                // 控制 InkFadeControlPanel2（普通画笔面板中）的可见性
-                if (InkFadeControlPanel2 != null)
-                {
-                    InkFadeControlPanel2.Visibility = isHidden ? Visibility.Collapsed : Visibility.Visible;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新墨迹渐隐控制面板可见性时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// PPT放映模式显示手势按钮开关切换事件处理
-        /// </summary>
-        private void ToggleSwitchShowGestureButtonInSlideShow_Toggled(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                var toggle = sender as ToggleSwitch;
-                Settings.PowerPointSettings.ShowGestureButtonInSlideShow = toggle != null && toggle.IsOn;
-                SaveSettingsToFile();
-
-                // 如果当前在PPT放映模式，需要立即更新手势按钮的显示状态
-                if (IsInPptPresentationMode)
-                {
-                    UpdateGestureButtonVisibilityInPPTMode();
-                }
-
-                LogHelper.WriteLogToFile($"PPT放映模式显示手势按钮已{(Settings.PowerPointSettings.ShowGestureButtonInSlideShow ? "启用" : "禁用")}", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换PPT放映模式显示手势按钮时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -3113,30 +3128,6 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"更改PPT时间胶囊位置时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 更新PPT模式下手势按钮的显示状态
-        /// </summary>
-        public void UpdateGestureButtonVisibilityInPPTMode()
-        {
-            try
-            {
-                if (Settings.PowerPointSettings.ShowGestureButtonInSlideShow)
-                {
-                    // 如果启用了PPT放映模式显示手势按钮，则检查是否在批注模式下显示手势按钮
-                    CheckEnableTwoFingerGestureBtnVisibility(true);
-                }
-                else
-                {
-                    // 如果禁用了PPT放映模式显示手势按钮，则隐藏手势按钮
-                    EnableTwoFingerGestureBorder.Visibility = Visibility.Collapsed;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新PPT模式下手势按钮显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -3392,10 +3383,10 @@ namespace Ink_Canvas
                     _globalHotkeyManager.UpdateHotkeyStateForToolMode(isMouseMode);
                 }
 
-                // 在PPT放映模式下，工具模式切换时需要更新手势按钮的显示状态
+                // 在PPT放映模式下，工具模式切换时需要更新工具栏组件的显示状态
                 if (IsInPptPresentationMode)
                 {
-                    UpdateGestureButtonVisibilityInPPTMode();
+                    UpdateToolbarComponentVisibility();
                 }
 
                 // 执行额外的操作（如果有）
