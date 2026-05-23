@@ -1,5 +1,6 @@
 using Ink_Canvas.Controls.Toolbar;
 using Newtonsoft.Json;
+using OSVersionExtension;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -63,14 +64,16 @@ namespace Ink_Canvas
         [JsonProperty("isForcePopupEnabled")]
         public bool IsForcePopupEnabled { get; set; } = true;
 
-        [JsonProperty("announcementApiBaseUrl")]
-        public string AnnouncementApiBaseUrl { get; set; } = "https://dev-api.dy.ci/api/announcement/client/announcements/";
+        [JsonIgnore]
+        public string AnnouncementApiBaseUrl => "https://dev-api.dy.ci/api/announcement/client/announcements/";
 
-        [JsonProperty("announcementWebSocketUrl")]
-        public string AnnouncementWebSocketUrl { get; set; } = string.Empty;
+        [JsonIgnore]
+        public string AnnouncementWebSocketUrl => string.Empty;
 
-        [JsonProperty("announcementSoftwareToken")]
-        public string AnnouncementSoftwareToken { get; set; } = "d7dd5a04175844318da871a40b7bc59d";
+        [JsonIgnore]
+        public string AnnouncementSoftwareToken => BuiltInSoftwareToken;
+
+        public const string BuiltInSoftwareToken = "492e41ea8eb61fc9a1d336b3852a4478";
 
         [JsonProperty("placement")]
         public string Placement { get; set; } = "TopCenter";
@@ -79,7 +82,7 @@ namespace Ink_Canvas
         public string AnimationMode { get; set; } = "Standard";
 
         [JsonProperty("updateDurationSeconds")]
-        public int UpdateDurationSeconds { get; set; } = 5;
+        public int UpdateDurationSeconds { get; set; } = 3;
 
         [JsonProperty("urgentDurationSeconds")]
         public int UrgentDurationSeconds { get; set; } = 10;
@@ -138,8 +141,12 @@ namespace Ink_Canvas
         public double InkWidth { get; set; } = 2.5;
         [JsonProperty("highlighterWidth")]
         public double HighlighterWidth { get; set; } = 20;
+        [JsonProperty("highlighterOverlapEnabled")]
+        public bool HighlighterOverlapEnabled { get; set; } = false;
         [JsonProperty("inkAlpha")]
         public double InkAlpha { get; set; } = 255;
+        [JsonProperty("highlighterAlpha")]
+        public double HighlighterAlpha { get; set; } = 255;
         [JsonProperty("isShowCursor")]
         public bool IsShowCursor { get; set; }
         /// <summary>笔锋存储值：0 基于点集，1 基于速率，2 关闭，3 实时笔锋（速度与压感混合）。界面下拉顺序为实时笔锋、点集、速率、关闭。</summary>
@@ -207,6 +214,8 @@ namespace Ink_Canvas
         public bool EnableInkFade { get; set; } = false;
         [JsonProperty("inkFadeTime")]
         public int InkFadeTime { get; set; } = 3000;
+        [JsonProperty("inkFadeSpeedMultiplier")]
+        public double InkFadeSpeedMultiplier { get; set; } = 1.0;
         [JsonProperty("laserPenWidth")]
         public double LaserPenWidth { get; set; } = 5;
         [JsonProperty("laserPenAlpha")]
@@ -229,6 +238,8 @@ namespace Ink_Canvas
         public int EraserAutoSwitchBackDelaySeconds { get; set; } = 10; // 默认10秒
         [JsonProperty("velocityBrushTipMix")]
         public double VelocityBrushTipMix { get; set; } = 0.45;
+        [JsonProperty("realtimeBrushTipMinDistanceScale")]
+        public double RealtimeBrushTipMinDistanceScale { get; set; } = 0.5;
         [JsonProperty("enableVelocityBrushTip")]
         public bool EnableVelocityBrushTip { get; set; }
 
@@ -284,7 +295,7 @@ namespace Ink_Canvas
         Beta
     }
 
-    /// <summary>自动更新要下载的安装包架构（与当前运行进程的位数无关）。默认 32 位包；64 位包对应发布物 ZIP 文件名在 .zip 前增加 -x64。</summary>
+    /// <summary>自动更新要下载的安装包架构。默认跟随当前软件进程架构；64 位包对应发布物 ZIP 文件名在 .zip 前增加 -x64。</summary>
     public enum UpdatePackageArchitecture
     {
         /// <summary>32 位包，例如 InkCanvasForClass.CE.1.7.0.0.zip</summary>
@@ -325,7 +336,7 @@ namespace Ink_Canvas
         [JsonProperty("updateChannel")]
         public UpdateChannel UpdateChannel { get; set; } = UpdateChannel.Release;
         [JsonProperty("updatePackageArchitecture")]
-        public UpdatePackageArchitecture UpdatePackageArchitecture { get; set; } = UpdatePackageArchitecture.X86;
+        public UpdatePackageArchitecture UpdatePackageArchitecture { get; set; } = Environment.Is64BitProcess ? UpdatePackageArchitecture.X64 : UpdatePackageArchitecture.X86;
         [JsonProperty("isSmartUpdate")]
         public bool IsSmartUpdate { get; set; } = true;
         [JsonProperty("skippedVersion")]
@@ -364,8 +375,6 @@ namespace Ink_Canvas
 
     public class Appearance
     {
-        [JsonProperty("isEnableDisPlayNibModeToggler")]
-        public bool IsEnableDisPlayNibModeToggler { get; set; } = true;
         [JsonProperty("isColorfulViewboxFloatingBar")]
         public bool IsColorfulViewboxFloatingBar { get; set; }
         // [JsonProperty("enableViewboxFloatingBarScaleTransform")]
@@ -686,7 +695,7 @@ namespace Ink_Canvas
         public bool IsAutoSaveStrokesAtScreenshot { get; set; }
 
         [JsonProperty("isAutoSaveStrokesAtClear")]
-        public bool IsAutoSaveStrokesAtClear { get; set; }
+        public bool IsAutoSaveScreenshotAtClear { get; set; }
 
         [JsonProperty("isEnablePhotoCorrection")]
         public bool IsEnablePhotoCorrection { get; set; } = false;
@@ -846,7 +855,7 @@ namespace Ink_Canvas
         public bool IsSecondConfirmWhenShutdownApp { get; set; }
 
         [JsonProperty("isEnableAvoidFullScreenHelper")]
-        public bool IsEnableAvoidFullScreenHelper { get; set; } = true;
+        public bool IsEnableAvoidFullScreenHelper { get; set; } = OSVersion.GetOperatingSystem() >= OSVersionExtension.OperatingSystem.Windows11;
 
         [JsonProperty("isAutoBackupBeforeUpdate")]
         public bool IsAutoBackupBeforeUpdate { get; set; } = true;

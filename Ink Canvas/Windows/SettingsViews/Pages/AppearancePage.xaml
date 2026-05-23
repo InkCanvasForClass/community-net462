@@ -1,4 +1,4 @@
-<ui:Page x:Class="Ink_Canvas.Windows.SettingsViews.Pages.AppearancePage"
+<ui:Page xmlns:props="clr-namespace:Ink_Canvas.Properties" x:Class="Ink_Canvas.Windows.SettingsViews.Pages.AppearancePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,11 +6,10 @@
       xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews.Pages"
       xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
       xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
-      xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
       mc:Ignorable="d"
-      Title="{i18n:I18n Key=Theme_GroupTitle}">
+      Title="{x:Static props:ThemeStrings.Theme_GroupTitle}">
 
     <ScrollViewer PanningMode="VerticalFirst">
         <Grid Margin="59,0,59,0">
@@ -30,104 +29,105 @@
                     Spacing="{StaticResource SettingsCardSpacing}">
 
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Text="{i18n:I18n Key=Theme_Label}" />
+                        Text="{x:Static props:ThemeStrings.Theme_Label}" />
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_Label}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_Label}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxTheme"
                                   SelectedIndex="0"
                                   SelectionChanged="ComboBoxTheme_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Light}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Dark}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_System}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Light}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Dark}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_System}" />
                         </ComboBox>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_WindowBackdrop}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_WindowBackdrop}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxWindowBackdrop"
                                   SelectionChanged="ComboBoxWindowBackdrop_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_WindowBackdrop_None}" Tag="None" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_WindowBackdrop_Mica}" Tag="Mica" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_WindowBackdrop_Acrylic}" Tag="Acrylic" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_WindowBackdrop_Tabbed}" Tag="Tabbed" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_WindowBackdrop_Transient}" Tag="Transient" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_WindowBackdrop_Acrylic10}" Tag="Acrylic10" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_WindowBackdrop_Acrylic11}" Tag="Acrylic11" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_WindowBackdrop_None}" Tag="None" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_WindowBackdrop_Mica}" Tag="Mica" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_WindowBackdrop_Acrylic}" Tag="Acrylic" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_WindowBackdrop_Tabbed}" Tag="Tabbed" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_WindowBackdrop_Transient}" Tag="Transient" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_WindowBackdrop_Acrylic10}" Tag="Acrylic10" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_WindowBackdrop_Acrylic11}" Tag="Acrylic11" />
                         </ComboBox>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_LanguageLabel}"
-                            Description="{i18n:I18n Key=Theme_Language_RestartHint}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_LanguageLabel}"
+                            Description="{x:Static props:ThemeStrings.Theme_Language_RestartHint}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Globe}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxLanguage"
                                   SelectedIndex="0"
                                   SelectionChanged="ComboBoxLanguage_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Language_System}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Language_ChineseSimplified}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Language_English}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_System}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Language_ChineseSimplified}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Language_English}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Language_MemeChinese}" />
                         </ComboBox>
                     </ui:SettingsCard>
 
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Text="{i18n:I18n Key=Theme_EnableSplash}" />
+                        Text="{x:Static props:ThemeStrings.Theme_EnableSplash}" />
 
                     <controls:LabeledSettingsCard x:Name="CardEnableSplashScreen"
-                            Header="{i18n:I18n Key=Theme_EnableSplash}"
+                            Header="{x:Static props:ThemeStrings.Theme_EnableSplash}"
                             Icon="{x:Static ui:SegoeFluentIcons.Photo}"
                             SwitchName="ToggleSwitchEnableSplashScreen"
                             Toggled="ToggleSwitchEnableSplashScreen_Toggled" />
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_SplashStyle}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_SplashStyle}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Brightness}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxSplashScreenStyle"
                                   SelectedIndex="1"
                                   SelectionChanged="ComboBoxSplashScreenStyle_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Random}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Seasonal}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Spring}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Summer}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Autumn}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Winter}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Horse}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Custom}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Random}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Seasonal}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Spring}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Summer}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Autumn}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Winter}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Horse}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Splash_Custom}" />
                         </ComboBox>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard x:Name="CardCustomSplashImage" Header="{i18n:I18n Key=Theme_CustomSplashImage}"
-                                     Description="{i18n:I18n Key=Theme_CustomSplashImage_Desc}"
+                    <ui:SettingsCard x:Name="CardCustomSplashImage" Header="{x:Static props:ThemeStrings.Theme_CustomSplashImage}"
+                                     Description="{x:Static props:ThemeStrings.Theme_CustomSplashImage_Desc}"
                                      Visibility="Collapsed">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Photo}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="TextBlockCustomSplashPath"
-                                       Text="{i18n:I18n Key=Theme_CustomSplash_NotSelected}"
+                                       Text="{x:Static props:ThemeStrings.Theme_CustomSplash_NotSelected}"
                                        VerticalAlignment="Center"
                                        MaxWidth="200"
                                        TextTrimming="CharacterEllipsis"
                                        Foreground="Gray"/>
                             <Button x:Name="ButtonBrowseCustomSplash"
-                                    Content="{i18n:I18n Key=Theme_Browse}"
+                                    Content="{x:Static props:StorageStrings.Storage_PathBrowse}"
                                     Padding="10,3"
                                     Click="ButtonBrowseCustomSplash_Click"/>
                             <Button x:Name="ButtonClearCustomSplash"
-                                    Content="{i18n:I18n Key=Theme_Clear}"
+                                    Content="{x:Static props:ThemeStrings.Theme_Clear}"
                                     Padding="10,3"
                                     Click="ButtonClearCustomSplash_Click"/>
                         </ikw:SimpleStackPanel>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard x:Name="CardCustomSplashTextPosition" Header="{i18n:I18n Key=Theme_CustomSplashTextPosition}"
-                                     Description="{i18n:I18n Key=Theme_CustomSplashTextPosition_Desc}"
+                    <ui:SettingsCard x:Name="CardCustomSplashTextPosition" Header="{x:Static props:ThemeStrings.Theme_CustomSplashTextPosition}"
+                                     Description="{x:Static props:ThemeStrings.Theme_CustomSplashTextPosition_Desc}"
                                      Visibility="Collapsed">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AlignCenter}" />
@@ -199,38 +199,38 @@
                     </ui:SettingsCard>
 
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Text="{i18n:I18n Key=Theme_FloatingBarIcon}" />
+                        Text="{x:Static props:ThemeStrings.Theme_FloatingBarIcon}" />
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_FloatingBarIcon}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarIcon}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Photo}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxFloatingBarImg"
                                   SelectedIndex="0"
                                   SelectionChanged="ComboBoxFloatingBarImg_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccDefault}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccNoShadow}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccDark}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccDarkBreath}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccWhiteTransparent}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccBlackTransparent}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkCrossEye}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkAbused}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkSmile}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkUnderwear}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkGreenHatDoge}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_TiebaEmoji}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_IccDefault}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_IccNoShadow}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_IccDark}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_IccDarkBreath}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_IccWhiteTransparent}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_IccBlackTransparent}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_CoolapkCrossEye}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_CoolapkAbused}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_CoolapkSmile}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_CoolapkUnderwear}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_CoolapkGreenHatDoge}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingIcon_TiebaEmoji}" />
                         </ComboBox>
                     </ui:SettingsCard>
 
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                        <Button x:Name="ButtonAddCustomIcon" Content="{i18n:I18n Key=Theme_Upload}"
+                        <Button x:Name="ButtonAddCustomIcon" Content="{x:Static props:ThemeStrings.Theme_Upload}"
                                 Click="ButtonAddCustomIcon_Click" Padding="10,3"/>
-                        <Button x:Name="ButtonManageCustomIcons" Content="{i18n:I18n Key=Theme_Manage}"
+                        <Button x:Name="ButtonManageCustomIcons" Content="{x:Static props:ThemeStrings.Theme_Manage}"
                                 Click="ButtonManageCustomIcons_Click" Padding="10,3"/>
                     </ikw:SimpleStackPanel>
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_FloatingBarScale}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarScale}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -250,7 +250,7 @@
                         </ikw:SimpleStackPanel>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_FloatingBarOpacity}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarOpacity}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EaseOfAccess}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -265,8 +265,8 @@
                         </ikw:SimpleStackPanel>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_FloatingBarOpacityInPPT}"
-                            Description="{i18n:I18n Key=Theme_FloatingBarOpacityInPPTHint}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarOpacityInPPT}"
+                            Description="{x:Static props:ThemeStrings.Theme_FloatingBarOpacityInPPTHint}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -281,13 +281,7 @@
                         </ikw:SimpleStackPanel>
                     </ui:SettingsCard>
 
-                    <controls:LabeledSettingsCard x:Name="CardEnableDisPlayNibModeToggle"
-                            Header="{i18n:I18n Key=Theme_ShowNibButton}"
-                            Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
-                            SwitchName="ToggleSwitchEnableDisPlayNibModeToggle"
-                            Toggled="ToggleSwitchEnableDisPlayNibModeToggle_Toggled" />
-
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_BlackboardScale80}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_BlackboardScale80}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BackToWindow}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -303,13 +297,13 @@
                     </ui:SettingsCard>
 
                     <controls:LabeledSettingsCard x:Name="CardEnableTimeDisplayInWhiteboardMode"
-                            Header="{i18n:I18n Key=Theme_ShowTimeInWhiteboard}"
+                            Header="{x:Static props:ThemeStrings.Theme_ShowTimeInWhiteboard}"
                             Icon="{x:Static ui:SegoeFluentIcons.Pinned}"
                             SwitchName="ToggleSwitchEnableTimeDisplayInWhiteboardMode"
                             Toggled="ToggleSwitchEnableTimeDisplayInWhiteboardMode_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardUse24HourTimeFormat"
-                            Header="{i18n:I18n Key=AppearancePanel_24HourTimeFormat}"
+                            Header="{x:Static props:ThemeStrings.AppearancePanel_24HourTimeFormat}"
                             Toggled="ToggleSwitchUse24HourTimeFormat_Toggled">
                         <controls:LabeledSettingsCard.HeaderIcon>
                             <ui:FontIcon Glyph="&#xE917;" />
@@ -317,25 +311,25 @@
                     </controls:LabeledSettingsCard>
 
                     <controls:LabeledSettingsCard x:Name="CardEnableChickenSoupInWhiteboardMode"
-                            Header="{i18n:I18n Key=Theme_ShowQuoteInWhiteboard}"
+                            Header="{x:Static props:ThemeStrings.Theme_ShowQuoteInWhiteboard}"
                             Icon="{x:Static ui:SegoeFluentIcons.Message}"
                             SwitchName="ToggleSwitchEnableChickenSoupInWhiteboardMode"
                             Toggled="ToggleSwitchEnableChickenSoupInWhiteboardMode_Toggled" />
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_QuoteSource}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_QuoteSource}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Heart}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <ComboBox x:Name="ComboBoxChickenSoupSource"
                                       SelectionChanged="ComboBoxChickenSoupSource_SelectionChanged">
-                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_OsuQuotes}" />
-                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_Mottos}" />
-                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_GaokaoBless}" />
-                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_Hitokoto}" />
-                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_PhigrosTips}" />
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_QuoteSource_OsuQuotes}" />
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_QuoteSource_Mottos}" />
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_QuoteSource_GaokaoBless}" />
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_QuoteSource_Hitokoto}" />
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_QuoteSource_PhigrosTips}" />
                             </ComboBox>
-                            <Button x:Name="BtnHitokotoCustomize" Content="{i18n:I18n Key=Theme_Customize}"
+                            <Button x:Name="BtnHitokotoCustomize" Content="{x:Static props:ThemeStrings.Theme_Splash_Custom}"
                                     Padding="14,4" MinWidth="65" VerticalAlignment="Center"
                                     Click="BtnHitokotoCustomize_Click"
                                     Visibility="Collapsed" />
@@ -343,12 +337,12 @@
                     </ui:SettingsCard>
 
                     <controls:LabeledSettingsCard x:Name="CardEnableQuickPanel"
-                            Header="{i18n:I18n Key=Theme_EnableQuickPanel}"
+                            Header="{x:Static props:ThemeStrings.Theme_EnableQuickPanel}"
                             Icon="{x:Static ui:SegoeFluentIcons.Pinned}"
                             SwitchName="ToggleSwitchEnableQuickPanel"
                             Toggled="ToggleSwitchEnableQuickPanel_Toggled" />
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_QuickPanelBottomOffset}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_QuickPanelBottomOffset}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronDown}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -363,29 +357,29 @@
                         </ikw:SimpleStackPanel>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_UnfoldButtonIcon}">
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_UnfoldButtonIcon}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxUnFoldBtnImg"
                                   SelectedIndex="0"
                                   SelectionChanged="ComboBoxUnFoldBtnImg_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_UnfoldIcon_Arrow}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Theme_UnfoldIcon_Pen}" />
+                            <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_UnfoldIcon_Arrow}" />
+                            <ComboBoxItem Content="{x:Static props:FloatingBarStrings.Board_Pen}" />
                         </ComboBox>
                     </ui:SettingsCard>
 
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Text="{i18n:I18n Key=Theme_FloatingBarButtonsTitle}" />
+                        Text="{x:Static props:ThemeStrings.Theme_FloatingBarButtonsTitle}" />
 
                     <controls:LabeledSettingsCard x:Name="CardUseLegacyFloatingBarUI"
-                            Header="{i18n:I18n Key=Theme_UseLegacyFloatingBarUI}"
+                            Header="{x:Static props:ThemeStrings.Theme_UseLegacyFloatingBarUI}"
                             Icon="{x:Static ui:SegoeFluentIcons.History}"
                             SwitchName="ToggleSwitchUseLegacyFloatingBarUI"
                             Toggled="ToggleSwitchUseLegacyFloatingBarUI_Toggled" />
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Theme_FloatingBarButtonsTitle}"
-                            Description="请前往「工具栏」设置页面管理浮动工具栏的组件显示与排序。"
+                    <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarButtonsTitle}"
+                            Description="{x:Static props:ThemeStrings.Theme_FloatingBarButtonsDescription}"
                             IsClickEnabled="True"
                             Click="CardFloatingBarButtons_Click">
                         <ui:SettingsCard.HeaderIcon>
@@ -394,51 +388,51 @@
                     </ui:SettingsCard>
 
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Text="{i18n:I18n Key=Tray_GroupTitle}" />
+                        Text="{x:Static props:WindowStrings.Tray_GroupTitle}" />
 
                     <controls:LabeledSettingsCard x:Name="CardEnableTrayIcon"
-                            Header="{i18n:I18n Key=Tray_EnableTrayIcon}"
+                            Header="{x:Static props:WindowStrings.Tray_EnableTrayIcon}"
                             Icon="{x:Static ui:SegoeFluentIcons.Pin}"
                             SwitchName="ToggleSwitchEnableTrayIcon"
                             Toggled="ToggleSwitchEnableTrayIcon_Toggled" />
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Tray_LeftClickAction}">
+                    <ui:SettingsCard Header="{x:Static props:WindowStrings.Tray_LeftClickAction}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxTrayLeftClickAction"
                                   SelectedIndex="0"
                                   SelectionChanged="ComboBoxTrayLeftClickAction_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ShowMenu}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_HideShowMainWindow}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_TempShowMainWindow}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_OpenSettings}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_DisableAllHotkeys}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ForceFullScreen}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ToggleFoldFloatingBar}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ResetFloatingBarPosition}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_RestartApp}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_CloseApp}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ShowMenu}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_HideShowMainWindow}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_TempShowMainWindow}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_OpenSettings}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_DisableAllHotkeys}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ForceFullScreen}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ToggleFoldFloatingBar}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ResetFloatingBarPosition}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_RestartApp}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_CloseApp}" />
                         </ComboBox>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="{i18n:I18n Key=Tray_RightClickAction}">
+                    <ui:SettingsCard Header="{x:Static props:WindowStrings.Tray_RightClickAction}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxTrayRightClickAction"
                                   SelectedIndex="0"
                                   SelectionChanged="ComboBoxTrayRightClickAction_SelectionChanged">
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ShowMenu}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_HideShowMainWindow}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_TempShowMainWindow}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_OpenSettings}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_DisableAllHotkeys}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ForceFullScreen}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ToggleFoldFloatingBar}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_ResetFloatingBarPosition}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_RestartApp}" />
-                            <ComboBoxItem Content="{i18n:I18n Key=Tray_ClickAction_CloseApp}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ShowMenu}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_HideShowMainWindow}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_TempShowMainWindow}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_OpenSettings}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_DisableAllHotkeys}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ForceFullScreen}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ToggleFoldFloatingBar}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_ResetFloatingBarPosition}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_RestartApp}" />
+                            <ComboBoxItem Content="{x:Static props:WindowStrings.Tray_ClickAction_CloseApp}" />
                         </ComboBox>
                     </ui:SettingsCard>
 

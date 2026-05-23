@@ -28,10 +28,9 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public int FadeTime { get; set; } = 3000;
 
-        /// <summary>
-        /// 渐隐动画持续时间（毫秒）
-        /// </summary>
-        public int AnimationDuration { get; set; } = 1000;
+        public double FadeSpeedMultiplier { get; set; } = 1.0;
+
+        public int AnimationDuration { get; set; } = 2000;
         #endregion
 
         #region Private Fields
@@ -41,6 +40,7 @@ namespace Ink_Canvas.Helpers
         private readonly Dictionary<Stroke, UIElement> _strokeVisuals;
         private readonly Dictionary<Stroke, Point> _strokeStartPoints;
         private readonly Dictionary<Stroke, Point> _strokeEndPoints;
+        private readonly Dictionary<Stroke, int> _strokeAnimationDurations;
         #endregion
 
         #region Constructor
@@ -52,6 +52,7 @@ namespace Ink_Canvas.Helpers
             _strokeVisuals = new Dictionary<Stroke, UIElement>();
             _strokeStartPoints = new Dictionary<Stroke, Point>();
             _strokeEndPoints = new Dictionary<Stroke, Point>();
+            _strokeAnimationDurations = new Dictionary<Stroke, int>();
         }
         #endregion
 
@@ -62,7 +63,7 @@ namespace Ink_Canvas.Helpers
         /// <param name="stroke">墨迹对象</param>
         /// <param name="startPoint">落笔点</param>
         /// <param name="endPoint">抬笔点</param>
-        public void AddFadingStroke(Stroke stroke, Point startPoint, Point endPoint)
+        public void AddFadingStroke(Stroke stroke, Point startPoint, Point endPoint, long strokeDurationMs = 0)
         {
             if (!IsEnabled || stroke == null)
             {
@@ -71,23 +72,32 @@ namespace Ink_Canvas.Helpers
 
             try
             {
-                // 确保主窗口的InkCanvas保持Ink编辑模式，防止墨迹渐隐时切换到鼠标模式
                 if (_mainWindow.inkCanvas.EditingMode != InkCanvasEditingMode.Ink)
                 {
                     _mainWindow.inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
                 }
 
-                // 记录墨迹的起点和终点
                 _strokeStartPoints[stroke] = startPoint;
                 _strokeEndPoints[stroke] = endPoint;
 
-                // 创建墨迹的视觉元素（湿墨迹状态）
+                int animationDuration;
+                if (strokeDurationMs > 0)
+                {
+                    if (FadeSpeedMultiplier <= 0) FadeSpeedMultiplier = 1.0;
+                    animationDuration = Math.Max(20, (int)(strokeDurationMs / FadeSpeedMultiplier));
+                }
+                else
+                {
+                    animationDuration = GetEffectiveAnimationDuration();
+                }
+
+                _strokeAnimationDurations[stroke] = animationDuration;
+
                 var strokeVisual = CreateStrokeVisual(stroke);
                 if (strokeVisual == null) return;
 
                 _strokeVisuals[stroke] = strokeVisual;
 
-                // 创建定时器，在指定时间后开始渐隐动画
                 var timer = new DispatcherTimer
                 {
                     Interval = TimeSpan.FromMilliseconds(FadeTime)
@@ -180,6 +190,7 @@ namespace Ink_Canvas.Helpers
 
                 _strokeStartPoints.Remove(stroke);
                 _strokeEndPoints.Remove(stroke);
+                _strokeAnimationDurations.Remove(stroke);
             }
             catch (Exception ex)
             {
@@ -230,6 +241,7 @@ namespace Ink_Canvas.Helpers
                 _strokeVisuals.Clear();
                 _strokeStartPoints.Clear();
                 _strokeEndPoints.Clear();
+                _strokeAnimationDurations.Clear();
             }
             catch (Exception ex)
             {
@@ -254,6 +266,26 @@ namespace Ink_Canvas.Helpers
                 timer.Interval = TimeSpan.FromMilliseconds(FadeTime);
                 timer.Start();
             }
+        }
+
+        public void UpdateFadeSpeedMultiplier(double multiplier)
+        {
+            FadeSpeedMultiplier = multiplier;
+        }
+
+        private int GetEffectiveAnimationDuration()
+        {
+            if (FadeSpeedMultiplier <= 0) FadeSpeedMultiplier = 1.0;
+            return Math.Max(20, (int)(AnimationDuration / FadeSpeedMultiplier));
+        }
+
+        private int GetStrokeAnimationDuration(Stroke stroke)
+        {
+            if (_strokeAnimationDurations.TryGetValue(stroke, out var animDuration) && animDuration > 0)
+            {
+                return Math.Max(20, animDuration);
+            }
+            return GetEffectiveAnimationDuration();
         }
 
 
@@ -367,13 +399,15 @@ namespace Ink_Canvas.Helpers
                     var currentOpacity = visual.Opacity;
                     var isHighlighter = stroke.DrawingAttributes.IsHighlighter;
 
+                    int animDuration = GetStrokeAnimationDuration(stroke);
+
                     if (isHighlighter)
                     {
-                        StartUnifiedFadeAnimation(visual, stroke, currentOpacity, AnimationDuration);
+                        StartUnifiedFadeAnimation(visual, stroke, currentOpacity, animDuration);
                     }
                     else
                     {
-                        StartNormalStrokeFadeAnimation(visual, stroke, currentOpacity);
+                        StartProgressiveFadeAnimation(visual, stroke, currentOpacity, animDuration);
                     }
                 });
             }
@@ -383,24 +417,6 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        /// <summary>
-        /// 开始普通墨迹的渐隐动画
-        /// </summary>
-        private void StartNormalStrokeFadeAnimation(UIElement visual, Stroke stroke, double currentOpacity)
-        {
-            try
-            {
-                StartProgressiveFadeAnimation(visual, stroke, currentOpacity, AnimationDuration);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"开始普通墨迹渐隐动画失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 统一渐隐动画 - 整个墨迹作为一个整体进行渐隐，与擦除效果一致
-        /// </summary>
         private void StartUnifiedFadeAnimation(UIElement visual, Stroke stroke, double currentOpacity, int duration)
         {
             try
@@ -449,25 +465,6 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        /// <summary>
-        /// 开始高亮笔的渐隐动画
-        /// </summary>
-        private void StartHighlighterFadeAnimation(UIElement visual, Stroke stroke, double currentOpacity)
-        {
-            try
-            {
-                // 高亮笔使用统一的渐隐动画，与擦除效果一致
-                StartUnifiedFadeAnimation(visual, stroke, currentOpacity, (int)(AnimationDuration * 1.2));
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"开始高亮笔渐隐动画失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 渐进式渐隐动画 - 从起点到终点逐渐消失
-        /// </summary>
         private void StartProgressiveFadeAnimation(UIElement visual, Stroke stroke, double currentOpacity, int duration)
         {
             try
@@ -653,7 +650,7 @@ namespace Ink_Canvas.Helpers
                     timer.Start();
                 }
 
-                var safetyTimeout = totalDuration + (segments.Count * segmentDuration) + 1200;
+                var safetyTimeout = totalDuration + (segments.Count * segmentDuration) + 500;
                 var safetyTimer = new DispatcherTimer
                 {
                     Interval = TimeSpan.FromMilliseconds(safetyTimeout)
@@ -811,28 +808,22 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         private int CalculateOptimalSegmentDuration(int totalDuration, int segmentCount)
         {
-            // 平衡速度与动画完整性
             var baseDuration = totalDuration / Math.Max(segmentCount, 1);
-            var minDuration = 150; // 每段最少150ms，确保动画完整显示
-            var maxDuration = 500; // 每段最多500ms，平衡速度与完整性
+            var minDuration = Math.Max(20, (int)(totalDuration * 0.05));
+            var maxDuration = Math.Max(50, (int)(totalDuration * 0.2));
 
             return Math.Max(minDuration, Math.Min(maxDuration, baseDuration));
         }
 
-        /// <summary>
-        /// 创建优化的动画时间曲线 - 平衡速度与完整性
-        /// </summary>
         private int[] CreateAppleStyleAnimationCurve(int segmentCount, int totalDuration)
         {
             var curve = new int[segmentCount];
 
-            // 平衡速度与完整性，确保动画有足够时间播放
-            var availableTime = totalDuration * 0.6; // 使用60%的总时间，给动画留足够缓冲
-            var delayBetweenSegments = Math.Max(60, availableTime / Math.Max(segmentCount, 1));
+            var availableTime = (int)(totalDuration * 0.6);
+            var delayBetweenSegments = Math.Max(10, availableTime / Math.Max(segmentCount, 1));
 
             for (int i = 0; i < segmentCount; i++)
             {
-                // 线性延迟，确保每个分段都有足够时间
                 curve[i] = (int)(i * delayBetweenSegments);
             }
 

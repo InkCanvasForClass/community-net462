@@ -1,3 +1,4 @@
+using Ink_Canvas.Properties;
 using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
@@ -240,7 +241,7 @@ namespace Ink_Canvas
                                 {
                                     Dispatcher.Invoke(() =>
                                     {
-                                        ShowNotification($"多页面XML墨迹成功保存为 {savedCount} 个XML文件");
+                                        ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveMultiPageXmlSuccess, savedCount));
                                     });
                                 });
                             }
@@ -263,7 +264,7 @@ namespace Ink_Canvas
                             {
                                 Dispatcher.Invoke(() =>
                                 {
-                                    ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                                    ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveXmlSuccess, xmlPath));
                                 });
                             });
                         }
@@ -418,7 +419,7 @@ namespace Ink_Canvas
                             {
                                 Dispatcher.Invoke(() =>
                                 {
-                                    ShowNotification($"多页面墨迹成功保存为 {allPageStrokes.Count} 个icstk文件");
+                                    ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveMultiPageIcstkSuccess, allPageStrokes.Count));
                                 });
                             });
                         }
@@ -437,7 +438,7 @@ namespace Ink_Canvas
                                 {
                                     Dispatcher.Invoke(() =>
                                     {
-                                        ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                                        ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveXmlSuccess, xmlPath));
                                     });
                                 });
                             }
@@ -454,7 +455,7 @@ namespace Ink_Canvas
                                 {
                                     Dispatcher.Invoke(() =>
                                     {
-                                        ShowNotification("墨迹成功保存至 " + savePathWithName);
+                                        ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveSuccess, savePathWithName));
                                     });
                                 });
                             }
@@ -483,7 +484,7 @@ namespace Ink_Canvas
             }
             catch (Exception ex)
             {
-                ShowNotification("墨迹保存失败");
+                ShowNotification(MainWindowStrings.Main_Strokes_SaveFailed);
                 LogHelper.WriteLogToFile("墨迹保存失败 | " + ex, LogHelper.LogType.Error);
             }
         }
@@ -598,7 +599,7 @@ namespace Ink_Canvas
                     {
                         writer.WriteLine($"保存时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                         writer.WriteLine($"总页数: {allPageStrokes.Count}");
-                        writer.WriteLine($"模式: {(currentMode == 0 ? "PPT放映" : "白板")}");
+                        writer.WriteLine($"模式: {(currentMode == 0 ? "PPT放映" : FloatingBarStrings.FloatingBar_Whiteboard)}");
                         writer.WriteLine($"格式: XML");
                         if (currentMode != 0)
                         {
@@ -642,7 +643,7 @@ namespace Ink_Canvas
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                ShowNotification($"多页面XML墨迹成功保存至压缩包 {zipFileName}");
+                                ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveMultiPageXmlZipSuccess, zipFileName));
                             });
                         });
                     }
@@ -709,7 +710,7 @@ namespace Ink_Canvas
                     {
                         writer.WriteLine($"保存时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                         writer.WriteLine($"总页数: {allPageStrokes.Count}");
-                        writer.WriteLine($"模式: {(currentMode == 0 ? "PPT放映" : "白板")}");
+                        writer.WriteLine($"模式: {(currentMode == 0 ? "PPT放映" : FloatingBarStrings.FloatingBar_Whiteboard)}");
                         if (currentMode != 0)
                         {
                             writer.WriteLine($"当前页面: {CurrentWhiteboardIndex}");
@@ -753,7 +754,7 @@ namespace Ink_Canvas
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                ShowNotification($"多页面墨迹成功保存至压缩包 {zipFileName}");
+                                ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveMultiPageZipSuccess, zipFileName));
                             });
                         });
                     }
@@ -859,7 +860,7 @@ namespace Ink_Canvas
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        ShowNotification("墨迹成功全页面保存至 " + Path.ChangeExtension(savePathWithName, "png"));
+                        ShowNotification(string.Format(MainWindowStrings.Main_Strokes_SaveFullPageSuccess, Path.ChangeExtension(savePathWithName, "png")));
                     });
                 });
             }
@@ -922,8 +923,8 @@ namespace Ink_Canvas
 
             var openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Settings.Automation.AutoSavedStrokesLocation;
-            openFileDialog.Title = "打开墨迹文件";
-            openFileDialog.Filter = "Ink Canvas Strokes File (*.icstk)|*.icstk|XML墨迹文件 (*.xml)|*.xml|ICC压缩包 (*.zip)|*.zip|所有支持的文件 (*.icstk;*.xml;*.zip)|*.icstk;*.xml;*.zip";
+            openFileDialog.Title = MainWindowStrings.Main_Strokes_OpenFileDialogTitle;
+            openFileDialog.Filter = MainWindowStrings.Main_Strokes_OpenFileDialogFilter;
             if (openFileDialog.ShowDialog() != true) return;
             LogHelper.WriteLogToFile($"Strokes Insert: Name: {openFileDialog.FileName}",
                 LogHelper.LogType.Event);
@@ -952,7 +953,7 @@ namespace Ink_Canvas
             }
             catch (Exception ex)
             {
-                ShowNotification("墨迹打开失败");
+                ShowNotification(MainWindowStrings.Main_Strokes_OpenFailed);
                 LogHelper.WriteLogToFile($"墨迹打开失败: {ex}", LogHelper.LogType.Error);
             }
         }
@@ -984,7 +985,7 @@ namespace Ink_Canvas
 
                     // 根据元数据信息决定恢复模式
                     bool isPPTMode = metadata.ContainsKey("模式") && metadata["模式"].Contains("PPT放映");
-                    bool isWhiteboardMode = metadata.ContainsKey("模式") && metadata["模式"].Contains("白板");
+                    bool isWhiteboardMode = metadata.ContainsKey("模式") && metadata["模式"].Contains(FloatingBarStrings.FloatingBar_Whiteboard);
 
                     // 检查当前是否处于PPT模式
                     bool isCurrentlyInPPTMode = IsInPptPresentationMode && pptApplication != null;
@@ -1006,13 +1007,13 @@ namespace Ink_Canvas
                     else
                     {
                         // 模式不匹配时，显示提示信息
-                        string savedMode = isPPTMode ? "PPT放映" : (isWhiteboardMode ? "白板" : "未知");
-                        string currentMode = isCurrentlyInPPTMode ? "PPT放映" : (isCurrentlyInWhiteboardMode ? "白板" : "桌面");
-                        ShowNotification($"墨迹保存模式({savedMode})与当前模式({currentMode})不匹配，无法恢复墨迹");
+                        string savedMode = isPPTMode ? "PPT放映" : (isWhiteboardMode ? FloatingBarStrings.FloatingBar_Whiteboard : "未知");
+                        string currentMode = isCurrentlyInPPTMode ? "PPT放映" : (isCurrentlyInWhiteboardMode ? FloatingBarStrings.FloatingBar_Whiteboard : "桌面");
+                        ShowNotification(string.Format(MainWindowStrings.Main_Strokes_ModeMismatch, savedMode, currentMode));
                         LogHelper.WriteLogToFile($"模式不匹配：保存模式={savedMode}，当前模式={currentMode}", LogHelper.LogType.Warning);
                     }
 
-                    ShowNotification($"成功打开ICC压缩包，共{(metadata.ContainsKey("总页数") ? metadata["总页数"] : "0")}页");
+                    ShowNotification(string.Format(MainWindowStrings.Main_Strokes_OpenIccSuccess, metadata.ContainsKey("总页数") ? metadata["总页数"] : "0"));
                 }
                 finally
                 {

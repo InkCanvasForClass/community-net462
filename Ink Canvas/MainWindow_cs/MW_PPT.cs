@@ -164,7 +164,7 @@ namespace Ink_Canvas
         private Task<List<PptEnhancedPreviewItem>> _pptEnhancedPreviewBuildTask;
         private CancellationTokenSource _pptEnhancedPreviewCacheCts;
         private int _pptEnhancedPreviewCacheGeneration;
-        private const int PptEnhancedPreviewPreloadDelayMs = 1000;
+        private const int PptEnhancedPreviewPreloadDelayMs = 100;
         private int _previousSlideID = 0;
 
         /// <summary>
@@ -846,6 +846,7 @@ namespace Ink_Canvas
                     {
                         _exitPPTModeAfterDisconnectTimer?.Stop();
                         _exitPPTModeAfterDisconnectTimer = null;
+                        SchedulePptEnhancedPreviewPreload();
                         LogHelper.WriteLogToFile("PPT连接已建立", LogHelper.LogType.Event);
                     }
                     else
@@ -917,6 +918,8 @@ namespace Ink_Canvas
                     }
 
                     _pptUIManager?.UpdateConnectionStatus(true);
+
+                    SchedulePptEnhancedPreviewPreload();
 
                     LogHelper.WriteLogToFile($"已打开新演示文稿: {pres.Name}，墨迹状态已清理", LogHelper.LogType.Event);
                 });
@@ -1091,8 +1094,6 @@ namespace Ink_Canvas
                 _currentSlideShowPosition = currentSlide;
                 _previousSlideID = currentSlide;
 
-                ResetPptEnhancedPreviewCache();
-
                 lock (_memoryStreams)
                 {
                     foreach (var stream in _memoryStreams.Values)
@@ -1218,11 +1219,6 @@ namespace Ink_Canvas
                             if (inkCanvas.EditingMode == InkCanvasEditingMode.Ink)
                             {
                                 UpdateCurrentToolMode("pen");
-                                if (Settings.Appearance.IsShowQuickColorPalette && QuickColorPalette != null)
-                                {
-                                    QuickColorPalette.Visibility = Visibility.Visible;
-                                    QuickColorPalette.DisplayMode = Settings.Appearance.QuickColorPaletteDisplayMode;
-                                }
                                 SetFloatingBarHighlightPosition("pen");
                             }
                         }
@@ -1240,8 +1236,6 @@ namespace Ink_Canvas
                     // 仅PPT模式：放映开始立即同步主窗口可见性（勿仅依赖 SlideShowStateChanged 定时器）
                     CheckMainWindowVisibility();
                 });
-
-                SchedulePptEnhancedPreviewPreload();
 
                 if (!isFloatingBarFolded)
                 {
@@ -1567,11 +1561,8 @@ namespace Ink_Canvas
                         // 退出PPT模式时恢复手势面板和手势按钮的显示状态
                         UpdateToolbarComponentVisibility();
 
-                        // 退出PPT模式时隐藏快捷调色盘
-                        if (QuickColorPalette != null)
-                        {
-                            QuickColorPalette.Visibility = Visibility.Collapsed;
-                        }
+                        // 注意：快捷调色盘的可见性现在完全由工具栏规则集管理
+                        // 不需要手动设置，UpdateToolbarComponentVisibility 会处理好
 
                         if (GridTransparencyFakeBackground.Background != Brushes.Transparent)
                             BtnHideInkCanvas_Click(null, null);
@@ -1662,7 +1653,103 @@ namespace Ink_Canvas
         /// 6. 如果解析成功且页码大于0，则保存上次播放页码并显示跳转提示窗口
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
         /// </remarks>
-        private void ShowPreviousPageNotification(Presentation pres)
+        private TaskCompletionSource<bool> _inlineDialogTcs;
+
+        private async Task<bool> ShowInlineYesNoDialog(string title, string content)
+        {
+            _inlineDialogTcs = new TaskCompletionSource<bool>();
+
+            InlineDialogTitle.Content = title;
+            InlineDialogContent.Text = content;
+
+            InlineDialogRoot.Opacity = 0;
+            InlineDialogRoot.Visibility = Visibility.Visible;
+            InlineDialogScaleTransform.ScaleX = 1.05;
+            InlineDialogScaleTransform.ScaleY = 1.05;
+
+            var showAnimation = new System.Windows.Media.Animation.Storyboard();
+
+            var opacityAnimation = new System.Windows.Media.Animation.DoubleAnimation(0, 1,
+                TimeSpan.FromMilliseconds(150));
+            opacityAnimation.FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd;
+            System.Windows.Media.Animation.Storyboard.SetTarget(opacityAnimation, InlineDialogRoot);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(opacityAnimation,
+                new PropertyPath(Grid.OpacityProperty));
+            showAnimation.Children.Add(opacityAnimation);
+
+            var scaleXAnimation = new System.Windows.Media.Animation.DoubleAnimation(1.05, 1.0,
+                TimeSpan.FromMilliseconds(250));
+            scaleXAnimation.FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd;
+            var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+            scaleXAnimation.EasingFunction = ease;
+            System.Windows.Media.Animation.Storyboard.SetTarget(scaleXAnimation, InlineDialogCard);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(scaleXAnimation,
+                new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleX)"));
+            showAnimation.Children.Add(scaleXAnimation);
+
+            var scaleYAnimation = new System.Windows.Media.Animation.DoubleAnimation(1.05, 1.0,
+                TimeSpan.FromMilliseconds(250));
+            scaleYAnimation.FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd;
+            scaleYAnimation.EasingFunction = ease;
+            System.Windows.Media.Animation.Storyboard.SetTarget(scaleYAnimation, InlineDialogCard);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(scaleYAnimation,
+                new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleY)"));
+            showAnimation.Children.Add(scaleYAnimation);
+
+            showAnimation.Begin(this);
+
+            return await _inlineDialogTcs.Task;
+        }
+
+        private void HideInlineDialog()
+        {
+            var hideAnimation = new System.Windows.Media.Animation.Storyboard();
+
+            var opacityAnimation = new System.Windows.Media.Animation.DoubleAnimation(1, 0,
+                TimeSpan.FromMilliseconds(150));
+            opacityAnimation.FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd;
+            System.Windows.Media.Animation.Storyboard.SetTarget(opacityAnimation, InlineDialogRoot);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(opacityAnimation,
+                new PropertyPath(Grid.OpacityProperty));
+            hideAnimation.Children.Add(opacityAnimation);
+
+            var scaleXAnimation = new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.05,
+                TimeSpan.FromMilliseconds(100));
+            scaleXAnimation.FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd;
+            System.Windows.Media.Animation.Storyboard.SetTarget(scaleXAnimation, InlineDialogCard);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(scaleXAnimation,
+                new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleX)"));
+            hideAnimation.Children.Add(scaleXAnimation);
+
+            var scaleYAnimation = new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.05,
+                TimeSpan.FromMilliseconds(100));
+            scaleYAnimation.FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd;
+            System.Windows.Media.Animation.Storyboard.SetTarget(scaleYAnimation, InlineDialogCard);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(scaleYAnimation,
+                new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleY)"));
+            hideAnimation.Children.Add(scaleYAnimation);
+
+            hideAnimation.Completed += (s, e) =>
+            {
+                InlineDialogRoot.Visibility = Visibility.Collapsed;
+            };
+
+            hideAnimation.Begin(this);
+        }
+
+        private void InlineDialogPrimaryButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideInlineDialog();
+            _inlineDialogTcs?.TrySetResult(true);
+        }
+
+        private void InlineDialogSecondaryButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideInlineDialog();
+            _inlineDialogTcs?.TrySetResult(false);
+        }
+
+        private async void ShowPreviousPageNotification(Presentation pres)
         {
             try
             {
@@ -1676,7 +1763,8 @@ namespace Ink_Canvas
                 if (int.TryParse(File.ReadAllText(positionFile), out var page) && page > 0)
                 {
                     _lastPlaybackPage = page;
-                    var yesNoWindow = new YesOrNoNotificationWindow($"上次播放到了第 {page} 页, 是否立即跳转", () =>
+                    var result = await ShowInlineYesNoDialog("Ink Canvas For Class CE", string.Format(Properties.PPTStrings.PPT_RememberLastPage_Prompt, page));
+                    if (result)
                     {
                         try
                         {
@@ -1698,16 +1786,6 @@ namespace Ink_Canvas
                         {
                             LogHelper.WriteLogToFile($"跳转到第{page}页失败: {ex}", LogHelper.LogType.Error);
                         }
-                    });
-                    yesNoWindow.Owner = this;
-                    PauseTopmostMaintenance();
-                    try
-                    {
-                        yesNoWindow.ShowDialog();
-                    }
-                    finally
-                    {
-                        ResumeTopmostMaintenance();
                     }
                 }
             }
@@ -1730,7 +1808,7 @@ namespace Ink_Canvas
         /// 5. 无论用户选择如何，都会重置IsShowingRestoreHiddenSlidesWindow标志
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
         /// </remarks>
-        private void CheckAndNotifyHiddenSlides(Presentation pres)
+        private async void CheckAndNotifyHiddenSlides(Presentation pres)
         {
             try
             {
@@ -1750,40 +1828,32 @@ namespace Ink_Canvas
                 if (hasHiddenSlides && !IsShowingRestoreHiddenSlidesWindow)
                 {
                     IsShowingRestoreHiddenSlidesWindow = true;
-                    var yesNoWindow = new YesOrNoNotificationWindow("检测到此演示文档中包含隐藏的幻灯片，是否取消隐藏？",
-                        () =>
+                    var result = await ShowInlineYesNoDialog("Ink Canvas For Class CE", Properties.PPTStrings.PPT_HiddenSlides_Detected);
+                    if (result)
+                    {
+                        try
                         {
-                            try
+                            if (pres?.Slides != null)
                             {
-                                if (pres?.Slides != null)
+                                foreach (Slide slide in pres.Slides)
                                 {
-                                    foreach (Slide slide in pres.Slides)
-                                    {
-                                        if (slide.SlideShowTransition.Hidden == MsoTriState.msoTrue)
-                                            slide.SlideShowTransition.Hidden = MsoTriState.msoFalse;
-                                    }
+                                    if (slide.SlideShowTransition.Hidden == MsoTriState.msoTrue)
+                                        slide.SlideShowTransition.Hidden = MsoTriState.msoFalse;
                                 }
                             }
-                            catch (Exception ex)
-                            {
-                                LogHelper.WriteLogToFile($"取消隐藏幻灯片失败: {ex}", LogHelper.LogType.Error);
-                            }
-                            finally
-                            {
-                                IsShowingRestoreHiddenSlidesWindow = false;
-                            }
-                        },
-                        () => { IsShowingRestoreHiddenSlidesWindow = false; },
-                        () => { IsShowingRestoreHiddenSlidesWindow = false; });
-                    yesNoWindow.Owner = this;
-                    PauseTopmostMaintenance();
-                    try
-                    {
-                        yesNoWindow.ShowDialog();
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"取消隐藏幻灯片失败: {ex}", LogHelper.LogType.Error);
+                        }
+                        finally
+                        {
+                            IsShowingRestoreHiddenSlidesWindow = false;
+                        }
                     }
-                    finally
+                    else
                     {
-                        ResumeTopmostMaintenance();
+                        IsShowingRestoreHiddenSlidesWindow = false;
                     }
                 }
             }
@@ -1807,7 +1877,7 @@ namespace Ink_Canvas
         /// 6. 无论用户选择如何，都会重置IsShowingAutoplaySlidesWindow标志
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
         /// </remarks>
-        private void CheckAndNotifyAutoPlaySettings(Presentation pres)
+        private async void CheckAndNotifyAutoPlaySettings(Presentation pres)
         {
             try
             {
@@ -1830,36 +1900,28 @@ namespace Ink_Canvas
                 if (hasSlideTimings && !IsShowingAutoplaySlidesWindow)
                 {
                     IsShowingAutoplaySlidesWindow = true;
-                    var yesNoWindow = new YesOrNoNotificationWindow("检测到此演示文档中自动播放或排练计时已经启用，可能导致幻灯片自动翻页，是否取消？",
-                        () =>
+                    var result = await ShowInlineYesNoDialog("Ink Canvas For Class CE", Properties.PPTStrings.PPT_AutoPlay_Detected);
+                    if (result)
+                    {
+                        try
                         {
-                            try
+                            if (pres != null)
                             {
-                                if (pres != null)
-                                {
-                                    pres.SlideShowSettings.AdvanceMode = PpSlideShowAdvanceMode.ppSlideShowManualAdvance;
-                                }
+                                pres.SlideShowSettings.AdvanceMode = PpSlideShowAdvanceMode.ppSlideShowManualAdvance;
                             }
-                            catch (Exception ex)
-                            {
-                                LogHelper.WriteLogToFile($"设置手动播放模式失败: {ex}", LogHelper.LogType.Error);
-                            }
-                            finally
-                            {
-                                IsShowingAutoplaySlidesWindow = false;
-                            }
-                        },
-                        () => { IsShowingAutoplaySlidesWindow = false; },
-                        () => { IsShowingAutoplaySlidesWindow = false; });
-                    yesNoWindow.Owner = this;
-                    PauseTopmostMaintenance();
-                    try
-                    {
-                        yesNoWindow.ShowDialog();
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"设置手动播放模式失败: {ex}", LogHelper.LogType.Error);
+                        }
+                        finally
+                        {
+                            IsShowingAutoplaySlidesWindow = false;
+                        }
                     }
-                    finally
+                    else
                     {
-                        ResumeTopmostMaintenance();
+                        IsShowingAutoplaySlidesWindow = false;
                     }
                 }
             }
@@ -2013,7 +2075,7 @@ namespace Ink_Canvas
                         }
                         else
                         {
-                            MessageBox.Show("未找到幻灯片");
+                            MessageBox.Show(Properties.PPTStrings.PPT_SlidesNotFound);
                             LogHelper.WriteLogToFile("手动PPT连接检查失败", LogHelper.LogType.Warning);
                         }
                     });
@@ -2023,7 +2085,7 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"手动检查PPT应用程序失败: {ex}", LogHelper.LogType.Error);
                 _pptUIManager?.UpdateConnectionStatus(false);
-                MessageBox.Show("未找到幻灯片");
+                MessageBox.Show(Properties.PPTStrings.PPT_SlidesNotFound);
             }
         }
 
@@ -2586,7 +2648,7 @@ namespace Ink_Canvas
         private void SchedulePptEnhancedPreviewPreload()
         {
             if (!Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview) return;
-            if (_pptManager?.IsInSlideShow != true) return;
+            if (_pptManager?.IsConnected != true) return;
 
             var token = EnsurePptEnhancedPreviewCacheToken();
             _ = PreloadPptEnhancedPreviewAfterDelayAsync(token);
@@ -2598,7 +2660,7 @@ namespace Ink_Canvas
             {
                 await Task.Delay(PptEnhancedPreviewPreloadDelayMs, cancellationToken);
                 if (cancellationToken.IsCancellationRequested) return;
-                if (_pptManager?.IsInSlideShow != true) return;
+                if (_pptManager?.IsConnected != true) return;
                 if (!Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview) return;
 
                 var slides = await GetOrBuildPptEnhancedPreviewItemsAsync(cancellationToken);

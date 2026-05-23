@@ -5,7 +5,6 @@ using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
 using Newtonsoft.Json;
-using Sentry;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -88,7 +87,7 @@ namespace Ink_Canvas
         // 新增：启动画面相关
         private static SplashScreen _splashScreen;
         private static bool _isSplashScreenShown = false;
-        private static System.Resources.ResourceSet _pendingLocalizedResourceSet;
+        // _pendingLocalizedResourceSet removed - using Strings.LoadAllToResources
         private static readonly Stopwatch startupStopwatch = new Stopwatch();
         private static readonly Stopwatch splashStopwatch = new Stopwatch();
 
@@ -105,26 +104,6 @@ namespace Ink_Canvas
             {
             }
 
-            try
-            {
-                var dsn = GetDlassTelemetryDsn();
-                if (!string.IsNullOrWhiteSpace(dsn))
-                {
-                    SentrySdk.Init(options =>
-                    {
-                        options.Dsn = dsn;
-                        options.Debug = false;
-                        options.SendDefaultPii = true;
-                        options.TracesSampleRate = 1.0;
-                        options.IsGlobalModeEnabled = true;
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化 Dlass 遥测失败: {ex}", LogHelper.LogType.Warning);
-            }
-
             // 配置TLS协议以支持Windows 7
             ConfigureTlsForWindows7();
 
@@ -134,6 +113,12 @@ namespace Ink_Canvas
             {
                 RunWatchdogIfNeeded();
                 Environment.Exit(0);
+                return;
+            }
+
+            if (args.Contains("--enable-uia-topmost-helper"))
+            {
+                Environment.Exit(UIAccessHelper.LaunchNormalUserWithUIAccessFromElevatedHelper() ? 0 : 1);
                 return;
             }
 
@@ -775,7 +760,7 @@ namespace Ink_Canvas
                 }
             }
 
-            Ink_Canvas.MainWindow.ShowNewMessage(Strings.GetString("Msg_UnexpectedError"));
+            Ink_Canvas.MainWindow.ShowNewMessage(MainWindowStrings.Main_App_UnexpectedError);
             LogHelper.NewLog(e.Exception.ToString());
 
             // 记录到崩溃日志
@@ -804,7 +789,7 @@ namespace Ink_Canvas
                 StartupCount.Increment();
                 if (StartupCount.GetCount() >= 5)
                 {
-                    MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(MainWindowStrings.Main_App_RestartLoopDetected, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                     StartupCount.Reset();
                     Environment.Exit(1);
                 }
@@ -841,13 +826,11 @@ namespace Ink_Canvas
 
             TryApplyPreferredLanguageFromSettings();
 
-            _pendingLocalizedResourceSet = Strings.ResourceManager.GetResourceSet(CultureInfo.CurrentUICulture, true, true);
-
             // 根据设置决定是否显示启动画面
             if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
             {
                 ShowSplashScreen();
-                SetSplashMessage(Strings.GetString("Splash_Starting"));
+                SetSplashMessage("正在启动 Ink Canvas...");
                 SetSplashProgress(25);
 
                 // 强制刷新UI，确保启动画面显示
@@ -1173,7 +1156,6 @@ namespace Ink_Canvas
             {
                 var inkCanvasService = new Plugins.InkCanvasService(mainWindow);
                 Plugins.PluginManager.Instance.RegisterService<Plugins.IInkCanvasService>(inkCanvasService);
-                LogHelper.WriteLogToFile("InkCanvasService registered for plugins");
             }
             catch (Exception ex)
             {
@@ -1184,7 +1166,6 @@ namespace Ink_Canvas
             {
                 var appRestartService = new Plugins.AppRestartService();
                 Plugins.PluginManager.Instance.RegisterService<Plugins.IAppRestartService>(appRestartService);
-                LogHelper.WriteLogToFile("AppRestartService registered for plugins");
             }
             catch (Exception ex)
             {
@@ -1230,14 +1211,6 @@ namespace Ink_Canvas
                 await Task.Delay(600);
                 Dispatcher.Invoke(() => _taskbar?.ForceCreate());
             });
-            _ = Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (_pendingLocalizedResourceSet != null)
-                {
-                    LoadLocalizedResources(_pendingLocalizedResourceSet);
-                    _pendingLocalizedResourceSet = null;
-                }
-            }), DispatcherPriority.ApplicationIdle);
 
             // 处理启动时的URI参数
             string startupUriArg = e.Args.FirstOrDefault(a => a.StartsWith("icc:", StringComparison.OrdinalIgnoreCase));
@@ -1335,14 +1308,7 @@ namespace Ink_Canvas
                 {
                     DeviceIdentifier.RecordAppLaunch();
                     var systemVersion = DeviceIdentifier.GetSystemVersion();
-                    if (!string.IsNullOrWhiteSpace(systemVersion))
-                    {
-                        SentrySdk.ConfigureScope(scope =>
-                        {
-                            scope.SetTag("system_version", systemVersion);
-                        });
-                    }
-
+                    LogHelper.WriteLogToFile($"App | 系统版本: {systemVersion}");
                     LogHelper.WriteLogToFile($"App | 设备ID: {DeviceIdentifier.GetDeviceId()}");
                     LogHelper.WriteLogToFile($"App | 使用频率: {DeviceIdentifier.GetUsageFrequency()}");
                     LogHelper.WriteLogToFile($"App | 更新优先级: {DeviceIdentifier.GetUpdatePriority()}");
@@ -1376,15 +1342,6 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"启动时预加载语言失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        private void LoadLocalizedResources(System.Resources.ResourceSet resourceSet)
-        {
-            foreach (System.Collections.DictionaryEntry entry in resourceSet)
-            {
-                if (entry.Key is string key && entry.Value is string value)
-                    Current.Resources[key] = value;
             }
         }
 
@@ -1468,7 +1425,7 @@ namespace Ink_Canvas
                             StartupCount.Increment();
                             if (StartupCount.GetCount() >= 5)
                             {
-                                MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(UpdateStrings.Msg_RestartLimit, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                                 StartupCount.Reset();
                                 Environment.Exit(1);
                             }
@@ -1506,7 +1463,7 @@ namespace Ink_Canvas
                             StartupCount.Increment();
                             if (StartupCount.GetCount() >= 5)
                             {
-                                MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(UpdateStrings.Msg_RestartLimit, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                                 StartupCount.Reset();
                                 Environment.Exit(1);
                             }
@@ -1585,7 +1542,7 @@ namespace Ink_Canvas
                         StartupCount.Increment();
                         if (StartupCount.GetCount() >= 5)
                         {
-                            MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(MainWindowStrings.Main_App_RestartLoopDetected, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                             StartupCount.Reset();
                             Environment.Exit(1);
                         }
@@ -1598,71 +1555,6 @@ namespace Ink_Canvas
                 }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 Environment.Exit(0);
-            }
-        }
-
-        internal static string GetDlassTelemetryDsn()
-        {
-            try
-            {
-                var envDsn = Environment.GetEnvironmentVariable("DLASS_SENTRY_DSN");
-                if (!string.IsNullOrWhiteSpace(envDsn))
-                {
-                    return envDsn;
-                }
-
-                try
-                {
-                    var assembly = Assembly.GetExecutingAssembly();
-                    var resourceName = "Ink_Canvas.telemetry_dsn.txt";
-                    using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                    {
-                        if (stream != null)
-                        {
-                            using (StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8))
-                            {
-                                string dsn = reader.ReadToEnd().Trim();
-                                if (!string.IsNullOrWhiteSpace(dsn))
-                                {
-                                    return dsn;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"从程序集资源读取遥测 DSN 失败: {ex.Message}", LogHelper.LogType.Warning);
-                }
-
-                string assemblyLocation = Assembly.GetExecutingAssembly().Location;
-                string currentDir = Path.GetDirectoryName(assemblyLocation);
-
-                for (int i = 0; i < 5; i++)
-                {
-                    string dsnFilePath = Path.Combine(currentDir, "telemetry_dsn.txt");
-                    if (File.Exists(dsnFilePath))
-                    {
-                        string dsn = File.ReadAllText(dsnFilePath, System.Text.Encoding.UTF8).Trim();
-                        if (!string.IsNullOrWhiteSpace(dsn))
-                        {
-                            return dsn;
-                        }
-                    }
-
-                    DirectoryInfo parentDir = Directory.GetParent(currentDir);
-                    if (parentDir == null)
-                    {
-                        break;
-                    }
-                    currentDir = parentDir.FullName;
-                }
-
-                return string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
             }
         }
 

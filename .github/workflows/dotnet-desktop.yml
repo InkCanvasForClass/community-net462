@@ -35,7 +35,7 @@ jobs:
       
       - name: Build the Solution
         env:
-          DLASS_SENTRY_DSN: ${{ secrets.DLASS_SENTRY_DSN }}
+          DLASS_TELEMETRY_TOKEN: ${{ secrets.DLASS_TELEMETRY_TOKEN }}
         run: |
           $platform = "${{ matrix.architecture }}"
           if ($platform -eq "AnyCPU") { $platform = "Any CPU" }

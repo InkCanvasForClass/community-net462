@@ -1,5 +1,6 @@
 using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using Newtonsoft.Json;
 using System;
@@ -56,11 +57,21 @@ namespace Ink_Canvas.Controls.Toolbar
         public static bool GetIsContentCollapsedByUser(FrameworkElement element)
             => (bool)element.GetValue(IsContentCollapsedByUserProperty);
 
-        public static List<KeyValuePair<string, string>> AvailableConditions { get; } = new List<KeyValuePair<string, string>>
+        public static readonly DependencyProperty UseRedStyleProperty =
+            DependencyProperty.RegisterAttached("UseRedStyle", typeof(bool), typeof(ToolbarRegistry),
+                new PropertyMetadata(false));
+
+        public static void SetUseRedStyle(FrameworkElement element, bool value)
+            => element.SetValue(UseRedStyleProperty, value);
+
+        public static bool GetUseRedStyle(FrameworkElement element)
+            => (bool)element.GetValue(UseRedStyleProperty);
+
+        public static List<KeyValuePair<string, string>> AvailableConditions => new List<KeyValuePair<string, string>>
         {
-            new KeyValuePair<string, string>("isAnnotating", "批注模式"),
-            new KeyValuePair<string, string>("isPptMode", "PPT模式"),
-            new KeyValuePair<string, string>("isContentCollapsedByUser", "工具栏已折叠")
+            new KeyValuePair<string, string>("isAnnotating", Strings.GetString("ToolbarCondition_Annotating") ?? "Annotation mode"),
+            new KeyValuePair<string, string>("isPptMode", Strings.GetString("ToolbarCondition_PptMode") ?? "PPT mode"),
+            new KeyValuePair<string, string>("isContentCollapsedByUser", Strings.GetString("ToolbarCondition_Collapsed") ?? "Toolbar collapsed")
         };
 
         private static bool _isContentCollapsedByUser = false;
@@ -205,7 +216,6 @@ namespace Ink_Canvas.Controls.Toolbar
                 })
                 .Where(i => i != null)
                 .ToList();
-            LogHelper.WriteLogToFile($"ToolbarRegistry: Discover 完成, 发现 {_items.Count} 个条目", LogHelper.LogType.Info);
             return _items;
         }
 
@@ -287,7 +297,6 @@ namespace Ink_Canvas.Controls.Toolbar
                     LogHelper.WriteLogToFile($"ToolbarRegistry: 配置 [{name}] 内容为空或无效", LogHelper.LogType.Warning);
                     return null;
                 }
-                LogHelper.WriteLogToFile($"ToolbarRegistry: 加载配置 [{name}] 成功, {layout.Components.Count} 个条目", LogHelper.LogType.Info);
                 return layout;
             }
             catch (Exception ex)
@@ -394,7 +403,6 @@ namespace Ink_Canvas.Controls.Toolbar
                 .ToList();
             foreach (var element in toRemove)
                 container.Children.Remove(element);
-            LogHelper.WriteLogToFile($"ToolbarRegistry: ClearInjected 清除 {toRemove.Count} 个元素 [{container.Name}]", LogHelper.LogType.Info);
         }
 
         #region Display items and segments
@@ -493,6 +501,8 @@ namespace Ink_Canvas.Controls.Toolbar
                     ApplyComponentSettings(view, entry);
                     var ruleset = GetEffectiveRuleset(entry);
                     SetHidingRuleset(view, ruleset);
+                    if (entry.GetSettingBool(ComponentSettingKeys.UseRedStyle))
+                        SetUseRedStyle(view, true);
                     result.Add(new DisplayItem
                     {
                         View = view,
@@ -586,7 +596,6 @@ namespace Ink_Canvas.Controls.Toolbar
 
         public static void Populate(IToolbarHost host, Panel rootPanel, ToolbarLayoutSettings layout)
         {
-            LogHelper.WriteLogToFile($"ToolbarRegistry: Populate 开始", LogHelper.LogType.Info);
             if (host == null || rootPanel == null)
             {
                 LogHelper.WriteLogToFile("ToolbarRegistry: Populate host/rootPanel 为空", LogHelper.LogType.Warning);
@@ -618,19 +627,15 @@ namespace Ink_Canvas.Controls.Toolbar
                     elementToAdd.Margin = (isFirst && !hasExistingChildren) ? new Thickness(0) : new Thickness(3, 0, 0, 0);
                     ApplyInitialVisibility(elementToAdd, item.Ruleset);
                     rootPanel.Children.Add(elementToAdd);
-                    LogHelper.WriteLogToFile($"ToolbarRegistry: 添加独立边框条目到根面板", LogHelper.LogType.Info);
                 }
                 else
                 {
                     var contentBorder = CreateContentBorder(segment.Items);
                     contentBorder.Margin = (isFirst && !hasExistingChildren) ? new Thickness(0) : new Thickness(3, 0, 0, 0);
                     rootPanel.Children.Add(contentBorder);
-                    LogHelper.WriteLogToFile($"ToolbarRegistry: 添加内容边框 ({segment.Items.Count} 项) 到根面板", LogHelper.LogType.Info);
                 }
                 isFirst = false;
             }
-
-            LogHelper.WriteLogToFile($"ToolbarRegistry: Populate 完成, 共 {segments.Count} 个段, {layout.Components.Count} 个条目", LogHelper.LogType.Info);
         }
 
         private static Border CreateContentBorder(List<DisplayItem> items)
@@ -647,6 +652,8 @@ namespace Ink_Canvas.Controls.Toolbar
             {
                 ApplyInitialVisibility(item.View, item.Ruleset);
                 contentPanel.Children.Add(item.View);
+                if (GetUseRedStyle(item.View))
+                    SetUseRedStyle(contentPanel, true);
             }
 
             var border = new Border
@@ -702,17 +709,28 @@ namespace Ink_Canvas.Controls.Toolbar
             }
             else
             {
+                var contentPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(2, 2, 2, 0),
+                    Cursor = Cursors.Arrow,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Tag = ContentPanelTag
+                };
+                ApplyInitialVisibility(view, ruleset);
+                contentPanel.Children.Add(view);
+
                 wrapper = new Border
                 {
                     Margin = new Thickness(0),
-                    Padding = new Thickness(4, 2, 4, 0),
+                    Padding = new Thickness(2, 0, 2, 0),
                     Width = double.NaN,
                     MinWidth = 0,
                     Height = 58,
                     CornerRadius = new CornerRadius(8),
                     BorderThickness = new Thickness(2),
-                    Child = view,
-                    Tag = InjectedTag
+                    Child = contentPanel,
+                    Tag = ContentBorderTag
                 };
                 wrapper.SetResourceReference(Border.BackgroundProperty, "FloatBarBackground");
                 wrapper.SetResourceReference(Border.BorderBrushProperty, "FloatBarBorderBrush");
@@ -913,6 +931,21 @@ namespace Ink_Canvas.Controls.Toolbar
                 var iconSize = entry.GetSettingDouble(ComponentSettingKeys.IconSize);
                 if (iconSize.HasValue && iconSize.Value > 0)
                     btn.IconHeight = iconSize.Value;
+
+                if (entry.GetSettingBool(ComponentSettingKeys.UseRedStyle))
+                {
+                    SetUseRedStyle(btn, true);
+                    if (btn.TryFindResource("RedBrush") is Brush redBrush)
+                    {
+                        btn.IconBrush = redBrush;
+                        btn.LabelBrush = redBrush;
+                    }
+                    else
+                    {
+                        btn.SetResourceReference(ToolbarImageButton.IconBrushProperty, "RedBrush");
+                        btn.SetResourceReference(ToolbarImageButton.LabelBrushProperty, "RedBrush");
+                    }
+                }
             }
 
             if (view is QuickColorPaletteControl qcp)
@@ -923,6 +956,9 @@ namespace Ink_Canvas.Controls.Toolbar
                 else
                     // 如果组件设置中没有找到，回退到全局设置
                     qcp.SyncFromSettings();
+                
+                // 强制应用显示模式，确保独立边框模式下也能正确显示
+                qcp.ForceApplyDisplayMode();
             }
         }
 

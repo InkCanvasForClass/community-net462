@@ -6,9 +6,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
-    Title="插件设置"
+    xmlns:props="clr-namespace:Ink_Canvas.Properties"
+    Title="{x:Static props:PluginStrings.Plugin_Settings}"
     mc:Ignorable="d">
-    <Grid>
-        <ContentControl x:Name="PluginSettingsContent" Margin="24" />
-    </Grid>
+    <ScrollViewer PanningMode="VerticalFirst">
+        <Grid>
+            <ContentControl x:Name="PluginSettingsContent" Margin="24" />
+            <Rectangle Height="48" />
+        </Grid>
+    </ScrollViewer>
 </ui:Page>

@@ -310,7 +310,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                                 App.watchdogProcess = null;
                             }
 
-                            // 使用 Inkeys 方式：通过 winlogon 模拟令牌为普通用户令牌设置 UIAccess 标志后重启
                             App.IsUIAccessTopMostEnabled = true;
                             App.IsAppExitByUser = true;
                             (Application.Current as App)?.ReleaseMutexForRestart();
@@ -334,9 +333,14 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                             LogHelper.WriteLogToFile($"启用UIA置顶功能时出错: {ex.Message}", LogHelper.LogType.Error);
                         }
                     }
+                    else if (UIAccessHelper.HasUIAccess())
+                    {
+                        LogHelper.WriteLogToFile("UIAccess | 当前普通用户进程已具有 UIAccess 权限");
+                        App.IsUIAccessTopMostEnabled = true;
+                    }
                     else
                     {
-                        LogHelper.WriteLogToFile("UIA置顶功能需要管理员权限", LogHelper.LogType.Warning);
+                        LogHelper.WriteLogToFile("UIA置顶功能需要通过设置页授权重启", LogHelper.LogType.Warning);
                     }
                 }
                 else

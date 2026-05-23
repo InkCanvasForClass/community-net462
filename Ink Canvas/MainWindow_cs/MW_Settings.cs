@@ -1,6 +1,8 @@
 using Ink_Canvas.Controls;
+using Ink_Canvas.Controls.Toolbar;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
+using OSVersionExtension;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -162,7 +164,7 @@ namespace Ink_Canvas
                 }
                 else if (Settings.Appearance.ChickenSoupSource == 3)
                 {
-                    BlackBoardWaterMark.Text = "正在获取一言...";
+                    BlackBoardWaterMark.Text = Properties.MainWindowStrings.Main_Hitokoto_Loading;
 
                     try
                     {
@@ -174,13 +176,13 @@ namespace Ink_Canvas
                         catch (Exception initEx)
                         {
                             LogHelper.WriteLogToFile($"一言 HTTP 客户端初始化失败: {initEx.Message}", LogHelper.LogType.Warning);
-                            BlackBoardWaterMark.Text = "一言功能不可用（HTTP 库不可用）";
+                            BlackBoardWaterMark.Text = Properties.MainWindowStrings.Main_Hitokoto_HttpUnavailable;
                             return;
                         }
 
                         if (clientObj == null || !(clientObj is HttpClient client))
                         {
-                            BlackBoardWaterMark.Text = "一言功能不可用（HTTP 库不可用）";
+                            BlackBoardWaterMark.Text = Properties.MainWindowStrings.Main_Hitokoto_HttpUnavailable;
                             return;
                         }
 
@@ -204,13 +206,13 @@ namespace Ink_Canvas
                         }
                         else
                         {
-                            BlackBoardWaterMark.Text = "一言暂时没有返回内容";
+                            BlackBoardWaterMark.Text = Properties.MainWindowStrings.Main_Hitokoto_NoContent;
                         }
                     }
                     catch (Exception ex)
                     {
                         LogHelper.WriteLogToFile($"一言 API 请求失败: {ex.Message}", LogHelper.LogType.Warning);
-                        BlackBoardWaterMark.Text = "一言功能不可用";
+                        BlackBoardWaterMark.Text = Properties.MainWindowStrings.Main_Hitokoto_Unavailable;
                     }
                 }
                 else if (Settings.Appearance.ChickenSoupSource == 4)
@@ -224,7 +226,7 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"更新白板名言时出错: {ex.Message}", LogHelper.LogType.Warning);
                 if (Settings.Appearance.ChickenSoupSource == 3 && BlackBoardWaterMark != null)
                 {
-                    try { BlackBoardWaterMark.Text = "一言功能不可用"; } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
+                    try { BlackBoardWaterMark.Text = Properties.MainWindowStrings.Main_Hitokoto_Unavailable; } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                 }
             }
         }
@@ -508,56 +510,59 @@ namespace Ink_Canvas
 
 
 
-        private void SwitchToCircleEraser(object sender, MouseButtonEventArgs e)
+        private void EraserTypeTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
-            Settings.Canvas.EraserShapeType = 0;
-            SaveSettingsToFile();
-            CheckEraserTypeTab();
-
-            // 使用新的高级橡皮擦形状应用方法
-            ApplyAdvancedEraserShape();
-
-            // 确保当前处于橡皮擦模式时能立即看到效果
-            inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
-            inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
-        }
-
-        private void SwitchToRectangleEraser(object sender, MouseButtonEventArgs e)
-        {
-            if (!isLoaded) return;
-            Settings.Canvas.EraserShapeType = 1;
-            SaveSettingsToFile();
-            CheckEraserTypeTab();
-
-            // 使用新的高级橡皮擦形状应用方法
-            ApplyAdvancedEraserShape();
-
-            // 确保当前处于橡皮擦模式时能立即看到效果
-            inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
-            inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
+            if (sender is TabControl tabControl)
+            {
+                Settings.Canvas.EraserShapeType = tabControl.SelectedIndex;
+                SaveSettingsToFile();
+                CheckEraserTypeTab();
+                ApplyAdvancedEraserShape();
+                inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
+            }
         }
 
 
-        private void InkWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
         {
-            if (!isLoaded) return;
-            if (sender == BoardInkWidthSlider) InkWidthSlider.Value = ((Slider)sender).Value;
-            if (sender == InkWidthSlider) BoardInkWidthSlider.Value = ((Slider)sender).Value;
-            drawingAttributes.Height = ((Slider)sender).Value / 2;
-            drawingAttributes.Width = ((Slider)sender).Value / 2;
-            Settings.Canvas.InkWidth = ((Slider)sender).Value / 2;
-            SaveSettingsToFile();
+            if (slider == null || textBlock == null) return;
+            textBlock.Text = string.Format(format, slider.Value);
         }
 
-        private void HighlighterWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void PenWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            UpdateSliderText(PenWidthSlider, PenWidthText, "{0:0.0}");
+            UpdateSliderText(BoardPenWidthSlider, BoardPenWidthText, "{0:0.0}");
             if (!isLoaded) return;
-            // if (sender == BoardInkWidthSlider) InkWidthSlider.Value = ((Slider)sender).Value;
-            // if (sender == InkWidthSlider) BoardInkWidthSlider.Value = ((Slider)sender).Value;
-            drawingAttributes.Height = ((Slider)sender).Value;
-            drawingAttributes.Width = ((Slider)sender).Value / 2;
-            Settings.Canvas.HighlighterWidth = ((Slider)sender).Value;
+            if (_isUpdatingSliders) return;
+
+            var value = ((Slider)sender).Value;
+
+            _isUpdatingSliders = true;
+            if (sender == BoardPenWidthSlider) PenWidthSlider.Value = value;
+            else if (sender == PenWidthSlider) BoardPenWidthSlider.Value = value;
+            _isUpdatingSliders = false;
+            
+            if (penType == 0)
+            {
+                drawingAttributes.Height = value / 2;
+                drawingAttributes.Width = value / 2;
+                Settings.Canvas.InkWidth = value / 2;
+            }
+            else if (penType == 1)
+            {
+                drawingAttributes.Height = value;
+                drawingAttributes.Width = value / 2;
+                Settings.Canvas.HighlighterWidth = value;
+            }
+            else if (penType == 2)
+            {
+                drawingAttributes.Width = value;
+                drawingAttributes.Height = value;
+                Settings.Canvas.LaserPenWidth = value;
+            }
             SaveSettingsToFile();
         }
 
@@ -565,52 +570,67 @@ namespace Ink_Canvas
         /// 将画笔不透明度更新为滑块的当前值，并保存到设置中。
         /// </summary>
         /// <remarks>
-        /// 使用滑块的当前值作为 alpha 通道更新 drawingAttributes.Color，同时将该值写入 Settings.Canvas.InkAlpha 并持久化配置文件。
+        /// 使用滑块的当前值作为 alpha 通道更新 drawingAttributes.Color，同时将该值写入对应的设置项并持久化配置文件。
         /// </remarks>
-        private void InkAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void PenAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            UpdateSliderText(PenAlphaSlider, PenAlphaText, "{0:0}");
+            UpdateSliderText(BoardPenAlphaSlider, BoardPenAlphaText, "{0:0}");
             if (!isLoaded) return;
+            if (_isUpdatingSliders) return;
+
+            var value = ((Slider)sender).Value;
+
+            _isUpdatingSliders = true;
+            if (sender == BoardPenAlphaSlider) PenAlphaSlider.Value = value;
+            else if (sender == PenAlphaSlider) BoardPenAlphaSlider.Value = value;
+            _isUpdatingSliders = false;
+
             var NowR = drawingAttributes.Color.R;
             var NowG = drawingAttributes.Color.G;
             var NowB = drawingAttributes.Color.B;
-            drawingAttributes.Color = Color.FromArgb((byte)((Slider)sender).Value, NowR, NowG, NowB);
-            Settings.Canvas.InkAlpha = ((Slider)sender).Value;
-            SaveSettingsToFile();
-        }
-
-        private void LaserPenWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!isLoaded) return;
-            if (penType == 2)
+            drawingAttributes.Color = Color.FromArgb((byte)value, NowR, NowG, NowB);
+            
+            if (penType == 0)
             {
-                drawingAttributes.Width = ((Slider)sender).Value;
-                drawingAttributes.Height = ((Slider)sender).Value;
+                Settings.Canvas.InkAlpha = value;
             }
-            Settings.Canvas.LaserPenWidth = ((Slider)sender).Value;
-            SaveSettingsToFile();
-        }
-
-        private void LaserPenAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!isLoaded) return;
-            if (penType == 2)
+            else if (penType == 1)
             {
-                var NowR = drawingAttributes.Color.R;
-                var NowG = drawingAttributes.Color.G;
-                var NowB = drawingAttributes.Color.B;
-                drawingAttributes.Color = Color.FromArgb((byte)((Slider)sender).Value, NowR, NowG, NowB);
+                Settings.Canvas.HighlighterAlpha = value;
             }
-            Settings.Canvas.LaserPenAlpha = (int)((Slider)sender).Value;
+            else if (penType == 2)
+            {
+                Settings.Canvas.LaserPenAlpha = (int)value;
+            }
             SaveSettingsToFile();
         }
 
         private void LaserPenFadeTimeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            UpdateSliderText(LaserPenFadeTimeSlider, LaserPenFadeTimeText, "{0:0}s");
+            UpdateSliderText(BoardLaserPenFadeTimeSlider, BoardLaserPenFadeTimeText, "{0:0}s");
             if (!isLoaded) return;
+            if (_isUpdatingSliders) return;
             Settings.Canvas.InkFadeTime = (int)((Slider)sender).Value * 1000;
             if (_inkFadeManager != null)
             {
                 _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
+            }
+            SaveSettingsToFile();
+        }
+
+        private void LaserPenFadeSpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateSliderText(LaserPenFadeSpeedSlider, LaserPenFadeSpeedText, "{0:0.0}x");
+            UpdateSliderText(BoardLaserPenFadeSpeedSlider, BoardLaserPenFadeSpeedText, "{0:0.0}x");
+            if (!isLoaded) return;
+            if (_isUpdatingSliders) return;
+            var val = Math.Round(((Slider)sender).Value, 1);
+            Settings.Canvas.InkFadeSpeedMultiplier = val;
+            if (_inkFadeManager != null)
+            {
+                _inkFadeManager.UpdateFadeSpeedMultiplier(val);
             }
             SaveSettingsToFile();
         }
@@ -860,14 +880,13 @@ namespace Ink_Canvas
             Settings.Advanced.IsEnableEdgeGestureUtil = false;
             Settings.Advanced.EdgeGestureUtilOnlyAffectBlackboardMode = false;
             Settings.Advanced.IsEnableFullScreenHelper = false;
-            Settings.Advanced.IsEnableAvoidFullScreenHelper = true;
+            Settings.Advanced.IsEnableAvoidFullScreenHelper = OSVersion.GetOperatingSystem() >= OSVersionExtension.OperatingSystem.Windows11;
             Settings.Advanced.IsEnableForceFullScreen = false;
             Settings.Advanced.IsEnableDPIChangeDetection = false;
             Settings.Advanced.IsEnableResolutionChangeDetection = false;
             Settings.Advanced.EnableMultiScreenSupport = true;
             Settings.Advanced.FollowMouseForScreenSelection = true;
 
-            Settings.Appearance.IsEnableDisPlayNibModeToggler = false;
             Settings.Appearance.IsColorfulViewboxFloatingBar = false;
             Settings.Appearance.ViewboxFloatingBarScaleTransformValue = 1;
             Settings.Appearance.ViewboxBlackBoardScaleTransformValue = 0.8;
@@ -926,7 +945,7 @@ namespace Ink_Canvas
             Settings.Automation.IsAutoKillSeewoLauncher2DesktopAnnotation = false;
             Settings.Automation.IsSaveScreenshotsInDateFolders = false;
             Settings.Automation.IsAutoSaveStrokesAtScreenshot = true;
-            Settings.Automation.IsAutoSaveStrokesAtClear = true;
+            Settings.Automation.IsAutoSaveScreenshotAtClear = true;
             Settings.Automation.IsAutoClearWhenExitingWritingMode = false;
             Settings.Automation.MinimumAutomationStrokeNumber = 0;
             Settings.Automation.AutoDelSavedFiles = AutoDelSavedFilesDays;
@@ -1005,7 +1024,7 @@ namespace Ink_Canvas
             {
                 if (sender != null && Ink_Canvas.Helpers.SecurityManager.IsPasswordRequiredForResetConfig(Settings))
                 {
-                    bool ok = await Ink_Canvas.Helpers.SecurityManager.PromptAndVerifyPasswordOrTotpAsync(Settings, this, "重置配置验证", "请输入安全密码或 TOTP 验证码以确认重置配置。");
+                    bool ok = await Ink_Canvas.Helpers.SecurityManager.PromptAndVerifyPasswordOrTotpAsync(Settings, this, Properties.MainWindowStrings.Main_Settings_ResetVerify, Properties.MainWindowStrings.Main_Settings_ResetVerifyMessage);
                     if (!ok) return;
                 }
             }
@@ -1018,12 +1037,21 @@ namespace Ink_Canvas
                 isLoaded = false;
                 SetSettingsToRecommendation();
                 SaveSettingsToFile();
+                
+                // 确保工具栏配置也被重置为默认值
+                var configName = SettingsManager.Settings?.ToolbarConfigName ?? "default";
+                ToolbarRegistry.SaveConfigFile(configName, ToolbarRegistry.CreateDefaultLayout());
+                
                 LoadSettings(isStartup: false, skipAutoUpdateCheck: true);
+                
+                // 重置后重建工具栏
+                RebuildToolbar();
+                
                 isLoaded = true;
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
-            try { ShowNotification("设置已重置为默认推荐设置~"); } catch { }
+            try { ShowNotification(Properties.MainWindowStrings.Main_Settings_ResetDone); } catch { }
         }
 
         private async void SpecialVersionResetToSuggestion_Click()
@@ -1037,7 +1065,16 @@ namespace Ink_Canvas
                 Settings.Automation.AutoDelSavedFilesDaysThreshold = 15;
                 Settings.Automation.AutoSavedStrokesLocation = @"D:\Ink Canvas\AutoSavedStrokes";
                 SaveSettingsToFile();
+                
+                // 确保工具栏配置也被重置为默认值
+                var configName = SettingsManager.Settings?.ToolbarConfigName ?? "default";
+                ToolbarRegistry.SaveConfigFile(configName, ToolbarRegistry.CreateDefaultLayout());
+                
                 LoadSettings(isStartup: false, skipAutoUpdateCheck: true);
+                
+                // 重置后重建工具栏
+                RebuildToolbar();
+                
                 isLoaded = true;
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }

@@ -1,3 +1,4 @@
+using Ink_Canvas.Properties;
 using Ink_Canvas.Controls;
 using Ink_Canvas.Controls.Toolbar;
 using Ink_Canvas.Helpers;
@@ -224,6 +225,7 @@ namespace Ink_Canvas
         private bool _penPaletteEventsWired;
         private bool _eraserPopupEventsWired;
         private bool _gesturePopupEventsWired;
+        private bool _isUpdatingSliders;
 
         private void WireUpPenPaletteEvents()
         {
@@ -241,14 +243,11 @@ namespace Ink_Canvas
             content.PenStyleComboBox.SelectionChanged += ComboBoxPenStyle_SelectionChanged;
             content.NibModeToggle.Toggled += ToggleSwitchEnableNibMode_Toggled;
             content.InkToShapeToggle.Toggled += ToggleSwitchEnableInkToShape_Toggled;
-            content.InkWidthSlider.ValueChanged += InkWidthSlider_ValueChanged;
-            content.InkAlphaSlider.ValueChanged += InkAlphaSlider_ValueChanged;
-            content.HighlighterWidthSlider.ValueChanged += HighlighterWidthSlider_ValueChanged;
-            content.LaserPenWidthSlider.ValueChanged += LaserPenWidthSlider_ValueChanged;
-            content.LaserPenAlphaSlider.ValueChanged += LaserPenAlphaSlider_ValueChanged;
+            content.PenWidthSlider.ValueChanged += PenWidthSlider_ValueChanged;
+            content.PenAlphaSlider.ValueChanged += PenAlphaSlider_ValueChanged;
             content.LaserPenFadeTimeSlider.ValueChanged += LaserPenFadeTimeSlider_ValueChanged;
-            content.BrushModeBtn.Click += BoardBrushModeButton_Click;
-            content.BrushModeBtn.MouseUp += BoardBrushModeButton_MouseUp;
+            content.LaserPenFadeSpeedSlider.ValueChanged += LaserPenFadeSpeedSlider_ValueChanged;
+            content.HighlighterOverlapToggle.Toggled += HighlighterOverlapToggle_Toggled;
 
             content.TabBar.SelectedIndexChanged += (s, idx) =>
             {
@@ -307,8 +306,7 @@ namespace Ink_Canvas
             if (content == null) return;
 
             content.EraserSizeComboBox.SelectionChanged += ComboBoxEraserSizeFloatingBar_SelectionChanged;
-            content.CircleTab.MouseUp += SwitchToCircleEraser;
-            content.RectangleTab.MouseUp += SwitchToRectangleEraser;
+            content.EraserTypeTab.SelectionChanged += EraserTypeTab_SelectionChanged;
             content.ClearInkBtn.Click += EraserPanelSymbolIconDelete_MouseUp;
             content.ClearInkAndHistoryBtn.Click += BoardSymbolIconDeleteInkAndHistories_MouseUp;
             content.CloseButtonControl.Click += CloseBordertools_Click;
@@ -971,6 +969,24 @@ namespace Ink_Canvas
             }
         }
 
+        private void ApplyLanguageFromSettings()
+        {
+            try
+            {
+                if (Settings?.Appearance == null) return;
+
+                var preferredLanguage = Settings.Appearance.Language ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                {
+                    LocalizationHelper.TrySetCulture(preferredLanguage);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化语言选项失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
 
 
         #endregion
@@ -983,9 +999,6 @@ namespace Ink_Canvas
         private InkSmoothingManager _inkSmoothingManager;
 
         private DispatcherTimer _brushAutoRestoreTimer;
-
-        private bool _isBoardBrushMode;
-        private double _savedInkWidthBeforeBoardBrush = 5;
 
         /// <summary>
         /// 初始化并配置画笔绘制属性并将手势事件处理器附加到 inkCanvas。
@@ -1142,14 +1155,29 @@ namespace Ink_Canvas
 
                 if (Settings?.Canvas != null)
                 {
-                    Settings.Canvas.InkWidth = width;
-                    Settings.Canvas.InkAlpha = (int)color.A;
+                    if (penType == 0)
+                    {
+                        Settings.Canvas.InkWidth = width;
+                        Settings.Canvas.InkAlpha = (int)color.A;
+                    }
+                    else if (penType == 1)
+                    {
+                        Settings.Canvas.HighlighterWidth = width;
+                        Settings.Canvas.HighlighterAlpha = (int)color.A;
+                    }
+                    else if (penType == 2)
+                    {
+                        Settings.Canvas.LaserPenWidth = width;
+                        Settings.Canvas.LaserPenAlpha = (int)color.A;
+                    }
                 }
 
-                if (InkWidthSlider != null) InkWidthSlider.Value = width * 2;
-                if (InkAlphaSlider != null) InkAlphaSlider.Value = color.A;
-                if (BoardInkWidthSlider != null) BoardInkWidthSlider.Value = width * 2;
-                if (BoardInkAlphaSlider != null) BoardInkAlphaSlider.Value = color.A;
+                _isUpdatingSliders = true;
+                if (PenWidthSlider != null) PenWidthSlider.Value = penType == 0 ? width * 2 : width;
+                if (PenAlphaSlider != null) PenAlphaSlider.Value = color.A;
+                if (BoardPenWidthSlider != null) BoardPenWidthSlider.Value = penType == 0 ? width * 2 : width;
+                if (BoardPenAlphaSlider != null) BoardPenAlphaSlider.Value = color.A;
+                _isUpdatingSliders = false;
 
                 if (penType != 1)
                 {
@@ -1166,133 +1194,17 @@ namespace Ink_Canvas
             }
         }
 
-        private const double BoardBrushInkWidth = 16;
-        private const double BoardBrushInkHeight = 50;
-
-        /// <summary>
-        /// 切换“板刷”模式：在板刷与普通画笔间切换，保存/恢复画笔宽度，更新 InkCanvas 的 DrawingAttributes（宽度、高度、笔尖形状、是否忽略压力等），并同步相关 UI 状态（按钮背景、滑块值）与 Settings.Canvas.InkWidth。
-        /// </summary>
-        private void BoardBrushModeButton_Click(object sender, RoutedEventArgs e)
+        private void HighlighterOverlapToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            _isBoardBrushMode = !_isBoardBrushMode;
-
-            try
+            if (!isLoaded) return;
+            var toggle = (iNKORE.UI.WPF.Modern.Controls.ToggleSwitch)sender;
+            Settings.Canvas.HighlighterOverlapEnabled = toggle.IsOn;
+            if (penType == 1)
             {
-                if (drawingAttributes == null)
-                    drawingAttributes = inkCanvas.DefaultDrawingAttributes;
-
-                if (penType == 1) return;
-
-                if (_isBoardBrushMode)
-                {
-                    _savedInkWidthBeforeBoardBrush = InkWidthSlider != null ? InkWidthSlider.Value / 2.0 : drawingAttributes.Width;
-                    if (_savedInkWidthBeforeBoardBrush < 0.5) _savedInkWidthBeforeBoardBrush = 2.5;
-
-                    drawingAttributes.Width = BoardBrushInkWidth;
-                    drawingAttributes.Height = BoardBrushInkHeight;
-                    inkCanvas.DefaultDrawingAttributes.Width = BoardBrushInkWidth;
-                    inkCanvas.DefaultDrawingAttributes.Height = BoardBrushInkHeight;
-                    drawingAttributes.StylusTip = StylusTip.Rectangle;
-                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Rectangle;
-                    drawingAttributes.IgnorePressure = true;
-                    inkCanvas.DefaultDrawingAttributes.IgnorePressure = true;
-
-                    if (BoardBrushModeButton != null)
-                        BoardBrushModeButton.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                }
-                else
-                {
-                    double w = InkWidthSlider != null ? InkWidthSlider.Value / 2.0 : _savedInkWidthBeforeBoardBrush;
-                    if (w < 0.5) w = 2.5;
-
-                    drawingAttributes.Width = w;
-                    drawingAttributes.Height = w;
-                    inkCanvas.DefaultDrawingAttributes.Width = w;
-                    inkCanvas.DefaultDrawingAttributes.Height = w;
-                    drawingAttributes.StylusTip = StylusTip.Ellipse;
-                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Ellipse;
-                    drawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
-                    inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
-
-                    if (BoardInkWidthSlider != null) BoardInkWidthSlider.Value = w * 2;
-                    if (Settings?.Canvas != null) Settings.Canvas.InkWidth = w;
-
-                    if (BoardBrushModeButton != null)
-                        BoardBrushModeButton.ClearValue(BackgroundProperty);
-                }
+                drawingAttributes.IsHighlighter = !toggle.IsOn;
+                inkCanvas.DefaultDrawingAttributes.IsHighlighter = !toggle.IsOn;
             }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"BoardBrushModeButton_Click: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 切换“画板画笔”（Board brush）模式，并将画笔属性与相关 UI 状态同步为画板或普通画笔配置。
-        /// </summary>
-        /// <remarks>
-        /// - 在点击事件的发送者不是 BoardBrushModeButton 或最后一次按下的对象不匹配时不会执行任何操作。  
-        /// - 切换为画板模式时会保存当前宽度、设置矩形笔尖、禁用压力感应并将画笔宽高调整为画板预设值，同时将按钮背景置为激活色。  
-        /// - 取消画板模式时会恢复之前保存的宽度（并更新滑块与 Settings.Canvas.InkWidth）、恢复椭圆笔尖和压力感应设置，并清除按钮的自定义背景。  
-        /// - 如果当前 penType 等于 1，则在切换内部模式标志后不会修改画笔属性或 UI。  
-        /// - 内部异常会被捕获并记录，但不会向调用者抛出异常。
-        /// </remarks>
-        private void BoardBrushModeButton_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            if (sender != BoardBrushModeButton) return;
-            if (lastBorderMouseDownObject != BoardBrushModeButton) return;
-
-            _isBoardBrushMode = !_isBoardBrushMode;
-
-            try
-            {
-                if (drawingAttributes == null)
-                    drawingAttributes = inkCanvas.DefaultDrawingAttributes;
-
-                if (penType == 1) return;
-
-                if (_isBoardBrushMode)
-                {
-                    _savedInkWidthBeforeBoardBrush = InkWidthSlider != null ? InkWidthSlider.Value / 2.0 : drawingAttributes.Width;
-                    if (_savedInkWidthBeforeBoardBrush < 0.5) _savedInkWidthBeforeBoardBrush = 2.5;
-
-                    drawingAttributes.Width = BoardBrushInkWidth;
-                    drawingAttributes.Height = BoardBrushInkHeight;
-                    inkCanvas.DefaultDrawingAttributes.Width = BoardBrushInkWidth;
-                    inkCanvas.DefaultDrawingAttributes.Height = BoardBrushInkHeight;
-                    drawingAttributes.StylusTip = StylusTip.Rectangle;
-                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Rectangle;
-                    drawingAttributes.IgnorePressure = true;
-                    inkCanvas.DefaultDrawingAttributes.IgnorePressure = true;
-
-                    if (BoardBrushModeButton != null)
-                        BoardBrushModeButton.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                }
-                else
-                {
-                    double w = InkWidthSlider != null ? InkWidthSlider.Value / 2.0 : _savedInkWidthBeforeBoardBrush;
-                    if (w < 0.5) w = 2.5;
-
-                    drawingAttributes.Width = w;
-                    drawingAttributes.Height = w;
-                    inkCanvas.DefaultDrawingAttributes.Width = w;
-                    inkCanvas.DefaultDrawingAttributes.Height = w;
-                    drawingAttributes.StylusTip = StylusTip.Ellipse;
-                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Ellipse;
-                    drawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
-                    inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
-
-                    if (BoardInkWidthSlider != null) BoardInkWidthSlider.Value = w * 2;
-                    if (Settings?.Canvas != null) Settings.Canvas.InkWidth = w;
-
-                    if (BoardBrushModeButton != null)
-                        BoardBrushModeButton.ClearValue(BackgroundProperty);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"BoardBrushModeButton_MouseUp: {ex.Message}", LogHelper.LogType.Error);
-            }
+            SaveSettingsToFile();
         }
 
         /// <summary>
@@ -1838,24 +1750,6 @@ namespace Ink_Canvas
             }), DispatcherPriority.Loaded);
         }
 
-        private void ApplyLanguageFromSettings()
-        {
-            try
-            {
-                if (Settings?.Appearance == null) return;
-
-                var preferredLanguage = Settings.Appearance.Language ?? string.Empty;
-
-                if (!string.IsNullOrWhiteSpace(preferredLanguage))
-                {
-                    LocalizationHelper.TrySetCulture(preferredLanguage);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化语言选项失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
 
 
         /// <summary>
@@ -1868,7 +1762,7 @@ namespace Ink_Canvas
         private void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e)
         {
             if (!Settings.Advanced.IsEnableResolutionChangeDetection) return;
-            ShowNotification($"检测到显示器信息变化，变为{Screen.PrimaryScreen.Bounds.Width}x{Screen.PrimaryScreen.Bounds.Height}）");
+            ShowNotification(string.Format(Properties.MainWindowStrings.Main_DisplayChanged, Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height));
             HandleFloatingBarRecovery();
         }
 
@@ -1876,7 +1770,7 @@ namespace Ink_Canvas
         {
             if (e.OldDpi.DpiScaleX != e.NewDpi.DpiScaleX && e.OldDpi.DpiScaleY != e.NewDpi.DpiScaleY && Settings.Advanced.IsEnableDPIChangeDetection)
             {
-                ShowNotification($"系统DPI发生变化，从 {e.OldDpi.DpiScaleX}x{e.OldDpi.DpiScaleY} 变化为 {e.NewDpi.DpiScaleX}x{e.NewDpi.DpiScaleY}");
+                ShowNotification(string.Format(Properties.MainWindowStrings.Main_DPIChanged, e.OldDpi.DpiScaleX, e.OldDpi.DpiScaleY, e.NewDpi.DpiScaleX, e.NewDpi.DpiScaleY));
 
                 Dispatcher.Invoke(() =>
                 {
@@ -1951,6 +1845,9 @@ namespace Ink_Canvas
         {
             try
             {
+                if (_isReloadingForLanguageChange)
+                    return;
+
                 LogHelper.WriteLogToFile("Ink Canvas closing", LogHelper.LogType.Event);
 
                 if (_allowCloseAfterExitVerification)
@@ -1963,7 +1860,7 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            bool ok = await SecurityManager.PromptAndVerifyPasswordOrTotpAsync(Settings, this, "退出验证", "请输入安全密码或 TOTP 验证码以退出软件。");
+                            bool ok = await SecurityManager.PromptAndVerifyPasswordOrTotpAsync(Settings, this, Properties.MainWindowStrings.Main_ExitVerify, Properties.MainWindowStrings.Main_ExitVerifyWithTotp);
                             if (!ok)
                             {
                                 _forceCloseFromExitOrRestartButton = false;
@@ -2021,7 +1918,7 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "退出验证", "请输入安全密码以退出软件。");
+                                bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, Properties.MainWindowStrings.Main_ExitVerify, Properties.MainWindowStrings.Main_ExitVerifyPasswordOnly);
                                 if (!ok)
                                 {
                                     _forceCloseFromExitOrRestartButton = false;
@@ -2049,7 +1946,7 @@ namespace Ink_Canvas
 
                 if (!CloseIsFromButton && Settings.Advanced.IsSecondConfirmWhenShutdownApp)
                 {
-                    var result1 = MessageBox.Show("是否继续关闭 InkCanvasForClass，这将丢失当前未保存的墨迹。", "InkCanvasForClass",
+                    var result1 = MessageBox.Show(Properties.MainWindowStrings.Main_CloseConfirm_Level1, "InkCanvasForClass",
                         MessageBoxButton.OKCancel, MessageBoxImage.Warning);
 
                     if (result1 == MessageBoxResult.Cancel)
@@ -2060,7 +1957,7 @@ namespace Ink_Canvas
                         return;
                     }
 
-                    var result2 = MessageBox.Show("真的狠心关闭 InkCanvasForClass吗？", "InkCanvasForClass",
+                    var result2 = MessageBox.Show(Properties.MainWindowStrings.Main_CloseConfirm_Level2, "InkCanvasForClass",
                         MessageBoxButton.OKCancel, MessageBoxImage.Error);
 
                     if (result2 == MessageBoxResult.Cancel)
@@ -2071,7 +1968,7 @@ namespace Ink_Canvas
                         return;
                     }
 
-                    var result3 = MessageBox.Show("最后确认：确定要关闭 InkCanvasForClass 吗？", "InkCanvasForClass",
+                    var result3 = MessageBox.Show(Properties.MainWindowStrings.Main_CloseConfirm_Level3, "InkCanvasForClass",
                         MessageBoxButton.OKCancel, MessageBoxImage.Question);
 
                     if (result3 == MessageBoxResult.Cancel)
@@ -2307,12 +2204,12 @@ namespace Ink_Canvas
                         Id = "update-" + AvailableLatestVersion,
                         Type = NotificationMessageType.Update,
                         Level = NotificationMessageLevel.Normal,
-                        Title = Ink_Canvas.Properties.Strings.GetString("Notification_UpdateTitle") ?? "发现新版本",
-                        Summary = string.Format(Ink_Canvas.Properties.Strings.GetString("Notification_NewVersion") ?? "发现新版本：{0}", AvailableLatestVersion),
+                        Title = NotificationStrings.UpdateTitle,
+                        Summary = string.Format(NotificationStrings.NewVersion, AvailableLatestVersion),
                         Content = AvailableLatestReleaseNotes ?? string.Empty,
                         Icon = "Update",
-                        ActionText = Ink_Canvas.Properties.Strings.GetString("Notification_ViewDetails") ?? "查看详情",
-                        DisplaySeconds = Settings?.Notification?.UpdateDurationSeconds > 0 ? Settings.Notification.UpdateDurationSeconds : 5,
+                        ActionText = NotificationStrings.ViewDetails,
+                        DisplaySeconds = Settings?.Notification?.UpdateDurationSeconds > 0 ? Settings.Notification.UpdateDurationSeconds : 3,
                         Source = "update",
                         Action = () =>
                         {
@@ -2426,6 +2323,14 @@ namespace Ink_Canvas
                 return;
             }
 
+            if (canvas.EditingMode == InkCanvasEditingMode.EraseByPoint)
+            {
+                canvas.UseCustomCursor = true;
+                canvas.ForceCursor = true;
+                canvas.Cursor = Cursors.None;
+                return;
+            }
+
             // 其他模式按照用户设置处理
             if (Settings.Canvas.IsShowCursor)
             {
@@ -2529,6 +2434,8 @@ namespace Ink_Canvas
         // 手写笔输入
         private void inkCanvas_StylusDown(object sender, StylusDownEventArgs e)
         {
+            _stylusDownTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas.EditingMode))
             {
                 TryBlockFrozenPageMutation("修改冻结页面");
@@ -2929,7 +2836,7 @@ namespace Ink_Canvas
                 }
 
                 // 同步设置状态
-                _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
+                _inkFadeManager.IsEnabled = penType == 2 && Settings.Canvas.EnableInkFade;
                 _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
 
                 LogHelper.WriteLogToFile("墨迹渐隐管理器已初始化", LogHelper.LogType.Event);
@@ -3333,12 +3240,12 @@ namespace Ink_Canvas
                         {
                             // 打开文件
                             OpenSingleStrokeFile(icstkFile);
-                            ShowNotification($"已加载墨迹文件: {Path.GetFileName(icstkFile)}");
+                            ShowNotification(string.Format(Properties.MainWindowStrings.Main_StrokesFileLoaded, Path.GetFileName(icstkFile)));
                         }
                         catch (Exception ex)
                         {
                             LogHelper.WriteLogToFile($"打开命令行参数中的文件失败: {ex.Message}", LogHelper.LogType.Error);
-                            ShowNotification("打开墨迹文件失败");
+                            ShowNotification(Properties.MainWindowStrings.Main_StrokesFileOpenFailed);
                         }
                     }), DispatcherPriority.Loaded);
                 }
@@ -3418,12 +3325,10 @@ namespace Ink_Canvas
                 // 获取所有滑块控件并添加触摸支持
                 var sliders = new List<Slider>
                 {
-                    BoardInkWidthSlider,
-                    BoardInkAlphaSlider,
-                    BoardHighlighterWidthSlider,
-                    InkWidthSlider,
-                    InkAlphaSlider,
-                    HighlighterWidthSlider
+                    BoardPenWidthSlider,
+                    BoardPenAlphaSlider,
+                    PenWidthSlider,
+                    PenAlphaSlider
                 };
 
                 foreach (var slider in sliders)
@@ -3712,7 +3617,7 @@ namespace Ink_Canvas
                     }
                 }
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("Close") || ex.Message.Contains("关闭") || ex.Message.Contains("Show") || ex.Message.Contains("Visibility"))
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Close") || ex.Message.Contains(NotificationStrings.AnimationOff) || ex.Message.Contains("Show") || ex.Message.Contains("Visibility"))
             {
                 // 窗口已关闭，忽略此异常
                 LogHelper.WriteLogToFile($"检查主窗口可见性时发现窗口已关闭，忽略异常。", LogHelper.LogType.Trace);

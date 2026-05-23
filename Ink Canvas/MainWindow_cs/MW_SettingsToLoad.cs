@@ -224,7 +224,6 @@ namespace Ink_Canvas
                     if (isStartup)
                     {
                         _pendingStartupAutoUpdateCheck = true;
-                        LogHelper.WriteLogToFile("AutoUpdate | Startup check deferred until UI is stable");
                     }
                     else
                     {
@@ -259,12 +258,6 @@ namespace Ink_Canvas
             {
                 if (Settings.Appearance != null)
                 {
-                if (!Settings.Appearance.IsEnableDisPlayNibModeToggler)
-                {
-                    NibModeSimpleStackPanel.Visibility = Visibility.Collapsed;
-                    BoardNibModeSimpleStackPanel.Visibility = Visibility.Collapsed;
-                }
-
                 if (Settings.Appearance.ViewboxFloatingBarScaleTransformValue != 0)
                 {
                     double userVal = Settings.Appearance.ViewboxFloatingBarScaleTransformValue;
@@ -394,23 +387,8 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"同步手势开关状态失败: {ex.Message}", LogHelper.LogType.Error);
             }
 
-            // 快捷调色盘
-            try
-            {
-                if (QuickColorPalette != null)
-                {
-                    // 注意：不调用 QuickColorPalette.SyncFromSettings()
-                    // 因为工具栏构建时已经通过 ApplyComponentSettings 应用了组件设置中的 DisplayMode
-                    // 这里只设置可见性
-                    QuickColorPalette.Visibility = Settings.Appearance.IsShowQuickColorPalette 
-                        ? Visibility.Visible 
-                        : Visibility.Collapsed;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"同步快捷调色盘状态失败: {ex.Message}", LogHelper.LogType.Error);
-            }
+            // 注意：快捷调色盘的可见性现在完全由工具栏规则集管理，不需要手动设置
+            // 所有对 QuickColorPalette.Visibility 的直接操作已移除以避免冲突
 
             // Canvas
             if (Settings.Canvas != null)
@@ -418,16 +396,16 @@ namespace Ink_Canvas
                 drawingAttributes.Height = Settings.Canvas.InkWidth;
                 drawingAttributes.Width = Settings.Canvas.InkWidth;
 
-                InkWidthSlider.Value = Settings.Canvas.InkWidth * 2;
-                HighlighterWidthSlider.Value = Settings.Canvas.HighlighterWidth;
+                PenWidthSlider.Value = Settings.Canvas.InkWidth * 2;
+                PenAlphaSlider.Value = Settings.Canvas.InkAlpha;
+                BoardPenWidthSlider.Value = Settings.Canvas.InkWidth * 2;
+                BoardPenAlphaSlider.Value = Settings.Canvas.InkAlpha;
 
                 int alpha = (int)Settings.Canvas.InkAlpha;
                 if (alpha < 0) alpha = 0; if (alpha > 255) alpha = 255;
                 var inkColor = drawingAttributes.Color;
                 drawingAttributes.Color = Color.FromArgb((byte)alpha, inkColor.R, inkColor.G, inkColor.B);
                 inkCanvas.DefaultDrawingAttributes.Color = drawingAttributes.Color;
-                if (InkAlphaSlider != null) InkAlphaSlider.Value = alpha;
-                if (BoardInkAlphaSlider != null) BoardInkAlphaSlider.Value = alpha;
 
 
 
@@ -698,22 +676,35 @@ namespace Ink_Canvas
             {
                 if (_inkFadeManager != null)
                 {
-                    _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
+                    _inkFadeManager.IsEnabled = penType == 2 && Settings.Canvas.EnableInkFade;
                     _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
+                    _inkFadeManager.UpdateFadeSpeedMultiplier(Settings.Canvas.InkFadeSpeedMultiplier);
                 }
 
-                if (LaserPenWidthSlider != null)
-                    LaserPenWidthSlider.Value = Settings.Canvas.LaserPenWidth;
-                if (LaserPenAlphaSlider != null)
-                    LaserPenAlphaSlider.Value = Settings.Canvas.LaserPenAlpha;
+                _isUpdatingSliders = true;
                 if (LaserPenFadeTimeSlider != null)
                     LaserPenFadeTimeSlider.Value = Math.Max(1, Math.Min(15, Settings.Canvas.InkFadeTime / 1000));
-                if (BoardLaserPenWidthSlider != null)
-                    BoardLaserPenWidthSlider.Value = Settings.Canvas.LaserPenWidth;
-                if (BoardLaserPenAlphaSlider != null)
-                    BoardLaserPenAlphaSlider.Value = Settings.Canvas.LaserPenAlpha;
                 if (BoardLaserPenFadeTimeSlider != null)
                     BoardLaserPenFadeTimeSlider.Value = Math.Max(1, Math.Min(15, Settings.Canvas.InkFadeTime / 1000));
+                if (LaserPenFadeSpeedSlider != null)
+                    LaserPenFadeSpeedSlider.Value = Math.Max(0.1, Math.Min(5, Settings.Canvas.InkFadeSpeedMultiplier));
+                if (BoardLaserPenFadeSpeedSlider != null)
+                    BoardLaserPenFadeSpeedSlider.Value = Math.Max(0.1, Math.Min(5, Settings.Canvas.InkFadeSpeedMultiplier));
+                _isUpdatingSliders = false;
+
+                // 初始化滑块文本
+                UpdateSliderText(PenWidthSlider, PenWidthText, "{0:0.0}");
+                UpdateSliderText(BoardPenWidthSlider, BoardPenWidthText, "{0:0.0}");
+                UpdateSliderText(PenAlphaSlider, PenAlphaText, "{0:0}");
+                UpdateSliderText(BoardPenAlphaSlider, BoardPenAlphaText, "{0:0}");
+                UpdateSliderText(LaserPenFadeTimeSlider, LaserPenFadeTimeText, "{0:0}s");
+                UpdateSliderText(BoardLaserPenFadeTimeSlider, BoardLaserPenFadeTimeText, "{0:0}s");
+                UpdateSliderText(LaserPenFadeSpeedSlider, LaserPenFadeSpeedText, "{0:0.0}x");
+                UpdateSliderText(BoardLaserPenFadeSpeedSlider, BoardLaserPenFadeSpeedText, "{0:0.0}x");
+                if (HighlighterOverlapToggle != null)
+                    HighlighterOverlapToggle.IsOn = Settings.Canvas.HighlighterOverlapEnabled;
+                if (BoardHighlighterOverlapToggle != null)
+                    BoardHighlighterOverlapToggle.IsOn = Settings.Canvas.HighlighterOverlapEnabled;
 
                 LogHelper.WriteLogToFile("墨迹渐隐设置已加载", LogHelper.LogType.Trace);
             }

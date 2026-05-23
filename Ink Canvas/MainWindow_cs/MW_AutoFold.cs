@@ -123,7 +123,7 @@ namespace Ink_Canvas
                 if (currentMode != 0) CloseWhiteboardImmediately();
                 if (IsAnnotating)
                     if (foldFloatingBarByUser && inkCanvas.Strokes.Count > 2)
-                        ShowNotification("正在清空墨迹并收纳至侧边栏，可进入批注模式后通过【撤销】功能来恢复原先墨迹。");
+                        ShowNotification(Properties.MainWindowStrings.Main_AutoFold_ClearingAndFolding);
                 lastBorderMouseDownObject = sender;
                 CursorWithDelIcon_Click(sender, null);
             });
@@ -416,6 +416,19 @@ namespace Ink_Canvas
                 // 新只在屏幕模式下显示浮动栏
                 if (currentMode == 0)
                 {
+                    // 强制更新布局以确保ActualWidth正确
+                    ViewboxFloatingBar.UpdateLayout();
+
+                    // 等待一小段时间让布局完全更新
+                    Task.Delay(50);
+
+                    // 再次强制更新布局
+                    ViewboxFloatingBar.UpdateLayout();
+
+                    // 强制重新测量和排列
+                    ViewboxFloatingBar.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                    ViewboxFloatingBar.Arrange(new Rect(ViewboxFloatingBar.DesiredSize));
+
                     if (IsInPptPresentationMode)
                         ViewboxFloatingBarMarginAnimation(60);
                     else
