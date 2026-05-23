@@ -74,6 +74,7 @@ jobs:
         with:
           name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ case(matrix.minimize == true, '.minimize', '') }}
           path: "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/*"
+          compression-level: 9
 
       - name: Create Summary
         if: always()
