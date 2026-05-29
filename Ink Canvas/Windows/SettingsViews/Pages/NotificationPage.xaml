@@ -63,7 +63,8 @@
                         Toggled="ToggleSwitchEnableWindowsToast_Toggled" />
 
                 <ui:SettingsExpander Header="{x:Static props:NotificationStrings.DictationDoNotDisturb}"
-                                     Description="{x:Static props:NotificationStrings.DictationDoNotDisturbHint}">
+                                     Description="{x:Static props:NotificationStrings.DictationDoNotDisturbHint}"
+                                     IsExpanded="{Binding IsOn, ElementName=ToggleSwitchDictationDoNotDisturb, Mode=OneWay}">
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BlockContact}" />
                     </ui:SettingsExpander.HeaderIcon>
@@ -130,6 +131,7 @@
                         <ComboBoxItem Content="{x:Static props:NotificationStrings.PlacementTopCenter}" Tag="TopCenter" />
                         <ComboBoxItem Content="{x:Static props:NotificationStrings.PlacementTopRight}" Tag="TopRight" />
                         <ComboBoxItem Content="{x:Static props:NotificationStrings.PlacementTopLeft}" Tag="TopLeft" />
+                        <ComboBoxItem Content="{x:Static props:NotificationStrings.PlacementFloatingBarAbove}" Tag="FloatingBarAbove" />
                     </ComboBox>
                 </ui:SettingsCard>
 

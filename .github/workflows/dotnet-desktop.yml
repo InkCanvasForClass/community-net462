@@ -2,7 +2,7 @@ name: .NET Build & Package
 
 on:
   push:
-    branches: [ net462 ]
+    branches: [net462]
   workflow_dispatch:
 
 concurrency:
@@ -67,9 +67,9 @@ jobs:
           $shortSha = $env:GITHUB_SHA.Substring(0, 7)
           $version = "debug-$shortSha-$env:GITHUB_RUN_NUMBER"
           echo "archive_name=$version" >> $env:GITHUB_OUTPUT
-      
+
       - name: Upload Artifact
-        if: steps.check-exe.outputs.build_success
+        if: steps.check-exe.outputs.build_success == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ case(matrix.minimize == true, '.minimize', '') }}

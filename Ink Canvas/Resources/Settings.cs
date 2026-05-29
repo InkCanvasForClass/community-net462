@@ -133,6 +133,11 @@ namespace Ink_Canvas
         public bool RequirePasswordOnModifyOrClearNameList { get; set; } = false;
         [JsonProperty("enableProcessProtection")]
         public bool EnableProcessProtection { get; set; } = true;
+
+        [JsonProperty("usbVerificationEnabled")]
+        public bool UsbVerificationEnabled { get; set; } = false;
+        [JsonProperty("usbAuthorizedSns")]
+        public string UsbAuthorizedSns { get; set; } = "";
     }
 
     public class Canvas
@@ -270,8 +275,6 @@ namespace Ink_Canvas
         public bool IsEnableTwoFingerZoom { get; set; } = true;
         [JsonProperty("isEnableTwoFingerTranslate")]
         public bool IsEnableTwoFingerTranslate { get; set; } = true;
-        [JsonProperty("AutoSwitchTwoFingerGesture")]
-        public bool AutoSwitchTwoFingerGesture { get; set; } = true;
         [JsonProperty("isEnableTwoFingerRotation")]
         public bool IsEnableTwoFingerRotation { get; set; }
         [JsonProperty("isEnableTwoFingerRotationOnSelection")]
@@ -437,22 +440,6 @@ namespace Ink_Canvas
         // 浮动栏按钮显示控制
         [JsonProperty("useLegacyFloatingBarUI")]
         public bool UseLegacyFloatingBarUI { get; set; } = false;
-        [JsonProperty("isShowShapeButton")]
-        public bool IsShowShapeButton { get; set; } = true;
-        [JsonProperty("isShowUndoButton")]
-        public bool IsShowUndoButton { get; set; } = true;
-        [JsonProperty("isShowRedoButton")]
-        public bool IsShowRedoButton { get; set; } = true;
-        [JsonProperty("isShowClearButton")]
-        public bool IsShowClearButton { get; set; } = true;
-        [JsonProperty("isShowWhiteboardButton")]
-        public bool IsShowWhiteboardButton { get; set; } = true;
-        [JsonProperty("isShowHideButton")]
-        public bool IsShowHideButton { get; set; } = true;
-        [JsonProperty("isShowLassoSelectButton")]
-        public bool IsShowLassoSelectButton { get; set; } = true;
-        [JsonProperty("isShowClearAndMouseButton")]
-        public bool IsShowClearAndMouseButton { get; set; } = true;
         [JsonProperty("eraserDisplayOption")]
         public int EraserDisplayOption { get; set; }
         [JsonProperty("isShowQuickColorPalette")]
@@ -468,6 +455,18 @@ namespace Ink_Canvas
 
         [JsonProperty("quickPanelBottomOffset")]
         public double QuickPanelBottomOffset { get; set; } = -150;
+
+        [JsonProperty("useMinimalistGrabHandle")]
+        public bool UseMinimalistGrabHandle { get; set; } = true;
+
+        [JsonProperty("showGrabHandleChevron")]
+        public bool ShowGrabHandleChevron { get; set; } = false;
+
+        [JsonProperty("useFloatingQuickPanel")]
+        public bool UseFloatingQuickPanel { get; set; } = true;
+
+        [JsonProperty("allowDragSidePanel")]
+        public bool AllowDragSidePanel { get; set; } = true;
 
     }
 

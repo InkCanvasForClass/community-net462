@@ -230,36 +230,34 @@ namespace Ink_Canvas
 
                 pos = currentPos;
 
-                if (IsFloatingBarContentVisible())
+                // 无论是展开还是折叠状态都需要检查是否需要翻转
+                RefreshFloatingBarSizeCache();
+
+                var headLeft = ViewboxFloatingBar.Margin.Left + (isFloatingBarHeadOnRight ? Math.Max(0, _cachedFloatingBarWidth - _cachedFloatingBarHeadWidth) : 0);
+
+                bool shouldFlip;
+                if (!isFloatingBarHeadOnRight && headLeft + _cachedFloatingBarWidth > _cachedScreenWidth)
+                    shouldFlip = true;
+                else if (isFloatingBarHeadOnRight && headLeft + _cachedFloatingBarWidth <= _cachedScreenWidth)
+                    shouldFlip = false;
+                else
+                    shouldFlip = isFloatingBarHeadOnRight;
+
+                if (shouldFlip != isFloatingBarHeadOnRight)
                 {
-                    RefreshFloatingBarSizeCache();
+                    var savedHeadLeft = headLeft;
+                    SetFloatingBarHeadPlacement(shouldFlip);
 
-                    var headLeft = ViewboxFloatingBar.Margin.Left + (isFloatingBarHeadOnRight ? Math.Max(0, _cachedFloatingBarWidth - _cachedFloatingBarHeadWidth) : 0);
+                    RefreshFloatingBarSizeCache(true);
 
-                    bool shouldFlip;
-                    if (!isFloatingBarHeadOnRight && headLeft + _cachedFloatingBarWidth > _cachedScreenWidth)
-                        shouldFlip = true;
-                    else if (isFloatingBarHeadOnRight && headLeft + _cachedFloatingBarWidth <= _cachedScreenWidth)
-                        shouldFlip = false;
+                    double newLeft;
+                    if (shouldFlip)
+                        newLeft = savedHeadLeft - Math.Max(0, _cachedFloatingBarWidth - _cachedFloatingBarHeadWidth);
                     else
-                        shouldFlip = isFloatingBarHeadOnRight;
+                        newLeft = savedHeadLeft;
 
-                    if (shouldFlip != isFloatingBarHeadOnRight)
-                    {
-                        var savedHeadLeft = headLeft;
-                        SetFloatingBarHeadPlacement(shouldFlip);
-
-                        RefreshFloatingBarSizeCache(true);
-
-                        double newLeft;
-                        if (shouldFlip)
-                            newLeft = savedHeadLeft - Math.Max(0, _cachedFloatingBarWidth - _cachedFloatingBarHeadWidth);
-                        else
-                            newLeft = savedHeadLeft;
-
-                        newLeft = ClampFloatingBarLeft(newLeft, _cachedFloatingBarWidth, _cachedScreenWidth);
-                        ViewboxFloatingBar.Margin = new Thickness(newLeft, ViewboxFloatingBar.Margin.Top, -2000, -200);
-                    }
+                    newLeft = ClampFloatingBarLeft(newLeft, _cachedFloatingBarWidth, _cachedScreenWidth);
+                    ViewboxFloatingBar.Margin = new Thickness(newLeft, ViewboxFloatingBar.Margin.Top, -2000, -200);
                 }
 
                 var currentMargin = ViewboxFloatingBar.Margin;
@@ -1219,6 +1217,7 @@ namespace Ink_Canvas
         {
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
             RightUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
+            SidePannelMarginAnimation(-10);
             AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
             AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
@@ -1290,7 +1289,7 @@ namespace Ink_Canvas
 
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
             RightUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
-
+            SidePannelMarginAnimation(-10);
             AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
             AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
@@ -1373,7 +1372,7 @@ namespace Ink_Canvas
 
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
             RightUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
-
+            SidePannelMarginAnimation(-10);
             AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
             AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
@@ -1957,18 +1956,22 @@ namespace Ink_Canvas
             return false;
         }
 
-        private IEnumerable<StackPanel> GetAllContentPanels()
+        private IEnumerable<StackPanel> GetAllPanelsWithContent(DependencyObject root)
         {
-            if (FloatingBarRootPanel == null) yield break;
-            foreach (var child in FloatingBarRootPanel.Children.OfType<Border>())
+            if (root == null) yield break;
+            
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
             {
-                if (child.Tag as string == ToolbarRegistry.ContentBorderTag && child.Child is Grid grid)
+                var child = VisualTreeHelper.GetChild(root, i);
+                
+                if (child is StackPanel panel && panel.Orientation == System.Windows.Controls.Orientation.Horizontal)
                 {
-                    foreach (var gridChild in grid.Children.OfType<StackPanel>())
-                    {
-                        if (gridChild.Tag as string == ToolbarRegistry.ContentPanelTag)
-                            yield return gridChild;
-                    }
+                    yield return panel;
+                }
+                
+                foreach (var nestedPanel in GetAllPanelsWithContent(child))
+                {
+                    yield return nestedPanel;
                 }
             }
         }
@@ -1978,7 +1981,7 @@ namespace Ink_Canvas
         private void ReverseAllContentPanels()
         {
             _normalContentOrders = new Dictionary<StackPanel, List<FrameworkElement>>();
-            foreach (var panel in GetAllContentPanels())
+            foreach (var panel in GetAllPanelsWithContent(FloatingBarRootPanel))
             {
                 _normalContentOrders[panel] = panel.Children.OfType<FrameworkElement>().ToList();
                 var reversed = panel.Children.OfType<FrameworkElement>().Reverse().ToList();
@@ -2032,29 +2035,71 @@ namespace Ink_Canvas
         private void PlaceFloatingBarAfterHeadToggle(double headLeft, bool isExpanding)
         {
             var screenWidth = GetFloatingBarScreenWidth(Settings.Advanced.IsEnableAvoidFullScreenHelper);
+            ViewboxFloatingBar.UpdateLayout(); // 先更新布局，确保获取正确的宽度
 
             if (!isExpanding)
             {
-                SetFloatingBarHeadPlacement(false);
-                var collapsedWidth = GetFloatingBarHeadScaledWidth();
-                pos.X = ClampFloatingBarLeft(headLeft, collapsedWidth, screenWidth);
+                // 折叠时的处理：先尝试使用整个工具栏宽度（包含无法折叠的组件）
+                var fullCollapsedWidth = GetFloatingBarScaledWidth();
+                var collapsedHeadWidth = GetFloatingBarHeadScaledWidth();
+                
+                // 如果整个宽度远大于头部宽度，说明有其他可见组件，使用整个宽度
+                // 否则只使用头部宽度
+                var useFullWidth = fullCollapsedWidth > collapsedHeadWidth * 1.5;
+                var collapsedWidth = useFullWidth ? fullCollapsedWidth : collapsedHeadWidth;
+                
+                var shouldFlipOnCollapse = headLeft + collapsedWidth > screenWidth;
+                var wasCollapsedHeadOnRight = isFloatingBarHeadOnRight;
+                SetFloatingBarHeadPlacement(shouldFlipOnCollapse);
+
+                // 再次更新布局，以防翻转后宽度有变化
+                ViewboxFloatingBar.UpdateLayout();
+                
+                fullCollapsedWidth = GetFloatingBarScaledWidth();
+                collapsedHeadWidth = GetFloatingBarHeadScaledWidth();
+                useFullWidth = fullCollapsedWidth > collapsedHeadWidth * 1.5;
+                collapsedWidth = useFullWidth ? fullCollapsedWidth : collapsedHeadWidth;
+
+                var nextCollapsedLeft = shouldFlipOnCollapse
+                    ? headLeft - Math.Max(0, collapsedWidth - collapsedHeadWidth)
+                    : headLeft;
+
+                pos.X = ClampFloatingBarLeft(nextCollapsedLeft, collapsedWidth, screenWidth);
                 ViewboxFloatingBar.Margin = new Thickness(pos.X, ViewboxFloatingBar.Margin.Top, -2000, -200);
+
+                if (shouldFlipOnCollapse != wasCollapsedHeadOnRight)
+                {
+                    var actualHeadLeft = ViewboxFloatingBar.Margin.Left + (isFloatingBarHeadOnRight ? Math.Max(0, collapsedWidth - collapsedHeadWidth) : 0);
+                    var correction = headLeft - actualHeadLeft;
+                    if (Math.Abs(correction) > 0.5)
+                    {
+                        pos.X += correction;
+                        pos.X = ClampFloatingBarLeft(pos.X, collapsedWidth, screenWidth);
+                        ViewboxFloatingBar.Margin = new Thickness(pos.X, ViewboxFloatingBar.Margin.Top, -2000, -200);
+                    }
+                }
                 SaveFloatingBarPositionPoint();
                 return;
             }
 
+            // 展开时强制更新布局，确保获取正确的宽度
+            ViewboxFloatingBar.UpdateLayout();
+            
             var floatingBarWidth = GetFloatingBarScaledWidth();
-            var headWidth = GetFloatingBarHeadScaledWidth();
+            var expandedHeadWidth = GetFloatingBarHeadScaledWidth();
             var shouldPlaceToolsOnLeft = headLeft + floatingBarWidth > screenWidth;
             var wasHeadOnRight = isFloatingBarHeadOnRight;
 
             SetFloatingBarHeadPlacement(shouldPlaceToolsOnLeft);
 
+            // 再次更新布局，以防翻转后宽度有变化
+            ViewboxFloatingBar.UpdateLayout();
+            
             floatingBarWidth = GetFloatingBarScaledWidth();
-            headWidth = GetFloatingBarHeadScaledWidth();
+            expandedHeadWidth = GetFloatingBarHeadScaledWidth();
 
             var nextLeft = shouldPlaceToolsOnLeft
-                ? headLeft - Math.Max(0, floatingBarWidth - headWidth)
+                ? headLeft - Math.Max(0, floatingBarWidth - expandedHeadWidth)
                 : headLeft;
 
             pos.X = ClampFloatingBarLeft(nextLeft, floatingBarWidth, screenWidth);
@@ -2062,7 +2107,7 @@ namespace Ink_Canvas
 
             if (shouldPlaceToolsOnLeft != wasHeadOnRight)
             {
-                var actualHeadLeft = ViewboxFloatingBar.Margin.Left + (isFloatingBarHeadOnRight ? Math.Max(0, floatingBarWidth - headWidth) : 0);
+                var actualHeadLeft = ViewboxFloatingBar.Margin.Left + (isFloatingBarHeadOnRight ? Math.Max(0, floatingBarWidth - expandedHeadWidth) : 0);
                 var correction = headLeft - actualHeadLeft;
                 if (Math.Abs(correction) > 0.5)
                 {
@@ -3841,11 +3886,14 @@ namespace Ink_Canvas
             }
 
             HideSubPanels();
+            // 打开设置前退出白板模式并切换到鼠标模式
+            if (currentMode != 0) CloseWhiteboardImmediately();
+            CursorIcon_Click(null, null);
             _settingsWindow = new Windows.SettingsViews.SettingsWindow();
             _settingsWindow.Owner = this;
             _settingsWindow.Topmost = this.Topmost;
             _settingsWindow.Closed += (s, args) => _settingsWindow = null;
-            _settingsWindow.ShowDialog();
+            _settingsWindow.Show();
         }
 private bool forceEraser;
 
@@ -4388,16 +4436,21 @@ private bool forceEraser;
             // Open file dialog to select image
             var dialog = new OpenFileDialog
             {
-                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
+                Filter = "图片、PDF 与媒体|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf;*.mp4;*.mkv;*.mp3|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf|媒体文件|*.mp4;*.mkv;*.mp3"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                string extension = System.IO.Path.GetExtension(filePath);
+                FrameworkElement element = IsSupportedMediaExtension(extension)
+                    ? await CreateMediaElementAsync(filePath)
+                    : await CreateAndCompressImageAsync(filePath);
                 if (element != null)
                 {
-                    string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    element.Name = timestamp;
+                    string timestamp = element is MediaElement
+                        ? "media_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff")
+                        : "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
+                    if (string.IsNullOrEmpty(element.Name)) element.Name = timestamp;
 
                     // 初始化TransformGroup
                     var transformGroup = new TransformGroup();
@@ -4458,16 +4511,21 @@ private bool forceEraser;
             if (TryBlockFrozenPageMutation("插入图片")) return;
             var dialog = new OpenFileDialog
             {
-                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
+                Filter = "图片、PDF 与媒体|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf;*.mp4;*.mkv;*.mp3|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf|媒体文件|*.mp4;*.mkv;*.mp3"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                string extension = System.IO.Path.GetExtension(filePath);
+                FrameworkElement element = IsSupportedMediaExtension(extension)
+                    ? await CreateMediaElementAsync(filePath)
+                    : await CreateAndCompressImageAsync(filePath);
                 if (element != null)
                 {
-                    string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    element.Name = timestamp;
+                    string timestamp = element is MediaElement
+                        ? "media_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff")
+                        : "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
+                    if (string.IsNullOrEmpty(element.Name)) element.Name = timestamp;
 
                     // 初始化TransformGroup
                     var transformGroup = new TransformGroup();
@@ -4528,16 +4586,21 @@ private bool forceEraser;
             if (TryBlockFrozenPageMutation(FloatingBarStrings.Board_InsertImage)) return;
             var dialog = new OpenFileDialog
             {
-                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
+                Filter = "图片、PDF 与媒体|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf;*.mp4;*.mkv;*.mp3|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf|媒体文件|*.mp4;*.mkv;*.mp3"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                string extension = System.IO.Path.GetExtension(filePath);
+                FrameworkElement element = IsSupportedMediaExtension(extension)
+                    ? await CreateMediaElementAsync(filePath)
+                    : await CreateAndCompressImageAsync(filePath);
                 if (element != null)
                 {
-                    string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    element.Name = timestamp;
+                    string timestamp = element is MediaElement
+                        ? "media_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff")
+                        : "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
+                    if (string.IsNullOrEmpty(element.Name)) element.Name = timestamp;
 
                     // 初始化TransformGroup
                     var transformGroup = new TransformGroup();
