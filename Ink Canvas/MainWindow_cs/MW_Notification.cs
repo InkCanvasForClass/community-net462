@@ -1,9 +1,11 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Models;
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace Ink_Canvas
@@ -74,6 +76,7 @@ namespace Ink_Canvas
 
                     if (Settings?.Notification?.IsDynamicNotificationEnabled == true && DynamicNotification != null)
                     {
+                        ActivateWindowForNotification();
                         ApplyDynamicNotificationPlacement();
                         DynamicNotification.Show(message);
                     }
@@ -170,6 +173,8 @@ namespace Ink_Canvas
                     return;
                 }
 
+                ActivateWindowForNotification();
+
                 lastNotificationShowTime = Environment.TickCount;
                 notificationShowTime = Math.Max(1, displaySeconds) * 1000;
                 TextBlockNotice.Text = notice;
@@ -192,6 +197,30 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"ShowNotification 异常: {ex.Message}", LogHelper.LogType.Error);
                 NotificationCenterService.NotifyCurrentClosed();
+            }
+        }
+
+        private void ActivateWindowForNotification()
+        {
+            try
+            {
+                var hwnd = new WindowInteropHelper(this).Handle;
+                if (hwnd == IntPtr.Zero) return;
+
+                if (WindowState == WindowState.Minimized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+
+                if (!IsActive)
+                {
+                    Activate();
+                    BringWindowToTop(hwnd);
+                    SetForegroundWindow(hwnd);
+                }
+            }
+            catch
+            {
             }
         }
     }
