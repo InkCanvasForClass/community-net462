@@ -11,6 +11,7 @@
     <LangVersion>10</LangVersion>
     <NoWarn>CA1416</NoWarn>
     <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
