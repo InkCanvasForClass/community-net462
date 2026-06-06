@@ -1,5 +1,5 @@
-using Ink_Canvas.Properties;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Pages;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Navigation;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Screen = System.Windows.Forms.Screen;
@@ -30,6 +28,8 @@ namespace Ink_Canvas.Windows.SettingsViews
             { "HotkeyPage", typeof(HotkeyPage) },
             { "ToolbarPage", typeof(ToolbarPage) },
             { "ToolbarAppearancePage", typeof(ToolbarAppearancePage) },
+            { "BoardToolbarPage", typeof(BoardToolbarPage) },
+            { "BoardAppearancePage", typeof(BoardAppearancePage) },
             { "UpdatePage", typeof(UpdatePage) },
             { "NotificationPage", typeof(NotificationPage) },
             { "AnnouncementCenterPage", typeof(AnnouncementCenterPage) },
@@ -38,7 +38,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             { "StoragePage", typeof(StoragePage) },
             { "BackupPage", typeof(BackupPage) },
             { "CloudStoragePage", typeof(CloudStoragePage) },
-            { "AutomationPage", typeof(AutomationPage) },
+            { "AutomationWorkflowPage", typeof(AutomationWorkflowPage) },
             { "PowerPointPage", typeof(PowerPointPage) },
             { "RandomDrawPage", typeof(RandomDrawPage) },
             { "CanvasPage", typeof(CanvasPage) },
@@ -86,6 +86,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "HotkeyPage", typeof(HotkeyPage) },
                 { "ToolbarPage", typeof(ToolbarPage) },
                 { "ToolbarAppearancePage", typeof(ToolbarAppearancePage) },
+                { "BoardToolbarPage", typeof(BoardToolbarPage) },
+                { "BoardAppearancePage", typeof(BoardAppearancePage) },
                 { "UpdatePage", typeof(UpdatePage) },
                 { "NotificationPage", typeof(NotificationPage) },
                 { "AnnouncementCenterPage", typeof(AnnouncementCenterPage) },
@@ -94,7 +96,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "StoragePage", typeof(StoragePage) },
                 { "BackupPage", typeof(BackupPage) },
                 { "CloudStoragePage", typeof(CloudStoragePage) },
-                { "AutomationPage", typeof(AutomationPage) },
+                { "AutomationWorkflowPage", typeof(AutomationWorkflowPage) },
                 { "PowerPointPage", typeof(PowerPointPage) },
                 { "RandomDrawPage", typeof(RandomDrawPage) },
                 { "CanvasPage", typeof(CanvasPage) },
@@ -370,7 +372,11 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         public void NavigateToPage(string pageTag, Ink_Canvas.Plugins.PluginInfo pluginInfo = null)
         {
-            if (!_pageTypes.TryGetValue(pageTag, out Type pageType)) return;
+            if (!_pageTypes.TryGetValue(pageTag, out Type pageType))
+            {
+                LogHelper.WriteLogToFile($"SettingsWindow: NavigateToPage 找不到页面类型 [{pageTag}]，已注册: [{string.Join(", ", _pageTypes.Keys)}]", LogHelper.LogType.Warning);
+                return;
+            }
 
             try
             {

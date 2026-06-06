@@ -24,6 +24,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             LoadSettings();
             _isLoaded = true;
             UpdateFileAssociationStatus();
+            SliderTouchHelper.AddTouchSupportToAllSliders(this);
         }
 
         private void AutomationPage_Unloaded(object sender, RoutedEventArgs e)
@@ -712,6 +713,20 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 TextBlockFileAssociationStatus.Text = AutomationStrings.FileAssoc_CheckError;
                 TextBlockFileAssociationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightCoral);
                 LogHelper.WriteLogToFile($"检查文件关联状态失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        #endregion
+
+        #region Custom Automation
+
+        private void CardCustomAutomation_Click(object sender, RoutedEventArgs e)
+        {
+            // 导航到自定义自动化页面
+            var settingsWindow = Window.GetWindow(this) as Windows.SettingsViews.SettingsWindow;
+            if (settingsWindow != null)
+            {
+                settingsWindow.NavigateToPage("AutomationWorkflowPage");
             }
         }
 

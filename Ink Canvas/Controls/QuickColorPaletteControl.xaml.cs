@@ -1,10 +1,10 @@
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Ink_Canvas.Controls
 {
@@ -60,7 +60,7 @@ namespace Ink_Canvas.Controls
                 QuickColorPalettePanel.Visibility = Visibility.Visible;
                 QuickColorPaletteSingleRowPanel.Visibility = Visibility.Collapsed;
             }
-            
+
             QuickColorPaletteContainer.Visibility = Visibility.Visible;
         }
 

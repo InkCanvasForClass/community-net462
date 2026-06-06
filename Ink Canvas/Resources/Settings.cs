@@ -48,6 +48,9 @@ namespace Ink_Canvas
 
         [JsonProperty("toolbarConfigName")]
         public string ToolbarConfigName { get; set; } = "default";
+
+        [JsonProperty("boardToolbarConfigName")]
+        public string BoardToolbarConfigName { get; set; } = "default";
     }
 
     public class NotificationSettings
@@ -71,7 +74,7 @@ namespace Ink_Canvas
         public string AnnouncementWebSocketUrl => string.Empty;
 
         [JsonIgnore]
-        public string AnnouncementSoftwareToken => BuiltInSoftwareToken;
+        public string AnnouncementSoftwareToken => "092fb28012b3985e2b84341c0643eab0";
 
         public const string BuiltInSoftwareToken = "492e41ea8eb61fc9a1d336b3852a4478";
 
@@ -169,6 +172,8 @@ namespace Ink_Canvas
         public bool FitToCurve { get; set; } // 默认关闭原来的贝塞尔平滑
         [JsonProperty("useAdvancedBezierSmoothing")]
         public bool UseAdvancedBezierSmoothing { get; set; } = true; // 默认启用高级贝塞尔曲线平滑
+        [JsonProperty("mergeInkSmoothingWithUndo")]
+        public bool MergeInkSmoothingWithUndo { get; set; } = false;
         [JsonProperty("useAsyncInkSmoothing")]
         public bool UseAsyncInkSmoothing { get; set; } = true; // 默认启用异步墨迹平滑
         [JsonProperty("useHardwareAcceleration")]
@@ -408,6 +413,16 @@ namespace Ink_Canvas
         public double ViewboxFloatingBarOpacityInPPTValue { get; set; } = 0.5;
         [JsonProperty("viewboxBlackBoardScaleTransformValue")]
         public double ViewboxBlackBoardScaleTransformValue { get; set; } = 1;
+        [JsonProperty("viewboxBlackBoardLeftScaleTransformValue")]
+        public double ViewboxBlackBoardLeftScaleTransformValue { get; set; } = 1;
+        [JsonProperty("viewboxBlackBoardRightScaleTransformValue")]
+        public double ViewboxBlackBoardRightScaleTransformValue { get; set; } = 1;
+        [JsonProperty("boardToolbarLeftOpacity")]
+        public double BoardToolbarLeftOpacity { get; set; } = 0.77;
+        [JsonProperty("boardToolbarCenterOpacity")]
+        public double BoardToolbarCenterOpacity { get; set; } = 0.77;
+        [JsonProperty("boardToolbarRightOpacity")]
+        public double BoardToolbarRightOpacity { get; set; } = 0.77;
         [JsonProperty("isTransparentButtonBackground")]
         public bool IsTransparentButtonBackground { get; set; } = true;
         [JsonProperty("isShowExitButton")]

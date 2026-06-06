@@ -1,9 +1,6 @@
-using Ink_Canvas.Properties;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
-using Ink_Canvas.Resources;
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
@@ -26,6 +23,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             LoadSettings();
             _isLoaded = true;
             UpdateAllSliderTexts();
+            SliderTouchHelper.AddTouchSupportToAllSliders(this);
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
@@ -167,7 +165,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             if (!_isLoaded) return;
             if (CardReverseToolbarContent == null) return;
-            
+
             SettingsManager.Settings.Appearance.ReverseToolbarContent = CardReverseToolbarContent.IsOn;
             SettingsManager.SaveSettingsToFile();
             SettingsActionHub.OnReverseToolbarContentChanged(CardReverseToolbarContent.IsOn);

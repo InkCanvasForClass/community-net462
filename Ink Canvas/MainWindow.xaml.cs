@@ -1,9 +1,8 @@
-using Ink_Canvas.Properties;
 using Ink_Canvas.Controls;
 using Ink_Canvas.Controls.Toolbar.FloatingToolbar;
-using Ink_Canvas.Controls.Toolbar.BoardToolbar;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Models;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows;
 using Ink_Canvas.Windows.SettingsViews;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
@@ -429,17 +428,25 @@ namespace Ink_Canvas
             BorderTools.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
-                    new CustomPopupPlacement(
-                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
-                        PopupPrimaryAxis.Vertical)
+                    IsVerticalToolbar
+                        ? new CustomPopupPlacement(
+                            new Point(-popupSize.Width - 8, (targetSize.Height - popupSize.Height) / 2),
+                            PopupPrimaryAxis.Horizontal)
+                        : new CustomPopupPlacement(
+                            new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                            PopupPrimaryAxis.Vertical)
                 };
 
             BorderDrawShape.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
-                    new CustomPopupPlacement(
-                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
-                        PopupPrimaryAxis.Vertical)
+                    IsVerticalToolbar
+                        ? new CustomPopupPlacement(
+                            new Point(-popupSize.Width - 8, (targetSize.Height - popupSize.Height) / 2),
+                            PopupPrimaryAxis.Horizontal)
+                        : new CustomPopupPlacement(
+                            new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                            PopupPrimaryAxis.Vertical)
                 };
 
             BoardBorderDrawShape.CustomPopupPlacementCallback =
@@ -453,9 +460,13 @@ namespace Ink_Canvas
             PenPalette.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
-                    new CustomPopupPlacement(
-                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
-                        PopupPrimaryAxis.Vertical)
+                    IsVerticalToolbar
+                        ? new CustomPopupPlacement(
+                            new Point(-popupSize.Width - 8, (targetSize.Height - popupSize.Height) / 2),
+                            PopupPrimaryAxis.Horizontal)
+                        : new CustomPopupPlacement(
+                            new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                            PopupPrimaryAxis.Vertical)
                 };
 
             BoardPenPalette.CustomPopupPlacementCallback =
@@ -469,9 +480,13 @@ namespace Ink_Canvas
             EraserSizePanel.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
-                    new CustomPopupPlacement(
-                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
-                        PopupPrimaryAxis.Vertical)
+                    IsVerticalToolbar
+                        ? new CustomPopupPlacement(
+                            new Point(-popupSize.Width - 8, (targetSize.Height - popupSize.Height) / 2),
+                            PopupPrimaryAxis.Horizontal)
+                        : new CustomPopupPlacement(
+                            new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                            PopupPrimaryAxis.Vertical)
                 };
 
             BoardEraserSizePanel.CustomPopupPlacementCallback =
@@ -493,9 +508,13 @@ namespace Ink_Canvas
             TwoFingerGestureBorder.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
-                    new CustomPopupPlacement(
-                        new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
-                        PopupPrimaryAxis.Vertical)
+                    IsVerticalToolbar
+                        ? new CustomPopupPlacement(
+                            new Point(-popupSize.Width - 8, (targetSize.Height - popupSize.Height) / 2),
+                            PopupPrimaryAxis.Horizontal)
+                        : new CustomPopupPlacement(
+                            new Point(targetSize.Width / 2 - popupSize.Width / 2, -popupSize.Height - 8),
+                            PopupPrimaryAxis.Vertical)
                 };
 
             BoardTwoFingerGestureBorder.CustomPopupPlacementCallback =
@@ -639,107 +658,6 @@ namespace Ink_Canvas
             currentPageIndex = 0;
             ShowPage(currentPageIndex);
 
-            // 手动实现触摸滑动
-            var leftScrollViewer = FindView("board.pageList.leftScrollViewer") as ScrollViewer;
-            var rightScrollViewer = FindView("board.pageList.rightScrollViewer") as ScrollViewer;
-            var leftPageListView = FindView("board.pageList.left") as System.Windows.Controls.ListView;
-            var rightPageListView = FindView("board.pageList.right") as System.Windows.Controls.ListView;
-
-            const double TouchTapMovementThreshold = 15.0;
-            double leftTouchStartY = 0;
-            double leftTouchStartX = 0;
-            double leftScrollStartOffset = 0;
-            bool leftIsTouching = false;
-            bool leftTouchDidScroll = false;
-            if (leftScrollViewer != null)
-            {
-                leftScrollViewer.TouchDown += (s, e) =>
-                {
-                    leftIsTouching = true;
-                    leftTouchDidScroll = false;
-                    var pt = e.GetTouchPoint(leftScrollViewer).Position;
-                    leftTouchStartX = pt.X;
-                    leftTouchStartY = pt.Y;
-                    leftScrollStartOffset = leftScrollViewer.VerticalOffset;
-                    leftScrollViewer.CaptureTouch(e.TouchDevice);
-                    e.Handled = true;
-                };
-                leftScrollViewer.TouchMove += (s, e) =>
-                {
-                    if (leftIsTouching)
-                    {
-                        var pt = e.GetTouchPoint(leftScrollViewer).Position;
-                        double deltaY = leftTouchStartY - pt.Y;
-                        double deltaX = pt.X - leftTouchStartX;
-                        if (!leftTouchDidScroll && (Math.Abs(deltaY) > TouchTapMovementThreshold || Math.Abs(deltaX) > TouchTapMovementThreshold))
-                            leftTouchDidScroll = true;
-                        if (leftTouchDidScroll)
-                            leftScrollViewer.ScrollToVerticalOffset(leftScrollStartOffset + deltaY);
-                        e.Handled = true;
-                    }
-                };
-                leftScrollViewer.TouchUp += (s, e) =>
-                {
-                    if (leftIsTouching && !leftTouchDidScroll)
-                    {
-                        var pt = e.GetTouchPoint(leftScrollViewer).Position;
-                        double dx = pt.X - leftTouchStartX, dy = pt.Y - leftTouchStartY;
-                        if (dx * dx + dy * dy <= TouchTapMovementThreshold * TouchTapMovementThreshold)
-                            TrySwitchWhiteboardPageByTouchPoint(leftPageListView, leftScrollViewer, pt);
-                    }
-                    leftIsTouching = false;
-                    leftTouchDidScroll = false;
-                    leftScrollViewer.ReleaseTouchCapture(e.TouchDevice);
-                    e.Handled = true;
-                };
-            }
-            double rightTouchStartY = 0;
-            double rightTouchStartX = 0;
-            double rightScrollStartOffset = 0;
-            bool rightIsTouching = false;
-            bool rightTouchDidScroll = false;
-            if (rightScrollViewer != null)
-            {
-                rightScrollViewer.TouchDown += (s, e) =>
-                {
-                    rightIsTouching = true;
-                    rightTouchDidScroll = false;
-                    var pt = e.GetTouchPoint(rightScrollViewer).Position;
-                    rightTouchStartX = pt.X;
-                    rightTouchStartY = pt.Y;
-                    rightScrollStartOffset = rightScrollViewer.VerticalOffset;
-                    rightScrollViewer.CaptureTouch(e.TouchDevice);
-                    e.Handled = true;
-                };
-                rightScrollViewer.TouchMove += (s, e) =>
-                {
-                    if (rightIsTouching)
-                    {
-                        var pt = e.GetTouchPoint(rightScrollViewer).Position;
-                        double deltaY = rightTouchStartY - pt.Y;
-                        double deltaX = pt.X - rightTouchStartX;
-                        if (!rightTouchDidScroll && (Math.Abs(deltaY) > TouchTapMovementThreshold || Math.Abs(deltaX) > TouchTapMovementThreshold))
-                            rightTouchDidScroll = true;
-                        if (rightTouchDidScroll)
-                            rightScrollViewer.ScrollToVerticalOffset(rightScrollStartOffset + deltaY);
-                        e.Handled = true;
-                    }
-                };
-                rightScrollViewer.TouchUp += (s, e) =>
-                {
-                    if (rightIsTouching && !rightTouchDidScroll)
-                    {
-                        var pt = e.GetTouchPoint(rightScrollViewer).Position;
-                        double dx = pt.X - rightTouchStartX, dy = pt.Y - rightTouchStartY;
-                        if (dx * dx + dy * dy <= TouchTapMovementThreshold * TouchTapMovementThreshold)
-                            TrySwitchWhiteboardPageByTouchPoint(rightPageListView, rightScrollViewer, pt);
-                    }
-                    rightIsTouching = false;
-                    rightTouchDidScroll = false;
-                    rightScrollViewer.ReleaseTouchCapture(e.TouchDevice);
-                    e.Handled = true;
-                };
-            }
             // 应用无焦点模式设置
             ApplyNoFocusMode();
             // 应用窗口置顶设置
@@ -1536,8 +1454,6 @@ namespace Ink_Canvas
             // 工具栏插件化按钮先注入到容器，确保 LoadSettings 内部对 Cursor_Icon / Pen_Icon 等的访问非空。
             // Settings.Toolbar 此时尚为默认值（全部可见），与旧 XAML 行为一致。
             InitializeToolbarPlugins();
-            var boardInkFreezeBtn = FindView("board.inkFreeze") as BoardToolbarButton;
-            if (boardInkFreezeBtn != null) AttachBoardInkFreezeBtn(boardInkFreezeBtn);
             // 初始化 Popup 管理器（置顶 + 拖动跟随）
             InitializePopupManager();
             //加载设置
@@ -1598,6 +1514,9 @@ namespace Ink_Canvas
             if (rightPageListView != null) rightPageListView.ItemsSource = blackBoardSidePageListViewObservableCollection;
 
             InitializeBoardToolbar();
+
+            var boardInkFreezeBtn = FindView("board.inkFreeze") as BoardToolbarButton;
+            if (boardInkFreezeBtn != null) AttachBoardInkFreezeBtn(boardInkFreezeBtn);
 
             var leftPreviousBtn = FindView("board.previousPage.left") as BoardToolbarButton;
             var rightPreviousBtn = FindView("board.previousPage.right") as BoardToolbarButton;
@@ -2108,8 +2027,8 @@ namespace Ink_Canvas
 
             UninstallKeyboardHook();
 
-            // 从Z-Order管理器中移除主窗口
-            WindowZOrderManager.UnregisterWindow(this);
+            // 清理统一窗口置顶管理器
+            WindowTopmostManager.Shutdown();
 
             LogHelper.WriteLogToFile("Ink Canvas closed", LogHelper.LogType.Event);
 
@@ -2442,7 +2361,18 @@ namespace Ink_Canvas
 
             // 检查是否点击了空白区域或其他非图片元素
             var hitTest = e.OriginalSource;
-            if (!(hitTest is Image) && !(hitTest is MediaElement))
+            var dependencyObject = hitTest as DependencyObject;
+            bool clickedMediaControl = false;
+            while (dependencyObject != null)
+            {
+                if (dependencyObject is CanvasMediaControl)
+                {
+                    clickedMediaControl = true;
+                    break;
+                }
+                dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+            }
+            if (!(hitTest is Image) && !(hitTest is MediaElement) && !(hitTest is CanvasMediaControl) && !clickedMediaControl)
             {
                 // 如果当前有选中的元素，取消选中状态
                 if (currentSelectedElement != null)
@@ -3366,7 +3296,7 @@ namespace Ink_Canvas
                 {
                     if (slider != null)
                     {
-                        AddTouchSupportToSlider(slider);
+                        Helpers.SliderTouchHelper.AddTouchSupport(slider);
                     }
                 }
 
@@ -3375,228 +3305,6 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"添加滑块触摸支持时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 为单个滑块控件添加触摸和手写笔事件支持
-        /// </summary>
-        /// <param name="slider">要添加触摸支持的滑块控件</param>
-        private void AddTouchSupportToSlider(Slider slider)
-        {
-            if (slider == null) return;
-
-            // 启用触摸和手写笔支持
-            slider.IsManipulationEnabled = true;
-
-            // 添加触摸事件 - 使用更简单直接的方法
-            slider.TouchDown += (s, e) => HandleSliderTouch(s, e, slider);
-            slider.TouchMove += (s, e) => HandleSliderTouch(s, e, slider);
-            slider.TouchUp += (s, e) => HandleSliderTouchEnd(s, e, slider);
-
-            // 添加手写笔事件
-            slider.StylusDown += (s, e) => HandleSliderStylus(s, e, slider);
-            slider.StylusMove += (s, e) => HandleSliderStylus(s, e, slider);
-            slider.StylusUp += (s, e) => HandleSliderStylusEnd(s, e, slider);
-        }
-
-        /// <summary>
-        /// 处理滑块触摸事件（按下和移动）
-        /// </summary>
-        private void HandleSliderTouch(object sender, TouchEventArgs e, Slider slider)
-        {
-            if (slider == null) return;
-
-            // 捕获触摸设备
-            if (e.RoutedEvent == TouchDownEvent)
-            {
-                slider.CaptureTouch(e.TouchDevice);
-            }
-
-            // 计算触摸位置对应的滑块值
-            var touchPoint = e.GetTouchPoint(slider);
-
-            // 使用更精确的位置计算方法
-            UpdateSliderValueFromPositionImproved(slider, touchPoint.Position);
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// 处理滑块触摸结束事件
-        /// </summary>
-        private void HandleSliderTouchEnd(object sender, TouchEventArgs e, Slider slider)
-        {
-            if (slider == null) return;
-
-            // 释放触摸捕获
-            slider.ReleaseTouchCapture(e.TouchDevice);
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// 处理滑块手写笔事件（按下和移动）
-        /// </summary>
-        private void HandleSliderStylus(object sender, StylusEventArgs e, Slider slider)
-        {
-            if (slider == null) return;
-
-            // 捕获手写笔设备
-            if (e.RoutedEvent == StylusDownEvent)
-            {
-                slider.CaptureStylus();
-            }
-
-            // 计算手写笔位置对应的滑块值
-            var stylusPoint = e.GetStylusPoints(slider);
-            if (stylusPoint.Count > 0)
-            {
-                UpdateSliderValueFromPositionImproved(slider, stylusPoint[0].ToPoint());
-            }
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// 处理滑块手写笔结束事件
-        /// </summary>
-        private void HandleSliderStylusEnd(object sender, StylusEventArgs e, Slider slider)
-        {
-            if (slider == null) return;
-
-            // 释放手写笔捕获
-            slider.ReleaseStylusCapture();
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// 根据触摸/手写笔位置更新滑块值（改进版本）
-        /// </summary>
-        /// <param name="slider">滑块控件</param>
-        /// <param name="position">触摸/手写笔位置</param>
-        private void UpdateSliderValueFromPositionImproved(Slider slider, Point position)
-        {
-            if (slider == null) return;
-
-            try
-            {
-                // 获取滑块的轨道元素
-                var track = slider.Template.FindName("PART_Track", slider) as Track;
-                if (track == null)
-                {
-                    // 如果找不到轨道，使用简单方法
-                    UpdateSliderValueFromPosition(slider, position);
-                    return;
-                }
-
-                // 获取轨道的实际边界
-                var trackBounds = track.TransformToAncestor(slider).TransformBounds(new Rect(0, 0, track.ActualWidth, track.ActualHeight));
-
-                double relativePosition = 0;
-
-                if (slider.Orientation == System.Windows.Controls.Orientation.Horizontal)
-                {
-                    // 水平滑块
-                    if (trackBounds.Width > 0)
-                    {
-                        // 计算相对于轨道的相对位置
-                        var relativeX = position.X - trackBounds.X;
-                        relativePosition = Math.Max(0, Math.Min(1, relativeX / trackBounds.Width));
-                    }
-                }
-                else
-                {
-                    // 垂直滑块
-                    if (trackBounds.Height > 0)
-                    {
-                        // 计算相对于轨道的相对位置
-                        var relativeY = position.Y - trackBounds.Y;
-                        relativePosition = Math.Max(0, Math.Min(1, relativeY / trackBounds.Height));
-                    }
-                }
-
-                // 计算新的滑块值
-                var newValue = slider.Minimum + relativePosition * (slider.Maximum - slider.Minimum);
-
-                // 如果启用了吸附到刻度，则调整到最近的刻度
-                if (slider.IsSnapToTickEnabled && slider.TickFrequency > 0)
-                {
-                    var tickCount = (int)((slider.Maximum - slider.Minimum) / slider.TickFrequency);
-                    var tickIndex = (int)Math.Round(relativePosition * tickCount);
-                    newValue = slider.Minimum + tickIndex * slider.TickFrequency;
-                }
-
-                // 更新滑块值
-                slider.Value = Math.Max(slider.Minimum, Math.Min(slider.Maximum, newValue));
-            }
-            catch (Exception ex)
-            {
-                // 如果改进方法失败，回退到简单方法
-                UpdateSliderValueFromPosition(slider, position);
-                LogHelper.WriteLogToFile($"更新滑块值时出错，使用回退方法: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 根据触摸/手写笔位置更新滑块值（简单版本）
-        /// </summary>
-        /// <param name="slider">滑块控件</param>
-        /// <param name="position">触摸/手写笔位置</param>
-        private void UpdateSliderValueFromPosition(Slider slider, Point position)
-        {
-            if (slider == null) return;
-
-            try
-            {
-                // 使用更简单直接的方法计算滑块值
-                double relativePosition = 0;
-
-                if (slider.Orientation == System.Windows.Controls.Orientation.Horizontal)
-                {
-                    // 水平滑块 - 使用滑块的实际宽度
-                    var sliderWidth = slider.ActualWidth;
-                    if (sliderWidth > 0)
-                    {
-                        // 考虑滑块的边距和拇指大小
-                        var thumbSize = 20; // 假设拇指大小约为20像素
-                        var effectiveWidth = sliderWidth - thumbSize;
-                        var adjustedX = position.X - thumbSize / 2;
-                        relativePosition = Math.Max(0, Math.Min(1, adjustedX / effectiveWidth));
-                    }
-                }
-                else
-                {
-                    // 垂直滑块 - 使用滑块的实际高度
-                    var sliderHeight = slider.ActualHeight;
-                    if (sliderHeight > 0)
-                    {
-                        // 考虑滑块的边距和拇指大小
-                        var thumbSize = 20; // 假设拇指大小约为20像素
-                        var effectiveHeight = sliderHeight - thumbSize;
-                        var adjustedY = position.Y - thumbSize / 2;
-                        relativePosition = Math.Max(0, Math.Min(1, adjustedY / effectiveHeight));
-                    }
-                }
-
-                // 计算新的滑块值
-                var newValue = slider.Minimum + relativePosition * (slider.Maximum - slider.Minimum);
-
-                // 如果启用了吸附到刻度，则调整到最近的刻度
-                if (slider.IsSnapToTickEnabled && slider.TickFrequency > 0)
-                {
-                    var tickCount = (int)((slider.Maximum - slider.Minimum) / slider.TickFrequency);
-                    var tickIndex = (int)Math.Round(relativePosition * tickCount);
-                    newValue = slider.Minimum + tickIndex * slider.TickFrequency;
-                }
-
-                // 更新滑块值
-                slider.Value = Math.Max(slider.Minimum, Math.Min(slider.Maximum, newValue));
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新滑块值时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

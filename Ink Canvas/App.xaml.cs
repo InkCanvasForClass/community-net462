@@ -78,6 +78,7 @@ namespace Ink_Canvas
         internal static DateTime appStartTime { get; private set; }
         // 新增：最后一次错误信息
         private static string lastErrorMessage = string.Empty;
+        private volatile bool powerPointShutdownCleanupCompleted;
         // 新增：是否已初始化崩溃监听器
         private static bool crashListenersInitialized;
         private static readonly object cpuUsageLock = new object();
@@ -135,6 +136,7 @@ namespace Ink_Canvas
             SyncCrashActionFromSettings();
 
             Startup += App_Startup;
+            SessionEnding += App_SessionEnding;
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             StartHeartbeatMonitor();
 
@@ -410,33 +412,36 @@ namespace Ink_Canvas
             string reason = e.Reason == SessionEndReasons.Logoff ? "用户注销" : "系统关机";
             WriteCrashLog($"系统会话即将结束: {reason}");
 
-            // 卸载PPT模块并清理悬浮窗拦截器
+            if (!powerPointShutdownCleanupCompleted)
+            {
+                WriteCrashLog("PowerPoint模块等待WPF会话结束事件清理");
+            }
+
+            DeviceIdentifier.SaveUsageStatsOnShutdown();
+        }
+
+        private void App_SessionEnding(object sender, System.Windows.SessionEndingCancelEventArgs e)
+        {
+            CleanupPowerPointModuleForShutdown();
+        }
+
+        private void CleanupPowerPointModuleForShutdown()
+        {
+            if (powerPointShutdownCleanupCompleted) return;
+
             try
             {
-                // 获取主窗口实例
-                var mainWindow = Current.MainWindow as MainWindow;
-                if (mainWindow != null)
+                if (Current?.MainWindow is MainWindow mainWindow)
                 {
                     mainWindow.UnloadPPTModuleForShutdown();
-                    WriteCrashLog("PPT模块已在系统关机时卸载");
-
-                    // 清理悬浮窗拦截器
-                    var interceptorField = mainWindow.GetType().GetField("_floatingWindowInterceptorManager",
-                        BindingFlags.NonPublic | BindingFlags.Instance);
-                    var interceptorManager = interceptorField?.GetValue(mainWindow);
-                    if (interceptorManager != null)
-                    {
-                        var disposeMethod = interceptorManager.GetType().GetMethod("Dispose");
-                        disposeMethod?.Invoke(interceptorManager, null);
-                    }
+                    powerPointShutdownCleanupCompleted = true;
+                    WriteCrashLog("PowerPoint模块已在系统关机时清理");
                 }
             }
             catch (Exception ex)
             {
                 WriteCrashLog($"清理资源失败: {ex.Message}");
             }
-
-            DeviceIdentifier.SaveUsageStatsOnShutdown();
         }
 
         // 控制台取消事件处理
@@ -1300,6 +1305,7 @@ namespace Ink_Canvas
             };
 
             mainWindow.Show();
+            WindowTopmostManager.Initialize(mainWindow);
             _ = Task.Run(async () =>
             {
                 await Task.Delay(600);

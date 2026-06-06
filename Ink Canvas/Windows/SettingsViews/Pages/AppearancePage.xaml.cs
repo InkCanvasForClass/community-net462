@@ -1,5 +1,5 @@
-using Ink_Canvas.Properties;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
@@ -7,9 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using ContentDialog = iNKORE.UI.WPF.Modern.Controls.ContentDialog;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
@@ -51,11 +48,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             _isLoaded = true;
             UpdateAllSliderTexts();
             OnBottomOffsetChanged += HandleBottomOffsetChanged;
+            SliderTouchHelper.AddTouchSupportToAllSliders(this);
         }
 
         private void UpdateAllSliderTexts()
         {
-            UpdateSliderText(ViewboxBlackBoardScaleTransformValueSlider, ViewboxBlackBoardScaleText, "{0:F2}");
             UpdateSliderText(QuickPanelBottomOffsetSlider, QuickPanelBottomOffsetText, "{0:F0}");
         }
 
@@ -98,10 +95,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 settings.Appearance.FloatingBarImg = 0;
             ComboBoxFloatingBarImg.SelectedIndex = settings.Appearance.FloatingBarImg;
 
-            ViewboxBlackBoardScaleTransformValueSlider.Value = settings.Appearance.ViewboxBlackBoardScaleTransformValue;
-
             CardEnableTimeDisplayInWhiteboardMode.IsOn = settings.Appearance.EnableTimeDisplayInWhiteboardMode;
-            CardUse24HourTimeFormat.IsOn = settings.Appearance.Use24HourTimeFormat;
             CardEnableChickenSoupInWhiteboardMode.IsOn = settings.Appearance.EnableChickenSoupInWhiteboardMode;
 
             _suppressChickenSoupSourceSelectionChanged = true;
@@ -233,22 +227,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         #region Display Options
 
-        private void ViewboxBlackBoardScaleTransformValueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            UpdateSliderText(ViewboxBlackBoardScaleTransformValueSlider, ViewboxBlackBoardScaleText, "{0:F2}");
-            if (!_isLoaded) return;
-            var slider = ViewboxBlackBoardScaleTransformValueSlider;
-            var val = Math.Round(slider.Value, 2);
-            if (slider.Value != val)
-            {
-                slider.Value = val;
-                return;
-            }
-            SettingsManager.Settings.Appearance.ViewboxBlackBoardScaleTransformValue = val;
-            SettingsManager.SaveSettingsToFile();
-            SettingsActionHub.OnBlackBoardScaleChanged(val);
-        }
-
         private void ToggleSwitchEnableTimeDisplayInWhiteboardMode_Toggled(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -265,13 +243,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsActionHub.OnChickenSoupInWhiteboardChanged(
                 CardEnableChickenSoupInWhiteboardMode.IsOn,
                 CardEnableTimeDisplayInWhiteboardMode.IsOn);
-        }
-
-        private void ToggleSwitchUse24HourTimeFormat_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Appearance.Use24HourTimeFormat = CardUse24HourTimeFormat.IsOn;
-            SettingsManager.SaveSettingsToFile();
         }
 
         private void ComboBoxChickenSoupSource_SelectionChanged(object sender, SelectionChangedEventArgs e)

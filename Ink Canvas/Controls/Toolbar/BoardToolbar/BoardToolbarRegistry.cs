@@ -1,6 +1,4 @@
-using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
-using Ink_Canvas.Properties;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -81,16 +79,6 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
             {
                 var entry = components[i];
 
-                if (entry.Id == "board.pageInfo")
-                {
-                    var pageInfoView = BuildPageInfoView(host, areaId);
-                    if (pageInfoView != null)
-                    {
-                        views.Add(pageInfoView);
-                    }
-                    continue;
-                }
-
                 if (!itemMap.TryGetValue(entry.Id, out var item))
                 {
                     LogHelper.WriteLogToFile($"BoardToolbarRegistry: 未找到组件 [{entry.Id}]", LogHelper.LogType.Warning);
@@ -99,10 +87,19 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
 
                 try
                 {
-                    var view = item.BuildView(host);
+                    FrameworkElement view;
+                    if (item is Items.BoardPageInfoToolItem pageInfoItem)
+                    {
+                        view = Items.BoardPageInfoToolItem.BuildPageInfoView(host, areaId);
+                    }
+                    else
+                    {
+                        view = item.BuildView(host);
+                    }
+
                     if (view != null)
                     {
-                        var position = ParseButtonPosition(entry.Position);
+                        var position = ComputeButtonPosition(i, components.Count);
                         item.ApplyPosition(view, position);
                         ApplyComponentSettings(view, entry);
                         host.RegisterView(entry.Id, view);
@@ -120,62 +117,18 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
             return views;
         }
 
-        private static FrameworkElement BuildPageInfoView(IBoardToolbarHost host, string areaId)
+        internal static ButtonPosition ComputeButtonPosition(int index, int totalCount)
         {
-            var pageInfoTextBlock = new TextBlock
-            {
-                Text = "1/1",
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, -1, 0, 0),
-                FontSize = 17,
-                FontWeight = FontWeights.Bold,
-                TextAlignment = TextAlignment.Center
-            };
-            host.RegisterView($"board.pageInfo.{areaId}", pageInfoTextBlock);
-
-            var pageLabel = new TextBlock
-            {
-                Text = FloatingBarStrings.Board_Page,
-                Foreground = (Brush)Application.Current.TryFindResource("FloatBarForeground"),
-                VerticalAlignment = VerticalAlignment.Bottom,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                FontSize = 12
-            };
-
-            var grid = new Grid { Margin = new Thickness(6, 6, 6, 4) };
-            grid.Children.Add(pageInfoTextBlock);
-            grid.Children.Add(pageLabel);
-
-            var pageInfoBorder = new Border
-            {
-                Width = 75,
-                Height = 50,
-                BorderThickness = new Thickness(1),
-                BorderBrush = (Brush)Application.Current.TryFindResource("BoardFloatBarBorderBrush"),
-                Background = (Brush)Application.Current.TryFindResource("BoardFloatBarBackground"),
-                Opacity = 1,
-                Child = grid,
-                Cursor = System.Windows.Input.Cursors.Hand
-            };
-            host.RegisterView($"board.pageList.{areaId}Btn", pageInfoBorder);
-            return pageInfoBorder;
+            if (totalCount == 1) return ButtonPosition.Single;
+            if (index == 0) return ButtonPosition.First;
+            if (index == totalCount - 1) return ButtonPosition.Last;
+            return ButtonPosition.Middle;
         }
 
         public static List<FrameworkElement> BuildGroup(IBoardToolbarHost host, params string[] ids)
         {
             var components = ids.Select(id => new BoardToolbarComponentEntry { Id = id }).ToList();
             return BuildGroup(host, components);
-        }
-
-        private static ButtonPosition ParseButtonPosition(string position)
-        {
-            return position?.ToLower() switch
-            {
-                "first" => ButtonPosition.First,
-                "last" => ButtonPosition.Last,
-                "single" => ButtonPosition.Single,
-                _ => ButtonPosition.Middle
-            };
         }
 
         private static void ApplyComponentSettings(FrameworkElement view, BoardToolbarComponentEntry entry)
@@ -282,6 +235,54 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"BoardToolbarRegistry: 保存配置 [{name}] 失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        public static List<string> ListConfigFiles()
+        {
+            try
+            {
+                var dir = GetConfigDirectory();
+                if (!Directory.Exists(dir))
+                    return new List<string> { "default" };
+
+                var files = Directory.GetFiles(dir, "*.json");
+                var names = new List<string>();
+                foreach (var file in files)
+                {
+                    var name = Path.GetFileNameWithoutExtension(file);
+                    if (!string.IsNullOrEmpty(name))
+                        names.Add(name);
+                }
+                if (names.Count == 0)
+                    names.Add("default");
+                names.Sort();
+                return names;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"BoardToolbarRegistry: 列出配置失败: {ex.Message}", LogHelper.LogType.Error);
+                return new List<string> { "default" };
+            }
+        }
+
+        public static void DeleteConfigFile(string name)
+        {
+            try
+            {
+                var path = GetConfigFilePath(name);
+                if (File.Exists(path))
+                    File.Delete(path);
+
+                var bakPath = path + ".bak";
+                if (File.Exists(bakPath))
+                    File.Delete(bakPath);
+
+                LogHelper.WriteLogToFile($"BoardToolbarRegistry: 删除配置 [{name}]", LogHelper.LogType.Info);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"BoardToolbarRegistry: 删除配置 [{name}] 失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -403,20 +404,6 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
                         groupBorder.Margin = new Thickness(3, 0, 0, 0);
                     }
                     container.Children.Add(groupBorder);
-                    isFirst = false;
-                }
-            }
-
-            foreach (var component in area.Components)
-            {
-                var view = BuildView(component.Id, host);
-                if (view != null)
-                {
-                    if (!isFirst)
-                    {
-                        view.Margin = new Thickness(3, 0, 0, 0);
-                    }
-                    container.Children.Add(view);
                     isFirst = false;
                 }
             }

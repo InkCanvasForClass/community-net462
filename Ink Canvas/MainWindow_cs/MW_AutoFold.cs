@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace Ink_Canvas
@@ -21,6 +20,8 @@ namespace Ink_Canvas
         /// 浮动栏正在改变隐藏模式的标志，用于防止重复操作。
         /// </summary>
         private bool isFloatingBarChangingHideMode;
+
+        private int _sidePanelAnimVersion = 0;
 
         /// <summary>
         /// 立即关闭白板模式，恢复到批注模式。
@@ -481,6 +482,8 @@ namespace Ink_Canvas
         /// </remarks>
         private async void SidePannelMarginAnimation(int MarginFromEdge, bool isNoAnimation = false) // Possible value: -50, -10
         {
+            int thisVersion = ++_sidePanelAnimVersion;
+
             await Dispatcher.InvokeAsync(() =>
             {
                 if (MarginFromEdge == -10)
@@ -510,6 +513,8 @@ namespace Ink_Canvas
             });
 
             await Task.Delay(600);
+
+            if (_sidePanelAnimVersion != thisVersion) return;
 
             await Dispatcher.InvokeAsync(() =>
             {

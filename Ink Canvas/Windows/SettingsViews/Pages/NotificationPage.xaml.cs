@@ -1,7 +1,6 @@
-using Ink_Canvas.Properties;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Models;
-using Ink_Canvas.Windows.SettingsViews;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
 using System.Windows;
@@ -26,6 +25,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             LoadSettings();
             LoadProviders();
             _isLoaded = true;
+            SliderTouchHelper.AddTouchSupportToAllSliders(this);
         }
 
         private void NotificationPage_Unloaded(object sender, RoutedEventArgs e)

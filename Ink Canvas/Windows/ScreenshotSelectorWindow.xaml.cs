@@ -1530,17 +1530,29 @@ namespace Ink_Canvas
         {
             try
             {
-                // 清理摄像头资源
-                if (_cameraService != null)
+                void CleanupResources()
                 {
-                    _cameraService.StopPreview();
-                    _cameraService.Dispose();
-                    _cameraService = null;
+                    if (_cameraService != null)
+                    {
+                        _cameraService.StopPreview();
+                        _cameraService.Dispose();
+                        _cameraService = null;
+                    }
+
+                    _capturedCameraImage?.Dispose();
+                    _capturedCameraImage = null;
+                    CameraImage?.Dispose();
+                    CameraImage = null;
                 }
 
-                // 清理摄像头图像
-                _capturedCameraImage?.Dispose();
-                CameraImage?.Dispose();
+                if (Dispatcher == null || Dispatcher.CheckAccess())
+                {
+                    CleanupResources();
+                }
+                else if (!Dispatcher.HasShutdownStarted && !Dispatcher.HasShutdownFinished)
+                {
+                    Dispatcher.Invoke((Action)CleanupResources, DispatcherPriority.Send);
+                }
             }
             catch (Exception ex)
             {
