@@ -812,7 +812,7 @@ namespace Ink_Canvas.Helpers
             if (!string.IsNullOrEmpty(mainModulePath) && System.IO.File.Exists(mainModulePath))
                 return mainModulePath;
 
-            string processPath = Environment.ProcessPath;
+            string processPath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
             if (!string.IsNullOrEmpty(processPath) && System.IO.File.Exists(processPath))
                 return processPath;
 
