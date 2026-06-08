@@ -2,8 +2,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 
-[assembly: System.Runtime.Versioning.SupportedOSPlatform("windows")]
-
 [assembly: ComVisible(false)]
 
 // i18n: 默认/回退语言为简体中文，与 Strings.resx 默认文案一致。
