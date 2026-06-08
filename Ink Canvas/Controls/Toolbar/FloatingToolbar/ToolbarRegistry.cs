@@ -201,8 +201,20 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
             if (_items != null) return _items;
 
             var itemType = typeof(IToolbarItem);
-            _items = Assembly.GetExecutingAssembly()
-                .GetTypes()
+            Type[] types;
+            try
+            {
+                types = Assembly.GetExecutingAssembly().GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                // On Windows 8, GetTypes() may fail if some types reference Win10-only APIs.
+                // We can still work with the types that were successfully loaded.
+                types = ex.Types?.Where(t => t != null).ToArray() ?? Array.Empty<Type>();
+                LogHelper.WriteLogToFile($"ToolbarRegistry: GetTypes() 抛出 ReflectionTypeLoadException，成功加载 {types.Length} 个类型，失败 {ex.LoaderExceptions?.Length ?? 0} 个", LogHelper.LogType.Warning);
+            }
+
+            _items = types
                 .Where(t => !t.IsAbstract && !t.IsInterface && itemType.IsAssignableFrom(t))
                 .Select(t =>
                 {

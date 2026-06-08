@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Threading;
@@ -105,7 +106,18 @@ namespace Ink_Canvas.Helpers
             var isEmbeddedOnly = IsEmbeddedOnlyCulture(cultureName);
             var asm = Assembly.GetExecutingAssembly();
 
-            foreach (var type in asm.GetTypes())
+            Type[] types;
+            try
+            {
+                types = asm.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                // On Windows 8, GetTypes() may fail if some types reference Win10-only APIs.
+                types = ex.Types?.Where(t => t != null).ToArray() ?? Array.Empty<Type>();
+            }
+
+            foreach (var type in types)
             {
                 if (type.Namespace != "Ink_Canvas.Properties" || !type.Name.EndsWith("Strings"))
                     continue;
