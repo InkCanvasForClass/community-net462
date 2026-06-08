@@ -1,5 +1,6 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Models;
+using Ink_Canvas.Properties;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -29,6 +30,25 @@ namespace Ink_Canvas
         public void ShowNotification(string notice, bool isShowImmediately = true)
         {
             NotificationCenterService.EnqueueText(notice, NotificationMessageLevel.Normal, Math.Max(1, notificationShowTime / 1000));
+        }
+
+        public void ShowPPTModePromptNotification()
+        {
+            if (Settings?.PowerPointSettings?.ShowPPTModePrompt != true) return;
+
+            NotificationCenterService.Enqueue(new NotificationMessage
+            {
+                Id = "ppt-mode-prompt-" + Guid.NewGuid().ToString("N"),
+                Type = NotificationMessageType.Reminder,
+                Level = NotificationMessageLevel.Normal,
+                Title = PPTStrings.PPT_ModePrompt_Title,
+                Summary = PPTStrings.PPT_ModePrompt_Message,
+                Icon = "Info",
+                DisplaySeconds = 4,
+                Priority = 20,
+                Source = "ppt-mode-prompt",
+                ProviderId = "local"
+            });
         }
 
         private void InitializeNotificationProviders()
@@ -84,7 +104,7 @@ namespace Ink_Canvas
                     {
                         ActivateWindowForNotification();
                         DynamicNotification.RefreshTheme(IsCurrentThemeDark());
-                        ApplyDynamicNotificationPlacement();
+                        ApplyDynamicNotificationPlacement(message);
                         DynamicNotification.Show(message);
                     }
                     else
@@ -118,13 +138,19 @@ namespace Ink_Canvas
             NotificationCenterService.NotifyCurrentClosed();
         }
 
-        private void ApplyDynamicNotificationPlacement()
+        private void ApplyDynamicNotificationPlacement(NotificationMessage message = null)
         {
             if (DynamicNotification == null) return;
 
             DynamicNotification.HorizontalAlignment = HorizontalAlignment.Center;
             DynamicNotification.VerticalAlignment = VerticalAlignment.Top;
             DynamicNotification.Margin = new Thickness(0);
+
+            if (message?.Source == "ppt-mode-prompt")
+            {
+                ApplyDynamicNotificationFloatingBarPlacement();
+                return;
+            }
 
             switch (Settings?.Notification?.Placement)
             {
