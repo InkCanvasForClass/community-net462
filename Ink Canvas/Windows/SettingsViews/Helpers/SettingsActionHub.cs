@@ -14,7 +14,27 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         {
             var mw = GetMainWindow();
             if (mw != null && mw.inkCanvas != null)
+            {
                 mw.inkCanvas.ForceCursor = value;
+                mw.SetCursorBasedOnEditingMode(mw.inkCanvas);
+            }
+        }
+
+        public static void OnPenCursorTypeChanged(int selectedIndex)
+        {
+            var mw = GetMainWindow();
+            if (mw != null && mw.inkCanvas != null)
+                mw.SetCursorBasedOnEditingMode(mw.inkCanvas);
+        }
+
+        public static void OnCustomPenCursorPathChanged()
+        {
+            var mw = GetMainWindow();
+            if (mw != null && mw.inkCanvas != null)
+            {
+                MainWindow.ClearCustomCursorCache();
+                mw.SetCursorBasedOnEditingMode(mw.inkCanvas);
+            }
         }
 
         public static void OnEnablePressureTouchModeChanged(bool value)
@@ -181,10 +201,28 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             if (mw != null) mw.UpdateChickenSoupTextAsync().ConfigureAwait(false);
         }
 
+        public static void OnChickenSoupPositionChanged()
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyChickenSoupPosition();
+        }
+
         public static void OnQuickPanelBottomOffsetChanged(double value)
         {
             var mw = GetMainWindow();
             if (mw != null) mw.ApplyQuickPanelBottomOffset(value);
+        }
+
+        public static void OnQuickPanelOpacityChanged(double value)
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyQuickPanelOpacity(value);
+        }
+
+        public static void OnAutoCollapseQuickPanelChanged()
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.UpdateAutoCollapseQuickPanelTimer();
         }
 
         public static void OnUnFoldButtonImageTypeChanged(int selectedIndex)
@@ -596,6 +634,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             mw?.ResetPPTTimeCapsuleOffset();
         }
 
+        public static void OnPPTNavBarScaleChanged(double scale)
+        {
+            var mw = GetMainWindow();
+            if (mw?.PPTUIManager != null)
+            {
+                mw.PPTUIManager.PPTNavBarScale = scale;
+                mw.PPTUIManager.UpdateNavigationButtonStyles();
+            }
+            mw?.UpdatePPTBtnPreview();
+        }
+
         #endregion
 
         #region RandomDraw
@@ -605,8 +654,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             var mw = GetMainWindow();
             if (mw != null)
             {
-                mw.BoardRandomDrawToolBtn.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
-                mw.BoardSingleDrawToolBtn.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
+                if (mw.BoardRandomDrawToolBtn != null)
+                    mw.BoardRandomDrawToolBtn.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
+                if (mw.BoardSingleDrawToolBtn != null)
+                    mw.BoardSingleDrawToolBtn.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 

@@ -77,6 +77,7 @@ namespace Ink_Canvas
                     if (Settings?.Notification?.IsDynamicNotificationEnabled == true && DynamicNotification != null)
                     {
                         ActivateWindowForNotification();
+                        DynamicNotification.RefreshTheme(IsCurrentThemeDark());
                         ApplyDynamicNotificationPlacement();
                         DynamicNotification.Show(message);
                     }

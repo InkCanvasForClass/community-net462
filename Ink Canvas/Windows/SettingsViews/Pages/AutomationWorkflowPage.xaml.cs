@@ -43,9 +43,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             Unloaded += AutomationWorkflowPage_Unloaded;
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -57,8 +57,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             UpdateFileAssociationStatus();
             SliderTouchHelper.AddTouchSupportToAllSliders(this);
 
-            // Initialize workflow system
-            AutomationBootstrap.Initialize();
             RefreshWorkflowList();
 
             // Default to preset panel
@@ -501,8 +499,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         #region Workflow Editor
 
-        private Workflow? _selectedWorkflow;
-        public Workflow? SelectedWorkflow
+        private Workflow _selectedWorkflow;
+        public Workflow SelectedWorkflow
         {
             get => _selectedWorkflow;
             private set
@@ -885,7 +883,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             Service.SaveConfig("ActionSettingsChanged");
         }
 
-        internal static object? EnsureSettingsInstance(object? settings, Type? settingsType)
+        internal static object EnsureSettingsInstance(object settings, Type settingsType)
         {
             if (settingsType == null) return null;
             var actual = settings ?? Activator.CreateInstance(settingsType);
@@ -927,15 +925,15 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             nameof(Item), typeof(object), typeof(AutomationSettingsPresenter),
             new PropertyMetadata(null, OnItemChanged));
 
-        private INotifyPropertyChanged? _currentNotifySource;
+        private INotifyPropertyChanged _currentNotifySource;
 
-        public object? Item
+        public object Item
         {
             get => GetValue(ItemProperty);
             set => SetValue(ItemProperty, value);
         }
 
-        public event EventHandler? SettingsChanged;
+        public event EventHandler SettingsChanged;
 
         public AutomationSettingsPresenter()
         {
@@ -951,7 +949,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             presenter.RefreshContent();
         }
 
-        private void AttachItem(object? item)
+        private void AttachItem(object item)
         {
             if (item is INotifyPropertyChanged notify)
             {
@@ -967,7 +965,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             _currentNotifySource = null;
         }
 
-        private void CurrentItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void CurrentItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName is nameof(Rule.Id) or nameof(Rule.Settings) or nameof(Ink_Canvas.WorkflowAutomation.Models.Action.Id) or nameof(Ink_Canvas.WorkflowAutomation.Models.Action.Settings))
             {
@@ -1018,7 +1016,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             Visibility = panel.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private FrameworkElement? CreateEditor(object settingsObject, PropertyInfo property)
+        private FrameworkElement CreateEditor(object settingsObject, PropertyInfo property)
         {
             var propertyType = property.PropertyType;
             var label = GetPropertyDisplayName(property.Name);
@@ -1132,7 +1130,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             return container;
         }
 
-        private SettingsContext? ResolveSettingsContext()
+        private SettingsContext ResolveSettingsContext()
         {
             switch (Item)
             {

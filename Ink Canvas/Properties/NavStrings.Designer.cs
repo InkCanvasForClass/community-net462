@@ -138,6 +138,14 @@ namespace Ink_Canvas.Properties
 
         public static string Nav_BoardAppearance_Tooltip => ResourceManager.GetString(nameof(Nav_BoardAppearance_Tooltip), _resourceCulture);
 
+        public static string Nav_ToolbarMenu => ResourceManager.GetString(nameof(Nav_ToolbarMenu), _resourceCulture);
+
+        public static string Nav_ToolbarMenu_Tooltip => ResourceManager.GetString(nameof(Nav_ToolbarMenu_Tooltip), _resourceCulture);
+
+        public static string Nav_BoardMenu => ResourceManager.GetString(nameof(Nav_BoardMenu), _resourceCulture);
+
+        public static string Nav_BoardMenu_Tooltip => ResourceManager.GetString(nameof(Nav_BoardMenu_Tooltip), _resourceCulture);
+
         public static string Nav_CanvasAndInk_Tooltip => ResourceManager.GetString(nameof(Nav_CanvasAndInk_Tooltip), _resourceCulture);
 
         public static string Nav_Canvas_Tooltip => ResourceManager.GetString(nameof(Nav_Canvas_Tooltip), _resourceCulture);
@@ -169,5 +177,9 @@ namespace Ink_Canvas.Properties
         public static string Nav_PreloadPagesFailed => ResourceManager.GetString(nameof(Nav_PreloadPagesFailed), _resourceCulture);
 
         public static string Settings_Description => ResourceManager.GetString(nameof(Settings_Description), _resourceCulture);
+
+        public static string Nav_Performance => ResourceManager.GetString(nameof(Nav_Performance), _resourceCulture);
+
+        public static string Nav_Performance_Tooltip => ResourceManager.GetString(nameof(Nav_Performance_Tooltip), _resourceCulture);
     }
 }

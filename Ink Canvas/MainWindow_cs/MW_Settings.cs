@@ -231,6 +231,44 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据设置应用白板名言的位置。
+        /// </summary>
+        internal void ApplyChickenSoupPosition()
+        {
+            if (BlackBoardWaterMark == null) return;
+
+            var position = Settings.Appearance.ChickenSoupPosition ?? "TopRight";
+            const double margin = 25;
+
+            // 清除旧的 Canvas 附加属性
+            System.Windows.Controls.Canvas.SetLeft(BlackBoardWaterMark, double.NaN);
+            System.Windows.Controls.Canvas.SetTop(BlackBoardWaterMark, double.NaN);
+            System.Windows.Controls.Canvas.SetRight(BlackBoardWaterMark, double.NaN);
+            System.Windows.Controls.Canvas.SetBottom(BlackBoardWaterMark, double.NaN);
+
+            switch (position)
+            {
+                case "TopLeft":
+                    System.Windows.Controls.Canvas.SetLeft(BlackBoardWaterMark, margin);
+                    System.Windows.Controls.Canvas.SetTop(BlackBoardWaterMark, margin);
+                    break;
+                case "BottomRight":
+                    System.Windows.Controls.Canvas.SetRight(BlackBoardWaterMark, margin);
+                    System.Windows.Controls.Canvas.SetBottom(BlackBoardWaterMark, margin);
+                    break;
+                case "BottomLeft":
+                    System.Windows.Controls.Canvas.SetLeft(BlackBoardWaterMark, margin);
+                    System.Windows.Controls.Canvas.SetBottom(BlackBoardWaterMark, margin);
+                    break;
+                case "TopRight":
+                default:
+                    System.Windows.Controls.Canvas.SetRight(BlackBoardWaterMark, margin);
+                    System.Windows.Controls.Canvas.SetTop(BlackBoardWaterMark, margin);
+                    break;
+            }
+        }
+
 
 
 
@@ -442,6 +480,7 @@ namespace Ink_Canvas
                 _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
                 _pptUIManager.PPTLBButtonOpacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
                 _pptUIManager.PPTRBButtonOpacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
+                _pptUIManager.PPTNavBarScale = Settings.PowerPointSettings.PPTNavBarScale;
                 _pptUIManager.UpdateNavigationPanelsVisibility();
                 _pptUIManager.UpdateNavigationButtonStyles();
             }

@@ -48,6 +48,8 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
                         mw.inkCanvas.EditingMode = InkCanvasEditingMode.None;
                     }
                 });
+
+                AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
             };
 
             info.RevertHandle = (settings, guid) =>
@@ -70,6 +72,8 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
                         mw.inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
                     }
                 });
+
+                AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
             };
 
             return info;

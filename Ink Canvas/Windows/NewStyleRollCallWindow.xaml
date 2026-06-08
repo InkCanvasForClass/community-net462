@@ -7,7 +7,6 @@
         Topmost="True"
         Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"
         mc:Ignorable="d"
-        Loaded="RollCallWindow_Loaded"
         Closing="Window_Closing"
         WindowStartupLocation="CenterScreen"
         MouseMove="Window_MouseMove"
@@ -18,7 +17,8 @@
         ui:ThemeManager.IsThemeAware="True"
         ui:WindowHelper.SystemBackdropType="None"
         ui:WindowHelper.UseModernWindowStyle="True"
-        ui:WindowHelper.CornerStyle="Round">
+        ui:WindowHelper.CornerStyle="Round"
+        FontFamily="Segoe UI, Microsoft YaHei UI">
 
     <Window.Resources>
         <ResourceDictionary>

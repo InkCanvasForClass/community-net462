@@ -316,6 +316,7 @@ namespace Ink_Canvas
                     ViewboxBlackboardRightSide.Opacity = Settings.Appearance.BoardToolbarRightOpacity;
 
                     ApplyQuickPanelBottomOffset(Settings.Appearance.QuickPanelBottomOffset);
+                    ApplyQuickPanelOpacity(Settings.Appearance.QuickPanelOpacity);
                     ApplySidePanelSettings();
 
                     if (Settings.Appearance.IsTransparentButtonBackground)
@@ -439,10 +440,12 @@ namespace Ink_Canvas
                 if (Settings.Canvas.IsShowCursor)
                 {
                     inkCanvas.ForceCursor = true;
+                    SetCursorBasedOnEditingMode(inkCanvas);
                 }
                 else
                 {
                     inkCanvas.ForceCursor = false;
+                    inkCanvas.UseCustomCursor = false;
                 }
 
 
@@ -592,8 +595,10 @@ namespace Ink_Canvas
             // RandSettings - UI initialization (settings loading moved to RandomDrawPage)
             if (Settings.RandSettings != null)
             {
-                BoardRandomDrawToolBtn.Visibility = Settings.RandSettings.ShowRandomAndSingleDraw ? Visibility.Visible : Visibility.Collapsed;
-                BoardSingleDrawToolBtn.Visibility = Settings.RandSettings.ShowRandomAndSingleDraw ? Visibility.Visible : Visibility.Collapsed;
+                if (BoardRandomDrawToolBtn != null)
+                    BoardRandomDrawToolBtn.Visibility = Settings.RandSettings.ShowRandomAndSingleDraw ? Visibility.Visible : Visibility.Collapsed;
+                if (BoardSingleDrawToolBtn != null)
+                    BoardSingleDrawToolBtn.Visibility = Settings.RandSettings.ShowRandomAndSingleDraw ? Visibility.Visible : Visibility.Collapsed;
             }
             else
             {
@@ -871,6 +876,18 @@ namespace Ink_Canvas
 
             var rightQuickPanelMargin = RightUnFoldButtonQuickPanel.Margin;
             RightUnFoldButtonQuickPanel.Margin = new Thickness(rightQuickPanelMargin.Left, rightQuickPanelMargin.Top, rightQuickPanelMargin.Right, offset);
+        }
+
+        internal void ApplyQuickPanelOpacity(double opacity)
+        {
+            if (LeftUnFoldButtonQuickPanel != null)
+                LeftUnFoldButtonQuickPanel.Opacity = opacity;
+            if (RightUnFoldButtonQuickPanel != null)
+                RightUnFoldButtonQuickPanel.Opacity = opacity;
+            if (LeftSidePanel != null)
+                LeftSidePanel.Opacity = opacity;
+            if (RightSidePanel != null)
+                RightSidePanel.Opacity = opacity;
         }
     }
 }

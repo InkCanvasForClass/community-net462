@@ -6,6 +6,7 @@ using Ink_Canvas.Properties;
 using Ink_Canvas.Windows;
 using Ink_Canvas.Windows.SettingsViews;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
+using Ink_Canvas.WorkflowAutomation;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
@@ -77,6 +78,17 @@ namespace Ink_Canvas
 
         private static Cursor _cachedPenCursor = null;
         private static readonly object _cursorLock = new object();
+        private static Cursor _cachedCustomCursor = null;
+        private static string _cachedCustomCursorPath = null;
+
+        public static void ClearCustomCursorCache()
+        {
+            lock (_cursorLock)
+            {
+                _cachedCustomCursor = null;
+                _cachedCustomCursorPath = null;
+            }
+        }
 
         internal static DateTime? TrayTemporaryShowUntilUtc;
 
@@ -96,6 +108,8 @@ namespace Ink_Canvas
         internal ToolMenuButton BoardOpenToolBtn => BoardToolsPopupContent?.OpenBtn;
         internal ToolMenuButton BoardReplayToolBtn => BoardToolsPopupContent?.ReplayBtn;
         internal ToolMenuButton BoardScreenshotToolBtn => BoardToolsPopupContent?.ScreenshotBtn;
+        internal ToolMenuButton BoardShapeDrawToolBtn => BoardToolsPopupContent?.ShapeDrawBtn;
+        internal ToolMenuButton BoardRedoToolBtn => BoardToolsPopupContent?.RedoBtn;
         internal ToolMenuButton BoardManualToolBtn => BoardToolsPopupContent?.ManualBtn;
         internal ToolMenuButton BoardSettingsToolBtn => BoardToolsPopupContent?.SettingsBtn;
 
@@ -107,6 +121,8 @@ namespace Ink_Canvas
         internal ToolMenuButton OpenToolBtn => MainToolsPopupContent?.OpenBtn;
         internal ToolMenuButton ReplayToolBtn => MainToolsPopupContent?.ReplayBtn;
         internal ToolMenuButton ScreenshotToolBtn => MainToolsPopupContent?.ScreenshotBtn;
+        internal ToolMenuButton ShapeDrawToolBtn => MainToolsPopupContent?.ShapeDrawBtn;
+        internal ToolMenuButton RedoToolBtn => MainToolsPopupContent?.RedoBtn;
         internal ToolMenuButton ManualToolBtn => MainToolsPopupContent?.ManualBtn;
         internal ToolMenuButton SettingsToolBtn => MainToolsPopupContent?.SettingsBtn;
 
@@ -152,17 +168,34 @@ namespace Ink_Canvas
         {
             if (content == null) return;
 
-            content.TimerBtn.ButtonMouseUp += ImageCountdownTimer_MouseUp;
-            content.RandomDrawBtn.ButtonMouseUp += SymbolIconRand_MouseUp;
-            content.SingleDrawBtn.ButtonMouseUp += SymbolIconRandOne_MouseUp;
-            content.SaveBtn.ButtonMouseDown += Border_MouseDown;
-            content.SaveBtn.ButtonMouseUp += SymbolIconSaveStrokes_MouseUp;
-            content.OpenBtn.ButtonMouseDown += Border_MouseDown;
-            content.OpenBtn.ButtonMouseUp += SymbolIconOpenStrokes_MouseUp;
-            content.ReplayBtn.ButtonMouseUp += GridInkReplayButton_MouseUp;
-            content.ScreenshotBtn.ButtonMouseUp += SymbolIconScreenshot_MouseUp;
-            content.ManualBtn.ButtonMouseUp += OperatingGuideWindowIcon_MouseUp;
-            content.SettingsBtn.ButtonMouseUp += SymbolIconSettings_Click;
+            if (content.TimerBtn != null)
+                content.TimerBtn.ButtonMouseUp += ImageCountdownTimer_MouseUp;
+            if (content.RandomDrawBtn != null)
+                content.RandomDrawBtn.ButtonMouseUp += SymbolIconRand_MouseUp;
+            if (content.SingleDrawBtn != null)
+                content.SingleDrawBtn.ButtonMouseUp += SymbolIconRandOne_MouseUp;
+            if (content.SaveBtn != null)
+            {
+                content.SaveBtn.ButtonMouseDown += Border_MouseDown;
+                content.SaveBtn.ButtonMouseUp += SymbolIconSaveStrokes_MouseUp;
+            }
+            if (content.OpenBtn != null)
+            {
+                content.OpenBtn.ButtonMouseDown += Border_MouseDown;
+                content.OpenBtn.ButtonMouseUp += SymbolIconOpenStrokes_MouseUp;
+            }
+            if (content.ReplayBtn != null)
+                content.ReplayBtn.ButtonMouseUp += GridInkReplayButton_MouseUp;
+            if (content.ScreenshotBtn != null)
+                content.ScreenshotBtn.ButtonMouseUp += SymbolIconScreenshot_MouseUp;
+            if (content.ShapeDrawBtn != null)
+                content.ShapeDrawBtn.ButtonMouseUp += ImageDrawShape_MouseUp;
+            if (content.RedoBtn != null)
+                content.RedoBtn.ButtonMouseUp += SymbolIconRedo_MouseUp;
+            if (content.ManualBtn != null)
+                content.ManualBtn.ButtonMouseUp += OperatingGuideWindowIcon_MouseUp;
+            if (content.SettingsBtn != null)
+                content.SettingsBtn.ButtonMouseUp += SymbolIconSettings_Click;
             content.CloseButtonControl.Click += CloseBordertools_Click;
         }
 
@@ -417,6 +450,7 @@ namespace Ink_Canvas
             WireUpEraserPopupContentEvents();
             WireUpGesturePopupContentEvents();
             WireUpImageOptionsPopupContentEvents();
+            WireUpWhiteboardModeSelectionEvents();
             BoardBorderToolsPopup.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
@@ -670,21 +704,7 @@ namespace Ink_Canvas
             Activated += Window_Activated;
             Deactivated += Window_Deactivated;
 
-            // 初始化计时器控件事件
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (TimerControl != null)
-                {
-                    TimerControl.ShowMinimizedRequested += TimerControl_ShowMinimizedRequested;
-                    TimerControl.HideMinimizedRequested += TimerControl_HideMinimizedRequested;
-                }
-
-                if (MinimizedTimerControl != null && TimerControl != null)
-                {
-                    MinimizedTimerControl.SetParentControl(TimerControl);
-                }
-                CheckAndShowOobe();
-            }), DispatcherPriority.Loaded);
+            Dispatcher.BeginInvoke(new Action(CheckAndShowOobe), DispatcherPriority.Loaded);
         }
 
         /// <summary>
@@ -778,127 +798,6 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"完成 OOBE 时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
-
-        /// <summary>
-        /// 将计时器切换为最小化视图并把最小化容器定位到当前计时器的位置。
-        /// </summary>
-        /// <remarks>
-        /// 计算原计时器容器在窗口中的位置（若容器居中则使用 TransformToAncestor 获取实际坐标，否则使用 Margin 的 Left/Top），
-        /// 将该位置应用到最小化容器并把两者的对齐方式设为左上，然后隐藏原计时器并显示最小化容器。
-        /// </remarks>
-        private void TimerControl_ShowMinimizedRequested(object sender, EventArgs e)
-        {
-            var timerContainer = FindName("TimerContainer") as FrameworkElement;
-            var minimizedContainer = FindName("MinimizedTimerContainer") as FrameworkElement;
-
-            if (timerContainer != null && minimizedContainer != null)
-            {
-                double x = 0, y = 0;
-
-                if (timerContainer.HorizontalAlignment == HorizontalAlignment.Center &&
-                    timerContainer.VerticalAlignment == VerticalAlignment.Center)
-                {
-                    var timerPoint = timerContainer.TransformToAncestor(this).Transform(new Point(0, 0));
-                    x = timerPoint.X;
-                    y = timerPoint.Y;
-                }
-                else
-                {
-                    var timerMargin = timerContainer.Margin;
-                    x = double.IsNaN(timerMargin.Left) ? 0 : timerMargin.Left;
-                    y = double.IsNaN(timerMargin.Top) ? 0 : timerMargin.Top;
-                }
-
-                minimizedContainer.Margin = new Thickness(x, y, 0, 0);
-                minimizedContainer.HorizontalAlignment = HorizontalAlignment.Left;
-                minimizedContainer.VerticalAlignment = VerticalAlignment.Top;
-
-                timerContainer.Margin = new Thickness(x, y, 0, 0);
-                timerContainer.HorizontalAlignment = HorizontalAlignment.Left;
-                timerContainer.VerticalAlignment = VerticalAlignment.Top;
-
-                timerContainer.Visibility = Visibility.Collapsed;
-                minimizedContainer.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void TimerControl_HideMinimizedRequested(object sender, EventArgs e)
-        {
-            var timerContainer = FindName("TimerContainer") as FrameworkElement;
-            var minimizedContainer = FindName("MinimizedTimerContainer") as FrameworkElement;
-
-            if (timerContainer != null && minimizedContainer != null)
-            {
-                minimizedContainer.Visibility = Visibility.Collapsed;
-                timerContainer.Visibility = Visibility.Visible;
-
-                if (TimerControl != null)
-                {
-                    TimerControl.UpdateActivityTime();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 根据DPI缩放因子调整TimerContainer的尺寸
-        /// </summary>
-        public void AdjustTimerContainerSize()
-        {
-            try
-            {
-                var timerContainer = FindName("TimerContainer") as FrameworkElement;
-                if (timerContainer == null) return;
-
-                var source = System.Windows.PresentationSource.FromVisual(this);
-                if (source != null)
-                {
-                    var dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
-                    var dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
-
-                    // 如果DPI缩放因子大于1.25，则适当缩小容器尺寸
-                    // 这样可以确保在高DPI屏幕上，计时器窗口的物理像素大小不会过大
-                    if (dpiScaleX > 1.25 || dpiScaleY > 1.25)
-                    {
-                        // 使用较小的缩放因子来限制最大尺寸
-                        double scaleFactor = Math.Min(dpiScaleX, dpiScaleY);
-
-                        // 计算目标物理像素大小（约1350x750物理像素）
-                        // 然后转换为逻辑像素
-                        double targetPhysicalWidth = 1350;
-                        double targetPhysicalHeight = 750;
-
-                        // 转换为逻辑像素
-                        double maxWidth = targetPhysicalWidth / scaleFactor;
-                        double maxHeight = targetPhysicalHeight / scaleFactor;
-
-                        // 确保不会小于原始尺寸的70%
-                        maxWidth = Math.Max(maxWidth, 900 * 0.7);
-                        maxHeight = Math.Max(maxHeight, 500 * 0.7);
-
-                        // 应用调整后的尺寸
-                        timerContainer.Width = maxWidth;
-                        timerContainer.Height = maxHeight;
-                    }
-                    else
-                    {
-                        // 标准DPI，使用原始尺寸
-                        timerContainer.Width = 900;
-                        timerContainer.Height = 500;
-                    }
-                }
-                else
-                {
-                    // 无法获取DPI信息，使用原始尺寸
-                    timerContainer.Width = 900;
-                    timerContainer.Height = 500;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"调整TimerContainer尺寸失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
         private void ApplyLanguageFromSettings()
         {
             try
@@ -927,6 +826,11 @@ namespace Ink_Canvas
 
         private DrawingAttributes drawingAttributes;
         private InkSmoothingManager _inkSmoothingManager;
+
+        /// <summary>
+        /// 墨迹平滑管理器实例（供性能页面读取统计）
+        /// </summary>
+        public InkSmoothingManager InkSmoothingManagerInstance => _inkSmoothingManager;
 
         private DispatcherTimer _brushAutoRestoreTimer;
 
@@ -1354,6 +1258,9 @@ namespace Ink_Canvas
         {
             var inkCanvas1 = sender as InkCanvas;
             if (inkCanvas1 == null) return;
+
+            SetDynamicRendererEnabled(inkCanvas1, inkCanvas1.EditingMode != InkCanvasEditingMode.None);
+
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas1.EditingMode))
             {
                 TryBlockFrozenPageMutation("修改冻结页面");
@@ -1403,6 +1310,28 @@ namespace Ink_Canvas
                     DisableEraserOverlay();
                     Trace.WriteLine("Eraser: Overlay disabled in non-eraser mode");
                 }
+            }
+        }
+
+        private void SetDynamicRendererEnabled(InkCanvas canvas, bool enabled)
+        {
+            if (canvas == null) return;
+            try
+            {
+                var prop = typeof(InkCanvas).GetProperty("DynamicRenderer",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                if (prop != null)
+                {
+                    var renderer = prop.GetValue(canvas) as System.Windows.Input.StylusPlugIns.DynamicRenderer;
+                    if (renderer != null)
+                    {
+                        renderer.Enabled = enabled;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to set DynamicRenderer enabled to {enabled}: {ex}");
             }
         }
 
@@ -1458,6 +1387,8 @@ namespace Ink_Canvas
             InitializePopupManager();
             //加载设置
             LoadSettings(true);
+            // 启动性能监测（如果已启用）
+            PerformanceMonitorHelper.StartIfEnabled();
             // 根据ToolbarPosition设置更新工具栏结构和位置
             UpdateToolbarPosition();
             // 启动时直接设置浮动栏位置，跳过动画
@@ -1468,6 +1399,7 @@ namespace Ink_Canvas
             }
             ApplyLanguageFromSettings();
             InitializeNotificationProviders();
+            AutomationBootstrap.Initialize();
 
             // 启动时根据设置恢复调试控制台显示状态
             if (Settings?.Advanced != null && Settings.Advanced.IsDebugConsoleEnabled)
@@ -1636,68 +1568,6 @@ namespace Ink_Canvas
                     }
                 }), DispatcherPriority.Loaded);
             }
-
-            // 初始化计时器控件关联
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (TimerControl != null && MinimizedTimerControl != null)
-                {
-                    MinimizedTimerControl.SetParentControl(TimerControl);
-
-                    // 设置PPT时间胶囊的父控件
-                    if (PPTTimeCapsule != null)
-                    {
-                        PPTTimeCapsule.SetParentControl(TimerControl);
-                    }
-
-                    TimerControl.ShowMinimizedRequested += (s, args) =>
-                    {
-                        if (TimerContainer != null && MinimizedTimerContainer != null && MinimizedTimerControl != null)
-                        {
-                            TimerContainer.Visibility = Visibility.Collapsed;
-
-                            if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
-                                IsInPptPresentationMode &&
-                                PPTTimeCapsule != null)
-                            {
-                                MinimizedTimerContainer.Visibility = Visibility.Collapsed;
-                            }
-                            else
-                            {
-                                MinimizedTimerContainer.Visibility = Visibility.Visible;
-                                MinimizedTimerControl.Visibility = Visibility.Visible;
-                            }
-                        }
-                    };
-
-                    TimerControl.HideMinimizedRequested += (s, args) =>
-                    {
-                        if (MinimizedTimerContainer != null && MinimizedTimerControl != null)
-                        {
-                            MinimizedTimerContainer.Visibility = Visibility.Collapsed;
-                            MinimizedTimerControl.Visibility = Visibility.Collapsed;
-                        }
-
-                        // 如果启用了PPT时间胶囊，停止倒计时显示
-                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule && PPTTimeCapsule != null)
-                        {
-                            PPTTimeCapsule.StopCountdown();
-                        }
-                    };
-
-                    // 监听计时器完成事件
-                    TimerControl.TimerCompleted += (s, args) =>
-                    {
-                        // 如果启用了PPT时间胶囊且在PPT模式下，触发完成动画
-                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
-                            IsInPptPresentationMode &&
-                            PPTTimeCapsule != null)
-                        {
-                            PPTTimeCapsule.OnTimerCompleted();
-                        }
-                    };
-                }
-            }), DispatcherPriority.Loaded);
         }
 
 
@@ -1721,15 +1591,6 @@ namespace Ink_Canvas
             if (e.OldDpi.DpiScaleX != e.NewDpi.DpiScaleX && e.OldDpi.DpiScaleY != e.NewDpi.DpiScaleY && Settings.Advanced.IsEnableDPIChangeDetection)
             {
                 ShowNotification(string.Format(Properties.MainWindowStrings.Main_DPIChanged, e.OldDpi.DpiScaleX, e.OldDpi.DpiScaleY, e.NewDpi.DpiScaleX, e.NewDpi.DpiScaleY));
-
-                Dispatcher.Invoke(() =>
-                {
-                    var timerContainer = FindName("TimerContainer") as FrameworkElement;
-                    if (timerContainer != null && timerContainer.Visibility == Visibility.Visible)
-                    {
-                        AdjustTimerContainerSize();
-                    }
-                });
 
                 HandleFloatingBarRecovery();
             }
@@ -2287,38 +2148,28 @@ namespace Ink_Canvas
                 canvas.UseCustomCursor = true;
                 canvas.ForceCursor = true;
 
-                // 根据编辑模式设置不同的光标
-                if (canvas.EditingMode == InkCanvasEditingMode.EraseByPoint)
+                // 根据编辑模式和光标类型设置不同的光标
+                if (canvas.EditingMode == InkCanvasEditingMode.Ink)
                 {
-                    canvas.Cursor = Cursors.Cross;
-                }
-                else if (canvas.EditingMode == InkCanvasEditingMode.Ink)
-                {
-                    if (_cachedPenCursor == null)
+                    int cursorType = Settings.Canvas.PenCursorType;
+                    Cursor targetCursor = null;
+
+                    switch (cursorType)
                     {
-                        lock (_cursorLock)
-                        {
-                            if (_cachedPenCursor == null)
-                            {
-                                try
-                                {
-                                    var sri = Application.GetResourceStream(new Uri("Resources/Cursors/Pen.cur", UriKind.Relative));
-                                    if (sri != null)
-                                    {
-                                        _cachedPenCursor = new Cursor(sri.Stream);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    LogHelper.WriteLogToFile($"加载 Pen 光标资源失败: {ex.Message}", LogHelper.LogType.Error);
-                                }
-                            }
-                        }
+                        case 0: // 系统光标
+                            targetCursor = Cursors.Arrow;
+                            break;
+
+                        case 2: // 用户自定义光标
+                            targetCursor = LoadCustomCursor(Settings.Canvas.CustomPenCursorPath);
+                            break;
+
+                        default: // 1 - 软件内置光标（默认）
+                            targetCursor = LoadBuiltInPenCursor();
+                            break;
                     }
-                    if (_cachedPenCursor != null)
-                    {
-                        canvas.Cursor = _cachedPenCursor;
-                    }
+
+                    canvas.Cursor = targetCursor ?? LoadBuiltInPenCursor();
                 }
 
                 // 确保光标可见，无论是鼠标、触控还是手写笔
@@ -2331,7 +2182,6 @@ namespace Ink_Canvas
                     {
                         if (device.Type == TabletDeviceType.Stylus)
                         {
-                            // 手写笔设备存在，强制显示光标
                             System.Windows.Forms.Cursor.Show();
                             break;
                         }
@@ -2343,6 +2193,58 @@ namespace Ink_Canvas
                 canvas.UseCustomCursor = false;
                 canvas.ForceCursor = false;
                 System.Windows.Forms.Cursor.Show();
+            }
+        }
+
+        private static Cursor LoadBuiltInPenCursor()
+        {
+            if (_cachedPenCursor == null)
+            {
+                lock (_cursorLock)
+                {
+                    if (_cachedPenCursor == null)
+                    {
+                        try
+                        {
+                            var sri = Application.GetResourceStream(new Uri("Resources/Cursors/Pen.cur", UriKind.Relative));
+                            if (sri != null)
+                            {
+                                _cachedPenCursor = new Cursor(sri.Stream);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"加载 Pen 光标资源失败: {ex.Message}", LogHelper.LogType.Error);
+                        }
+                    }
+                }
+            }
+            return _cachedPenCursor;
+        }
+
+        private static Cursor LoadCustomCursor(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                return null;
+
+            lock (_cursorLock)
+            {
+                if (string.Equals(_cachedCustomCursorPath, path, StringComparison.OrdinalIgnoreCase) && _cachedCustomCursor != null)
+                    return _cachedCustomCursor;
+
+                try
+                {
+                    _cachedCustomCursor = new Cursor(path);
+                    _cachedCustomCursorPath = path;
+                    return _cachedCustomCursor;
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"加载自定义光标失败 ({path}): {ex.Message}", LogHelper.LogType.Error);
+                    _cachedCustomCursor = null;
+                    _cachedCustomCursorPath = null;
+                    return null;
+                }
             }
         }
 
@@ -2523,63 +2425,6 @@ namespace Ink_Canvas
             settingsWindow.NavigateToPage("UpdatePage");
         }
 
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-        [DllImport("user32.dll")]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-        [DllImport("user32.dll")]
-        private static extern bool BringWindowToTop(IntPtr hWnd);
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-        [DllImport("user32.dll")]
-        private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-        [DllImport("kernel32.dll")]
-        private static extern uint GetCurrentProcessId();
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        private const int WH_KEYBOARD_LL = 13;
-        private const int WM_KEYDOWN = 0x0100;
-        private const int WM_KEYUP = 0x0101;
-        private const int WM_SYSKEYDOWN = 0x0104;
-        private const int WM_SYSKEYUP = 0x0105;
-
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct KBDLLHOOKSTRUCT
-        {
-            public uint vkCode;
-            public uint scanCode;
-            public uint flags;
-            public uint time;
-            public IntPtr dwExtraInfo;
-        }
-
-        private const int GWL_EXSTYLE = -20;
-        private const int WS_EX_NOACTIVATE = 0x08000000;
-        private const int WS_EX_TOPMOST = 0x00000008;
-        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
-        private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
-        private const uint SWP_NOMOVE = 0x0002;
-        private const uint SWP_NOSIZE = 0x0001;
-        private const uint SWP_NOACTIVATE = 0x0010;
-        private const uint SWP_SHOWWINDOW = 0x0040;
-        private const uint SWP_NOOWNERZORDER = 0x0200;
-
         private DispatcherTimer autoSaveStrokesTimer;
 
         private void InstallKeyboardHook()
@@ -2636,14 +2481,7 @@ namespace Ink_Canvas
 
         private void Window_Activated(object sender, EventArgs e)
         {
-            if (Settings.Advanced.IsAlwaysOnTop)
-            {
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    ApplyAlwaysOnTop();
-                }), DispatcherPriority.Loaded);
-            }
-
+            // WindowTopmostManager.Window_Activated 已负责重新强制 Z 序，无需重复调用 ApplyAlwaysOnTop()
             _popupManager?.OnOwnerActivated();
         }
 
@@ -2769,15 +2607,7 @@ namespace Ink_Canvas
         /// </summary>
         private void Window_Deactivated(object sender, EventArgs e)
         {
-            // 窗口失去焦点时，如果启用了置顶功能且处于无焦点模式，重新应用置顶设置
-            if (Settings.Advanced.IsAlwaysOnTop && Settings.Advanced.IsNoFocusMode)
-            {
-                // 使用Dispatcher.BeginInvoke确保在UI线程上执行
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    ApplyAlwaysOnTop();
-                }), DispatcherPriority.Loaded);
-            }
+            // 500ms 维护计时器会在下一个 tick 重新强制置顶，无需在此重复调用
         }
 
 

@@ -106,6 +106,8 @@ namespace Ink_Canvas
 
         public App()
         {
+            AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", true);
+
             try
             {
                 SetCurrentProcessExplicitAppUserModelID("InkCanvasForClass.CE");
@@ -1715,6 +1717,16 @@ namespace Ink_Canvas
                 // 记录应用退出状态
                 string exitType = IsAppExitByUser ? "用户主动退出" : "应用程序退出";
                 WriteCrashLog($"{exitType}，退出代码: {e.ApplicationExitCode}");
+
+                // 停止性能监测并保存运行记录
+                try
+                {
+                    PerformanceMonitorHelper.StopAndSave();
+                }
+                catch (Exception perfEx)
+                {
+                    LogHelper.WriteLogToFile($"保存性能监测数据失败: {perfEx.Message}", LogHelper.LogType.Warning);
+                }
 
                 // 记录应用退出（设备标识符）
                 try

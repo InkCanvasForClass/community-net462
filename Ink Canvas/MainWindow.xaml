@@ -18,6 +18,7 @@
         Loaded="Window_Loaded"
         Background="Transparent"
         ShowInTaskbar="False"
+        PreviewMouseDown="Window_PreviewMouseDown"
         Title="InkCanvasforClass"
         Topmost="True"
         Closing="Window_Closing"
@@ -206,7 +207,7 @@
                 <TextBlock Text="{Binding nowDate}" Name="WaterMarkDate" Visibility="Collapsed"  d:Visibility="Visible" Margin="2,0,0,0"
                            FontSize="16" Foreground="White" Opacity="0.45" />
             </ikw:SimpleStackPanel>
-            <TextBlock Canvas.Right="25" Canvas.Top="15" Text="{x:Static props:MainWindowStrings.Main_WatermarkText}" Name="BlackBoardWaterMark"
+            <TextBlock Text="{x:Static props:MainWindowStrings.Main_WatermarkText}" Name="BlackBoardWaterMark"
                        Visibility="Collapsed"  d:Visibility="Visible" FontSize="24" FontWeight="Bold" Foreground="White" Opacity="0.5" />
         </Canvas>
         <!--墨迹/图片选择器-->
@@ -293,6 +294,17 @@
                                 <Image Source="{DynamicResource StrokeSelectionCloneToNewBoardIcon}"
                                        RenderOptions.BitmapScalingMode="HighQuality" Height="25" Width="25" />
                                 <TextBlock Text="{x:Static props:MainWindowStrings.Main_ContextCloneToNewPage}" FontSize="8" Foreground="{DynamicResource FloatBarForeground}"
+                                           HorizontalAlignment="Center" />
+                            </ikw:SimpleStackPanel>
+                        </Border>
+                        <Border Name="BorderStrokeSelectionInsertToWhiteboard" Margin="0,2,-9,2" Background="Transparent"
+                                CornerRadius="{Binding ElementName=BorderStrokeSelectionControl, Path=CornerRadius}"
+                                Width="40" MouseDown="Border_MouseDown"
+                                MouseUp="BorderStrokeSelectionInsertToWhiteboard_MouseUp">
+                            <ikw:SimpleStackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Image Source="{DynamicResource QuickPanelBlackboardIcon}"
+                                       RenderOptions.BitmapScalingMode="HighQuality" Height="25" Width="25" />
+                                <TextBlock Text="{x:Static props:MainWindowStrings.Main_ContextInsertToWhiteboard}" FontSize="8" Foreground="{DynamicResource FloatBarForeground}"
                                            HorizontalAlignment="Center" />
                             </ikw:SimpleStackPanel>
                         </Border>
@@ -683,7 +695,7 @@
                     </Popup>
                     <!--工具菜单-->
                     <Popup x:Name="BoardBorderToolsPopup" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
-                        <localControls:ToolsPopupContent x:Name="BoardToolsPopupContent" IsBoardMode="True" />
+                        <localControls:BoardToolsPopupContent x:Name="BoardToolsPopupContent" />
                     </Popup>
                 </Grid>
                 <!-- 右下角 -->
@@ -886,13 +898,21 @@
                 <localControls:EraserPopupContent x:Name="EraserPopupContent" />
             </Popup>
             <Popup x:Name="BorderTools" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
-                <localControls:ToolsPopupContent x:Name="MainToolsPopupContent" />
+                <localControls:FloatingBarToolsPopupContent x:Name="MainToolsPopupContent" />
             </Popup>
             <Popup x:Name="BorderDrawShape" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
                 <localControls:ShapeDrawPopupContent x:Name="ShapeDrawPopupContent" />
             </Popup>
             <Popup x:Name="TwoFingerGestureBorder" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
                 <localControls:GesturePopupContent x:Name="FloatingBarGesturePopupContent" />
+            </Popup>
+            <!--白板按钮右键二级菜单-->
+            <Popup x:Name="WhiteboardModeSelectionPopup" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
+                <localControls:WhiteboardModeSelectionPopupContent x:Name="WhiteboardModeSelectionContent" />
+            </Popup>
+            <!--墨迹选择栏：插入白板目标选择菜单-->
+            <Popup x:Name="InsertToWhiteboardPopup" Placement="Custom" AllowsTransparency="True" StaysOpen="True" IsOpen="False">
+                <localControls:WhiteboardModeSelectionPopupContent x:Name="InsertToWhiteboardContent" />
             </Popup>
         </Grid>
         <Grid Name="GridForFloatingBarDraging" Background="#01000000" Visibility="Collapsed"  d:Visibility="Visible"
@@ -1297,27 +1317,6 @@
                     </Grid>
                 </Grid>
             </Grid>
-        </Border>
-        <!-- 包装层：为 TimerControl 提供 Visibility/Margin 控制与鼠标拖拽手柄，代码中 7 文件 40+ 处引用，非死代码 -->
-        <Border x:Name="TimerContainer" 
-                Visibility="Collapsed"  d:Visibility="Visible"
-                Panel.ZIndex="998"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Width="900"
-                Height="500">
-            <Windows:TimerControl x:Name="TimerControl"/>
-        </Border>
-        <!-- 包装层：计时器最小化浮窗，同步主容器位置后显示/拖拽，非死代码 -->
-        <Border x:Name="MinimizedTimerContainer" 
-                Visibility="Collapsed"  d:Visibility="Visible"
-                Panel.ZIndex="997"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Margin="20,20,0,0"
-                Width="600"
-                Height="200">
-            <Windows:MinimizedTimerControl x:Name="MinimizedTimerControl"/>
         </Border>
         <!-- 包装层：PPT 时间胶囊容器，承载 ScaleTransform 与屏幕四角定位，非死代码 -->
         <Border x:Name="PPTTimeCapsuleContainer"

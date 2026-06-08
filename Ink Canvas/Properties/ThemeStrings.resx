@@ -210,6 +210,21 @@
   <data name="Theme_ShowQuoteInWhiteboard" xml:space="preserve">
     <value>在白板中显示信仰の源 1（好喝的/毒的鸡汤）</value>
   </data>
+  <data name="Theme_QuotePosition" xml:space="preserve">
+    <value>信仰の源在白板中的位置</value>
+  </data>
+  <data name="Theme_QuotePosition_TopLeft" xml:space="preserve">
+    <value>左上角</value>
+  </data>
+  <data name="Theme_QuotePosition_TopRight" xml:space="preserve">
+    <value>右上角</value>
+  </data>
+  <data name="Theme_QuotePosition_BottomLeft" xml:space="preserve">
+    <value>左下角</value>
+  </data>
+  <data name="Theme_QuotePosition_BottomRight" xml:space="preserve">
+    <value>右下角</value>
+  </data>
   <data name="Theme_ShowTimeInWhiteboard" xml:space="preserve">
     <value>在白板中显示当前时间和日期</value>
   </data>
@@ -338,5 +353,14 @@
   </data>
   <data name="Theme_Hitokoto_CustomizeTitle" xml:space="preserve">
     <value>自定义一言分类</value>
+  </data>
+  <data name="Theme_QuickPanelOpacity" xml:space="preserve">
+    <value>侧边栏透明度</value>
+  </data>
+  <data name="Theme_AutoCollapseQuickPanel" xml:space="preserve">
+    <value>点击屏幕其他区域自动收起侧栏</value>
+  </data>
+  <data name="Theme_AutoCollapseQuickPanelDelay" xml:space="preserve">
+    <value>自动收起延迟时间</value>
   </data>
 </root>

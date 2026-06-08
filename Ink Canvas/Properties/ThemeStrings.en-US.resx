@@ -210,6 +210,21 @@
   <data name="Theme_ShowQuoteInWhiteboard" xml:space="preserve">
     <value>Show quotes in whiteboard</value>
   </data>
+  <data name="Theme_QuotePosition" xml:space="preserve">
+    <value>Quote position in whiteboard</value>
+  </data>
+  <data name="Theme_QuotePosition_TopLeft" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="Theme_QuotePosition_TopRight" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="Theme_QuotePosition_BottomLeft" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="Theme_QuotePosition_BottomRight" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
   <data name="Theme_ShowTimeInWhiteboard" xml:space="preserve">
     <value>Show time and date in whiteboard</value>
   </data>
@@ -338,5 +353,14 @@
   </data>
   <data name="Theme_Hitokoto_CustomizeTitle" xml:space="preserve">
     <value>Customize Hitokoto Categories</value>
+  </data>
+  <data name="Theme_QuickPanelOpacity" xml:space="preserve">
+    <value>Sidebar opacity</value>
+  </data>
+  <data name="Theme_AutoCollapseQuickPanel" xml:space="preserve">
+    <value>Auto-collapse sidebar when clicking elsewhere</value>
+  </data>
+  <data name="Theme_AutoCollapseQuickPanelDelay" xml:space="preserve">
+    <value>Auto-collapse delay</value>
   </data>
 </root>

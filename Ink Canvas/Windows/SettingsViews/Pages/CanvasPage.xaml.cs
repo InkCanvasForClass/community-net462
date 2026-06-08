@@ -1,5 +1,7 @@
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Windows;
@@ -37,6 +39,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
                     BrushAutoRestoreTimesTextBox.Text = settings.Canvas.BrushAutoRestoreTimes ?? string.Empty;
                     LoadBrushAutoRestoreColor(settings.Canvas.BrushAutoRestoreColor);
+
+                    // 加载画笔光标类型设置
+                    ComboBoxPenCursorType.SelectedIndex = settings.Canvas.PenCursorType;
+                    CustomPenCursorPathText.Text = settings.Canvas.CustomPenCursorPath ?? string.Empty;
+                    UpdateCustomPenCursorPathVisibility();
                 }
             }
             catch (Exception ex)
@@ -131,6 +138,41 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 string hex = item.Tag as string ?? string.Empty;
                 SettingsManager.Settings.Canvas.BrushAutoRestoreColor = hex;
                 SettingsManager.SaveSettingsToFile();
+            }
+        }
+
+        private void ComboBoxPenCursorType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            UpdateCustomPenCursorPathVisibility();
+        }
+
+        private void UpdateCustomPenCursorPathVisibility()
+        {
+            if (CardCustomPenCursorPath == null) return;
+            CardCustomPenCursorPath.Visibility =
+                ComboBoxPenCursorType.SelectedIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void SelectCustomPenCursor_Click(object sender, RoutedEventArgs e)
+        {
+            var filter = CanvasStrings.Canvas_CustomPenCursorFilter;
+            if (string.IsNullOrWhiteSpace(filter))
+                filter = "Cursor files|*.cur;*.ani";
+
+            var dialog = new OpenFileDialog
+            {
+                Filter = filter,
+                Title = CanvasStrings.Canvas_SelectCustomPenCursor
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var path = dialog.FileName;
+                SettingsManager.Settings.Canvas.CustomPenCursorPath = path;
+                CustomPenCursorPathText.Text = path;
+                SettingsManager.SaveSettingsToFile();
+                SettingsActionHub.OnCustomPenCursorPathChanged();
             }
         }
     }
