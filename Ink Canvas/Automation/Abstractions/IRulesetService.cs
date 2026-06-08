@@ -1,6 +1,5 @@
 using Ink_Canvas.WorkflowAutomation.Models;
 using System;
-using System.Collections.Generic;
 
 namespace Ink_Canvas.WorkflowAutomation.Abstractions
 {
@@ -10,11 +9,6 @@ namespace Ink_Canvas.WorkflowAutomation.Abstractions
     /// </summary>
     public interface IRulesetService
     {
-        /// <summary>
-        /// 已注册的规则字典
-        /// </summary>
-        static Dictionary<string, RuleRegistryInfo> Rules { get; } = new();
-
         /// <summary>
         /// 规则状态更新事件
         /// </summary>

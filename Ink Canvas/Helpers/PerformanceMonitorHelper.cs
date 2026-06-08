@@ -1,4 +1,5 @@
 using Ink_Canvas.Windows.SettingsViews.Helpers;
+using Microsoft.VisualBasic.Devices;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -451,18 +452,19 @@ namespace Ink_Canvas.Helpers
                 Debug.WriteLine($"EvaluateMemory WMI failed: {ex.Message}");
             }
 
-            // 方法2: GC API (.NET 6 fallback)
+            // 方法2: Microsoft.VisualBasic 计算机信息（兼容 net462）
             if (totalGb <= 0)
             {
                 try
                 {
-                    var memInfo = GC.GetGCMemoryInfo();
-                    if (memInfo.TotalAvailableMemoryBytes > 0)
-                        totalGb = memInfo.TotalAvailableMemoryBytes / (1024.0 * 1024.0 * 1024.0);
+                    var computerInfo = new ComputerInfo();
+                    var totalBytes = computerInfo.TotalPhysicalMemory;
+                    if (totalBytes > 0)
+                        totalGb = totalBytes / (1024.0 * 1024.0 * 1024.0);
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"EvaluateMemory GC fallback failed: {ex.Message}");
+                    Debug.WriteLine($"EvaluateMemory ComputerInfo fallback failed: {ex.Message}");
                 }
             }
 

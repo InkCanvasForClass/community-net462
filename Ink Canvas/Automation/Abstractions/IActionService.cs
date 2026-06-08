@@ -1,5 +1,4 @@
 using Ink_Canvas.WorkflowAutomation.Models;
-using System.Collections.Generic;
 
 namespace Ink_Canvas.WorkflowAutomation.Abstractions
 {
@@ -9,11 +8,6 @@ namespace Ink_Canvas.WorkflowAutomation.Abstractions
     /// </summary>
     public interface IActionService
     {
-        /// <summary>
-        /// 已注册的行动字典
-        /// </summary>
-        static Dictionary<string, ActionRegistryInfo> Actions { get; } = new();
-
         /// <summary>
         /// 注册行动处理程序
         /// </summary>

@@ -92,6 +92,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         #region Drag-drop
 
+        public new void DragEnter(IDropInfo dropInfo) { }
+
+        public new void DragLeave(IDropInfo dropInfo) { }
+
+        public void DropHint(IDropHintInfo dropHintInfo) { }
+
         public new void DragOver(IDropInfo dropInfo)
         {
             if (dropInfo.Data is ToolsMenuItemInfo)

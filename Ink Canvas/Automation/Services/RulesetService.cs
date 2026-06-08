@@ -158,7 +158,7 @@ namespace Ink_Canvas.WorkflowAutomation.Services
             if (rule.Id == string.Empty)
                 return null;
 
-            if (!IRulesetService.Rules.TryGetValue(rule.Id, out var info))
+            if (!AutomationRegistry.RegisteredRules.TryGetValue(rule.Id, out var info))
                 return false;
 
             if (info.Handle == null)
@@ -199,7 +199,7 @@ namespace Ink_Canvas.WorkflowAutomation.Services
         /// </summary>
         public void RegisterRuleHandler(string id, RuleRegistryInfo.HandleDelegate handler)
         {
-            if (!IRulesetService.Rules.TryGetValue(id, out var ruleRegistryInfo))
+            if (!AutomationRegistry.RegisteredRules.TryGetValue(id, out var ruleRegistryInfo))
                 throw new KeyNotFoundException($"找不到规则 {id}。");
 
             ruleRegistryInfo.Handle += handler;

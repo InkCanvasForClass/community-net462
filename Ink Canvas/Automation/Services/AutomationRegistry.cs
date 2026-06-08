@@ -8,20 +8,20 @@ namespace Ink_Canvas.WorkflowAutomation.Services
 {
     /// <summary>
     /// 自动化注册中心，管理所有已注册的触发器、行动和规则。
-    /// 对齐 ClassIsland：行动和规则分别存储在 IActionService.Actions 和 IRulesetService.Rules 中，
+    /// 对齐 ClassIsland：行动和规则字典集中存储在 AutomationRegistry 中，
     /// 触发器存储在此处并通过 DI 容器解析实例。
     /// </summary>
     public static class AutomationRegistry
     {
         /// <summary>
-        /// 已注册的行动字典（兼容 UI 引用）
+        /// 已注册的行动字典
         /// </summary>
-        public static Dictionary<string, ActionRegistryInfo> RegisteredActions => IActionService.Actions;
+        public static Dictionary<string, ActionRegistryInfo> RegisteredActions { get; } = new Dictionary<string, ActionRegistryInfo>();
 
         /// <summary>
-        /// 已注册的规则字典（兼容 UI 引用）
+        /// 已注册的规则字典
         /// </summary>
-        public static Dictionary<string, RuleRegistryInfo> RegisteredRules => IRulesetService.Rules;
+        public static Dictionary<string, RuleRegistryInfo> RegisteredRules { get; } = new Dictionary<string, RuleRegistryInfo>();
 
         /// <summary>
         /// 已注册的触发器列表
@@ -41,19 +41,19 @@ namespace Ink_Canvas.WorkflowAutomation.Services
         }
 
         /// <summary>
-        /// 注册行动（已迁移到 IActionService.Actions，保留此方法作为兼容入口）
+        /// 注册行动
         /// </summary>
         public static void RegisterAction(ActionRegistryInfo info)
         {
-            IActionService.Actions[info.Id] = info;
+            RegisteredActions[info.Id] = info;
         }
 
         /// <summary>
-        /// 注册规则（已迁移到 IRulesetService.Rules，保留此方法作为兼容入口）
+        /// 注册规则
         /// </summary>
         public static void RegisterRule(RuleRegistryInfo info)
         {
-            IRulesetService.Rules[info.Id] = info;
+            RegisteredRules[info.Id] = info;
         }
 
         /// <summary>

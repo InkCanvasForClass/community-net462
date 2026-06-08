@@ -97,7 +97,7 @@ namespace Ink_Canvas.WorkflowAutomation.Extensions
         {
             var info = new ActionRegistryInfo(id, name, iconKind);
             info.Handle += onHandle;
-            IActionService.Actions[id] = info;
+            AutomationRegistry.RegisteredActions[id] = info;
             return services;
         }
 
@@ -111,7 +111,7 @@ namespace Ink_Canvas.WorkflowAutomation.Extensions
             var info = new ActionRegistryInfo(id, name, iconKind);
             info.SettingsType = typeof(TSettings);
             info.Handle += onHandle;
-            IActionService.Actions[id] = info;
+            AutomationRegistry.RegisteredActions[id] = info;
             return services;
         }
 
@@ -127,7 +127,7 @@ namespace Ink_Canvas.WorkflowAutomation.Extensions
             info.SettingsType = typeof(TSettings);
             info.SettingsControlType = typeof(TSettingsControl);
             info.Handle += onHandle;
-            IActionService.Actions[id] = info;
+            AutomationRegistry.RegisteredActions[id] = info;
             services.AddTransient(typeof(ActionSettingsControlBase), typeof(TSettingsControl));
             return services;
         }
@@ -141,7 +141,7 @@ namespace Ink_Canvas.WorkflowAutomation.Extensions
         {
             var info = new RuleRegistryInfo(id, name, iconKind);
             info.Handle += onHandle;
-            IRulesetService.Rules[id] = info;
+            AutomationRegistry.RegisteredRules[id] = info;
             return services;
         }
 
@@ -155,7 +155,7 @@ namespace Ink_Canvas.WorkflowAutomation.Extensions
             var info = new RuleRegistryInfo(id, name, iconKind);
             info.SettingsType = typeof(TSettings);
             info.Handle += onHandle;
-            IRulesetService.Rules[id] = info;
+            AutomationRegistry.RegisteredRules[id] = info;
             return services;
         }
 
@@ -171,7 +171,7 @@ namespace Ink_Canvas.WorkflowAutomation.Extensions
             info.SettingsType = typeof(TSettings);
             info.SettingsControlType = typeof(TSettingsControl);
             info.Handle += onHandle;
-            IRulesetService.Rules[id] = info;
+            AutomationRegistry.RegisteredRules[id] = info;
             services.AddTransient(typeof(RuleSettingsControlBase), typeof(TSettingsControl));
             return services;
         }

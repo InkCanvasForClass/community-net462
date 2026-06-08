@@ -531,6 +531,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             _page = page;
         }
 
+        public void DragEnter(IDropInfo dropInfo) { }
+
+        public void DragLeave(IDropInfo dropInfo) { }
+
+        public void DropHint(IDropHintInfo dropHintInfo) { }
+
         public void DragOver(IDropInfo dropInfo)
         {
             if (dropInfo.Data is IBoardToolbarItem)
