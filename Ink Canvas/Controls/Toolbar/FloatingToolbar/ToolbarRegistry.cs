@@ -432,7 +432,7 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
             public List<DisplayItem> Items { get; set; } = new();
         }
 
-        private static List<DisplayItem> FlattenEntries(IToolbarHost host, List<ToolbarComponentEntry> entries, Dictionary<string, IToolbarItem> itemMap, Orientation orientation = Orientation.Horizontal)
+        private static List<DisplayItem> FlattenEntries(IToolbarHost host, List<ToolbarComponentEntry> entries, Dictionary<string, IToolbarItem> itemMap, Orientation orientation = Orientation.Horizontal, bool inheritedUseRedStyle = false)
         {
             var result = new List<DisplayItem>();
             foreach (var entry in entries)
@@ -440,6 +440,7 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                 if (entry.IsGroup)
                 {
                     var groupRuleset = GetEffectiveRuleset(entry);
+                    var groupUseRedStyle = inheritedUseRedStyle || entry.GetSettingBool(ComponentSettingKeys.UseRedStyle);
                     var groupContentItems = new List<DisplayItem>();
 
                     foreach (var childEntry in entry.Children)
@@ -451,7 +452,7 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                                 FlushGroupContentItems(result, groupContentItems, groupRuleset, entry.ShowSeparateBorder, orientation);
                                 groupContentItems.Clear();
                             }
-                            var nestedItems = FlattenEntries(host, new List<ToolbarComponentEntry> { childEntry }, itemMap, orientation);
+                            var nestedItems = FlattenEntries(host, new List<ToolbarComponentEntry> { childEntry }, itemMap, orientation, groupUseRedStyle);
                             foreach (var nestedItem in nestedItems)
                             {
                                 result.Add(nestedItem);
@@ -464,6 +465,11 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                         if (view == null) continue;
                         view.Tag = InjectedTag;
                         ApplyComponentSettings(view, childEntry);
+                        if (groupUseRedStyle && view is ToolbarImageButton groupButton)
+                        {
+                            SetUseRedStyle(groupButton, true);
+                            ApplyRedStyle(groupButton);
+                        }
                         var childRuleset = GetEffectiveRuleset(childEntry);
                         SetHidingRuleset(view, childRuleset);
 
@@ -510,6 +516,10 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                     if (view == null) continue;
                     view.Tag = InjectedTag;
                     ApplyComponentSettings(view, entry);
+                    if (inheritedUseRedStyle && view is ToolbarImageButton inheritedButton)
+                    {
+                        ApplyRedStyle(inheritedButton);
+                    }
                     var ruleset = GetEffectiveRuleset(entry);
                     SetHidingRuleset(view, ruleset);
                     if (entry.GetSettingBool(ComponentSettingKeys.UseRedStyle))
@@ -954,17 +964,7 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
 
                 if (entry.GetSettingBool(ComponentSettingKeys.UseRedStyle))
                 {
-                    SetUseRedStyle(btn, true);
-                    if (btn.TryFindResource("RedBrush") is Brush redBrush)
-                    {
-                        btn.IconBrush = redBrush;
-                        btn.LabelBrush = redBrush;
-                    }
-                    else
-                    {
-                        btn.SetResourceReference(ToolbarImageButton.IconBrushProperty, "RedBrush");
-                        btn.SetResourceReference(ToolbarImageButton.LabelBrushProperty, "RedBrush");
-                    }
+                    ApplyRedStyle(btn);
                 }
             }
 
@@ -979,6 +979,23 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
 
                 // 强制应用显示模式，确保独立边框模式下也能正确显示
                 qcp.ForceApplyDisplayMode();
+            }
+        }
+
+        private static void ApplyRedStyle(ToolbarImageButton btn)
+        {
+            if (btn == null) return;
+
+            SetUseRedStyle(btn, true);
+            if (btn.TryFindResource("RedBrush") is Brush redBrush)
+            {
+                btn.IconBrush = redBrush;
+                btn.LabelBrush = redBrush;
+            }
+            else
+            {
+                btn.SetResourceReference(ToolbarImageButton.IconBrushProperty, "RedBrush");
+                btn.SetResourceReference(ToolbarImageButton.LabelBrushProperty, "RedBrush");
             }
         }
 
