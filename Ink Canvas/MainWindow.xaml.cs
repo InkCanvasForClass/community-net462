@@ -238,6 +238,7 @@ namespace Ink_Canvas
             content.DrawCircleBtn.ButtonMouseUp += BtnDrawCircle_Click;
             content.DrawDashedCircleBtn.ButtonMouseUp += BtnDrawDashedCircle_Click;
             content.DrawEllipseCenterBtn.ButtonMouseUp += BtnDrawCenterEllipse_Click;
+            content.DrawEllipseCenterWithFocalPointBtn.ButtonMouseUp += BtnDrawCenterEllipseWithFocalPoint_Click;
             content.DrawCuboidBtn.ButtonMouseUp += BtnDrawCuboid_Click;
             content.DrawRectangleBtn.ButtonMouseUp += BtnDrawRectangle_Click;
             content.DrawCylinderBtn.ButtonMouseUp += BtnDrawCylinder_Click;
@@ -406,6 +407,7 @@ namespace Ink_Canvas
             content.DrawCircleBtn.ButtonMouseUp += BtnDrawCircle_Click;
             content.DrawDashedCircleBtn.ButtonMouseUp += BtnDrawDashedCircle_Click;
             content.DrawEllipseCenterBtn.ButtonMouseUp += BtnDrawCenterEllipse_Click;
+            content.DrawEllipseCenterWithFocalPointBtn.ButtonMouseUp += BtnDrawCenterEllipseWithFocalPoint_Click;
             content.DrawCuboidBtn.ButtonMouseUp += BtnDrawCuboid_Click;
             content.DrawRectangleBtn.ButtonMouseUp += BtnDrawRectangle_Click;
             content.DrawCylinderBtn.ButtonMouseUp += BtnDrawCylinder_Click;
@@ -1260,11 +1262,6 @@ namespace Ink_Canvas
         {
             var inkCanvas1 = sender as InkCanvas;
             if (inkCanvas1 == null) return;
-
-            SetDynamicRendererEnabled(inkCanvas1, inkCanvas1.EditingMode != InkCanvasEditingMode.None
-                                                  && inkCanvas1.EditingMode != InkCanvasEditingMode.Select
-                                                  && inkCanvas1.EditingMode != InkCanvasEditingMode.EraseByStroke);
-
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas1.EditingMode))
             {
                 TryBlockFrozenPageMutation("修改冻结页面");
@@ -1317,28 +1314,6 @@ namespace Ink_Canvas
             }
         }
 
-        private void SetDynamicRendererEnabled(InkCanvas canvas, bool enabled)
-        {
-            if (canvas == null) return;
-            try
-            {
-                var prop = typeof(InkCanvas).GetProperty("DynamicRenderer",
-                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                if (prop != null)
-                {
-                    var renderer = prop.GetValue(canvas) as System.Windows.Input.StylusPlugIns.DynamicRenderer;
-                    if (renderer != null)
-                    {
-                        renderer.Enabled = enabled;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to set DynamicRenderer enabled to {enabled}: {ex}");
-            }
-        }
-
         #endregion Ink Canvas
 
         #region Definations and Loading
@@ -1374,6 +1349,7 @@ namespace Ink_Canvas
         private bool forcePointEraser;
         private bool _pendingStartupAutoUpdateCheck;
         private bool _sliderTouchSupportInitialized;
+        private bool _deferredPhaseBCompleted;
 
         /// <summary>
         /// 在窗口加载完成后初始化应用的核心子系统、UI 状态和运行时监控组件。
@@ -1402,6 +1378,7 @@ namespace Ink_Canvas
                 else ViewboxFloatingBarMarginAnimation(100, true, skipAnimation: true);
             }
             ApplyLanguageFromSettings();
+            Helpers.LocalizationHelper.SyncCommonResources();
             InitializeNotificationProviders();
             AutomationBootstrap.Initialize();
 
@@ -2491,6 +2468,9 @@ namespace Ink_Canvas
 
         private async Task RunDeferredStartupPhaseBAsync()
         {
+            if (_deferredPhaseBCompleted) return;
+            _deferredPhaseBCompleted = true;
+
             await Task.Delay(600);
 
             try

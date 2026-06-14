@@ -2,6 +2,7 @@ using Ink_Canvas.Controls;
 using Ink_Canvas.Controls.Toolbar.FloatingToolbar;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Properties;
+using Ink_Canvas.WorkflowAutomation;
 using iNKORE.UI.WPF.Modern;
 using System;
 using System.Collections.Generic;
@@ -224,6 +225,19 @@ namespace Ink_Canvas
         }
 
         private PopupManagerHelper _popupManager;
+
+        /// <summary>
+        /// 获取 PopupManagerHelper 实例，供插件等外部组件使用
+        /// </summary>
+        public PopupManagerHelper GetPopupManager() => _popupManager;
+
+        /// <summary>
+        /// 关闭所有已注册的 Popup 弹窗
+        /// </summary>
+        public void CloseAllPopups()
+        {
+            HideSubPanelsImmediately();
+        }
 
         /// <summary>
         /// 浮动工具栏移动事件处理
@@ -856,6 +870,7 @@ namespace Ink_Canvas
                     if (currentMode == 1)
                     {
                         currentMode = 0;
+                        AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
                         GridBackgroundCover.Visibility = Visibility.Collapsed;
                         AnimationsHelper.HideWithSlideAndFade(BlackboardLeftSide);
                         AnimationsHelper.HideWithSlideAndFade(BlackboardCenterSide);
@@ -4534,6 +4549,7 @@ namespace Ink_Canvas
                 if (currentMode == 0)
                 {
                     currentMode++;
+                    AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
                     GridBackgroundCover.Visibility = Visibility.Collapsed;
                     AnimationsHelper.HideWithSlideAndFade(BlackboardLeftSide);
                     AnimationsHelper.HideWithSlideAndFade(BlackboardCenterSide);
@@ -4584,6 +4600,7 @@ namespace Ink_Canvas
                     case 0: //屏幕模式
                         VideoPresenter_OnExitWhiteboardMode();
                         currentMode = 0;
+                        AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
                         GridBackgroundCover.Visibility = Visibility.Collapsed;
                         AnimationsHelper.HideWithSlideAndFade(BlackboardLeftSide);
                         AnimationsHelper.HideWithSlideAndFade(BlackboardCenterSide);
@@ -4662,6 +4679,7 @@ namespace Ink_Canvas
                         break;
                     case 1: //黑板或白板模式
                         currentMode = 1;
+                        AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
                         GridBackgroundCover.Visibility = Visibility.Visible;
                         AnimationsHelper.ShowWithSlideFromBottomAndFade(BlackboardLeftSide);
                         AnimationsHelper.ShowWithSlideFromBottomAndFade(BlackboardCenterSide);
@@ -5424,6 +5442,8 @@ namespace Ink_Canvas
                     System.Windows.Controls.Canvas.SetTop(indicatorBar, nextBarTop);
 
                     selectionBG.Visibility = Visibility.Visible;
+                    if (!Settings.Appearance.DisableToolbarAnimation)
+                        targetButton.SetSelectedVisualOffset(true);
                     _lastHighlightButton = targetButton;
                     return;
                 }
@@ -5459,7 +5479,15 @@ namespace Ink_Canvas
 
                 double nextBarPos = isVertical ? nextBarTop : nextBarLeft;
 
+                var prevHighlightButton = _lastHighlightButton;
                 _lastHighlightButton = targetButton;
+
+                if (!Settings.Appearance.DisableToolbarAnimation)
+                {
+                    if (prevHighlightButton != null && prevHighlightButton != targetButton)
+                        prevHighlightButton.SetSelectedVisualOffset(false);
+                    targetButton.SetSelectedVisualOffset(true);
+                }
 
                 selectionBG.Width = selectionWidth;
                 selectionBG.Height = selectionHeight;
@@ -5541,9 +5569,9 @@ namespace Ink_Canvas
                     KeyFrames =
                     {
                         new DiscreteDoubleKeyFrame(from < to ? 0.0 : dimension, KeyTime.FromPercent(0.0)),
-                        new DiscreteDoubleKeyFrame(from < to ? dimension : 0.0, KeyTime.FromPercent(1.0))
+                        new DiscreteDoubleKeyFrame(from < to ? dimension : 0.0, KeyTime.FromPercent(0.333)),
                     },
-                    Duration = TimeSpan.FromMilliseconds(200)
+                    Duration = TimeSpan.FromMilliseconds(600)
                 };
 
                 Storyboard.SetTarget(posAnim, indicatorBar);
@@ -5726,6 +5754,8 @@ namespace Ink_Canvas
 
         private void HideAllSelectionHighlights()
         {
+            if (_lastHighlightButton != null)
+                _lastHighlightButton.SetSelectedVisualOffset(false);
             if (SelectionBGFloatingBar != null)
             {
                 SelectionBGFloatingBar.Visibility = Visibility.Hidden;

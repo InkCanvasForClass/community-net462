@@ -462,7 +462,8 @@ namespace Ink_Canvas
         ToggleFoldFloatingBar = 6,
         ResetFloatingBarPosition = 7,
         RestartApp = 8,
-        CloseApp = 9
+        CloseApp = 9,
+        NoAction = 10
     }
 
     public enum ToolbarPosition
@@ -597,6 +598,9 @@ namespace Ink_Canvas
 
         [JsonProperty("flipContentOnAutoFlip")]
         public bool FlipContentOnAutoFlip { get; set; } = false;
+
+        [JsonProperty("disableToolbarAnimation")]
+        public bool DisableToolbarAnimation { get; set; } = false;
 
     }
 
