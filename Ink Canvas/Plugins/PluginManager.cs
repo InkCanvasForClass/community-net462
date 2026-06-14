@@ -76,7 +76,7 @@ namespace Ink_Canvas.Plugins
             }
         }
 
-        public async Task LoadAllAsync()
+        public Task LoadAllAsync()
         {
             try
             {
@@ -114,6 +114,8 @@ namespace Ink_Canvas.Plugins
             {
                 LogError("Failed to load plugins", ex);
             }
+
+            return Task.CompletedTask;
         }
 
         #region Plugin Package Installation
