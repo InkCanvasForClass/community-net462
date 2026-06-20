@@ -38,6 +38,15 @@ jobs:
       - name: Setup MSBuild
         if: steps.cache-vsto.outputs.cache-hit != 'true'
         uses: microsoft/setup-msbuild@v3
+      - name: Install VSTO Runtime
+        if: steps.cache-vsto.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $url = "https://go.microsoft.com/fwlink/?LinkId=158918"
+          $out = "$env:TEMP\VSTORuntime.exe"
+          Invoke-WebRequest -Uri $url -OutFile $out -MaximumRedirection 10
+          Start-Process -FilePath $out -ArgumentList "/quiet /norestart" -Wait -NoNewWindow
+          Write-Host "VSTO Runtime installed"
 
       - name: Restore Package 
         if: steps.cache-vsto.outputs.cache-hit != 'true'
