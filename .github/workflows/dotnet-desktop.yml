@@ -25,17 +25,17 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+
       - name: Restore Package 
         run: dotnet restore "Ink Canvas.sln"
 
-      - name: Install VSTO Runtime
+
+      - name: Install VSTO Build Tools
         shell: pwsh
         run: |
-          $url = "https://go.microsoft.com/fwlink/?LinkId=158918"
-          $out = "$env:TEMP\VSTORuntime.exe"
-          Invoke-WebRequest -Uri $url -OutFile $out -MaximumRedirection 10
-          Start-Process -FilePath $out -ArgumentList "/quiet /norestart" -Wait -NoNewWindow
-          Write-Host "VSTO Runtime installed"
+          choco install visualstudio2026-workload-officebuildtools --package-parameters "--includeRecommended" -y
 
       - name: Restore signing certificate
         shell: pwsh
