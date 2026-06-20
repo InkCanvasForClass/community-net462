@@ -29,7 +29,7 @@ jobs:
           path: |
             InkCanvas.PowerPointAddIn/bin/Release
             InkCanvas.PPTAgent.Contracts/bin/Release
-          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**', 'InkCanvas.PPTAgent.Contracts/**') }}
+          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
 
       - name: Setup dotnet
         if: steps.cache-vsto.outputs.cache-hit != 'true'
@@ -129,7 +129,7 @@ jobs:
           path: |
             InkCanvas.PowerPointAddIn/bin/Release
             InkCanvas.PPTAgent.Contracts/bin/Release
-          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**', 'InkCanvas.PPTAgent.Contracts/**') }}
+          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**')}}
 
       - name: Copy VSTO files to target directory
         if: matrix.architecture != 'arm64' && matrix.minimize != 'true' && steps.cache-vsto-restore.outputs.cache-hit == 'true'
