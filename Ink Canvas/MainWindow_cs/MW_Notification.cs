@@ -131,7 +131,7 @@ namespace Ink_Canvas
             var notification = Settings?.Notification;
             if (notification?.IsDictationDoNotDisturbEnabled != true) return false;
 
-            if (notification.IsDictationDoNotDisturbInPptEnabled && IsInPptPresentationMode)
+            if (notification.IsDictationDoNotDisturbInPPTEnabled && IsInPPTPresentationMode)
             {
                 return true;
             }

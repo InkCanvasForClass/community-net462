@@ -1,4 +1,5 @@
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
 using System.Linq;
@@ -85,6 +86,22 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             {
                 CardDisableToolbarAnimation.IsOn = settings.Appearance.DisableToolbarAnimation;
             }
+
+            // 加载旧版浮动栏 UI 设置
+            if (CardUseLegacyFloatingBarUI != null)
+                CardUseLegacyFloatingBarUI.IsOn = settings.Appearance.UseLegacyFloatingBarUI;
+
+            // 加载在浮动栏图标上显示笔色设置
+            if (CardShowPenColorOnFloatingBarIcon != null)
+                CardShowPenColorOnFloatingBarIcon.IsOn = settings.Appearance.ShowPenColorOnFloatingBarIcon;
+
+            // 加载紧凑浮动栏模式设置
+            if (ToggleSwitchCompactFloatingBar != null)
+                ToggleSwitchCompactFloatingBar.IsOn = settings.Appearance.CompactFloatingBar;
+
+            // 加载隐藏浮动栏边框设置
+            if (ToggleSwitchHideFloatingBarBorder != null)
+                ToggleSwitchHideFloatingBarBorder.IsOn = settings.Appearance.HideFloatingBarBorder;
         }
 
         private void UpdateAllSliderTexts()
@@ -215,6 +232,40 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.SaveSettingsToFile();
         }
 
+        private void ToggleSwitchUseLegacyFloatingBarUI_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.UseLegacyFloatingBarUI = CardUseLegacyFloatingBarUI.IsOn;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnUseLegacyFloatingBarUIChanged();
+        }
+
+        private void ToggleSwitchShowPenColorOnFloatingBarIcon_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.ShowPenColorOnFloatingBarIcon = CardShowPenColorOnFloatingBarIcon.IsOn;
+            SettingsManager.SaveSettingsToFile();
+            // Refresh the pen icon color on the floating bar
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+                mainWindow.UpdatePenIconColor();
+        }
+
+        private void ToggleSwitchCompactFloatingBar_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.CompactFloatingBar = ToggleSwitchCompactFloatingBar.IsOn;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnCompactFloatingBarChanged(ToggleSwitchCompactFloatingBar.IsOn);
+        }
+
+        private void ToggleSwitchHideFloatingBarBorder_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.HideFloatingBarBorder = ToggleSwitchHideFloatingBarBorder.IsOn;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnHideFloatingBarBorderChanged(ToggleSwitchHideFloatingBarBorder.IsOn);
+        }
+
         private void FloatingBarMenuOpacitySlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             UpdateSliderText(FloatingBarMenuOpacitySlider, FloatingBarMenuOpacityText, "{0:F2}");
@@ -257,26 +308,57 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsActionHub.OnFloatingBarImgChanged();
         }
 
-        private void ButtonAddCustomIcon_Click(object sender, RoutedEventArgs e)
+        private async void ButtonAddCustomIcon_Click(object sender, RoutedEventArgs e)
         {
             var mw = Application.Current.MainWindow as MainWindow;
             if (mw == null) return;
-            AddCustomIconWindow dialog = new AddCustomIconWindow(mw);
-            dialog.Owner = mw;
-            dialog.ShowDialog();
-            if (dialog.IsSuccess)
+
+            var content = new AddCustomIconWindow(mw);
+            var dialog = new iNKORE.UI.WPF.Modern.Controls.ContentDialog
             {
-                ComboBoxFloatingBarImg.SelectedIndex = ComboBoxFloatingBarImg.Items.Count - 1;
-            }
+                Title = Properties.RandomStrings.Random_AddIcon_WindowTitle,
+                Content = content,
+                PrimaryButtonText = FloatingBarStrings.Tools_Save,
+                CloseButtonText = Properties.RandomStrings.Random_Cancel,
+                Owner = Window.GetWindow(this) ?? mw,
+                DefaultButton = iNKORE.UI.WPF.Modern.Controls.ContentDialogButton.Primary
+            };
+
+            content.OnInputChanged += () =>
+            {
+                dialog.IsPrimaryButtonEnabled = content.CanSave();
+            };
+            dialog.IsPrimaryButtonEnabled = content.CanSave();
+
+            dialog.PrimaryButtonClick += async (s, args) =>
+            {
+                var deferral = args.GetDeferral();
+                if (content.Save())
+                {
+                    ComboBoxFloatingBarImg.SelectedIndex = ComboBoxFloatingBarImg.Items.Count - 1;
+                    dialog.Hide();
+                }
+                deferral.Complete();
+            };
+
+            await dialog.ShowAsync();
         }
 
-        private void ButtonManageCustomIcons_Click(object sender, RoutedEventArgs e)
+        private async void ButtonManageCustomIcons_Click(object sender, RoutedEventArgs e)
         {
             var mw = Application.Current.MainWindow as MainWindow;
             if (mw == null) return;
-            CustomIconWindow dialog = new CustomIconWindow(mw);
-            dialog.Owner = mw;
-            dialog.ShowDialog();
+
+            var content = new CustomIconWindow(mw);
+            var dialog = new iNKORE.UI.WPF.Modern.Controls.ContentDialog
+            {
+                Title = Properties.ThemeStrings.Theme_CustomFloatingIconLabel,
+                Content = content,
+                CloseButtonText = Properties.NotificationStrings.AnimationOff,
+                Owner = Window.GetWindow(this) ?? mw,
+                DefaultButton = iNKORE.UI.WPF.Modern.Controls.ContentDialogButton.Close
+            };
+            await dialog.ShowAsync();
         }
 
         #endregion

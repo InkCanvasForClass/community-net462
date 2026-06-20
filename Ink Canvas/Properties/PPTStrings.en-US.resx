@@ -189,6 +189,18 @@
   <data name="PPTRotArchitecture" xml:space="preserve">
     <value>ROT architecture</value>
   </data>
+  <data name="PPTAgentArchitecture" xml:space="preserve">
+    <value>VSTO Agent architecture</value>
+  </data>
+  <data name="PPTAgentArchitectureHint" xml:space="preserve">
+    <value>Use an in-process PowerPoint VSTO add-in and NamedPipe integration, without COM/ROT control in the ICC process.</value>
+  </data>
+  <data name="PPTAgentNotConnected" xml:space="preserve">
+    <value>PPT Agent is not connected</value>
+  </data>
+  <data name="PPTAgentInstallHint" xml:space="preserve">
+    <value>Open PowerPoint and make sure the ICC PowerPoint Agent add-in is loaded.</value>
+  </data>
   <data name="SupportWPS" xml:space="preserve">
     <value>WPS support</value>
   </data>
@@ -262,13 +274,13 @@
     <value>Auto-play or rehearsal timings detected, which may cause automatic slide advancement. Disable?</value>
   </data>
   <data name="PPT_ModePrompt_Message" xml:space="preserve">
-    <value>Click the annotation bar icon to collapse or expand annotations.</value>
+    <value>Click the annotation bar icon to collapse/expand, drag to move, or click the page number to navigate.</value>
   </data>
   <data name="PPT_ModePrompt_Setting" xml:space="preserve">
     <value>Show annotation bar prompt when entering PPT mode</value>
   </data>
   <data name="PPT_ModePrompt_SettingHint" xml:space="preserve">
-    <value>When enabled, shows a hint for collapsing or expanding the annotation bar every time PPT slideshow/integration mode starts.</value>
+    <value>When enabled, shows a hint for basic annotation bar operations every time PPT slideshow/integration mode starts.</value>
   </data>
   <data name="PPT_ModePrompt_Title" xml:space="preserve">
     <value>PPT mode entered</value>

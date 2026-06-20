@@ -140,12 +140,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             // 获取当前上下文状态
             var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
             bool isAnnotating = mainWindow?.IsAnnotating ?? false;
-            bool isPptMode = mainWindow?.IsInPptPresentationMode ?? false;
+            bool isPPTMode = mainWindow?.IsInPPTPresentationMode ?? false;
 
             var context = new Dictionary<string, bool>
             {
                 ["isAnnotating"] = isAnnotating,
-                ["isPptMode"] = isPptMode,
+                ["isPPTMode"] = isPPTMode,
                 ["isContentCollapsedByUser"] = ToolbarRegistry.IsContentCollapsedByUser
             };
 
@@ -184,14 +184,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 LogHelper.WriteLogToFile($"{LogTag}: LoadSettings 异常: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", LogHelper.LogType.Error);
             }
             _isLoaded = true;
-        }
-
-        private void ToggleSwitchUseLegacyFloatingBarUI_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Appearance.UseLegacyFloatingBarUI = CardUseLegacyFloatingBarUI.IsOn;
-            SettingsManager.SaveSettingsToFile();
-            SettingsActionHub.OnUseLegacyFloatingBarUIChanged();
         }
 
         #region Config file management
@@ -327,9 +319,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             {
                 AddedComponents.Add(CloneEntry(entry));
             }
-
-            if (CardUseLegacyFloatingBarUI != null)
-                CardUseLegacyFloatingBarUI.IsOn = SettingsManager.Settings.Appearance.UseLegacyFloatingBarUI;
 
             LogHelper.WriteLogToFile($"{LogTag}: LoadSettings 完成 Count={AddedComponents.Count}", LogHelper.LogType.Info);
         }

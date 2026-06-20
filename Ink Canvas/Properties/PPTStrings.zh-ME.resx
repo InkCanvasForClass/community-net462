@@ -189,6 +189,18 @@
   <data name="PPTRotArchitecture" xml:space="preserve">
     <value>ROT 架构</value>
   </data>
+  <data name="PPTAgentArchitecture" xml:space="preserve">
+    <value>VSTO Agent 架构</value>
+  </data>
+  <data name="PPTAgentArchitectureHint" xml:space="preserve">
+    <value>让 PowerPoint 里面的小插件接管 PPT，ICC 只走 NamedPipe 发号施令，不碰 COM/ROT。</value>
+  </data>
+  <data name="PPTAgentNotConnected" xml:space="preserve">
+    <value>PPT Agent 还没连上</value>
+  </data>
+  <data name="PPTAgentInstallHint" xml:space="preserve">
+    <value>先打开 PowerPoint，并确认 ICC PowerPoint Agent 插件已经加载啦。</value>
+  </data>
   <data name="SupportWPS" xml:space="preserve">
     <value>WPS 支持</value>
   </data>
@@ -262,13 +274,13 @@
     <value>检测到自动播放或排练计时开着，幻灯片可能会自己跑，要不要封印它？</value>
   </data>
   <data name="PPT_ModePrompt_Message" xml:space="preserve">
-    <value>点击批注栏图标就能折叠/展开批注。</value>
+    <value>点击批注栏图标就能折叠/展开批注栏，拖动图标可移动位置，点击页数可快捷翻页。</value>
   </data>
   <data name="PPT_ModePrompt_Setting" xml:space="preserve">
     <value>进入 PPT 模式时提示批注栏用法</value>
   </data>
   <data name="PPT_ModePrompt_SettingHint" xml:space="preserve">
-    <value>开启后，每次进入 PPT 放映/联动模式都会提示怎么折叠或展开批注栏。</value>
+    <value>开启后，每次进入 PPT 放映/联动模式都会提示批注栏的基本操作。</value>
   </data>
   <data name="PPT_ModePrompt_Title" xml:space="preserve">
     <value>已进入 PPT 模式</value>

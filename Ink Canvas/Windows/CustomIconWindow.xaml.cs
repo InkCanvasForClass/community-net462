@@ -7,7 +7,7 @@ namespace Ink_Canvas
     /// <summary>
     /// CustomIconWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class CustomIconWindow : Window
+    public partial class CustomIconWindow : UserControl
     {
         private MainWindow mainWindow;
         public ObservableCollection<CustomFloatingBarIcon> CustomIcons { get; set; }
@@ -50,11 +50,6 @@ namespace Ink_Canvas
                 // 保存设置
                 MainWindow.SaveSettingsToFile();
             }
-        }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
         }
     }
 }

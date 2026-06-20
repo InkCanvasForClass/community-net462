@@ -9,7 +9,7 @@ namespace Ink_Canvas
     /// <summary>
     /// ManagePickNameBackgroundsWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class ManagePickNameBackgroundsWindow : Window
+    public partial class ManagePickNameBackgroundsWindow : UserControl
     {
         private MainWindow mainWindow;
         public ObservableCollection<CustomPickNameBackground> Backgrounds { get; set; }
@@ -88,11 +88,6 @@ namespace Ink_Canvas
                     }
                 }
             }
-        }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
         }
     }
 }

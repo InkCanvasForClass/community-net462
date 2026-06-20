@@ -129,8 +129,8 @@ namespace Ink_Canvas
         internal Image LeftUnFoldBtnImgChevron => LeftSidePanel?.ChevronIcon;
         internal Image RightUnFoldBtnImgChevron => RightSidePanel?.ChevronIcon;
 
-        internal bool IsInPptPresentationMode { get; set; }
-        internal bool ArePptControlsVisible { get; set; }
+        internal bool IsInPPTPresentationMode { get; set; }
+        internal bool ArePPTControlsVisible { get; set; }
 
         internal static readonly DependencyProperty IsUndoEnabledProperty =
             DependencyProperty.Register(nameof(IsUndoEnabled), typeof(bool), typeof(MainWindow),
@@ -659,7 +659,7 @@ namespace Ink_Canvas
 
             WindowSettingsHelper.OnStopKillProcessTimer = () => timerKillProcess.Stop();
             WindowSettingsHelper.OnStartKillProcessTimer = () => timerKillProcess.Start();
-            WindowSettingsHelper.OnPptOnlyModeChanged = (enabled) => CheckMainWindowVisibility();
+            WindowSettingsHelper.OnPPTOnlyModeChanged = (enabled) => CheckMainWindowVisibility();
             timeMachine.OnRedoStateChanged += TimeMachine_OnRedoStateChanged;
             timeMachine.OnUndoStateChanged += TimeMachine_OnUndoStateChanged;
             inkCanvas.Strokes.StrokesChanged += StrokesOnStrokesChanged;
@@ -685,7 +685,6 @@ namespace Ink_Canvas
 
             // 注册输入事件
             inkCanvas.PreviewMouseDown += inkCanvas_PreviewMouseDown;
-            inkCanvas.PreviewStylusDown += inkCanvas_PreviewStylusDown;
             inkCanvas.StylusDown += inkCanvas_StylusDown;
             inkCanvas.MouseRightButtonUp += InkCanvas_MouseRightButtonUp;
             // 注册橡皮擦操作结束事件
@@ -1243,8 +1242,8 @@ namespace Ink_Canvas
                 foreach (var gest in gestures)
                     //Trace.WriteLine(string.Format("Gesture: {0}, Confidence: {1}", gest.ApplicationGesture, gest.RecognitionConfidence));
                     // 只有在PPT放映模式下才响应翻页手势
-                    if (ArePptControlsVisible &&
-                        IsInPptPresentationMode &&
+                    if (ArePPTControlsVisible &&
+                        IsInPPTPresentationMode &&
                         PPTManager?.IsInSlideShow == true)
                     {
                         if (gest.ApplicationGesture == ApplicationGesture.Left)
@@ -1264,9 +1263,6 @@ namespace Ink_Canvas
         {
             var inkCanvas1 = sender as InkCanvas;
             if (inkCanvas1 == null) return;
-
-            SetDynamicRendererEnabled(inkCanvas1, inkCanvas1.EditingMode != InkCanvasEditingMode.None);
-
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas1.EditingMode))
             {
                 TryBlockFrozenPageMutation("修改冻结页面");
@@ -1316,108 +1312,6 @@ namespace Ink_Canvas
                     DisableEraserOverlay();
                     Trace.WriteLine("Eraser: Overlay disabled in non-eraser mode");
                 }
-            }
-        }
-
-        private void SetDynamicRendererEnabled(InkCanvas canvas, bool enabled)
-        {
-            if (canvas == null) return;
-            try
-            {
-                var prop = typeof(InkCanvas).GetProperty("DynamicRenderer",
-                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                if (prop != null)
-                {
-                    var renderer = prop.GetValue(canvas) as System.Windows.Input.StylusPlugIns.DynamicRenderer;
-                    if (renderer != null)
-                    {
-                        renderer.Enabled = enabled;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to set DynamicRenderer enabled to {enabled}: {ex}");
-            }
-        }
-
-        private bool IsPointInFloatingBar(Point point)
-        {
-            try
-            {
-                if (ViewboxFloatingBar == null || ViewboxFloatingBar.Visibility != Visibility.Visible)
-                    return false;
-
-                var floatingBarBounds = ViewboxFloatingBar.TransformToAncestor(this).TransformBounds(
-                    new Rect(0, 0, ViewboxFloatingBar.ActualWidth, ViewboxFloatingBar.ActualHeight));
-                return floatingBarBounds.Contains(point);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-                return false;
-            }
-        }
-
-        private bool ShouldCaptureInkCanvasInput(Point point)
-        {
-            if (IsPointInFloatingBar(point)) return false;
-            if (!IsAnnotating && drawingShapeMode == 0) return false;
-            return inkCanvas.EditingMode == InkCanvasEditingMode.Ink
-                   || inkCanvas.EditingMode == InkCanvasEditingMode.None
-                   || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
-                   || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
-                   || drawingShapeMode != 0;
-        }
-
-        private bool TryBlockInkInputOverFloatingBar(Point point, RoutedEventArgs e)
-        {
-            if (!IsPointInFloatingBar(point)) return false;
-
-            try
-            {
-                inkCanvas.ReleaseMouseCapture();
-                inkCanvas.ReleaseStylusCapture();
-                inkCanvas.ReleaseAllTouchCaptures();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-            }
-
-            ViewboxFloatingBar.IsHitTestVisible = true;
-            FloatingbarUIForInkReplay.IsHitTestVisible = true;
-            BlackboardUIGridForInkReplay.IsHitTestVisible = true;
-            e.Handled = true;
-            return true;
-        }
-
-        private void CaptureInkCanvasInputIfNeeded(Point point)
-        {
-            if (!ShouldCaptureInkCanvasInput(point)) return;
-
-            try
-            {
-                inkCanvas.CaptureMouse();
-                inkCanvas.CaptureStylus();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-            }
-        }
-
-        private void CaptureInkCanvasTouchIfNeeded(Point point, TouchDevice touchDevice)
-        {
-            if (!ShouldCaptureInkCanvasInput(point) || touchDevice == null) return;
-
-            try
-            {
-                inkCanvas.CaptureTouch(touchDevice);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
             }
         }
 
@@ -1481,7 +1375,7 @@ namespace Ink_Canvas
             // 启动时直接设置浮动栏位置，跳过动画
             if (currentMode == 0)
             {
-                if (IsInPptPresentationMode) ViewboxFloatingBarMarginAnimation(60, skipAnimation: true);
+                if (IsInPPTPresentationMode) ViewboxFloatingBarMarginAnimation(60, skipAnimation: true);
                 else ViewboxFloatingBarMarginAnimation(100, true, skipAnimation: true);
             }
             ApplyLanguageFromSettings();
@@ -1629,7 +1523,7 @@ namespace Ink_Canvas
 
             // 检查模式设置并应用
             CheckMainWindowVisibility();
-            EnsurePptOnlyVisibilityProbeTimer();
+            EnsurePPTOnlyVisibilityProbeTimer();
 
             // 检查是否通过--board参数启动，如果是则自动切换到白板模式
             if (App.StartWithBoardMode)
@@ -1695,7 +1589,7 @@ namespace Ink_Canvas
                     Dispatcher.Invoke(() =>
                     {
                         isFloatingBarOutsideScreen = IsOutsideOfScreenHelper.IsOutsideOfScreen(ViewboxFloatingBar);
-                        isInPPTPresentationMode = IsInPptPresentationMode;
+                        isInPPTPresentationMode = IsInPPTPresentationMode;
                     });
                     if (isFloatingBarOutsideScreen) dpiChangedDelayAction.DebounceAction(3000, null, () =>
                     {
@@ -1782,10 +1676,10 @@ namespace Ink_Canvas
                 }
 
                 if (!_forceCloseFromExitOrRestartButton &&
-                    IsInPptPresentationMode)
+                    IsInPPTPresentationMode)
                 {
                     e.Cancel = true;
-                    await ExitPptPresentation();
+                    await ExitPPTPresentation();
                     LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
                     return;
                 }
@@ -2339,11 +2233,6 @@ namespace Ink_Canvas
         // 鼠标输入
         private void inkCanvas_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var point = e.GetPosition(this);
-            if (TryBlockInkInputOverFloatingBar(point, e))
-                return;
-            CaptureInkCanvasInputIfNeeded(point);
-
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas.EditingMode))
             {
                 TryBlockFrozenPageMutation("修改冻结页面");
@@ -2385,14 +2274,6 @@ namespace Ink_Canvas
                 }
             }
 
-        }
-
-        private void inkCanvas_PreviewStylusDown(object sender, StylusDownEventArgs e)
-        {
-            var point = e.GetPosition(this);
-            if (TryBlockInkInputOverFloatingBar(point, e))
-                return;
-            CaptureInkCanvasInputIfNeeded(point);
         }
 
         // 手写笔输入
@@ -2515,7 +2396,7 @@ namespace Ink_Canvas
         // 快速面板退出PPT放映按钮事件
         private async void ExitPPTSlideShow_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            await ExitPptPresentation();
+            await ExitPPTPresentation();
         }
 
         private void HistoryRollbackButton_Click(object sender, RoutedEventArgs e)
@@ -2909,7 +2790,7 @@ namespace Ink_Canvas
                 SaveSettingsToFile();
 
                 // 如果当前在PPT放映模式，需要立即更新时间胶囊和快捷面板的显示状态
-                if (IsInPptPresentationMode)
+                if (IsInPPTPresentationMode)
                 {
                     UpdatePPTTimeCapsuleVisibility();
                     UpdatePPTQuickPanelVisibility();
@@ -2934,7 +2815,7 @@ namespace Ink_Canvas
                     Settings.PowerPointSettings.PPTTimeCapsulePosition = comboBox.SelectedIndex;
                     SaveSettingsToFile();
 
-                    if (IsInPptPresentationMode)
+                    if (IsInPPTPresentationMode)
                     {
                         UpdatePPTTimeCapsulePosition();
                     }
@@ -2958,7 +2839,7 @@ namespace Ink_Canvas
                 if (PPTTimeCapsuleContainer == null || PPTTimeCapsule == null) return;
 
                 if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
-                    IsInPptPresentationMode)
+                    IsInPPTPresentationMode)
                 {
                     PPTTimeCapsuleContainer.Visibility = Visibility.Visible;
                     UpdatePPTTimeCapsulePosition();
@@ -2986,7 +2867,7 @@ namespace Ink_Canvas
                 if (PPTQuickPanelContainer == null || PPTQuickPanel == null) return;
 
                 // 仅在 PPT 模式下且用户开启“PPT 放映时显示快速面板”时显示
-                bool inSlideShow = IsInPptPresentationMode;
+                bool inSlideShow = IsInPPTPresentationMode;
                 bool showQuickPanel = Settings.PowerPointSettings.ShowPPTSidebarByDefault;
                 if (inSlideShow && showQuickPanel)
                 {
@@ -3201,7 +3082,7 @@ namespace Ink_Canvas
                 }
 
                 // 在PPT放映模式下，工具模式切换时需要更新工具栏组件的显示状态
-                if (IsInPptPresentationMode)
+                if (IsInPPTPresentationMode)
                 {
                     UpdateToolbarComponentVisibility();
                 }
@@ -3283,7 +3164,7 @@ namespace Ink_Canvas
                     }
 
                     // 仅PPT模式：以 COM/UI 状态为主，Win32 检测全屏放映窗口（screenClass）作兜底，避免 COM 异常时无法唤出
-                    bool comUiSlideShow = IsInPptPresentationMode;
+                    bool comUiSlideShow = IsInPPTPresentationMode;
                     bool win32SlideShow = IsPowerPointSlideshowSurfacePresentWin32();
                     bool isInSlideShow = comUiSlideShow || win32SlideShow;
                     if (isInSlideShow && !IsVisible)

@@ -2,6 +2,7 @@ using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace Ink_Canvas
@@ -9,7 +10,7 @@ namespace Ink_Canvas
     /// <summary>
     /// AddCustomIconWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class AddCustomIconWindow : Window
+    public partial class AddCustomIconWindow : UserControl
     {
         private MainWindow mainWindow;
         private string selectedFilePath;
@@ -22,7 +23,17 @@ namespace Ink_Canvas
             IsSuccess = false;
 
             // 添加TextBox内容变化事件以检查是否可以保存
-            IconNameTextBox.TextChanged += (s, e) => ValidateSaveButton();
+            IconNameTextBox.TextChanged += (s, e) => OnInputChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// 当输入变化时触发，由外部订阅来更新按钮状态
+        /// </summary>
+        public event Action OnInputChanged;
+
+        public bool CanSave()
+        {
+            return !string.IsNullOrWhiteSpace(IconNameTextBox.Text) && !string.IsNullOrEmpty(selectedFilePath);
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -56,21 +67,11 @@ namespace Ink_Canvas
                 string suggestedName = Path.GetFileNameWithoutExtension(selectedFilePath);
                 IconNameTextBox.Text = suggestedName;
 
-                ValidateSaveButton();
+                OnInputChanged?.Invoke();
             }
         }
 
-        private void ValidateSaveButton()
-        {
-            SaveButton.IsEnabled = !string.IsNullOrWhiteSpace(IconNameTextBox.Text) && !string.IsNullOrEmpty(selectedFilePath);
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        public bool Save()
         {
             try
             {
@@ -109,11 +110,12 @@ namespace Ink_Canvas
                 MainWindow.SaveSettingsToFile();
 
                 IsSuccess = true;
-                Close();
+                return true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(string.Format(Properties.RandomStrings.Random_AddIcon_SaveFailedFormat, ex.Message), Properties.RandomStrings.Random_Error, MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
             }
         }
     }

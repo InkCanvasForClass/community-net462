@@ -73,11 +73,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
 
         private static DispatcherTimer _pptOnlyVisibilityProbeTimer;
         private static Window _pptModeWindow;
-        private const int PptOnlyVisibilityProbeIntervalMs = 800;
+        private const int PPTOnlyVisibilityProbeIntervalMs = 800;
 
-        public static Action<bool> OnPptOnlyModeChanged { get; set; }
+        public static Action<bool> OnPPTOnlyModeChanged { get; set; }
 
-        public static void ApplyPptOnlyMode(Window window, bool isEnabled)
+        public static void ApplyPPTOnlyMode(Window window, bool isEnabled)
         {
             try
             {
@@ -88,11 +88,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 {
                     window.Hide();
                     LogHelper.WriteLogToFile("已切换到仅PPT模式，主窗口已隐藏", LogHelper.LogType.Event);
-                    EnsurePptOnlyVisibilityProbeTimer(window);
+                    EnsurePPTOnlyVisibilityProbeTimer(window);
                 }
                 else
                 {
-                    StopPptOnlyVisibilityProbeTimer();
+                    StopPPTOnlyVisibilityProbeTimer();
                     window.Show();
                     LogHelper.WriteLogToFile("已切换到正常模式，主窗口已显示", LogHelper.LogType.Event);
                 }
@@ -103,13 +103,13 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             }
         }
 
-        private static void EnsurePptOnlyVisibilityProbeTimer(Window window)
+        private static void EnsurePPTOnlyVisibilityProbeTimer(Window window)
         {
             try
             {
                 if (!SettingsManager.Settings.ModeSettings.IsPPTOnlyMode)
                 {
-                    StopPptOnlyVisibilityProbeTimer();
+                    StopPPTOnlyVisibilityProbeTimer();
                     return;
                 }
 
@@ -119,9 +119,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 {
                     _pptOnlyVisibilityProbeTimer = new DispatcherTimer
                     {
-                        Interval = TimeSpan.FromMilliseconds(PptOnlyVisibilityProbeIntervalMs)
+                        Interval = TimeSpan.FromMilliseconds(PPTOnlyVisibilityProbeIntervalMs)
                     };
-                    _pptOnlyVisibilityProbeTimer.Tick += PptOnlyVisibilityProbeTimer_Tick;
+                    _pptOnlyVisibilityProbeTimer.Tick += PPTOnlyVisibilityProbeTimer_Tick;
                 }
 
                 if (!_pptOnlyVisibilityProbeTimer.IsEnabled)
@@ -133,7 +133,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             }
         }
 
-        private static void StopPptOnlyVisibilityProbeTimer()
+        private static void StopPPTOnlyVisibilityProbeTimer()
         {
             try
             {
@@ -142,9 +142,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             catch { }
         }
 
-        private static void PptOnlyVisibilityProbeTimer_Tick(object sender, EventArgs e)
+        private static void PPTOnlyVisibilityProbeTimer_Tick(object sender, EventArgs e)
         {
-            OnPptOnlyModeChanged?.Invoke(true);
+            OnPPTOnlyModeChanged?.Invoke(true);
         }
 
         #endregion
@@ -217,22 +217,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             {
                 if (SettingsManager.Settings.Advanced.EnableUIAccessTopMost && SettingsManager.Settings.Advanced.IsAlwaysOnTop)
                 {
-                    // UIA helper 启动出的目标进程不再重复触发 UIA 重启，避免重启循环。
-                    if (Array.IndexOf(Environment.GetCommandLineArgs(), "--uia-child") >= 0)
-                    {
-                        if (UIAccessHelper.HasUIAccess())
-                        {
-                            LogHelper.WriteLogToFile("UIAccess | 当前进程由 UIA helper 启动且已具有 UIAccess 权限");
-                        }
-                        else
-                        {
-                            LogHelper.WriteLogToFile("UIAccess | 当前进程由 UIA helper 启动，但未检测到 UIAccess 权限", LogHelper.LogType.Warning);
-                        }
-
-                        App.IsUIAccessTopMostEnabled = UIAccessHelper.HasUIAccess();
-                        return;
-                    }
-
                     var identity = WindowsIdentity.GetCurrent();
                     var principal = new WindowsPrincipal(identity);
 
