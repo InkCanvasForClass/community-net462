@@ -1854,8 +1854,8 @@ namespace Ink_Canvas.Helpers
                 }
                 LogHelper.WriteLogToFile($"AutoUpdate | ZIP文件大小: {fileInfo.Length} 字节");
 
-                // 单文件发布时 AppContext.BaseDirectory 指向临时解压目录，需要用 ProcessPath 获取 exe 真实所在目录
-                string currentAppDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+                // 单文件发布时 AppContext.BaseDirectory 指向临时解压目录，需要用 MainModule.FileName 获取 exe 真实所在目录
+                string currentAppDir = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) ?? AppContext.BaseDirectory;
                 string appPath = Process.GetCurrentProcess().MainModule.FileName;
                 int currentProcessId = Process.GetCurrentProcess().Id;
 
