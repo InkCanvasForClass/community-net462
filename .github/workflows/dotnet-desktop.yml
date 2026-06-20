@@ -131,21 +131,6 @@ jobs:
             InkCanvas.PPTAgent.Contracts/bin/Release
           key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**')}}
 
-      - name: Copy VSTO files to target directory
-        if: matrix.architecture != 'arm64' && matrix.minimize != 'true' && steps.cache-vsto-restore.outputs.cache-hit == 'true'
-        shell: pwsh
-        run: |
-          $arch = "${{ matrix.architecture }}"
-          $pptAgentDir = "Ink Canvas\bin\Release\$arch\net462\ppt-agent"
-          New-Item -ItemType Directory -Force -Path $pptAgentDir | Out-Null
-          Copy-Item "InkCanvas.PowerPointAddIn\bin\Release\*" $pptAgentDir -Recurse -Force
-          Copy-Item "InkCanvas.PPTAgent.Contracts\bin\Release\netstandard2.0\InkCanvas.PPTAgent.Contracts.dll" $pptAgentDir -Force
-          Get-ChildItem $pptAgentDir | Select-Object Name
-          if (-not (Test-Path "$pptAgentDir\Microsoft.Office.Tools.Common.v4.0.Utilities.dll")) {
-            Write-Error "缺少 VSTO 依赖 DLL，artifact 不完整"
-            exit 1
-          }
-
       - name: Build the Solution
         env:
           DLASS_TELEMETRY_TOKEN: ${{ secrets.DLASS_TELEMETRY_TOKEN }}
