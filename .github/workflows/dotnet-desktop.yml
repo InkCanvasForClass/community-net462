@@ -21,17 +21,30 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
-      
+
+      - name: Cache VSTO build output
+        id: cache-vsto
+        uses: actions/cache@v5
+        with:
+          path: |
+            InkCanvas.PowerPointAddIn/bin/Debug
+            InkCanvas.PPTAgent.Contracts/bin/Debug
+          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**', 'InkCanvas.PPTAgent.Contracts/**') }}
+
       - name: Setup dotnet
+        if: steps.cache-vsto.outputs.cache-hit != 'true'
         uses: actions/setup-dotnet@v5
 
       - name: Setup MSBuild
+        if: steps.cache-vsto.outputs.cache-hit != 'true'
         uses: microsoft/setup-msbuild@v3
 
       - name: Restore Package 
+        if: steps.cache-vsto.outputs.cache-hit != 'true'
         run: dotnet restore "Ink Canvas.sln"
 
       - name: Restore signing certificate
+        if: steps.cache-vsto.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           $ok = $false
@@ -60,15 +73,6 @@ jobs:
           if (-not $found) { throw "No signing certificate found" }
           echo "SIGN_THUMBPRINT=$($found.Thumbprint)" >> $env:GITHUB_ENV
           Write-Host "Signing certificate ready: $($found.Thumbprint)"
-
-      - name: Cache VSTO build output
-        id: cache-vsto
-        uses: actions/cache@v5
-        with:
-          path: |
-            InkCanvas.PowerPointAddIn/bin/Debug
-            InkCanvas.PPTAgent.Contracts/bin/Debug
-          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**', 'InkCanvas.PPTAgent.Contracts/**') }}
 
       - name: Build VSTO Add-in
         if: steps.cache-vsto.outputs.cache-hit != 'true'
@@ -110,6 +114,7 @@ jobs:
 
       - name: Cache VSTO build output
         id: cache-vsto-restore
+        if: matrix.minimize != 'true'
         uses: actions/cache@v5
         with:
           path: |
@@ -118,7 +123,7 @@ jobs:
           key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**', 'InkCanvas.PPTAgent.Contracts/**') }}
 
       - name: Copy VSTO files to target directory
-        if: matrix.architecture != 'arm64' && steps.cache-vsto-restore.outputs.cache-hit == 'true'
+        if: matrix.architecture != 'arm64' && matrix.minimize != 'true' && steps.cache-vsto-restore.outputs.cache-hit == 'true'
         shell: pwsh
         run: |
           $arch = "${{ matrix.architecture }}"
@@ -180,7 +185,7 @@ jobs:
           echo "# Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ steps.check-exe.outputs.build_success }}" = "true" ]; then
+          if [ "${{ steps.build-result.outputs.build_success }}" = "true" ]; then
             echo "## ✅ Build Successful" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

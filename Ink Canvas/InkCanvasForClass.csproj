@@ -147,7 +147,7 @@
     </ProjectReference>
     <UpToDateCheckInput Include="..\InkCanvas.Controls\**\*.xaml" />
   </ItemGroup>
-  <Target Name="CopyVstoAgent" AfterTargets="Build">
+  <Target Name="CopyVstoAgent" AfterTargets="Build" Condition="'$(Minimize)' != 'true'" >
     <MakeDir Directories="$(OutputPath)ppt-agent" />
     <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll"
           DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="true"
