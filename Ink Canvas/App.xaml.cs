@@ -106,6 +106,9 @@ namespace Ink_Canvas
 
         public App()
         {
+            System.Windows.Forms.Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+            AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", true);
+
             try
             {
                 SetCurrentProcessExplicitAppUserModelID("InkCanvasForClass.CE");
@@ -884,20 +887,7 @@ namespace Ink_Canvas
 
             if (CrashAction == CrashActionType.SilentRestart && !IsAppExitByUser)
             {
-                StartupCount.Increment();
-                if (StartupCount.GetCount() >= 5)
-                {
-                    MessageBox.Show(MainWindowStrings.Main_App_RestartLoopDetected, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                    StartupCount.Reset();
-                    Environment.Exit(1);
-                }
-                try
-                {
-                    string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                    Process.Start(exePath);
-                }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-                Environment.Exit(1);
+                TryRestartWithBreaker($"UI线程未处理异常: {e.Exception.GetType().Name}");
             }
             // CrashActionType.NoAction 时不做处理
         }
@@ -1290,6 +1280,10 @@ namespace Ink_Canvas
             {
                 isStartupComplete = true;
                 startupCompleteHeartbeat = DateTime.Now;
+
+                // 启动成功，重置崩溃重启计数器
+                StartupCount.Reset();
+
                 if (_isSplashScreenShown && splashStopwatch.IsRunning)
                 {
                     LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {splashStopwatch.Elapsed.TotalSeconds:F2}秒");
@@ -1485,6 +1479,61 @@ namespace Ink_Canvas
             ShowCrashWindow
         }
 
+        /// <summary>
+        /// 尝试通过熔断机制静默重启应用：先检查是否达到重启上限，未达则启动新进程并退出当前进程。
+        /// 重启上限（5次）内启动新进程；达到上限时弹出提示、重置计数并以非零码退出。
+        /// 重启前会通知看门狗退出（写入退出信号文件），避免看门狗二次触发导致双进程启动。
+        /// </summary>
+        /// <param name="restartReason">用于日志记录的重启原因描述。</param>
+        private static void TryRestartWithBreaker(string restartReason)
+        {
+            StartupCount.Increment();
+            int count = StartupCount.GetCount();
+            LogHelper.WriteLogToFile($"熔断计数: {count}/5 — {restartReason}", LogHelper.LogType.Warning);
+
+            if (count >= 5)
+            {
+                MessageBox.Show(
+                    UpdateStrings.Msg_RestartLimit,
+                    UpdateStrings.Msg_RestartLimitTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                StartupCount.Reset();
+                Environment.Exit(1);
+                return;
+            }
+
+            try
+            {
+                // 通知看门狗退出，防止看门狗检测到进程退出后二次触发重启
+                if (!string.IsNullOrEmpty(watchdogExitSignalFile))
+                {
+                    try { File.WriteAllText(watchdogExitSignalFile, "restart"); }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                }
+
+                // 杀掉看门狗进程，避免竞态
+                try
+                {
+                    if (watchdogProcess != null && !watchdogProcess.HasExited)
+                    {
+                        watchdogProcess.Kill();
+                        watchdogProcess = null;
+                    }
+                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
+                string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                Process.Start(exePath);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"熔断重启启动新进程失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            Environment.Exit(1);
+        }
+
         // 心跳相关
         private static DispatcherTimer heartbeatTimer;
         private static DateTime lastHeartbeat = DateTime.Now;
@@ -1494,6 +1543,22 @@ namespace Ink_Canvas
         private static DateTime splashScreenStartTime = DateTime.MinValue;
         private static DateTime appStartupStartTime = DateTime.MinValue;
         private static volatile bool isAppExiting = false;
+
+        /// <summary>
+        /// [调试用] 停止心跳计时器，模拟主线程无响应，下一次守护检查将触发心跳超时重启。
+        /// </summary>
+        internal static void DebugStopHeartbeat()
+        {
+            try
+            {
+                heartbeatTimer?.Stop();
+                LogHelper.WriteLogToFile("[Debug] 心跳计时器已手动停止，等待守护检查检测超时", LogHelper.LogType.Warning);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[Debug] 停止心跳计时器失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
 
         /// <summary>
         /// 启动并管理应用的心跳与守护检查定时器，监测启动阶段与主线程是否无响应，并在符合配置的情况下尝试静默重启应用。
@@ -1544,20 +1609,7 @@ namespace Ink_Canvas
                         SyncCrashActionFromSettings();
                         if (CrashAction == CrashActionType.SilentRestart)
                         {
-                            StartupCount.Increment();
-                            if (StartupCount.GetCount() >= 5)
-                            {
-                                MessageBox.Show(UpdateStrings.Msg_RestartLimit, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                                StartupCount.Reset();
-                                Environment.Exit(1);
-                            }
-                            try
-                            {
-                                string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                                Process.Start(exePath);
-                            }
-                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-                            Environment.Exit(1);
+                            TryRestartWithBreaker(restartReason);
                         }
                         return;
                     }
@@ -1584,21 +1636,7 @@ namespace Ink_Canvas
                         SyncCrashActionFromSettings();
                         if (CrashAction == CrashActionType.SilentRestart)
                         {
-                            StartupCount.Increment();
-                            if (StartupCount.GetCount() >= 5)
-                            {
-                                MessageBox.Show(UpdateStrings.Msg_RestartLimit, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                                StartupCount.Reset();
-                                Environment.Exit(1);
-                            }
-                            try
-                            {
-                                string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                                Thread.Sleep(1000);
-                                Process.Start(exePath);
-                            }
-                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-                            Environment.Exit(1);
+                            TryRestartWithBreaker(restartReason);
                         }
                     }
                 }
@@ -1663,18 +1701,7 @@ namespace Ink_Canvas
 
                     if (CrashAction == CrashActionType.SilentRestart)
                     {
-                        StartupCount.Increment();
-                        if (StartupCount.GetCount() >= 5)
-                        {
-                            MessageBox.Show(MainWindowStrings.Main_App_RestartLoopDetected, UpdateStrings.Msg_RestartLimitTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                            StartupCount.Reset();
-                            Environment.Exit(1);
-                        }
-                        else
-                        {
-                            string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                            Process.Start(exePath);
-                        }
+                        TryRestartWithBreaker("看门狗检测到主进程异常退出");
                     }
                 }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }

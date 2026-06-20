@@ -1854,7 +1854,8 @@ namespace Ink_Canvas.Helpers
                 }
                 LogHelper.WriteLogToFile($"AutoUpdate | ZIP文件大小: {fileInfo.Length} 字节");
 
-                string currentAppDir = AppContext.BaseDirectory;
+                // 单文件发布时 AppContext.BaseDirectory 指向临时解压目录，需要用 ProcessPath 获取 exe 真实所在目录
+                string currentAppDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
                 string appPath = Process.GetCurrentProcess().MainModule.FileName;
                 int currentProcessId = Process.GetCurrentProcess().Id;
 
@@ -1928,7 +1929,10 @@ namespace Ink_Canvas.Helpers
                     LogHelper.WriteLogToFile($"AutoUpdate | 准备启动新版本进程: {newAppPath}");
 
                     // 启动新版本进程（以更新模式）
-                    string arguments = $"--update-mode --old-process-id={currentProcessId} --extract-path=\"{extractPath}\" --target-path=\"{currentAppDir}\" --is-silence={isInSilence}";
+                    // 只在路径包含空格时才加引号，避免Windows命令行解析将引号后的参数吞入
+                    string escExtract = extractPath.TrimEnd('\\').Contains(" ") ? $"\"{extractPath.TrimEnd('\\')}\"" : extractPath.TrimEnd('\\');
+                    string escTarget = currentAppDir.TrimEnd('\\').Contains(" ") ? $"\"{currentAppDir.TrimEnd('\\')}\"" : currentAppDir.TrimEnd('\\');
+                    string arguments = $"--update-mode --old-process-id={currentProcessId} --extract-path={escExtract} --target-path={escTarget} --is-silence={isInSilence}";
 
                     LogHelper.WriteLogToFile($"AutoUpdate | 启动新进程的命令行: {newAppPath} {arguments}");
 
@@ -1981,6 +1985,21 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        // 解析命令行参数值，正确处理带引号和不带引号的情况
+        private static string ParseQuotedArgValue(string arg, string prefix)
+        {
+            string raw = arg.Substring(prefix.Length);
+            if (raw.Length >= 2 && raw[0] == '"')
+            {
+                int closingQuote = raw.IndexOf('"', 1);
+                if (closingQuote > 0)
+                {
+                    return raw.Substring(1, closingQuote - 1);
+                }
+            }
+            return raw.Trim('"');
+        }
+
         // 处理更新模式的启动参数
         public static bool HandleUpdateModeStartup(string[] args)
         {
@@ -2016,12 +2035,12 @@ namespace Ink_Canvas.Helpers
                         }
                         else if (arg.StartsWith("--extract-path="))
                         {
-                            extractPath = arg.Substring("--extract-path=".Length).Trim('"');
+                            extractPath = ParseQuotedArgValue(arg, "--extract-path=");
                             LogHelper.WriteLogToFile($"AutoUpdate | 解析到解压路径: {extractPath}");
                         }
                         else if (arg.StartsWith("--target-path="))
                         {
-                            targetPath = arg.Substring("--target-path=".Length).Trim('"');
+                            targetPath = ParseQuotedArgValue(arg, "--target-path=");
                             LogHelper.WriteLogToFile($"AutoUpdate | 解析到目标路径: {targetPath}");
                         }
                         else if (arg.StartsWith("--is-silence="))

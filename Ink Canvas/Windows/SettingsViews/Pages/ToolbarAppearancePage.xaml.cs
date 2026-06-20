@@ -1,6 +1,7 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
@@ -20,6 +21,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            var mw = Application.Current.MainWindow as MainWindow;
+            mw?.UpdateCustomIconsInComboBox();
             LoadSettings();
             _isLoaded = true;
             UpdateAllSliderTexts();
@@ -36,11 +39,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var settings = SettingsManager.Settings;
             if (settings?.Appearance == null) return;
 
+            if (settings.Appearance.FloatingBarImg >= ComboBoxFloatingBarImg.Items.Count)
+                settings.Appearance.FloatingBarImg = 0;
+            ComboBoxFloatingBarImg.SelectedIndex = settings.Appearance.FloatingBarImg;
+
             if (settings.Appearance.ViewboxFloatingBarScaleTransformValue != 0)
                 ViewboxFloatingBarScaleTransformValueSlider.Value = settings.Appearance.ViewboxFloatingBarScaleTransformValue;
 
             ViewboxFloatingBarOpacityValueSlider.Value = settings.Appearance.ViewboxFloatingBarOpacityValue;
             ViewboxFloatingBarOpacityInPPTValueSlider.Value = settings.Appearance.ViewboxFloatingBarOpacityInPPTValue;
+            FloatingBarMenuOpacitySlider.Value = settings.Appearance.FloatingBarMenuOpacity;
+            FloatingBarMenuOpacityInPPTSlider.Value = settings.Appearance.FloatingBarMenuOpacityInPPT;
 
             // 加载工具栏位置
             string positionTag = settings.Appearance.ToolbarPosition.ToString();
@@ -83,6 +92,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             UpdateSliderText(ViewboxFloatingBarScaleTransformValueSlider, ViewboxFloatingBarScaleSliderText, "{0:F2}x");
             UpdateSliderText(ViewboxFloatingBarOpacityValueSlider, ViewboxFloatingBarOpacityText, "{0:F2}");
             UpdateSliderText(ViewboxFloatingBarOpacityInPPTValueSlider, ViewboxFloatingBarOpacityInPPTText, "{0:F2}");
+            UpdateSliderText(FloatingBarMenuOpacitySlider, FloatingBarMenuOpacityText, "{0:F2}");
+            UpdateSliderText(FloatingBarMenuOpacityInPPTSlider, FloatingBarMenuOpacityInPPTText, "{0:F2}");
             UpdateFloatingBarActualScaleText();
         }
 
@@ -203,5 +214,71 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.Settings.Appearance.DisableToolbarAnimation = CardDisableToolbarAnimation.IsOn;
             SettingsManager.SaveSettingsToFile();
         }
+
+        private void FloatingBarMenuOpacitySlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateSliderText(FloatingBarMenuOpacitySlider, FloatingBarMenuOpacityText, "{0:F2}");
+            if (!_isLoaded) return;
+            var slider = FloatingBarMenuOpacitySlider;
+            var val = Math.Round(slider.Value, 2);
+            if (slider.Value != val)
+            {
+                slider.Value = val;
+                return;
+            }
+            SettingsManager.Settings.Appearance.FloatingBarMenuOpacity = val;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnFloatingBarMenuOpacityChanged(val);
+        }
+
+        private void FloatingBarMenuOpacityInPPTSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateSliderText(FloatingBarMenuOpacityInPPTSlider, FloatingBarMenuOpacityInPPTText, "{0:F2}");
+            if (!_isLoaded) return;
+            var slider = FloatingBarMenuOpacityInPPTSlider;
+            var val = Math.Round(slider.Value, 2);
+            if (slider.Value != val)
+            {
+                slider.Value = val;
+                return;
+            }
+            SettingsManager.Settings.Appearance.FloatingBarMenuOpacityInPPT = val;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnFloatingBarMenuOpacityInPPTChanged(val);
+        }
+
+        #region Floating Bar Icon
+
+        private void ComboBoxFloatingBarImg_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.FloatingBarImg = ComboBoxFloatingBarImg.SelectedIndex;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnFloatingBarImgChanged();
+        }
+
+        private void ButtonAddCustomIcon_Click(object sender, RoutedEventArgs e)
+        {
+            var mw = Application.Current.MainWindow as MainWindow;
+            if (mw == null) return;
+            AddCustomIconWindow dialog = new AddCustomIconWindow(mw);
+            dialog.Owner = mw;
+            dialog.ShowDialog();
+            if (dialog.IsSuccess)
+            {
+                ComboBoxFloatingBarImg.SelectedIndex = ComboBoxFloatingBarImg.Items.Count - 1;
+            }
+        }
+
+        private void ButtonManageCustomIcons_Click(object sender, RoutedEventArgs e)
+        {
+            var mw = Application.Current.MainWindow as MainWindow;
+            if (mw == null) return;
+            CustomIconWindow dialog = new CustomIconWindow(mw);
+            dialog.Owner = mw;
+            dialog.ShowDialog();
+        }
+
+        #endregion
     }
 }
