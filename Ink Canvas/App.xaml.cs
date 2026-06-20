@@ -106,8 +106,6 @@ namespace Ink_Canvas
 
         public App()
         {
-            System.Windows.Forms.Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
-
             // 注意：此处显式禁用 Switch.System.Windows.Input.Stylus.EnablePointerSupport。
             // 启用该开关会让 WPF 使用 WM_POINTER 触摸栈，导致 DragMove() 和 DoDragDrop()
             // （gong-wpf-dragdrop 库内部使用）的模态消息循环无法接收触摸释放消息。

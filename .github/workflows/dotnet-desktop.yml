@@ -31,12 +31,6 @@ jobs:
       - name: Restore Package 
         run: dotnet restore "Ink Canvas.sln"
 
-
-      - name: Install VSTO Build Tools
-        shell: pwsh
-        run: |
-          choco install visualstudio2026-workload-officebuildtools --package-parameters "--includeRecommended" -y
-
       - name: Restore signing certificate
         shell: pwsh
         run: |
@@ -69,7 +63,7 @@ jobs:
 
       - name: Cache VSTO build output
         id: cache-vsto
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             InkCanvas.PowerPointAddIn/bin/Debug
@@ -116,7 +110,7 @@ jobs:
 
       - name: Cache VSTO build output
         id: cache-vsto-restore
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             InkCanvas.PowerPointAddIn/bin/Debug
