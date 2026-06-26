@@ -17,6 +17,7 @@ jobs:
     name: Build VSTO
     runs-on: windows-latest
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v6
         with:
@@ -31,57 +32,62 @@ jobs:
             InkCanvas.PPTAgent.Contracts/bin/Release
           key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
 
-      - name: Setup dotnet
-        if: steps.cache-vsto.outputs.cache-hit != 'true'
-        uses: actions/setup-dotnet@v5
+      - parallel:
 
-      - name: Setup MSBuild
-        if: steps.cache-vsto.outputs.cache-hit != 'true'
-        uses: microsoft/setup-msbuild@v3
-      - name: Install VSTO Runtime
-        if: steps.cache-vsto.outputs.cache-hit != 'true'
-        shell: pwsh
-        run: |
-          $url = "https://go.microsoft.com/fwlink/?LinkId=158918"
-          $out = "$env:TEMP\VSTORuntime.exe"
-          Invoke-WebRequest -Uri $url -OutFile $out -MaximumRedirection 10
-          Start-Process -FilePath $out -ArgumentList "/quiet /norestart" -Wait -NoNewWindow
-          Write-Host "VSTO Runtime installed"
+        - name: Setup dotnet
+          if: steps.cache-vsto.outputs.cache-hit != 'true'
+          uses: actions/setup-dotnet@v5
 
-      - name: Restore Package 
-        if: steps.cache-vsto.outputs.cache-hit != 'true'
-        run: dotnet restore "Ink Canvas.sln"
+        - name: Setup MSBuild
+          if: steps.cache-vsto.outputs.cache-hit != 'true'
+          uses: microsoft/setup-msbuild@v3
 
-      - name: Restore signing certificate
-        if: steps.cache-vsto.outputs.cache-hit != 'true'
-        shell: pwsh
-        run: |
-          $ok = $false
-          if ("${{ secrets.CERT_PFX_BASE64 }}" -ne "") {
-            try {
-              $bytes = [Convert]::FromBase64String("${{ secrets.CERT_PFX_BASE64 }}")
-              [IO.File]::WriteAllBytes("clickonce.pfx", $bytes)
-              $pwd = ConvertTo-SecureString "${{ secrets.CERT_PFX_PASSWORD }}" -AsPlainText -Force
-              Import-PfxCertificate -FilePath "clickonce.pfx" -CertStoreLocation Cert:\CurrentUser\My -Password $pwd | Out-Null
-              $ok = $true
-              Write-Host "Certificate imported from secrets"
-            } catch {
-              Write-Host "Import PFX failed, falling back to self-signed: $($_.Exception.Message)"
+        - name: Install VSTO Runtime
+          if: steps.cache-vsto.outputs.cache-hit != 'true'
+          shell: pwsh
+          run: |
+            $url = "https://go.microsoft.com/fwlink/?LinkId=158918"
+            $out = "$env:TEMP\VSTORuntime.exe"
+            Invoke-WebRequest -Uri $url -OutFile $out -MaximumRedirection 10
+            Start-Process -FilePath $out -ArgumentList "/quiet /norestart" -Wait -NoNewWindow
+            Write-Host "VSTO Runtime installed"
+
+      - parallel:
+
+        - name: Restore Package 
+          if: steps.cache-vsto.outputs.cache-hit != 'true'
+          run: dotnet restore "Ink Canvas.sln"
+
+        - name: Restore signing certificate
+          if: steps.cache-vsto.outputs.cache-hit != 'true'
+          shell: pwsh
+          run: |
+            $ok = $false
+            if ("${{ secrets.CERT_PFX_BASE64 }}" -ne "") {
+              try {
+                $bytes = [Convert]::FromBase64String("${{ secrets.CERT_PFX_BASE64 }}")
+                [IO.File]::WriteAllBytes("clickonce.pfx", $bytes)
+                $pwd = ConvertTo-SecureString "${{ secrets.CERT_PFX_PASSWORD }}" -AsPlainText -Force
+                Import-PfxCertificate -FilePath "clickonce.pfx" -CertStoreLocation Cert:\CurrentUser\My -Password $pwd | Out-Null
+                $ok = $true
+                Write-Host "Certificate imported from secrets"
+              } catch {
+                Write-Host "Import PFX failed, falling back to self-signed: $($_.Exception.Message)"
+              }
             }
-          }
-          if (-not $ok) {
-            New-SelfSignedCertificate `
-              -Type CodeSigningCert `
-              -Subject "CN=ICC PowerPoint Agent CI" `
-              -CertStoreLocation "Cert:\CurrentUser\My" `
-              -KeyExportPolicy Exportable `
-              -NotAfter (Get-Date).AddYears(2) | Out-Null
-            Write-Host "Generated self-signed certificate"
-          }
-          $found = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.HasPrivateKey -and $_.Subject -like "*ICC*" } | Select-Object -First 1
-          if (-not $found) { throw "No signing certificate found" }
-          echo "SIGN_THUMBPRINT=$($found.Thumbprint)" >> $env:GITHUB_ENV
-          Write-Host "Signing certificate ready: $($found.Thumbprint)"
+            if (-not $ok) {
+              New-SelfSignedCertificate `
+                -Type CodeSigningCert `
+                -Subject "CN=ICC PowerPoint Agent CI" `
+                -CertStoreLocation "Cert:\CurrentUser\My" `
+                -KeyExportPolicy Exportable `
+                -NotAfter (Get-Date).AddYears(2) | Out-Null
+              Write-Host "Generated self-signed certificate"
+            }
+            $found = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.HasPrivateKey -and $_.Subject -like "*ICC*" } | Select-Object -First 1
+            if (-not $found) { throw "No signing certificate found" }
+            echo "SIGN_THUMBPRINT=$($found.Thumbprint)" >> $env:GITHUB_ENV
+            Write-Host "Signing certificate ready: $($found.Thumbprint)"
 
       - name: Build VSTO Add-in
         if: steps.cache-vsto.outputs.cache-hit != 'true'
@@ -110,26 +116,28 @@ jobs:
         architecture: [AnyCPU, x86, arm64]
         minimize: [true, false]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v5
+      - parallel:
+        - name: Checkout code
+          uses: actions/checkout@v6
+          with:
+            fetch-depth: 1
+        
+        - name: Setup dotnet
+          uses: actions/setup-dotnet@v5
 
-      - name: Restore Package 
-        run: dotnet restore "Ink Canvas.sln"
+      - parallel:
+        - name: Restore Package 
+          run: dotnet restore "Ink Canvas.sln"
 
-      - name: Cache VSTO build output
-        id: cache-vsto-restore
-        if: matrix.minimize != 'true'
-        uses: actions/cache@v5
-        with:
-          path: |
-            InkCanvas.PowerPointAddIn/bin/Release
-            InkCanvas.PPTAgent.Contracts/bin/Release
-          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**')}}
+        - name: Cache VSTO build output
+          id: cache-vsto-restore
+          if: matrix.minimize != 'true'
+          uses: actions/cache@v5
+          with:
+            path: |
+              InkCanvas.PowerPointAddIn/bin/Release
+              InkCanvas.PPTAgent.Contracts/bin/Release
+            key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**')}}
 
       - name: Build the Solution
         env:
@@ -156,54 +164,55 @@ jobs:
             }
           }
 
-      - name: Upload Artifact
-        if: steps.build-result.outputs.build_success == 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ case(matrix.minimize == true, '.minimize', '') }}
-          path: "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/*"
-          compression-level: 9
+      - parallel:
+        - name: Upload Artifact
+          if: steps.build-result.outputs.build_success == 'true'
+          uses: actions/upload-artifact@v7
+          with:
+            name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ case(matrix.minimize == true, '.minimize', '') }}
+            path: "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/*"
+            compression-level: 9
 
-      - name: Create Summary
-        if: always()
-        env:
-          MINIMIZE: ${{ matrix.minimize }}
-        shell: bash
-        run: |
-          SHORT_SHA=${GITHUB_SHA::7}
-          VERSION="debug-${SHORT_SHA}-${GITHUB_RUN_NUMBER}"
-          ARCH="${{ matrix.architecture }}"
-          [ "$MINIMIZE" = "true" ] && SUFFIX=".minimize" || SUFFIX=""
-          ARTIFACT="InkCanvasForClass.CE.${ARCH}${SUFFIX}"
+        - name: Create Summary
+          if: always()
+          env:
+            MINIMIZE: ${{ matrix.minimize }}
+          shell: bash
+          run: |
+            SHORT_SHA=${GITHUB_SHA::7}
+            VERSION="debug-${SHORT_SHA}-${GITHUB_RUN_NUMBER}"
+            ARCH="${{ matrix.architecture }}"
+            [ "$MINIMIZE" = "true" ] && SUFFIX=".minimize" || SUFFIX=""
+            ARTIFACT="InkCanvasForClass.CE.${ARCH}${SUFFIX}"
 
-          echo "# Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ steps.build-result.outputs.build_success }}" = "true" ]; then
-            echo "## ✅ Build Successful" >> $GITHUB_STEP_SUMMARY
+            echo "# Build Summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-            echo "**Run:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Version:** ${{ steps.create-archive.outputs.archive_name }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Architecture:** ${{ matrix.architecture }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Minimize:** $MINIMIZE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "[Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            if [ "$MINIMIZE" = "true" ]; then
-              suffix=".minimize"
+            
+            if [ "${{ steps.build-result.outputs.build_success }}" = "true" ]; then
+              echo "## ✅ Build Successful" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+              echo "**Run:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** ${{ steps.create-archive.outputs.archive_name }}" >> $GITHUB_STEP_SUMMARY
+              echo "**Architecture:** ${{ matrix.architecture }}" >> $GITHUB_STEP_SUMMARY
+              echo "**Minimize:** $MINIMIZE" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "[Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              if [ "$MINIMIZE" = "true" ]; then
+                suffix=".minimize"
+              else
+                suffix=""
+              fi
+              echo "[Nightly.link Download](https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) \([GhProxy Fastly Mirror](https://cdn.gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) / [GhProxy Mirror](https://gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip)\)" >> $GITHUB_STEP_SUMMARY
             else
-              suffix=""
+              echo "## ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Event:** ${{ github.event_name }} (${{ github.event.action || 'N/A' }})" >> $GITHUB_STEP_SUMMARY
+              echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+              echo "**Architecture:** ${{ matrix.architecture }}" >> $GITHUB_STEP_SUMMARY
+              echo "**Minimize:** $MINIMIZE" >> $GITHUB_STEP_SUMMARY
+              echo "**Run:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "Check build logs for details." >> $GITHUB_STEP_SUMMARY
             fi
-            echo "[Nightly.link Download](https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) \([GhProxy Fastly Mirror](https://cdn.gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) / [GhProxy Mirror](https://gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip)\)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Event:** ${{ github.event_name }} (${{ github.event.action || 'N/A' }})" >> $GITHUB_STEP_SUMMARY
-            echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-            echo "**Architecture:** ${{ matrix.architecture }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Minimize:** $MINIMIZE" >> $GITHUB_STEP_SUMMARY
-            echo "**Run:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Check build logs for details." >> $GITHUB_STEP_SUMMARY
-          fi
