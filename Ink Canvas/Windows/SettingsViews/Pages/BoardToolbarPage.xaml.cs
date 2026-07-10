@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
@@ -19,6 +20,18 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
     public partial class BoardToolbarPage : Page
     {
+        private void ListViewItem_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Control control)
+            {
+                control.ApplyTemplate();
+                if (control.Template.FindName("PressedBackground", control) is FrameworkElement indicator)
+                {
+                    indicator.Width = 3;
+                }
+            }
+        }
+
         private static readonly string LogTag = "BoardToolbarPage";
         private bool _isLoaded;
         private bool _suppressConfigChange;
@@ -29,6 +42,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         public ObservableCollection<BoardToolbarGroupEntry> AreaGroups { get; } = new();
         public BoardGroupChildrenDropHandler GroupDropHandler { get; }
+        public BoardGroupListDropHandler GroupListDropHandler { get; }
 
         public IReadOnlyList<IBoardToolbarItem> AvailableItems => BoardToolbarRegistry.Discover();
 
@@ -61,17 +75,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         public BoardToolbarPage()
         {
             GroupDropHandler = new BoardGroupChildrenDropHandler(this);
+            GroupListDropHandler = new BoardGroupListDropHandler(this);
             InitializeComponent();
             DataContext = this;
             Loaded += OnPageLoaded;
-        }
-
-        private void NestedScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (PageScrollViewer == null) return;
-
-            PageScrollViewer.ScrollToVerticalOffset(PageScrollViewer.VerticalOffset - e.Delta);
-            e.Handled = true;
         }
 
         private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -89,7 +96,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 LogHelper.WriteLogToFile($"{LogTag}: OnPageLoaded 异常: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", LogHelper.LogType.Error);
             }
             _isLoaded = true;
-            Dispatcher.BeginInvoke(() => PageScrollViewer?.ScrollToTop(), System.Windows.Threading.DispatcherPriority.ContextIdle);
         }
 
         #region Config file management
@@ -122,23 +128,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void ButtonNewConfig_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new InputDialog(FloatingBarStrings.ToolbarPage_EnterConfigName, FloatingBarStrings.ToolbarPage_NewConfig, "")
-            {
-                Owner = Window.GetWindow(this)
-            };
-            if (dialog.ShowDialog() != true) return;
-            var name = dialog.InputText?.Trim();
-            if (string.IsNullOrEmpty(name)) return;
-
-            foreach (var c in System.IO.Path.GetInvalidFileNameChars())
-                name = name.Replace(c, '_');
-
             var existing = BoardToolbarRegistry.ListConfigFiles();
-            if (existing.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                MessageBox.Show(FloatingBarStrings.ToolbarPage_DuplicateConfigExists, FloatingBarStrings.ToolbarPage_Hint, MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            var name = GenerateUniqueConfigName(existing, "Config");
 
             BoardToolbarRegistry.SaveConfigFile(name, BoardToolbarLayoutSettings.CreateDefault());
             SettingsManager.Settings.BoardToolbarConfigName = name;
@@ -153,23 +144,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var currentName = ComboBoxConfigFile.SelectedItem as string;
             if (string.IsNullOrEmpty(currentName)) return;
 
-            var dialog = new InputDialog(FloatingBarStrings.ToolbarPage_EnterNewConfigName, FloatingBarStrings.ToolbarPage_CopyConfig, currentName + "_copy")
-            {
-                Owner = Window.GetWindow(this)
-            };
-            if (dialog.ShowDialog() != true) return;
-            var name = dialog.InputText?.Trim();
-            if (string.IsNullOrEmpty(name)) return;
-
-            foreach (var c in System.IO.Path.GetInvalidFileNameChars())
-                name = name.Replace(c, '_');
-
             var existing = BoardToolbarRegistry.ListConfigFiles();
-            if (existing.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                MessageBox.Show(FloatingBarStrings.ToolbarPage_DuplicateConfigExists, FloatingBarStrings.ToolbarPage_Hint, MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            var name = GenerateUniqueConfigName(existing, currentName + "_copy");
 
             var layout = BoardToolbarRegistry.LoadConfigFile(currentName) ?? BoardToolbarLayoutSettings.CreateDefault();
             BoardToolbarRegistry.SaveConfigFile(name, layout);
@@ -178,6 +154,18 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             RefreshConfigFileList();
             LoadSettings();
             RebuildMainWindowBoardToolbar();
+        }
+
+        private static string GenerateUniqueConfigName(IReadOnlyList<string> existing, string baseName)
+        {
+            if (!existing.Contains(baseName, StringComparer.OrdinalIgnoreCase))
+                return baseName;
+            for (int i = 2; ; i++)
+            {
+                var candidate = $"{baseName}{i}";
+                if (!existing.Contains(candidate, StringComparer.OrdinalIgnoreCase))
+                    return candidate;
+            }
         }
 
         private void ButtonDeleteConfig_Click(object sender, RoutedEventArgs e)
@@ -205,6 +193,25 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             RefreshConfigFileList();
             LoadSettings();
             RebuildMainWindowBoardToolbar();
+        }
+
+        private void ButtonRefreshConfig_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshConfigFileList();
+            LoadSettings();
+            RebuildMainWindowBoardToolbar();
+        }
+
+        private void ButtonOpenConfigFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var dir = BoardToolbarRegistry.GetConfigDirectory();
+            if (!System.IO.Directory.Exists(dir))
+                System.IO.Directory.CreateDirectory(dir);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = dir,
+                UseShellExecute = true
+            });
         }
 
         #endregion
@@ -358,6 +365,20 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
         }
 
+        private void GroupChildList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ListView listView)
+            {
+                SettingsListItemHelper.UpdateRemoveButtonVisibility(listView, "BtnRemoveGroupChild");
+            }
+        }
+
+        private void LibraryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ItemsControl itemsControl)
+                SettingsListItemHelper.UpdateButtonVisibility(itemsControl, "BtnAddItem");
+        }
+
         private void AddLibraryItem_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.DataContext is IBoardToolbarItem item)
@@ -380,44 +401,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void ButtonAddGroup_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new InputDialog(
-                FloatingBarStrings.BoardToolbarPage_NewGroupName,
-                FloatingBarStrings.BoardToolbarPage_AddGroup2,
-                "newGroup")
-            { Owner = Window.GetWindow(this) };
-            if (dialog.ShowDialog() != true) return;
-
-            var name = dialog.InputText?.Trim();
-            if (string.IsNullOrWhiteSpace(name)) return;
-
-            var group = new BoardToolbarGroupEntry { Id = name };
+            var group = new BoardToolbarGroupEntry { Id = $"group-{Guid.NewGuid():N}" };
             AreaGroups.Add(group);
-            SaveSettings();
-        }
-
-        private void AddComponentToGroup_Click(object sender, RoutedEventArgs e)
-        {
-            var group = (sender as FrameworkElement)?.DataContext as BoardToolbarGroupEntry;
-            if (group == null) return;
-
-            var available = AvailableItems.Where(i => !group.Components.Any(c => c.Id == i.Id)).ToList();
-            var dialog = new BoardToolbarComponentPickerDialog(available)
-            {
-                Owner = Window.GetWindow(this)
-            };
-            if (dialog.ShowDialog() != true) return;
-
-            var selectedId = dialog.SelectedId;
-            if (string.IsNullOrEmpty(selectedId)) return;
-
-            var item = AvailableItems.FirstOrDefault(i => i.Id == selectedId);
-            var entry = new BoardToolbarComponentEntry
-            {
-                Id = selectedId
-            };
-            group.Components.Add(entry);
-            SelectedEntry = entry;
-            RefreshGroupsDisplay();
             SaveSettings();
         }
 
@@ -426,6 +411,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var group = (sender as FrameworkElement)?.DataContext as BoardToolbarGroupEntry;
             if (group == null) return;
             AreaGroups.Remove(group);
+            SaveSettings();
+        }
+
+        private void InsertGroupBelow_Click(object sender, RoutedEventArgs e)
+        {
+            var group = (sender as FrameworkElement)?.DataContext as BoardToolbarGroupEntry;
+            if (group == null) return;
+
+            var newGroup = new BoardToolbarGroupEntry { Id = $"group-{Guid.NewGuid():N}" };
+            var index = AreaGroups.IndexOf(group);
+            AreaGroups.Insert(index + 1, newGroup);
             SaveSettings();
         }
 
@@ -600,6 +596,49 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         }
     }
 
+    public class BoardGroupListDropHandler : IDropTarget
+    {
+        private readonly BoardToolbarPage _page;
+
+        public BoardGroupListDropHandler(BoardToolbarPage page)
+        {
+            _page = page;
+        }
+
+        public void DragEnter(IDropInfo dropInfo) { }
+
+        public void DragLeave(IDropInfo dropInfo) { }
+
+        public void DropHint(IDropHintInfo dropHintInfo) { }
+
+        public void DragOver(IDropInfo dropInfo)
+        {
+            if (dropInfo.Data is BoardToolbarGroupEntry)
+            {
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+        }
+
+        public void Drop(IDropInfo dropInfo)
+        {
+            if (!(dropInfo.Data is BoardToolbarGroupEntry group)) return;
+
+            var oldIndex = _page.AreaGroups.IndexOf(group);
+            if (oldIndex == -1) return;
+
+            var newIndex = dropInfo.UnfilteredInsertIndex;
+            if (oldIndex < newIndex) newIndex--;
+            newIndex = Math.Max(0, Math.Min(newIndex, _page.AreaGroups.Count - 1));
+
+            if (oldIndex != newIndex)
+            {
+                _page.AreaGroups.Move(oldIndex, newIndex);
+                _page.SaveSettings();
+            }
+        }
+    }
+
     #region Converters
 
     public class BoardIdToDisplayNameConverter : IValueConverter
@@ -613,6 +652,43 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 return item?.DisplayName ?? id;
             }
             return value ?? "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoardIdToIconKeyConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = BoardToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                return item?.IconKey;
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoardIdToIconVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = BoardToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                var mode = parameter?.ToString();
+                if (mode == "fontIcon")
+                    return item?.IconKey != null ? Visibility.Visible : Visibility.Collapsed;
+                return !string.IsNullOrEmpty(item?.IconGeometry) ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -673,16 +749,18 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             => throw new NotImplementedException();
     }
 
-    public class BoardNullToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value == null ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
-    }
-
     #endregion
+
+    /// <summary>
+    /// 将白板工具栏组件 Id 直接转换为 Path 可用的 Geometry 对象。
+    /// </summary>
+    public class BoardIdToPathDataConverter : IdToPathDataConverterBase
+    {
+        protected override string ConvertIdToGeometryString(string id)
+        {
+            var items = BoardToolbarRegistry.Discover();
+            var item = items.FirstOrDefault(i => i.Id == id);
+            return item?.IconGeometry;
+        }
+    }
 }

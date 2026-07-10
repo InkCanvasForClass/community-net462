@@ -1,18 +1,33 @@
 using GongSolutions.Wpf.DragDrop;
 using Ink_Canvas.Controls.Toolbar;
+using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
     public partial class ToolbarMenuPage : Page, IDropTarget
     {
+        private void ListViewItem_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Control control)
+            {
+                control.ApplyTemplate();
+                if (control.Template.FindName("PressedBackground", control) is FrameworkElement indicator)
+                {
+                    indicator.Width = 3;
+                }
+            }
+        }
+
         private bool _suppressSave;
 
         public ObservableCollection<string> AddedItems { get; } = new ObservableCollection<string>();
@@ -76,6 +91,16 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 RefreshLibraryList();
                 SaveSettings();
             }
+        }
+
+        private void AddedList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SettingsListItemHelper.UpdateRemoveButtonVisibility(AddedList, "BtnRemoveItem");
+        }
+
+        private void LibraryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SettingsListItemHelper.UpdateButtonVisibility(LibraryList, "BtnAddItem");
         }
 
         private void ButtonReset_Click(object sender, RoutedEventArgs e)
@@ -155,6 +180,15 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class MenuItemIdToPathDataConverter : IdToPathDataConverterBase
+    {
+        protected override string ConvertIdToGeometryString(string id)
+        {
+            var item = ToolsMenuRegistry.FindItem(id);
+            return item?.IconGeometry;
         }
     }
 }

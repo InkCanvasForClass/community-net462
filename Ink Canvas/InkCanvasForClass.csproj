@@ -124,7 +124,7 @@
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
     <PackageReference Include="System.Composition.AttributedModel" Version="1.2.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Management" Version="6.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NHotkey.Wpf" Version="4.0.0" />
     <PackageReference Include="OSVersionExt" Version="4.1.0" />
@@ -153,10 +153,10 @@
           DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
           Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll')" />
     <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.vsto"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
+          DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false"
           Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.vsto')" />
     <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll.manifest"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
+          DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false"
           Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll.manifest')" />
     <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.v4.0.Utilities.dll"
           DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
@@ -173,9 +173,9 @@
     <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.VisualStudio.Tools.Applications.Runtime.dll"
           DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
           Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.VisualStudio.Tools.Applications.Runtime.dll')" />
-    <Copy SourceFiles="..\InkCanvas.PPTAgent.Contracts\bin\$(Configuration)\netstandard2.0\InkCanvas.PPTAgent.Contracts.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('..\InkCanvas.PPTAgent.Contracts\bin\$(Configuration)\netstandard2.0\InkCanvas.PPTAgent.Contracts.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PPTAgent.Contracts.dll"
+          DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false"
+          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PPTAgent.Contracts.dll')" />
     <Copy SourceFiles="$(NuGetPackageRoot)newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll"
           DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
           Condition="Exists('$(NuGetPackageRoot)newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll')" />

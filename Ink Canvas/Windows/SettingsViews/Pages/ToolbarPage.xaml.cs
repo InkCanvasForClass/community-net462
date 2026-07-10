@@ -20,6 +20,18 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
     public partial class ToolbarPage : Page, IDropTarget
     {
+        private void ListViewItem_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Control control)
+            {
+                control.ApplyTemplate();
+                if (control.Template.FindName("PressedBackground", control) is FrameworkElement indicator)
+                {
+                    indicator.Width = 3;
+                }
+            }
+        }
+
         private static readonly string LogTag = "ToolbarPage";
         private bool _isLoaded;
         private bool _suppressConfigChange;
@@ -168,14 +180,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             Loaded += OnPageLoaded;
         }
 
-        private void NestedScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (PageScrollViewer == null) return;
-
-            PageScrollViewer.ScrollToVerticalOffset(PageScrollViewer.VerticalOffset - e.Delta);
-            e.Handled = true;
-        }
-
         private void OnPageLoaded(object sender, RoutedEventArgs e)
         {
             try { LoadSettings(); }
@@ -299,6 +303,25 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             RefreshConfigFileList();
             LoadSettings();
             RebuildMainWindowToolbar();
+        }
+
+        private void ButtonRefreshConfig_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshConfigFileList();
+            LoadSettings();
+            RebuildMainWindowToolbar();
+        }
+
+        private void ButtonOpenConfigFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var dir = ToolbarRegistry.GetConfigDirectory();
+            if (!System.IO.Directory.Exists(dir))
+                System.IO.Directory.CreateDirectory(dir);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = dir,
+                UseShellExecute = true
+            });
         }
 
         #endregion
@@ -494,6 +517,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         #region Item management
 
+        private void AddedList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SettingsListItemHelper.UpdateRemoveButtonVisibility(AddedList, "BtnRemoveItem");
+        }
+
+        private void GroupChildrenListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SettingsListItemHelper.UpdateRemoveButtonVisibility(GroupChildrenListBox, "BtnRemoveItem");
+        }
+
+
         private void RemoveItem_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.DataContext is ToolbarComponentEntry entry)
@@ -502,6 +536,32 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 if (SelectedEntry == entry) SelectedEntry = null;
                 SaveSettings();
             }
+        }
+
+        private void ItemsList_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is not Button btn) return;
+            if (btn.Tag?.ToString() == "RemoveItem")
+            {
+                RemoveItem_Click(btn, e);
+                e.Handled = true;
+            }
+        }
+
+        private void GroupChildrenList_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is not Button btn) return;
+            if (btn.Tag?.ToString() == "RemoveItem")
+            {
+                RemoveGroupChildItem_Click(btn, e);
+                e.Handled = true;
+            }
+        }
+
+        private void LibraryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ItemsControl itemsControl)
+                SettingsListItemHelper.UpdateButtonVisibility(itemsControl, "BtnAddItem");
         }
 
         private void CheckBoxShowSeparateBorder_Changed(object sender, RoutedEventArgs e)
@@ -985,6 +1045,75 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         }
     }
 
+    public class IdToIconGeometryConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = ToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                return item?.IconGeometry;
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class IdToIconKeyConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = ToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                return item?.IconKey;
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class IdToIconVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = ToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                var mode = parameter?.ToString();
+                if (mode == "fontIcon")
+                    return item?.IconKey != null ? Visibility.Visible : Visibility.Collapsed;
+                return !string.IsNullOrEmpty(item?.IconGeometry) ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// 将组件 Id 直接转换为 Path 可用的 Geometry 对象（组合 IdToIconGeometry + StringToGeometry 两步）。
+    /// </summary>
+    public class IdToPathDataConverter : IdToPathDataConverterBase
+    {
+        protected override string ConvertIdToGeometryString(string id)
+        {
+            var items = ToolbarRegistry.Discover();
+            var item = items.FirstOrDefault(i => i.Id == id);
+            return item?.IconGeometry;
+        }
+    }
+
     public class ConditionIdToNameConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -1042,18 +1171,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         }
     }
 
-    public class NullToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value == null ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
 
     public class InputDialog : Window
     {
