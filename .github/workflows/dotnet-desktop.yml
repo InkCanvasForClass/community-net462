@@ -16,10 +16,14 @@ jobs:
   build-vsto:
     name: Build VSTO
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x86, x64]
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 1
 
@@ -28,9 +32,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            InkCanvas.PowerPointAddIn/bin/Release
-            InkCanvas.PPTAgent.Contracts/bin/Release
-          key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
+            InkCanvas.PowerPointAddIn/bin/${{ matrix.architecture }}/Release
+            InkCanvas.PPTAgent.Contracts/bin/${{ matrix.architecture }}/Release
+          key: vsto-${{ matrix.architecture }}-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
 
       - parallel:
 
@@ -95,11 +99,13 @@ jobs:
         run: |
           msbuild "InkCanvas.PowerPointAddIn/InkCanvas.PowerPointAddIn.csproj" `
             /p:Configuration=Release `
+            /p:Platform=${{ matrix.architecture }} `
+            /p:OutputPath="bin\${{ matrix.architecture }}\Release\" `
             /p:SignManifests=true `
             /p:ManifestCertificateThumbprint=$env:SIGN_THUMBPRINT `
             /verbosity:minimal -maxcpucount
           
-          if (Test-Path "InkCanvas.PowerPointAddIn\bin\Release\InkCanvas.PowerPointAddIn.dll") {
+          if (Test-Path "InkCanvas.PowerPointAddIn\bin\${{ matrix.architecture }}\Release\InkCanvas.PowerPointAddIn.dll") {
             Write-Host "VSTO DLL OK"
           } else {
             Write-Error "VSTO DLL not found"
@@ -129,15 +135,23 @@ jobs:
         - name: Restore Package 
           run: dotnet restore "Ink Canvas.sln"
 
-        - name: Cache VSTO build output
-          id: cache-vsto-restore
-          if: matrix.minimize != 'true'
+        - name: Restore x64 VSTO
+          if: matrix.architecture == 'AnyCPU' && matrix.minimize != 'true'
           uses: actions/cache@v5
           with:
             path: |
-              InkCanvas.PowerPointAddIn/bin/Release
-              InkCanvas.PPTAgent.Contracts/bin/Release
-            key: vsto-${{ hashFiles('InkCanvas.PowerPointAddIn/**')}}
+              InkCanvas.PowerPointAddIn/bin/x64/Release
+              InkCanvas.PPTAgent.Contracts/bin/x64/Release
+            key: vsto-x64-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
+
+        - name: Restore x86 VSTO
+          if: matrix.architecture == 'x86' && matrix.minimize != 'true'
+          uses: actions/cache@v5
+          with:
+            path: |
+              InkCanvas.PowerPointAddIn/bin/x86/Release
+              InkCanvas.PPTAgent.Contracts/bin/x86/Release
+            key: vsto-x86-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
 
       - name: Build the Solution
         env:
