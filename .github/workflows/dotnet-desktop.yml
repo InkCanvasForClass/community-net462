@@ -125,6 +125,10 @@ jobs:
         exclude:
           - architecture: arm64
             nativeImage: true
+          - architecture: x86
+            nativeImage: false
+          - architecture: x64
+            nativeImage: false
     steps:
       - parallel:
         - name: Checkout code
