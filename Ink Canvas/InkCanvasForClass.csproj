@@ -54,6 +54,7 @@
   <PropertyGroup>
     <Minimize Condition="'$(Minimize)' == ''">false</Minimize>
     <DefineConstants Condition="'$(Minimize)' == 'true'">MINIMIZE;$(DefineConstants)</DefineConstants>
+    <EnableNativeImage Condition="'$(EnableNativeImage)' == ''">false</EnableNativeImage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
@@ -136,6 +137,12 @@
     <PackageReference Include="WebDav.Client" Version="2.9.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+  <ItemGroup Condition="$(EnableNativeImage) == 'true' And $(Platform) != 'AnyCPU' And $(Platform) != 'ARM64'">
+    <PackageReference Include="Microsoft.DotNet.Framework.NativeImageCompiler" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\InkCanvas.PluginSdk\InkCanvas.PluginSdk.csproj" />

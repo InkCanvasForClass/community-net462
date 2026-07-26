@@ -119,8 +119,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [AnyCPU, x86, arm64]
+        architecture: [x86, x64, arm64]
         minimize: [true, false]
+        nativeImage: [true, false]
+      exclude:
+        - architecture: arm64
+          nativeImage: true
     steps:
       - parallel:
         - name: Checkout code
@@ -135,16 +139,7 @@ jobs:
         - name: Restore Package 
           run: dotnet restore "Ink Canvas.sln"
 
-        - name: Restore x64 VSTO
-          if: matrix.architecture == 'AnyCPU' && matrix.minimize != 'true'
-          uses: actions/cache@v5
-          with:
-            path: |
-              InkCanvas.PowerPointAddIn/bin/x64/Release
-              InkCanvas.PPTAgent.Contracts/bin/x64/Release
-            key: vsto-x64-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
-
-        - name: Restore x86 VSTO
+        - name: Restore x86
           if: matrix.architecture == 'x86' && matrix.minimize != 'true'
           uses: actions/cache@v5
           with:
@@ -153,13 +148,21 @@ jobs:
               InkCanvas.PPTAgent.Contracts/bin/x86/Release
             key: vsto-x86-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
 
+        - name: Restore x64
+          if: matrix.architecture == 'x64' && matrix.minimize != 'true'
+          uses: actions/cache@v5
+          with:
+            path: |
+              InkCanvas.PowerPointAddIn/bin/x64/Release
+              InkCanvas.PPTAgent.Contracts/bin/x64/Release
+            key: vsto-x64-${{ hashFiles('InkCanvas.PowerPointAddIn/**') }}
+
       - name: Build the Solution
         env:
           DLASS_TELEMETRY_TOKEN: ${{ secrets.DLASS_TELEMETRY_TOKEN }}
         run: |
           $platform = "${{ matrix.architecture }}"
-          if ($platform -eq "AnyCPU") { $platform = "Any CPU" }
-          dotnet build -c Release -p:platform="$platform" -p:GitFlow="$GITFLOW" -p:Minimize="${{ matrix.minimize }}" --no-restore -m
+          dotnet build -c Release -p:platform="$platform" -p:GitFlow="$GITFLOW" -p:Minimize="${{ matrix.minimize }}" -p:EnableNativeImage="${{ matrix.nativeImage }}" --no-restore -m
 
       - name: Build & Upload
         id: build-result
@@ -183,7 +186,7 @@ jobs:
           if: steps.build-result.outputs.build_success == 'true'
           uses: actions/upload-artifact@v7
           with:
-            name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ case(matrix.minimize == true, '.minimize', '') }}
+            name: InkCanvasForClass.CE.${{ matrix.architecture }}${{ case(matrix.minimize == true, '.minimize', '') }}${{ case(matrix.nativeImage == true, '.native', '') }}
             path: "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/*"
             compression-level: 9
 
@@ -197,6 +200,7 @@ jobs:
             VERSION="debug-${SHORT_SHA}-${GITHUB_RUN_NUMBER}"
             ARCH="${{ matrix.architecture }}"
             [ "$MINIMIZE" = "true" ] && SUFFIX=".minimize" || SUFFIX=""
+            [ "${{ matrix.nativeImage }}" = "true" ] && SUFFIX="${SUFFIX}.native"
             ARTIFACT="InkCanvasForClass.CE.${ARCH}${SUFFIX}"
 
             echo "# Build Summary" >> $GITHUB_STEP_SUMMARY
@@ -210,6 +214,7 @@ jobs:
               echo "**Version:** ${{ steps.create-archive.outputs.archive_name }}" >> $GITHUB_STEP_SUMMARY
               echo "**Architecture:** ${{ matrix.architecture }}" >> $GITHUB_STEP_SUMMARY
               echo "**Minimize:** $MINIMIZE" >> $GITHUB_STEP_SUMMARY
+              echo "**Native Image:** ${{ matrix.nativeImage }}" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "[Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
@@ -218,6 +223,7 @@ jobs:
               else
                 suffix=""
               fi
+              [ "${{ matrix.nativeImage }}" = "true" ] && suffix="${suffix}.native"
               echo "[Nightly.link Download](https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) \([GhProxy Fastly Mirror](https://cdn.gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip) / [GhProxy Mirror](https://gh-proxy.com/nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/InkCanvasForClass.CE.${{ matrix.architecture }}$suffix.zip)\)" >> $GITHUB_STEP_SUMMARY
             else
               echo "## ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
