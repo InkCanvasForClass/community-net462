@@ -122,9 +122,9 @@ jobs:
         architecture: [x86, x64, arm64]
         minimize: [true, false]
         nativeImage: [true, false]
-      exclude:
-        - architecture: arm64
-          nativeImage: true
+        exclude:
+          - architecture: arm64
+            nativeImage: true
     steps:
       - parallel:
         - name: Checkout code
