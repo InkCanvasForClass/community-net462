@@ -112,6 +112,29 @@ jobs:
             exit 1
           }
 
+      - name: Upload VSTO Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: InkCanvas.VSTO.${{ matrix.architecture }}
+          path: |
+            InkCanvas.PowerPointAddIn/bin/${{ matrix.architecture }}/Release
+            InkCanvas.PPTAgent.Contracts/bin/${{ matrix.architecture }}/Release
+          compression-level: 9
+
+      - name: VSTO Build Summary
+        if: always()
+        shell: pwsh
+        run: |
+          $ok = (Test-Path "InkCanvas.PowerPointAddIn/bin/${{ matrix.architecture }}/Release/InkCanvas.PowerPointAddIn.vsto")
+          if ($ok) {
+            Add-Content $env:GITHUB_STEP_SUMMARY "## ✅ VSTO (${{ matrix.architecture }}) Built`n"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- **Commit:** \`${{ github.sha }}\`  "
+            Add-Content $env:GITHUB_STEP_SUMMARY "- **Run:** #${{ github.run_number }}  "
+            Add-Content $env:GITHUB_STEP_SUMMARY "- **Download:** [Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})  "
+          } else {
+            Add-Content $env:GITHUB_STEP_SUMMARY "## ❌ VSTO (${{ matrix.architecture }}) Failed`n"
+          }
+
   build-and-package:
     name: Build & Package
     runs-on: windows-latest
