@@ -2330,8 +2330,8 @@ namespace Ink_Canvas
             bool isDrawBottom = true)
         {
             // 防御：画布被极端缩放/平移时识别出的椭圆中心/半轴可能非有限，直接返回空避免生成 NaN 点。
-            if (!double.IsFinite(st.X) || !double.IsFinite(st.Y) ||
-                !double.IsFinite(ed.X) || !double.IsFinite(ed.Y))
+            if (!MathExtensions.IsFinite(st.X) || !MathExtensions.IsFinite(st.Y) ||
+                !MathExtensions.IsFinite(ed.X) || !MathExtensions.IsFinite(ed.Y))
                 return new List<Point>();
 
             var a = 0.5 * (ed.X - st.X);
@@ -2378,8 +2378,8 @@ namespace Ink_Canvas
         {
             var strokes = new StrokeCollection();
             // 防御：非有限坐标直接返回空集，避免生成 NaN 笔画。
-            if (!double.IsFinite(st.X) || !double.IsFinite(st.Y) ||
-                !double.IsFinite(ed.X) || !double.IsFinite(ed.Y))
+            if (!MathExtensions.IsFinite(st.X) || !MathExtensions.IsFinite(st.Y) ||
+                !MathExtensions.IsFinite(ed.X) || !MathExtensions.IsFinite(ed.Y))
                 return strokes;
 
             var a = 0.5 * (ed.X - st.X);

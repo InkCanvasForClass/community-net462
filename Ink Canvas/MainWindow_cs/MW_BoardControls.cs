@@ -43,7 +43,6 @@ namespace Ink_Canvas
             {
                 if (_currentWhiteboardIndex == value) return;
                 _currentWhiteboardIndex = value;
-                RaisePluginEvent(PluginWhiteboardPageChanged, _currentWhiteboardIndex, WhiteboardTotalCount, nameof(PluginWhiteboardPageChanged));
             }
         }
 
@@ -59,7 +58,6 @@ namespace Ink_Canvas
             {
                 if (_whiteboardTotalCount == value) return;
                 _whiteboardTotalCount = value;
-                RaisePluginEvent(PluginWhiteboardPageChanged, CurrentWhiteboardIndex, _whiteboardTotalCount, nameof(PluginWhiteboardPageChanged));
             }
         }
 

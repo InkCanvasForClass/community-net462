@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="InkCanvas.PluginSdk.targets" Pack="True" PackagePath="build/net462" />
   </ItemGroup>
 

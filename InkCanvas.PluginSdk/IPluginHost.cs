@@ -45,6 +45,10 @@ namespace Ink_Canvas.Plugins
         public string Description { get; set; }
         public PluginToolbarSettingType Type { get; set; }
         public List<string> Options { get; set; } = new List<string>();
+        public List<string> OptionValues { get; set; }
+        public double? MinValue { get; set; }
+        public double? MaxValue { get; set; }
+        public double? StepSize { get; set; }
         public string DefaultValue { get; set; }
     }
 

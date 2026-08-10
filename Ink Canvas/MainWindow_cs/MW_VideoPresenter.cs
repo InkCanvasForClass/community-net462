@@ -1108,7 +1108,7 @@ namespace Ink_Canvas
                 int atIdx = key.IndexOf('@');
                 string whPart = atIdx > 0 ? key.Substring(0, atIdx) : key;
                 string fpsPart = atIdx > 0 && atIdx < key.Length - 1 ? key.Substring(atIdx + 1) : null;
-                int xIdx = whPart.IndexOf('x', StringComparison.OrdinalIgnoreCase);
+                int xIdx = whPart.IndexOf("x", StringComparison.OrdinalIgnoreCase);
                 if (xIdx <= 0 || xIdx >= whPart.Length - 1) return;
                 if (!int.TryParse(whPart.Substring(0, xIdx), out parsedW) || parsedW <= 0) return;
                 if (!int.TryParse(whPart.Substring(xIdx + 1), out parsedH) || parsedH <= 0) return;

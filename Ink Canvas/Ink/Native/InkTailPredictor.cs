@@ -200,7 +200,7 @@ namespace Ink_Canvas.Ink.Native
             // 循环内每步调用是主要热路径。改用「缓存平方」：循环里直接读 speedSq，
             // 只在速度矢量旋转后做一次 sqrt 更新。
             var initialSpeedSq = (float)(vx * vx + vy * vy);
-            var initialSpeed = MathF.Sqrt(initialSpeedSq);
+            var initialSpeed = (float)Math.Sqrt(initialSpeedSq);
             var distanceCap = Math.Min(
                 MaxPredictionDistancePx,
                 Math.Max(MinPredictionDistancePx, initialSpeed * (MinHorizonMilliseconds * 0.001)));
@@ -215,13 +215,12 @@ namespace Ink_Canvas.Ink.Native
                 {
                     // 直接读缓存的平方，避免 Math.Sqrt；速度变化只是方向旋转，
                     // magnitude^2 = vx^2 + vy^2 在 (c,s) 旋转下守恒。
-                    var stepDist = stepSeconds * MathF.Sqrt(speedSq);
+                    var stepDist = stepSeconds * (float)Math.Sqrt(speedSq);
                     // Δθ = κ · Δs（弧长 × 曲率）。截到 MaxStepAngleRadians 防止
                     // 小半径 + 大步长导致单步大幅旋转（高速过急弯时笔尾瞬时甩飞）。
-                    var deltaAngle = Math.Clamp(
-                        curvature * stepDist,
-                        -MaxStepAngleRadians,
-                        MaxStepAngleRadians);
+                    var deltaAngle = Math.Min(
+                        MaxStepAngleRadians,
+                        Math.Max(-MaxStepAngleRadians, curvature * stepDist));
                     var c = Math.Cos(deltaAngle);
                     var s = Math.Sin(deltaAngle);
                     var nvx = vx * c - vy * s;
@@ -256,19 +255,19 @@ namespace Ink_Canvas.Ink.Native
                 {
                     if (stepDistance > 0.0001)
                     {
-                        var t = Math.Clamp((distanceCap - traveled) / stepDistance, 0.0, 1.0);
+                        var t = Math.Min(1.0, Math.Max(0.0, (distanceCap - traveled) / stepDistance));
                         var endX = prevX + (currX - prevX) * t;
                         var endY = prevY + (currY - prevY) * t;
                         if (IsFinite(endX) && IsFinite(endY) && t > 0.001)
                         {
                             stamp += (long)(stepMicroseconds * t);
-                            var endTaper = MathF.Pow(
+                            var endTaper = (float)Math.Pow(
                                 TailPressureTaperF,
-                                (float)((i + t) / pointCount));
+                                (i + t) / pointCount);
                             result.Add(new PredictedInkPoint(
                                 endX,
                                 endY,
-                                Math.Clamp(pressure * endTaper, 0.08f, 1.0f),
+                                Math.Min(1.0f, Math.Max(0.08f, pressure * endTaper)),
                                 stamp));
                         }
                     }
@@ -285,8 +284,8 @@ namespace Ink_Canvas.Ink.Native
                 // ARM64 上 Math.Pow 走 libm 标量，MathF.Pow 至少走单精度库；
                 // 18 步 × ~120Hz = ~2k calls/s，主热路径之一。
                 var progress = (i + 1) / (float)pointCount;
-                var taper = MathF.Pow(TailPressureTaperF, progress);
-                var predictedPressure = Math.Clamp(pressure * taper, 0.08f, 1.0f);
+                var taper = (float)Math.Pow(TailPressureTaperF, progress);
+                var predictedPressure = Math.Min(1.0f, Math.Max(0.08f, pressure * taper));
                 result.Add(new PredictedInkPoint(currX, currY, predictedPressure, stamp));
             }
 
@@ -358,7 +357,7 @@ namespace Ink_Canvas.Ink.Native
                 horizon = Math.Min(horizon, distanceLimitedMs);
             }
 
-            horizon = Math.Clamp(horizon, MinHorizonMilliseconds, MaxHorizonMilliseconds);
+            horizon = Math.Min(MaxHorizonMilliseconds, Math.Max(MinHorizonMilliseconds, horizon));
             return horizon * 1000.0;
         }
 
@@ -412,7 +411,7 @@ namespace Ink_Canvas.Ink.Native
                 if (!TryDirection(realPoints[i - 1], realPoints[i], out var currX, out var currY))
                     continue;
 
-                var dot = Math.Clamp(prevX * currX + prevY * currY, -1.0, 1.0);
+                var dot = Math.Min(1.0, Math.Max(-1.0, prevX * currX + prevY * currY));
                 angleSum += weight * Math.Acos(dot) * (180.0 / Math.PI);
                 weightSum += weight;
             }
@@ -639,7 +638,7 @@ namespace Ink_Canvas.Ink.Native
 
             // 钳到可用区间：|κ| 过大（R<80px）多为报点噪声放大，按上限截断；
             // 低于下限的留给调用方判定为直线（这里不置零，平滑器需要连续输入）。
-            return Math.Clamp(curvature, -MaxUsableCurvature, MaxUsableCurvature);
+            return Math.Min(MaxUsableCurvature, Math.Max(-MaxUsableCurvature, curvature));
         }
 
         private static double SmoothStep(double t) => t * t * (3.0 - 2.0 * t);

@@ -151,8 +151,7 @@
     <PackageReference Include="MessagePack" Version="3.1.8" />
     <PackageReference Include="NHotkey.Wpf" Version="4.0.0" />
     <PackageReference Include="OSVersionExt" Version="4.1.0" />
-    <!-- PDFsharp 6.1.x 是最后一个以 net6.0 为目标框架的版本；用于插件「背景 + 墨迹」导出 PDF -->
-    <PackageReference Include="PDFsharp" Version="6.1.1" />
+    <PackageReference Include="PDFsharp" Version="6.2.4" />
     <!-- AForge.Imaging / AForge.Math 仅用于照片校正（Grayscale/CannyEdgeDetector/BlobCounter/QuadrilateralTransformation）；摄像头采集已切换到 DirectShow（DirectShowLib） -->
     <PackageReference Include="AForge.Imaging" Version="2.2.5" />
     <PackageReference Include="AForge.Math" Version="2.2.5" />
@@ -185,41 +184,22 @@
     <ProjectReference Include="..\InkCanvas.LiquidGlassMagHost\InkCanvas.LiquidGlassMagHost.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Private>false</Private>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <UpToDateCheckInput Include="..\InkCanvas.Controls\**\*.xaml" />
   </ItemGroup>
-  <Target Name="CopyVstoAgent" AfterTargets="Build" Condition="'$(Minimize)' != 'true'" >
+  <Target Name="CopyVstoAgent" AfterTargets="Build" Condition="'$(Minimize)' != 'true'">
     <MakeDir Directories="$(OutDir)ppt-agent" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.vsto"
-          DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.vsto')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll.manifest"
-          DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll.manifest')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.v4.0.Utilities.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.v4.0.Utilities.dll')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.dll')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.dll')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.v4.0.Framework.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.v4.0.Framework.dll')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.VisualStudio.Tools.Applications.Runtime.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.VisualStudio.Tools.Applications.Runtime.dll')" />
-    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PPTAgent.Contracts.dll"
-          DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false"
-          Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PPTAgent.Contracts.dll')" />
-    <Copy SourceFiles="$(NuGetPackageRoot)newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll"
-          DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true"
-          Condition="Exists('$(NuGetPackageRoot)newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll" DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.vsto" DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.vsto')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll.manifest" DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PowerPointAddIn.dll.manifest')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.v4.0.Utilities.dll" DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.v4.0.Utilities.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.dll" DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.Common.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.dll" DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.v4.0.Framework.dll" DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.Office.Tools.v4.0.Framework.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.VisualStudio.Tools.Applications.Runtime.dll" DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\Microsoft.VisualStudio.Tools.Applications.Runtime.dll')" />
+    <Copy SourceFiles="..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PPTAgent.Contracts.dll" DestinationFolder="$(OutputPath)ppt-agent" SkipUnchangedFiles="false" Condition="Exists('..\InkCanvas.PowerPointAddIn\bin\$(Configuration)\InkCanvas.PPTAgent.Contracts.dll')" />
+    <Copy SourceFiles="$(NuGetPackageRoot)newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll" DestinationFolder="$(OutDir)ppt-agent" SkipUnchangedFiles="true" Condition="Exists('$(NuGetPackageRoot)newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll')" />
   </Target>
   <ItemGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
     <COMReference Include="IWshRuntimeLibrary">
@@ -659,20 +639,16 @@
        CI 的 AnyCPU(=x64 产物)/x86 构建都能带上辅助 exe；单文件发布走 Publish 分支。 -->
   <Target Name="CopyLiquidGlassMagHost" AfterTargets="Build" Condition="'$(PublishSingleFile)' != 'true'">
     <ItemGroup>
-      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
-                                Condition="'$(Platform)' != 'AnyCPU'" />
-      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
-                                Condition="'$(Platform)' == 'AnyCPU'" />
+      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' != 'AnyCPU'" />
+      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' == 'AnyCPU'" />
     </ItemGroup>
     <Copy SourceFiles="@(LiquidGlassMagHostFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="'@(LiquidGlassMagHostFiles)' != ''" />
   </Target>
 
   <Target Name="CopyLiquidGlassMagHostToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishSingleFile)' == 'true'">
     <ItemGroup>
-      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
-                                      Condition="'$(Platform)' != 'AnyCPU'" />
-      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
-                                      Condition="'$(Platform)' == 'AnyCPU'" />
+      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' != 'AnyCPU'" />
+      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' == 'AnyCPU'" />
     </ItemGroup>
     <Copy SourceFiles="@(LiquidGlassMagHostPublishFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="'@(LiquidGlassMagHostPublishFiles)' != ''" />
   </Target>

@@ -192,7 +192,7 @@ namespace Ink_Canvas.Ink.Native
         /// <summary>由 Live JSON 刷新时快照累计分配字节（测 GC 压力）。</summary>
         public static void UpdateGcAllocatedBytes()
         {
-            var now = GC.GetTotalAllocatedBytes();
+            var now = GC.GetTotalMemory(forceFullCollection: false);
             if (_gcAllocatedBytesAtLastFlush != 0)
                 _gcAllocatedSinceLastFlushBytes = (now - _gcAllocatedBytesAtLastFlush) / (1024.0 * 1024.0);
             _gcAllocatedBytesAtLastFlush = now;

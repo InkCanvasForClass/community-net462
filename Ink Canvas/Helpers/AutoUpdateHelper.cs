@@ -25,6 +25,12 @@ namespace Ink_Canvas.Helpers
     {
         // 定义超时时间为10秒
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
+
+        private static bool MatchesOrdinalIgnoreCase(string text, string needle)
+        {
+            return text?.IndexOf(needle, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         private static readonly string updatesFolderPath = Path.Combine(AppContext.BaseDirectory, "AutoUpdate");
         private static string statusFilePath;
         private static readonly HashSet<string> UpdateFilesToOverwrite = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -1768,15 +1774,15 @@ namespace Ink_Canvas.Helpers
                         }
                         // 仅对文件占用类异常重试；其它异常重试一次后放弃
                         bool isFileLock = ex is IOException && ex.Message != null &&
-                            (ex.Message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase) ||
-                             ex.Message.Contains("正由另一进程使用", StringComparison.OrdinalIgnoreCase));
+                            (MatchesOrdinalIgnoreCase(ex.Message, "being used by another process") ||
+                             MatchesOrdinalIgnoreCase(ex.Message, "正由另一进程使用"));
                         if (!isFileLock) break;
                     }
                 }
                 LogHelper.WriteLogToFile($"AutoUpdate | 合并分块文件最终失败: {mergeError?.Message}", LogHelper.LogType.Error);
                 bool finalFileLock = mergeError is IOException && mergeError.Message != null &&
-                    (mergeError.Message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase) ||
-                     mergeError.Message.Contains("正由另一进程使用", StringComparison.OrdinalIgnoreCase));
+                    (MatchesOrdinalIgnoreCase(mergeError.Message, "being used by another process") ||
+                     MatchesOrdinalIgnoreCase(mergeError.Message, "正由另一进程使用"));
                 progressCallback?.Invoke(0, finalFileLock
                         ? UpdateStrings.Msg_UpdateFileInUse
                         : string.Format(UpdateStrings.Msg_UpdateMergeFailed, mergeError?.Message ?? ""));
@@ -1850,7 +1856,7 @@ namespace Ink_Canvas.Helpers
                     var shaText = (await shaResp.Content.ReadAsStringAsync()).Trim();
                     // 兼容 `<hash>  filename` 格式（sha256sum 标准输出）
                     var firstSpace = shaText.IndexOfAny(new[] { ' ', '\t' });
-                    expectedHash = firstSpace > 0 ? shaText[..firstSpace] : shaText;
+                    expectedHash = firstSpace > 0 ? shaText.Substring(0, firstSpace) : shaText;
                 }
                 expectedHash = expectedHash.Replace("-", "").ToLowerInvariant();
                 if (expectedHash.Length != 64)
@@ -1955,8 +1961,8 @@ namespace Ink_Canvas.Helpers
             {
                 LogHelper.WriteLogToFile($"AutoUpdate | 单线程下载失败: {ex.Message}", LogHelper.LogType.Error);
                 bool isFileLock = ex is IOException && ex.Message != null &&
-                    (ex.Message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase) ||
-                     ex.Message.Contains("正由另一进程使用", StringComparison.OrdinalIgnoreCase));
+                    (MatchesOrdinalIgnoreCase(ex.Message, "being used by another process") ||
+                     MatchesOrdinalIgnoreCase(ex.Message, "正由另一进程使用"));
                 progressCallback?.Invoke(0, isFileLock
                     ? UpdateStrings.Msg_UpdateFileInUse
                     : $"单线程下载失败: {ex.Message}");

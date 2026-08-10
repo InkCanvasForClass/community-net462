@@ -18,6 +18,11 @@ namespace Ink_Canvas.Helpers
             return value;
         }
 
+        public static bool IsFinite(double value)
+        {
+            return !double.IsNaN(value) && !double.IsInfinity(value);
+        }
+
         public static T GetLast<T>(this T[] array)
         {
             if (array == null || array.Length == 0)

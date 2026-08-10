@@ -79,10 +79,6 @@ namespace Ink_Canvas
         [DllImport("user32.dll", EntryPoint = "GetForegroundWindow")]
         private static extern IntPtr ForwardWheelGetForegroundWindow();
 
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         [DllImport("user32.dll", EntryPoint = "GetWindow")]
         private static extern IntPtr ForwardWheelGetWindow(IntPtr hWnd, uint uCmd);
 
@@ -146,7 +142,7 @@ namespace Ink_Canvas
         private void ForwardMouseWheelToUnderlyingWindow(MouseWheelEventArgs e)
         {
             if (_wheelPassthroughInProgress) { e.Handled = true; return; }
-            long now = Environment.TickCount64;
+            long now = Environment.TickCount;
             if (now - _lastForwardedWheelTick < 16) { e.Handled = true; return; }
 
             IntPtr handle = new WindowInteropHelper(this).Handle;

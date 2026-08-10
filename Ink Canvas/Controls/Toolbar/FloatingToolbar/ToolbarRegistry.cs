@@ -1293,6 +1293,8 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
         public ToolbarRuleset DefaultHidingRuleset => ToolbarRuleset.AlwaysShow().WithHideOnCollapsed();
         public bool DefaultShowSeparateBorder => false;
         public bool DefaultPreventHideOnDragClick => false;
+        public IReadOnlyList<PluginToolbarSettingInfo> CustomSettings => null;
+        public Func<FrameworkElement> CustomSettingsPanelFactory => null;
 
         public PluginToolbarItemWrapper(PluginToolbarItemInfo info)
         {

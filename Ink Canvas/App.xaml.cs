@@ -13,7 +13,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +21,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using ComTypes = System.Runtime.InteropServices.ComTypes;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Console;
@@ -98,8 +98,6 @@ namespace Ink_Canvas
         public static Process watchdogProcess;
         // 新增：标记是否为软件内主动退出
         public static bool IsAppExitByUser;
-        // 新增：插件事件服务引用，App_Exit 时向插件广播 AppExiting
-        private static Plugins.EventService _pluginEventService;
         // 新增：标记是否正在触发安装更新（用于跳过某些交互确认）
         public static bool IsUpdateInstalling;
         // 新增：标记是否启用了UIA置顶功能
@@ -653,7 +651,7 @@ namespace Ink_Canvas
         {
             try
             {
-                if (!PInvoke.GetSystemTimes(out FILETIME idleTime, out FILETIME kernelTime, out FILETIME userTime))
+                if (!PInvoke.GetSystemTimes(out ComTypes.FILETIME idleTime, out ComTypes.FILETIME kernelTime, out ComTypes.FILETIME userTime))
                 {
                     return;
                 }
@@ -698,7 +696,7 @@ namespace Ink_Canvas
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
-        private static ulong ToUInt64(FILETIME fileTime)
+        private static ulong ToUInt64(ComTypes.FILETIME fileTime)
         {
             return ((ulong)(uint)fileTime.dwHighDateTime << 32) | (uint)fileTime.dwLowDateTime;
         }
@@ -1862,16 +1860,6 @@ namespace Ink_Canvas
         private void App_Exit(object sender, ExitEventArgs e)
         {
             isAppExiting = true;
-
-            // 在卸载插件前广播 AppExiting，让插件有机会清理自身资源。
-            try
-            {
-                _pluginEventService?.OnAppExiting();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"广播插件 AppExiting 失败: {ex.Message}", LogHelper.LogType.Warning);
-            }
 
             try { heartbeatTimer?.Stop(); } catch { }
             try { watchdogTimer?.Change(Timeout.Infinite, Timeout.Infinite); watchdogTimer?.Dispose(); } catch { }

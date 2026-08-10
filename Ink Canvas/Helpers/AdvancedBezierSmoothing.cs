@@ -472,7 +472,7 @@ namespace Ink_Canvas.Helpers
             StylusPoint p3,
             StylusPoint p4)
         {
-            int steps = Math.Clamp(InterpolationSteps, 2, 24);
+            int steps = MathExtensions.Clamp(InterpolationSteps, 2, 24);
 
             if (!UseAdaptiveInterpolation)
             {
@@ -489,9 +489,9 @@ namespace Ink_Canvas.Helpers
             v1.Normalize();
             v2.Normalize();
             double directionChange = Math.Acos(
-                Math.Clamp(Vector.Multiply(v1, v2), -1.0, 1.0)) / Math.PI;
+                MathExtensions.Clamp(Vector.Multiply(v1, v2), -1.0, 1.0)) / Math.PI;
 
-            return Math.Clamp(
+            return MathExtensions.Clamp(
                 steps + (int)Math.Round(directionChange * steps),
                 steps,
                 24);
@@ -511,7 +511,7 @@ namespace Ink_Canvas.Helpers
 
             // 平滑强度控制控制点长度，曲线张力用于调节控制点影响。
             // 两者共同决定曲线的弯曲程度，避免配置项只保存但不参与计算。
-            double controlFactor = Math.Clamp(
+            double controlFactor = MathExtensions.Clamp(
                 SmoothingStrength * (0.5 + CurveTension),
                 0.05,
                 0.6);

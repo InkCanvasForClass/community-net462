@@ -162,7 +162,7 @@ namespace Ink_Canvas.Ink.Native
                 _realPoints.Add(new RealInkPoint(
                     point.X,
                     point.Y,
-                    Math.Clamp(point.Pressure, 0.05f, 1f),
+                    Math.Min(1f, Math.Max(0.05f, point.Pressure)),
                     point.TimestampMicroseconds));
                 previousTimestamp = point.TimestampMicroseconds;
                 LastAcceptedTimestampMicroseconds = point.TimestampMicroseconds;

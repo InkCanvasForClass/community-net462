@@ -2539,9 +2539,9 @@ namespace Ink_Canvas
                 // 坐标防御：画布在视频展台等场景被反复 ScaleAt 缩放后，WinRT/IACore 返回的
                 // Centroid/HotPoints/ShapeWidth/Height 可能非有限或巨量。这类结果直接拒绝，
                 // 保留原笔画，避免后续 GeneratePointsBetween/GenerateEllipseGeometry 生成海量/NaN 点导致 OOM 卡死。
-                if (!double.IsFinite(result.ShapeWidth) || !double.IsFinite(result.ShapeHeight) ||
+                if (!MathExtensions.IsFinite(result.ShapeWidth) || !MathExtensions.IsFinite(result.ShapeHeight) ||
                     result.ShapeWidth <= 0 || result.ShapeHeight <= 0 ||
-                    !double.IsFinite(result.Centroid.X) || !double.IsFinite(result.Centroid.Y))
+                    !MathExtensions.IsFinite(result.Centroid.X) || !MathExtensions.IsFinite(result.Centroid.Y))
                     return false;
 
                 // 形状比画布大得离谱（>8 倍画布尺寸）说明坐标系已被极端缩放，纠正无意义且易 OOM。
@@ -2557,7 +2557,7 @@ namespace Ink_Canvas
                 {
                     for (int i = 0; i < result.HotPoints.Count; i++)
                     {
-                        if (!double.IsFinite(result.HotPoints[i].X) || !double.IsFinite(result.HotPoints[i].Y))
+                        if (!MathExtensions.IsFinite(result.HotPoints[i].X) || !MathExtensions.IsFinite(result.HotPoints[i].Y))
                             return false;
                     }
                 }
@@ -2807,15 +2807,15 @@ namespace Ink_Canvas
 
             // 防御：坐标非有限（画布被缩放/平移到极端时识别出的形状坐标可能爆掉）直接退化成两点，
             // 否则下方 pointCount = distance/interval 会爆炸式分配点导致 OOM 卡死。
-            if (!double.IsFinite(start.X) || !double.IsFinite(start.Y) ||
-                !double.IsFinite(end.X) || !double.IsFinite(end.Y))
+            if (!MathExtensions.IsFinite(start.X) || !MathExtensions.IsFinite(start.Y) ||
+                !MathExtensions.IsFinite(end.X) || !MathExtensions.IsFinite(end.Y))
             {
                 result.Add(new StylusPoint(
-                    double.IsFinite(start.X) ? start.X : 0,
-                    double.IsFinite(start.Y) ? start.Y : 0, startPressure));
+                    MathExtensions.IsFinite(start.X) ? start.X : 0,
+                    MathExtensions.IsFinite(start.Y) ? start.Y : 0, startPressure));
                 result.Add(new StylusPoint(
-                    double.IsFinite(end.X) ? end.X : 0,
-                    double.IsFinite(end.Y) ? end.Y : 0, endPressure));
+                    MathExtensions.IsFinite(end.X) ? end.X : 0,
+                    MathExtensions.IsFinite(end.Y) ? end.Y : 0, endPressure));
                 return result;
             }
 

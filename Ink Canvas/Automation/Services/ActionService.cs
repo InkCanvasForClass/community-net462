@@ -79,7 +79,7 @@ namespace Ink_Canvas.WorkflowAutomation.Services
 
         public void UnregisterActionHandler(string id, ActionRegistryInfo.HandleDelegate handler)
         {
-            if (!IActionService.Actions.TryGetValue(id, out var actionRegistryInfo)) return;
+            if (!AutomationRegistry.RegisteredActions.TryGetValue(id, out var actionRegistryInfo)) return;
             if (actionRegistryInfo.Handle == null) return;
             actionRegistryInfo.Handle -= handler;
         }
@@ -99,7 +99,7 @@ namespace Ink_Canvas.WorkflowAutomation.Services
 
         public void UnregisterRevertHandler(string id, ActionRegistryInfo.HandleDelegate handler)
         {
-            if (!IActionService.Actions.TryGetValue(id, out var actionRegistryInfo)) return;
+            if (!AutomationRegistry.RegisteredActions.TryGetValue(id, out var actionRegistryInfo)) return;
             if (actionRegistryInfo.RevertHandle == null) return;
             actionRegistryInfo.RevertHandle -= handler;
         }

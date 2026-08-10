@@ -41,7 +41,7 @@ namespace InkCanvas.LiquidGlassMagHost
         [STAThread]
         private static int Main(string[] args)
         {
-            Console.Error.WriteLine($"[MagHost] starting, pid={Environment.ProcessId}, threadApt={Thread.CurrentThread.GetApartmentState()}");
+            Console.Error.WriteLine($"[MagHost] starting, pid={System.Diagnostics.Process.GetCurrentProcess().Id}, threadApt={Thread.CurrentThread.GetApartmentState()}");
 
             // STA + 消息泵：Magnification API 依赖创建线程的消息队列。
             // 消息泵由 PeekMessage/DispatchMessage 在抓取间隙手动抽干即可，

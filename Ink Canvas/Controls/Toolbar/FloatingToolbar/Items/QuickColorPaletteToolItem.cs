@@ -1,6 +1,7 @@
 using Ink_Canvas.Plugins;
 using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Common.IconKeys;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,6 +36,8 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar.Items
                 DefaultValue = "1"
             }
         };
+
+        public Func<FrameworkElement> CustomSettingsPanelFactory => null;
 
         public FrameworkElement BuildView(IToolbarHost host)
         {

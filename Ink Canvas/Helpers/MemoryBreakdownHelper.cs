@@ -249,28 +249,14 @@ namespace Ink_Canvas.Helpers
             sb.AppendLine("--- 2. .NET GC Heap ---");
             try
             {
-                var info = GC.GetGCMemoryInfo();
-                sb.AppendLine($"  Total Available     : {ToMb(info.TotalAvailableMemoryBytes):F1} MB");
-                sb.AppendLine($"  Total Committed     : {ToMb(info.TotalCommittedBytes):F1} MB");
-                sb.AppendLine($"  Heap Size           : {ToMb(info.HeapSizeBytes):F1} MB");
-                sb.AppendLine($"  Fragmented Bytes    : {ToMb(info.FragmentedBytes):F1} MB");
-                sb.AppendLine($"  Pinned Objects      : {info.PinnedObjectsCount}");
-                sb.AppendLine($"  Finalization Pending: {info.FinalizationPendingCount}");
+                sb.AppendLine($"  Total Allocated     : {ToMb(GC.GetTotalMemory(forceFullCollection: false)):F1} MB");
+                sb.AppendLine($"  Total Allocated(FC) : {ToMb(GC.GetTotalMemory(forceFullCollection: true)):F1} MB");
 
                 for (int gen = 0; gen <= GC.MaxGeneration; gen++)
                 {
-                    GCGenerationInfo genInfo = default;
-                    if (info.GenerationInfo != null && gen < info.GenerationInfo.Length)
-                    {
-                        genInfo = info.GenerationInfo[gen];
-                    }
-                    sb.AppendLine($"  Gen {gen,-2}             : SizeAfter={ToMb(genInfo.SizeAfterBytes):F2} MB, " +
-                                  $"Fragmented={ToMb(genInfo.FragmentationAfterBytes):F2} MB");
+                    sb.AppendLine($"  Gen {gen,-2}             : CollectionCount={GC.CollectionCount(gen)}");
                 }
-
-                sb.AppendLine($"  Total Allocated     : {ToMb(GC.GetTotalMemory(forceFullCollection: false)):F1} MB");
-                sb.AppendLine($"  Total Allocated(FC) : {ToMb(GC.GetTotalMemory(forceFullCollection: true)):F1} MB");
-                gcHeapMb = ToMb(info.HeapSizeBytes);
+                gcHeapMb = ToMb(GC.GetTotalMemory(forceFullCollection: false));
             }
             catch (Exception ex)
             {

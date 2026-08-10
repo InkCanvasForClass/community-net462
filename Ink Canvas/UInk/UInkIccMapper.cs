@@ -193,7 +193,7 @@ namespace Ink_Canvas.UInk
         private static void ApplyViewportToAdaptation(UInkUndoAdaptation adaptation, UInkViewport viewport)
         {
             if (adaptation == null || viewport == null) return;
-            if (viewport.Scale <= 0 || !float.IsFinite(viewport.Scale)) return;
+            if (viewport.Scale <= 0 || !MathExtensions.IsFinite(viewport.Scale)) return;
             if (Math.Abs(viewport.Scale - 1f) < 1e-6 && Math.Abs(viewport.X) < 1e-6 && Math.Abs(viewport.Y) < 1e-6) return;
 
             var matrix = new Matrix(viewport.Scale, 0, 0, viewport.Scale,
@@ -227,7 +227,7 @@ namespace Ink_Canvas.UInk
         public static void ApplyViewportToStrokes(StrokeCollection strokes, UInkViewport vp)
         {
             if (strokes == null || strokes.Count == 0 || vp == null) return;
-            if (vp.Scale <= 0 || !float.IsFinite(vp.Scale)) return;
+            if (vp.Scale <= 0 || !MathExtensions.IsFinite(vp.Scale)) return;
             if (Math.Abs(vp.Scale - 1f) < 1e-6 && Math.Abs(vp.X) < 1e-6 && Math.Abs(vp.Y) < 1e-6) return;
 
             var matrix = new Matrix(vp.Scale, 0, 0, vp.Scale, -vp.X * vp.Scale, -vp.Y * vp.Scale);
