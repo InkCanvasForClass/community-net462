@@ -1,6 +1,7 @@
 using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Properties;
+using Ink_Canvas.UInk;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -214,7 +215,7 @@ namespace Ink_Canvas
         /// 5. 异步上传保存的文件到Dlass
         /// 6. 保存元素信息
         /// </remarks>
-        private void SaveInkCanvasStrokes(bool newNotice = true, bool saveByUser = false)
+        public void SaveInkCanvasStrokes(bool newNotice = true, bool saveByUser = false)
         {
             try
             {
@@ -241,6 +242,13 @@ namespace Ink_Canvas
                 else
                     //savePathWithName = savePath + @"\" + DateTime.Now.ToString("u").Replace(':', '-') + ".icstk";
                     savePathWithName = savePath + @"\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss-fff") + ".icstk";
+
+                if (Settings.Automation.IsSaveStrokesAsUInK)
+                {
+                    // UInk 1.0 格式保存（跨软件互操作），走两阶段提交
+                    SaveCurrentStateToUInk(Path.ChangeExtension(savePathWithName, ".uink"), newNotice);
+                    return;
+                }
 
                 if (Settings.Automation.IsSaveStrokesAsXML)
                 {
@@ -535,10 +543,26 @@ namespace Ink_Canvas
                         }
                         else
                         {
-                            // 保存为二进制格式
-                            var fs = new FileStream(savePathWithName, FileMode.Create);
-                            inkCanvas.Strokes.Save(fs);
-                            fs.Close();
+                            // 保存为二进制格式：先写临时文件后 Replace 原子替换，
+                            // 避免 FileMode.Create 直接截断 → 写入中途失败 → 文件停在 0 字节。
+                            // 同目录下移动替换是原子操作，Windows 同卷 NTFS 保证。
+                            var tmpPath = savePathWithName + ".tmp";
+                            try
+                            {
+                                using (var fs = new FileStream(tmpPath, FileMode.Create))
+                                {
+                                    inkCanvas.Strokes.Save(fs);
+                                }
+                                if (File.Exists(savePathWithName))
+                                    File.Replace(tmpPath, savePathWithName, null);
+                                else
+                                    File.Move(tmpPath, savePathWithName);
+                            }
+                            catch
+                            {
+                                try { if (File.Exists(tmpPath)) File.Delete(tmpPath); } catch { }
+                                throw;
+                            }
                             if (newNotice)
                             {
                                 Task.Delay(100).ContinueWith(t =>
@@ -928,9 +952,10 @@ namespace Ink_Canvas
                             bitmap.Save(imagePathWithName, ImageFormat.Png);
 
                             // 仍然保存墨迹文件以兼容旧版本
-                            var fs = new FileStream(savePathWithName, FileMode.Create);
-                            inkCanvas.Strokes.Save(fs);
-                            fs.Close();
+                            using (var fs = new FileStream(savePathWithName, FileMode.Create))
+                            {
+                                inkCanvas.Strokes.Save(fs);
+                            }
 
                             _ = Task.Run(async () =>
                             {
@@ -993,6 +1018,45 @@ namespace Ink_Canvas
         }
 
         /// <summary>
+        /// 供插件导出的当前画布页 PNG 入口（墨迹 + 背景色）。
+        /// </summary>
+        internal bool ExportCurrentPageAsPngForPlugin(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(filePath)) return false;
+                SaveSinglePageStrokesAsImage(filePath, false);
+                return File.Exists(filePath);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"插件导出当前页 PNG 失败: {ex.Message}", LogHelper.LogType.Error);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 供插件导出的任意墨迹 PNG 入口。
+        /// </summary>
+        internal bool ExportStrokesAsPngForPlugin(StrokeCollection strokes, string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(filePath) || strokes == null) return false;
+                using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    SavePageAsImage(strokes, stream);
+                }
+                return File.Exists(filePath);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"插件导出墨迹 PNG 失败: {ex.Message}", LogHelper.LogType.Error);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 打开墨迹文件的鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
@@ -1027,7 +1091,12 @@ namespace Ink_Canvas
             {
                 string fileExtension = Path.GetExtension(openFileDialog.FileName).ToLower();
 
-                if (fileExtension == ".zip")
+                if (fileExtension == ".uink")
+                {
+                    // UInk 1.0 墨迹文件（MessagePack 对象流 + .uink.extra 资源包）
+                    OpenUInkFile(openFileDialog.FileName);
+                }
+                else if (fileExtension == ".zip")
                 {
                     // 处理ICC压缩包（可能包含XML格式）
                     OpenICCZipFile(openFileDialog.FileName);
@@ -1189,14 +1258,10 @@ namespace Ink_Canvas
                     }
                 }
 
-                // 清空当前墨迹
-                ClearStrokes(true);
-                timeMachine.ClearStrokeHistory();
-
-                // 重置PPT墨迹存储
-                _singlePPTInkManager?.ClearAllStrokes();
-
-                // 读取所有页面的墨迹文件（支持.icstk和.xml格式）
+                // 先把所有页面的墨迹全部解析进内存，再清空原画布。
+                // 一旦循环中任意一页解析失败抛出，原画布墨迹不会被销毁、撤销历史可恢复。
+                // TimeMachineHistories 容量固定为 101（MW_BoardControls.cs:47），对超出范围或负数页码直接跳过。
+                var parsedStrokesByPage = new Dictionary<int, StrokeCollection>();
                 var icstkFiles = Directory.GetFiles(tempDir, "page_*.icstk");
                 var xmlFiles = Directory.GetFiles(tempDir, "page_*.xml");
                 var allFiles = new List<string>();
@@ -1206,31 +1271,42 @@ namespace Ink_Canvas
                 foreach (var file in allFiles)
                 {
                     var fileName = Path.GetFileNameWithoutExtension(file);
-                    if (fileName.StartsWith("page_") && int.TryParse(fileName.Substring(5), out int pageNumber))
+                    if (!fileName.StartsWith("page_") || !int.TryParse(fileName.Substring(5), out int pageNumber))
+                        continue;
+                    if (pageNumber < 1 || pageNumber >= TimeMachineHistories.Length)
                     {
-                        StrokeCollection strokes = null;
-                        string extension = Path.GetExtension(file).ToLower();
+                        LogHelper.WriteLogToFile($"跳过非法页码 {pageNumber}（文件 {file}）", LogHelper.LogType.Warning);
+                        continue;
+                    }
 
-                        if (extension == ".xml")
-                        {
-                            // 从XML文件加载
-                            strokes = LoadStrokesFromXML(file);
-                        }
-                        else
-                        {
-                            // 从二进制文件加载
-                            using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
-                            {
-                                strokes = new StrokeCollection(fs);
-                            }
-                        }
+                    StrokeCollection strokes;
+                    string extension = Path.GetExtension(file).ToLower();
 
-                        if (strokes != null && strokes.Count > 0)
+                    if (extension == ".xml")
+                    {
+                        strokes = LoadStrokesFromXML(file);
+                    }
+                    else
+                    {
+                        using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
                         {
-                            _singlePPTInkManager?.ForceSaveSlideStrokes(pageNumber, strokes);
+                            strokes = new StrokeCollection(fs);
                         }
                     }
+
+                    if (strokes != null && strokes.Count > 0)
+                        parsedStrokesByPage[pageNumber] = strokes;
                 }
+
+                // 清空当前墨迹
+                ClearStrokes(true);
+                timeMachine.ClearStrokeHistory();
+
+                // 重置PPT墨迹存储
+                _singlePPTInkManager?.ClearAllStrokes();
+
+                foreach (var pair in parsedStrokesByPage)
+                    _singlePPTInkManager?.ForceSaveSlideStrokes(pair.Key, pair.Value);
 
                 // 恢复当前页面的墨迹
                 if (_pptManager?.IsInSlideShow == true)
@@ -1266,6 +1342,32 @@ namespace Ink_Canvas
                     throw new InvalidOperationException("当前不在白板模式，无法恢复白板墨迹");
                 }
 
+                // 先把全部墨迹解析进内存，循环结束后才清空原画布——解析失败时原墨迹仍存在。
+                // 同时把 pageNumber 限定在 TimeMachineHistories 容量（101）内，避免 IndexOutOfRangeException。
+                var parsedHistoriesByPage = new Dictionary<int, TimeMachineHistory[]>();
+                var files = Directory.GetFiles(tempDir, "page_*.icstk");
+                foreach (var file in files)
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(file);
+                    if (!fileName.StartsWith("page_") || !int.TryParse(fileName.Substring(5), out int pageNumber))
+                        continue;
+                    if (pageNumber < 1 || pageNumber >= TimeMachineHistories.Length)
+                    {
+                        LogHelper.WriteLogToFile($"跳过非法页码 {pageNumber}（文件 {file}）", LogHelper.LogType.Warning);
+                        continue;
+                    }
+
+                    using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
+                    {
+                        var strokes = new StrokeCollection(fs);
+                        if (strokes.Count > 0)
+                        {
+                            var history = new TimeMachineHistory(strokes, TimeMachineHistoryType.UserInput, false);
+                            parsedHistoriesByPage[pageNumber] = new[] { history };
+                        }
+                    }
+                }
+
                 // 清空当前墨迹
                 ClearStrokes(true);
                 timeMachine.ClearStrokeHistory();
@@ -1288,25 +1390,8 @@ namespace Ink_Canvas
                     TimeMachineHistories[i] = null;
                 }
 
-                // 读取所有页面的墨迹文件
-                var files = Directory.GetFiles(tempDir, "page_*.icstk");
-                foreach (var file in files)
-                {
-                    var fileName = Path.GetFileNameWithoutExtension(file);
-                    if (fileName.StartsWith("page_") && int.TryParse(fileName.Substring(5), out int pageNumber))
-                    {
-                        using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
-                        {
-                            var strokes = new StrokeCollection(fs);
-                            if (strokes.Count > 0)
-                            {
-                                // 创建历史记录
-                                var history = new TimeMachineHistory(strokes, TimeMachineHistoryType.UserInput, false);
-                                TimeMachineHistories[pageNumber] = new[] { history };
-                            }
-                        }
-                    }
-                }
+                foreach (var pair in parsedHistoriesByPage)
+                    TimeMachineHistories[pair.Key] = pair.Value;
 
                 // 恢复第一页的墨迹
                 if (TimeMachineHistories[1] != null)

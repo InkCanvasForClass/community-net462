@@ -94,10 +94,13 @@
     <value>Update available</value>
   </data>
   <data name="Market_RestartRequired" xml:space="preserve">
-    <value>Restart needed</value>
+    <value>Pending</value>
   </data>
   <data name="Market_RestartToApply" xml:space="preserve">
-    <value>Restart to apply</value>
+    <value>Apply now</value>
+  </data>
+  <data name="Market_ApplyPendingUpdate" xml:space="preserve">
+    <value>Apply now</value>
   </data>
   <data name="Market_SelectPluginHint" xml:space="preserve">
     <value>Select a plugin on the left to view details</value>
@@ -129,13 +132,22 @@ Continue?</value>
     <value>Install Dependencies</value>
   </data>
   <data name="Market_InstallLocalSuccess" xml:space="preserve">
-    <value>Plugin has been added to the install queue. Restart to take effect.</value>
+    <value>Plugin installed and hot-loaded successfully.</value>
   </data>
   <data name="Market_InstallLocalFailed" xml:space="preserve">
     <value>Installation failed: {0}</value>
   </data>
+  <data name="Market_HotUpdateMessage" xml:space="preserve">
+    <value>The plugin will be downloaded and hot-updated immediately without restarting. Continue?</value>
+  </data>
+  <data name="Market_HotInstallPending" xml:space="preserve">
+    <value>The package was downloaded but could not be hot-loaded. Click "Apply now" to retry, or restart the app to apply automatically.</value>
+  </data>
+  <data name="Market_HotInstallFailedRestart" xml:space="preserve">
+    <value>Hot-loading did not complete (the files may still be locked). Restart the app now to finish installation?</value>
+  </data>
   <data name="Market_RestartMessage" xml:space="preserve">
-    <value>The app needs to restart to complete plugin installation/update. Restart now?</value>
+    <value>The app needs to restart to complete the plugin operation. Restart now?</value>
   </data>
   <data name="Market_RestartTitle" xml:space="preserve">
     <value>Restart Confirmation</value>
@@ -146,11 +158,23 @@ Continue?</value>
   <data name="Plugin_Update" xml:space="preserve">
     <value>Update</value>
   </data>
+  <data name="Plugin_Reload" xml:space="preserve">
+    <value>Hot reload plugin</value>
+  </data>
+  <data name="Plugin_ReloadSuccess" xml:space="preserve">
+    <value>Plugin hot-reloaded successfully. No restart is required.</value>
+  </data>
+  <data name="Plugin_ReloadPartial" xml:space="preserve">
+    <value>The plugin was reloaded, but the old assembly is still in memory. Restart the app to release the old version completely.</value>
+  </data>
+  <data name="Plugin_ReloadFailed" xml:space="preserve">
+    <value>Plugin hot reload failed: {0}</value>
+  </data>
   <data name="Plugin_Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
   <data name="Plugin_DeleteConfirm" xml:space="preserve">
-    <value>Are you sure you want to delete plugin "{0}"? A restart is required to take effect.</value>
+    <value>Are you sure you want to delete plugin "{0}"? It will be unloaded immediately without restarting.</value>
   </data>
   <data name="Plugin_DeleteTitle" xml:space="preserve">
     <value>Delete Plugin</value>
@@ -166,6 +190,9 @@ Continue?</value>
   </data>
   <data name="Plugin_ErrorReset" xml:space="preserve">
     <value>Reset &#38; reload</value>
+  </data>
+  <data name="Plugin_ErrorResetConfirm" xml:space="preserve">
+    <value>Clear the error record and try reloading the plugin immediately. Continue?</value>
   </data>
   <data name="Plugin_ExportConfig" xml:space="preserve">
     <value>Export Config</value>
@@ -191,11 +218,34 @@ Continue?</value>
   <data name="Plugin_ImportFailed" xml:space="preserve">
     <value>Import failed: {0}</value>
   </data>
+  <data name="Plugin_ExternalDllAuthorizationTitle" xml:space="preserve">
+    <value>External DLL authorization</value>
+  </data>
+  <data name="Plugin_ExternalDllAuthorizationMessage" xml:space="preserve">
+    <value>Plugin "{0}" (author: {1}) requests loading external assembly "{2}". A DLL can execute arbitrary code; only allow it if you trust this plugin. Authorize loading?</value>
+  </data>
   <data name="Market_SecurityWarning" xml:space="preserve">
     <value>This plugin comes from an unknown source. Continuing may be risky. Please confirm you trust the source.</value>
   </data>
   <data name="Market_SecurityTitle" xml:space="preserve">
     <value>Security Notice</value>
+  </data>
+  <data name="Market_UntrustedInstallConfirmation" xml:space="preserve">
+    <value>This plugin has not passed the trust check.
+Plugin ID: {0}
+SHA256: {1}
+Declared permissions: {2}
+Reasons:
+{3}
+
+Plugin DLLs can execute arbitrary code. Continue only if you trust the source.
+Continue installation?</value>
+  </data>
+  <data name="Market_SecurityUnknownReason" xml:space="preserve">
+    <value>No specific reason was provided.</value>
+  </data>
+  <data name="Market_SecurityNone" xml:space="preserve">
+    <value>None</value>
   </data>
   <data name="Market_OpenLogsFolder" xml:space="preserve">
     <value>Open plugin logs folder</value>
@@ -259,5 +309,14 @@ Continue?</value>
   </data>
   <data name="Market_RemoveSourceConfirmation" xml:space="preserve">
     <value>Remove source “{0}”?</value>
+  </data>
+  <data name="Compat_HostVersionTooLow" xml:space="preserve">
+    <value>This plugin requires host version ≥ {0}, but the current host is {1}</value>
+  </data>
+  <data name="Compat_ApiVersionMismatch" xml:space="preserve">
+    <value>This plugin requires API version {0}, but the current host API is {1}</value>
+  </data>
+  <data name="Compat_HostVersionOutOfRange" xml:space="preserve">
+    <value>The current host version {0} is outside the range supported by this plugin ({1})</value>
   </data>
 </root>

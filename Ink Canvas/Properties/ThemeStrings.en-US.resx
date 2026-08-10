@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -291,6 +291,9 @@
   <data name="Theme_ShowPenColorOnFloatingBarIcon" xml:space="preserve">
     <value>Pen icon shows current ink color</value>
   </data>
+  <data name="Theme_ShowPenColorOnBoardToolbarIcon" xml:space="preserve">
+    <value>Whiteboard pen icon shows current ink color</value>
+  </data>
   <data name="Theme_CompactFloatingBar" xml:space="preserve">
     <value>Compact floating bar</value>
   </data>
@@ -303,6 +306,50 @@
   <data name="Theme_HideFloatingBarBorderHint" xml:space="preserve">
     <value>Sets the floating bar border thickness to 0 for a borderless look.</value>
   </data>
+  <data name="Theme_FloatingBarBorderColor" xml:space="preserve">
+    <value>Floating bar border color</value>
+  </data>
+  <data name="Theme_FloatingBarBorderColorHint" xml:space="preserve">
+    <value>Sets the floating toolbar border color. Default uses the theme color, Follow background blends with the background, Custom lets you pick any color.</value>
+  </data>
+  <data name="Theme_FloatingBarBorderColorReset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Theme_FloatingBarBorderColor_Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Theme_FloatingBarBorderColor_FollowBackground" xml:space="preserve">
+    <value>Follow background color</value>
+  </data>
+  <data name="Theme_FloatingBarBorderColor_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="Theme_FloatingBarThemeMarketTitle" xml:space="preserve"><value>Floating Bar Theme Market</value></data>
+  <data name="Theme_FloatingBarThemeMarketRefresh" xml:space="preserve"><value>Refresh market</value></data>
+  <data name="Theme_FloatingBarThemeMarketInstall" xml:space="preserve"><value>Install theme</value></data>
+
+  <data name="Theme_FloatingBarThemesTitle" xml:space="preserve">
+    <value>Floating Bar Themes</value>
+  </data>
+  <data name="Theme_FloatingBarThemesDescription" xml:space="preserve">
+    <value>Manage floating bar theme packages, backgrounds, colors, and visual styles.</value>
+  </data>
+  <data name="Theme_FloatingBarThemesFolder" xml:space="preserve">
+    <value>Theme management</value>
+  </data>
+  <data name="Theme_FloatingBarThemesOpenFolder" xml:space="preserve">
+    <value>Open theme folder</value>
+  </data>
+  <data name="Theme_FloatingBarThemesReload" xml:space="preserve">
+    <value>Reload themes</value>
+  </data>
+  <data name="Theme_FloatingBarThemesApply" xml:space="preserve">
+    <value>Apply theme</value>
+  </data>
+  <data name="Theme_FloatingBarThemesApplyFailed" xml:space="preserve">
+    <value>Failed to apply the theme. Please check the theme files.</value>
+  </data>
+
   <data name="Theme_WindowBackdrop" xml:space="preserve">
     <value>Window background style</value>
   </data>
@@ -464,5 +511,74 @@
   </data>
   <data name="Theme_Tips_Title" xml:space="preserve">
     <value>Tips</value>
+  </data>
+  <data name="Theme_IdleMiniBar" xml:space="preserve">
+    <value>Compact idle bar</value>
+  </data>
+  <data name="Theme_IdleMiniBarHint" xml:space="preserve">
+    <value>When idle (cursor mode), replace the floating bar with a compact rounded bar that auto-docks to screen edges to minimize obstruction</value>
+  </data>
+  <data name="Theme_IdleMiniBarOpacity" xml:space="preserve">
+    <value>Compact idle bar opacity</value>
+  </data>
+  <data name="Theme_IdleMiniBarAutoRestore" xml:space="preserve">
+    <value>Auto-restore delay after edge collapse (s)</value>
+  </data>
+  <data name="Theme_LiquidGlassBar" xml:space="preserve">
+    <value>Liquid glass floating bar</value>
+  </data>
+  <data name="Theme_LiquidGlassBarHint" xml:space="preserve">
+    <value>Show a standalone always-on-top capsule toolbar that refracts the desktop behind it for a thick-glass look. Requires pixel shader support</value>
+  </data>
+  <data name="Theme_LiquidGlassBarOpacity" xml:space="preserve">
+    <value>Glass opacity</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Drag" xml:space="preserve">
+    <value>Drag to move</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Pen" xml:space="preserve">
+    <value>Annotate</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Highlighter" xml:space="preserve">
+    <value>Highlighter</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Eraser" xml:space="preserve">
+    <value>Eraser</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Select" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_ColorBlack" xml:space="preserve">
+    <value>Black</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_ColorRed" xml:space="preserve">
+    <value>Red</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_ColorBlue" xml:space="preserve">
+    <value>Blue</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_ColorYellow" xml:space="preserve">
+    <value>Yellow</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Undo" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Redo" xml:space="preserve">
+    <value>Redo</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_Whiteboard" xml:space="preserve">
+    <value>Whiteboard</value>
+  </data>
+  <data name="Theme_LiquidGlassBar_More" xml:space="preserve">
+    <value>More tools</value>
+  </data>
+  <data name="Theme_RestartPromptTitle" xml:space="preserve">
+    <value>Theme Change</value>
+  </data>
+  <data name="Theme_RestartRequired" xml:space="preserve">
+    <value>You need to restart the app for theme changes to fully take effect. Restart now?</value>
   </data>
 </root>

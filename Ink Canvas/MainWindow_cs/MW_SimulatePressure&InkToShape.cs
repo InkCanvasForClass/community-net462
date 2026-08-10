@@ -57,12 +57,28 @@ namespace Ink_Canvas
         /// <summary>手写体矫正：停笔后延迟执行（毫秒），多笔一字时等用户写完再识别。</summary>
         private const int HandwritingBeautifyDebounceMs = 1000;
 
+        /// <summary>
+        /// 运行时停笔防抖值：取 settings（300-5000），缺失或越界时回退到 <see cref="HandwritingBeautifyDebounceMs"/>。
+        /// 每次并入批次时由 <see cref="ScheduleHandwritingGlyphReplaceAfterStrokeCollected"/> 读取，
+        /// 因此改设置后下一批立即生效，无需失效通知。
+        /// </summary>
+        private static int CurrentHandwritingBeautifyDebounceMs
+        {
+            get
+            {
+                var configured = MainWindow.Settings?.InkToShape?.HandwritingBeautifyDebounceMs ?? 0;
+                if (configured < 300 || configured > 5000)
+                    return HandwritingBeautifyDebounceMs;
+                return configured;
+            }
+        }
+
         private DispatcherTimer _handwritingBeautifyDebounceTimer;
 
         /// <summary>每次收笔并入批次时递增；防抖 Tick 携带快照，识别过程中若又有新笔则放弃本轮替换。</summary>
         private ulong _handwritingBeautifyScheduleRevision;
 
-        /// <summary>画布笔画 → 手写纠正的识别输入（收笔时、笔锋/首段压感合成前的点集副本；替换墨迹时仍移除画布上的原笔画）。</summary>
+        /// <summary>画布笔画 → 手写纠正的独立识别快照；快照使用最终画布几何，不与可变画布笔画共享点集。</summary>
         private readonly Dictionary<Stroke, Stroke> _handwritingBeautifyInkInputByCanvasStroke =
             new Dictionary<Stroke, Stroke>();
 
@@ -289,6 +305,8 @@ namespace Ink_Canvas
 
                             if (smoothedStroke != e.Stroke)
                             {
+                                // 补回平滑器未复制的 property data（激光笔迹标记），否则激光笔迹失效。
+                                InkSmoothingManager.CopyPropertyData(e.Stroke, smoothedStroke);
                                 SetNewBackupOfStroke();
                                 if (Settings.Canvas.MergeInkSmoothingWithUndo)
                                 {
@@ -350,10 +368,38 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_StrokeCollected(object sender, InkCanvasStrokeCollectedEventArgs e)
         {
+            if (e?.Stroke != null)
+                ProcessCommittedStroke(e.Stroke);
+        }
+
+        /// <summary>
+        /// Shared dry-ink post-process entry for WPF StrokeCollected and native wet-ink commit.
+        /// Keeps fade / pressure / velocity tip / straighten / shape / handwriting / edge expand order.
+        /// </summary>
+        private void ProcessCommittedStroke(Stroke stroke)
+        {
+            if (stroke == null)
+                return;
+
+            var e = new InkCanvasStrokeCollectedEventArgs(stroke);
             var strokeDrawingAttributes = e.Stroke?.DrawingAttributes;
 
-            var handwritingRawPointsForRecognizer =
-                CloneStylusPointCollectionForHandwritingInput(e.Stroke?.StylusPoints);
+            // 手写识别输入在收笔尾部从最终画布 Stroke 复制，避免使用压感/平滑前快照。
+            // Issue #286 — 边缘扩展画布提示：在笔画收集后立即判断位置。
+            // HandleEdgeExpandHintAfterStroke 内部已做 eligible 检查与异常吞咽。
+            try
+            {
+                if (e.Stroke?.StylusPoints != null && e.Stroke.StylusPoints.Count > 0)
+                {
+                    var strokePoints = new System.Collections.Generic.List<Point>(e.Stroke.StylusPoints.Count);
+                    foreach (var sp in e.Stroke.StylusPoints) strokePoints.Add(sp.ToPoint());
+                    HandleEdgeExpandHintAfterStroke(strokePoints);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"边缘扩展提示判定失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
 
             if (Settings.Canvas.EnableInkFade)
             {
@@ -369,6 +415,12 @@ namespace Ink_Canvas
                 // 添加到墨迹渐隐管理器
                 if (_inkFadeManager != null)
                 {
+                    if (penType == 2
+                        && !e.Stroke.ContainsPropertyData(InkFadeManager.LaserRenderModeGuid))
+                    {
+                        e.Stroke.AddPropertyData(InkFadeManager.LaserRenderModeGuid, true);
+                    }
+
                     long strokeDurationMs = 0;
                     if (_stylusDownTimestamp > 0)
                     {
@@ -407,7 +459,6 @@ namespace Ink_Canvas
 
             // 标记是否进行了直线拉直
             bool wasStraightened = false;
-            StylusPointCollection preBrushHandwritingPoints = null;
             Stroke strokeForHandwritingBeautify = null;
 
             if (Settings.Canvas.FitToCurve) drawingAttributes.FitToCurve = false;
@@ -416,7 +467,6 @@ namespace Ink_Canvas
             {
                 inkCanvas.Opacity = 1;
                 var touchPressureSimulationApplied = false;
-                preBrushHandwritingPoints = handwritingRawPointsForRecognizer;
 
                 if (Settings.Canvas.DisablePressure)
                 {
@@ -654,10 +704,14 @@ namespace Ink_Canvas
                             if (!result.IsSuccess)
                                 return;
 
+                            // 拟合度门禁：吻合度过低保留原笔画，不强行纠正（涂鸦误判为形状的主修复点）
+                            if (!PassesShapeFitGate(result))
+                                return;
+
                             if (result.ShapeName == "Circle" &&
                                 Settings.InkToShape.IsInkToShapeRounded)
                             {
-                                if (result.ShapeWidth > 75)
+                                if (result.ShapeWidth > 75 * GetResolutionScale())
                                 {
                                     foreach (var circle in circles)
                                         //判断是否画同心圆
@@ -729,7 +783,7 @@ namespace Ink_Canvas
                                 result.Centroid = new Point((p[0].X + p[2].X) / 2, (p[0].Y + p[2].Y) / 2);
                                 var needRotation = true;
 
-                                if (result.ShapeWidth > 75 || (result.ShapeHeight > 75 && p.Count == 4))
+                                if (result.ShapeWidth > 75 * GetResolutionScale() || (result.ShapeHeight > 75 * GetResolutionScale() && p.Count == 4))
                                 {
                                     var iniP = new Point(result.Centroid.X - result.ShapeWidth / 2,
                                         result.Centroid.Y - result.ShapeHeight / 2);
@@ -871,9 +925,9 @@ namespace Ink_Canvas
                             {
                                 var p = result.HotPoints;
                                 if ((Math.Max(Math.Max(p[0].X, p[1].X), p[2].X) -
-                                     Math.Min(Math.Min(p[0].X, p[1].X), p[2].X) >= 100 ||
+                                     Math.Min(Math.Min(p[0].X, p[1].X), p[2].X) >= 100 * GetResolutionScale() ||
                                      Math.Max(Math.Max(p[0].Y, p[1].Y), p[2].Y) -
-                                     Math.Min(Math.Min(p[0].Y, p[1].Y), p[2].Y) >= 100) &&
+                                     Math.Min(Math.Min(p[0].Y, p[1].Y), p[2].Y) >= 100 * GetResolutionScale()) &&
                                     result.HotPoints.Count == 3)
                                 {
                                     //纠正垂直与水平关系
@@ -910,9 +964,9 @@ namespace Ink_Canvas
                             {
                                 var p = result.HotPoints;
                                 if ((Math.Max(Math.Max(Math.Max(p[0].X, p[1].X), p[2].X), p[3].X) -
-                                     Math.Min(Math.Min(Math.Min(p[0].X, p[1].X), p[2].X), p[3].X) >= 100 ||
+                                     Math.Min(Math.Min(Math.Min(p[0].X, p[1].X), p[2].X), p[3].X) >= 100 * GetResolutionScale() ||
                                      Math.Max(Math.Max(Math.Max(p[0].Y, p[1].Y), p[2].Y), p[3].Y) -
-                                     Math.Min(Math.Min(Math.Min(p[0].Y, p[1].Y), p[2].Y), p[3].Y) >= 100) &&
+                                     Math.Min(Math.Min(Math.Min(p[0].Y, p[1].Y), p[2].Y), p[3].Y) >= 100 * GetResolutionScale()) &&
                                     result.HotPoints.Count == 4)
                                 {
                                     //纠正垂直与水平关系
@@ -956,7 +1010,6 @@ namespace Ink_Canvas
                         // InkToShapeProcessCoreAsync 同步 GetResult() 会长时间阻塞 UI 线程（抬笔卡顿）；
                         // WinRT 路径若同步等待还可能与贴回 UI 的延续死锁（见类注释 InkToShapeSerial）。
                         var strokeHw = strokeForHandwritingBeautify;
-                        var preBrushHwPts = preBrushHandwritingPoints;
                         var wsTail = wasStraightened;
                         // ApplicationIdle：在更高优先级（布局/输入/本帧渲染）之后执行，减轻抬笔瞬间主线程“顶死”感。
                         Dispatcher.BeginInvoke(new Action(async () =>
@@ -968,9 +1021,7 @@ namespace Ink_Canvas
                                 if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
                                 {
                                     var canvasStrokeForHw = wsTail ? strokeHw : strokeAfterTail;
-                                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(
-                                        canvasStrokeForHw,
-                                        preBrushHwPts);
+                                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(canvasStrokeForHw);
                                 }
                             }
                             catch (Exception ex)
@@ -994,9 +1045,7 @@ namespace Ink_Canvas
                     ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
             {
                 var canvasStrokeForHw = wasStraightened ? strokeForHandwritingBeautify : strokeAfterTailSync;
-                ScheduleHandwritingGlyphReplaceAfterStrokeCollected(
-                    canvasStrokeForHw,
-                    preBrushHandwritingPoints);
+                ScheduleHandwritingGlyphReplaceAfterStrokeCollected(canvasStrokeForHw);
             }
         }
 
@@ -1027,6 +1076,9 @@ namespace Ink_Canvas
                     if (inkCanvas.Strokes.Contains(original) && smoothed != original)
                     {
                         Debug.WriteLine("异步替换原始笔画为平滑后的笔画");
+                        // 平滑器创建的新 Stroke 只克隆 DrawingAttributes，需补回 property data
+                        //（LaserRenderModeGuid 等，否则激光笔迹失效）。
+                        InkSmoothingManager.CopyPropertyData(original, smoothed);
                         SetNewBackupOfStroke();
                         if (Settings.Canvas.MergeInkSmoothingWithUndo)
                         {
@@ -1043,8 +1095,9 @@ namespace Ink_Canvas
                             inkCanvas.Strokes.Add(smoothed);
                             _currentCommitType = CommitReason.UserInput;
                         }
-                        // 收笔尾部仍以 original 登记手写批次；异步平滑后画布对象变为 smoothed，须迁移引用，否则防抖识别时字典 miss 会退回画布几何（非实时笔锋常见）。
+                        // 平滑后的识别快照由回调在画布替换完成后生成，避免防抖线程读取平滑前的旧点。
                         MigrateHandwritingBeautifyCanvasStrokeReference(original, smoothed);
+                        UpdateHandwritingBeautifyRecognitionSnapshot(smoothed);
                     }
                     else
                     {
@@ -2469,6 +2522,193 @@ namespace Ink_Canvas
             return a > 1e-2 && b > 1e-2;
         }
 
+        /// <summary>
+        /// 形状纠正拟合度门禁：把 WinRT/IACore 识别出的理想形状与原始笔画对比，
+        /// 吻合度过低则返回 false（消费端 return，保留原笔画而不强行纠正）。
+        /// 任一度量异常或数据不足时 fail-open 返回 true，避免度量 bug 静默关掉整个形状纠正。
+        /// 阈值固定为默认严格度（等价 strictness=0.5）：多边形归一化残差 ≤0.20，
+        /// 椭圆代数残差 mean|q| ≤0.25 且闭合度 ≤0.25。
+        /// </summary>
+        private bool PassesShapeFitGate(InkShapeRecognitionResult result)
+        {
+            if (result == null || !result.IsSuccess || result.StrokesToRemove == null || result.StrokesToRemove.Count == 0)
+                return true; // 上游已 IsSuccess 判过；到这里说明可放行
+
+            try
+            {
+                // 坐标防御：画布在视频展台等场景被反复 ScaleAt 缩放后，WinRT/IACore 返回的
+                // Centroid/HotPoints/ShapeWidth/Height 可能非有限或巨量。这类结果直接拒绝，
+                // 保留原笔画，避免后续 GeneratePointsBetween/GenerateEllipseGeometry 生成海量/NaN 点导致 OOM 卡死。
+                if (!double.IsFinite(result.ShapeWidth) || !double.IsFinite(result.ShapeHeight) ||
+                    result.ShapeWidth <= 0 || result.ShapeHeight <= 0 ||
+                    !double.IsFinite(result.Centroid.X) || !double.IsFinite(result.Centroid.Y))
+                    return false;
+
+                // 形状比画布大得离谱（>8 倍画布尺寸）说明坐标系已被极端缩放，纠正无意义且易 OOM。
+                var canvasW = inkCanvas?.ActualWidth ?? 0;
+                var canvasH = inkCanvas?.ActualHeight ?? 0;
+                if (canvasW > 0 && canvasH > 0)
+                {
+                    if (result.ShapeWidth > canvasW * 8 || result.ShapeHeight > canvasH * 8)
+                        return false;
+                }
+
+                if (result.HotPoints != null)
+                {
+                    for (int i = 0; i < result.HotPoints.Count; i++)
+                    {
+                        if (!double.IsFinite(result.HotPoints[i].X) || !double.IsFinite(result.HotPoints[i].Y))
+                            return false;
+                    }
+                }
+
+                var name = result.ShapeName ?? string.Empty;
+
+                // 椭圆/圆：用 PCA 主轴系算代数残差 + 闭合度
+                if (name == "Circle" || name == "Ellipse")
+                {
+                    if (!TryEstimateEllipseParamsFromStrokes(
+                            result.StrokesToRemove,
+                            out var centroid, out var a, out var b, out var thetaRad,
+                            out _, out _, out _, out _))
+                        return true; // 反推失败→不拦，交给既有逻辑
+
+                    var residual = MeasureEllipseAlgebraicResidual(result.StrokesToRemove, centroid, a, b, thetaRad);
+                    var openness = MeasureOpennessRatio(result.StrokesToRemove);
+                    return residual <= 0.25 && openness <= 0.25;
+                }
+
+                // 三角形/矩形族：多边形边距残差（闭合边残差过大时 isClosed=false，自然被拒）
+                if (name == "Triangle" || name.Contains("Rectangle") || name.Contains("Diamond") ||
+                    name.Contains("Parallelogram") || name.Contains("Square") ||
+                    name.Contains("Trapezoid") || name.Contains("Quadrilateral"))
+                {
+                    if (result.HotPoints == null || result.HotPoints.Count < 3)
+                        return true;
+                    var residual = MeasurePolygonFitResidual(result.StrokesToRemove, result.HotPoints, out _);
+                    return residual <= 0.20;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"形状拟合度门禁异常(fail-open): {ex.Message}");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 多边形拟合残差：采样原始笔画点，取到理想多边形各边(含闭合边)的最近距离均值，
+        /// 用对角线 sqrt(w²+h²) 归一化。0=完美。闭合边残差过大时 isClosed=false。
+        /// </summary>
+        private double MeasurePolygonFitResidual(StrokeCollection originalStrokes, PointCollection hotPoints, out bool isClosed)
+        {
+            isClosed = true;
+            if (originalStrokes == null || originalStrokes.Count == 0 || hotPoints == null || hotPoints.Count < 3)
+                return 0.0;
+
+            // 收集并采样原始笔画点
+            var raw = new List<Point>(256);
+            foreach (var s in originalStrokes)
+            {
+                if (s?.StylusPoints == null) continue;
+                foreach (var sp in s.StylusPoints) raw.Add(sp.ToPoint());
+            }
+            if (raw.Count < 2) return 0.0;
+            var pts = SamplePointsByDistance(raw, 10.0);
+            if (pts.Count == 0) return 0.0;
+
+            // 归一化用对角线（用热点包围盒，比 ShapeWidth/Height 更贴合理想多边形）
+            double minX = double.MaxValue, maxX = double.MinValue, minY = double.MaxValue, maxY = double.MinValue;
+            for (int i = 0; i < hotPoints.Count; i++)
+            {
+                minX = Math.Min(minX, hotPoints[i].X); maxX = Math.Max(maxX, hotPoints[i].X);
+                minY = Math.Min(minY, hotPoints[i].Y); maxY = Math.Max(maxY, hotPoints[i].Y);
+            }
+            double diag = Math.Sqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY));
+            if (diag < 1e-3) return 1.0;
+
+            int n = hotPoints.Count;
+            double sum = 0, closingSum = 0;
+            for (int pi = 0; pi < pts.Count; pi++)
+            {
+                double best = double.MaxValue;
+                for (int i = 0; i < n; i++)
+                {
+                    var a = hotPoints[i];
+                    var b2 = hotPoints[(i + 1) % n];
+                    double d = DistanceFromLineToPoint(a, b2, pts[pi]);
+                    if (d < best) best = d;
+                    if (i == n - 1) closingSum += d; // 闭合边 (last→0)
+                }
+                sum += best;
+            }
+
+            double residual = (sum / pts.Count) / diag;
+            // 闭合边平均残差若超过对角线一截，视为开放折线被误判为闭合多边形
+            double closingAvg = (closingSum / pts.Count) / diag;
+            if (closingAvg > 0.5) isClosed = false;
+            return residual;
+        }
+
+        /// <summary>
+        /// 椭圆代数残差：在 PCA 主轴系 (u,v) 下 q=(u/a)²+(v/b)²−1，返回 mean|q|。0=完美椭圆。
+        /// </summary>
+        private double MeasureEllipseAlgebraicResidual(StrokeCollection originalStrokes, Point centroid, double a, double b, double thetaRad)
+        {
+            if (originalStrokes == null || originalStrokes.Count == 0 || a < 1e-3 || b < 1e-3)
+                return 0.0;
+
+            var raw = new List<Point>(256);
+            foreach (var s in originalStrokes)
+            {
+                if (s?.StylusPoints == null) continue;
+                foreach (var sp in s.StylusPoints) raw.Add(sp.ToPoint());
+            }
+            if (raw.Count < 2) return 0.0;
+            var pts = SamplePointsByDistance(raw, 10.0);
+            if (pts.Count == 0) return 0.0;
+
+            var cos = Math.Cos(-thetaRad);
+            var sin = Math.Sin(-thetaRad);
+            double sum = 0;
+            for (int i = 0; i < pts.Count; i++)
+            {
+                double dx = pts[i].X - centroid.X;
+                double dy = pts[i].Y - centroid.Y;
+                double u = dx * cos - dy * sin;
+                double v = dx * sin + dy * cos;
+                double q = (u / a) * (u / a) + (v / b) * (v / b) - 1.0;
+                sum += Math.Abs(q);
+            }
+            return sum / pts.Count;
+        }
+
+        /// <summary>
+        /// 闭合度：原始笔画(按收集顺序)首→末距离 / 路径周长。越大越开放。
+        /// </summary>
+        private double MeasureOpennessRatio(StrokeCollection originalStrokes)
+        {
+            if (originalStrokes == null || originalStrokes.Count == 0)
+                return 0.0;
+
+            var raw = new List<Point>(256);
+            foreach (var s in originalStrokes)
+            {
+                if (s?.StylusPoints == null) continue;
+                foreach (var sp in s.StylusPoints) raw.Add(sp.ToPoint());
+            }
+            if (raw.Count < 2) return 0.0;
+
+            double perimeter = 0;
+            for (int i = 1; i < raw.Count; i++)
+                perimeter += GetDistance(raw[i - 1], raw[i]);
+            if (perimeter < 1e-3) return 0.0;
+
+            return GetDistance(raw[0], raw[raw.Count - 1]) / perimeter;
+        }
+
         public StylusPointCollection GenerateFakePressureTriangle(StylusPointCollection points)
         {
             var newPoint = new StylusPointCollection();
@@ -2564,6 +2804,21 @@ namespace Ink_Canvas
         private StylusPointCollection GeneratePointsBetween(Point start, Point end, float startPressure, float endPressure, double minPointInterval = 8.0)
         {
             var result = new StylusPointCollection();
+
+            // 防御：坐标非有限（画布被缩放/平移到极端时识别出的形状坐标可能爆掉）直接退化成两点，
+            // 否则下方 pointCount = distance/interval 会爆炸式分配点导致 OOM 卡死。
+            if (!double.IsFinite(start.X) || !double.IsFinite(start.Y) ||
+                !double.IsFinite(end.X) || !double.IsFinite(end.Y))
+            {
+                result.Add(new StylusPoint(
+                    double.IsFinite(start.X) ? start.X : 0,
+                    double.IsFinite(start.Y) ? start.Y : 0, startPressure));
+                result.Add(new StylusPoint(
+                    double.IsFinite(end.X) ? end.X : 0,
+                    double.IsFinite(end.Y) ? end.Y : 0, endPressure));
+                return result;
+            }
+
             double distance = GetDistance(start, end);
 
             if (distance < minPointInterval)
@@ -2573,7 +2828,14 @@ namespace Ink_Canvas
                 return result;
             }
 
+            // 防御：画布在视频展台等场景被反复 ScaleAt 缩放后，笔画坐标空间可能远超屏幕，
+            // 形状边长随之放大，未限制时 pointCount 可达数万~数百万 → OOM。
+            // 单条边最多 4096 个采样点（8px 间隔下覆盖约 32768px，足够任何可视形状），
+            // 超出则按比例拉大采样间隔，渲染结果对肉眼无差别但内存可控。
+            const int MaxPointsPerEdge = 4096;
             int pointCount = Math.Max(2, (int)(distance / minPointInterval) + 1);
+            if (pointCount > MaxPointsPerEdge)
+                pointCount = MaxPointsPerEdge;
 
             result.Add(new StylusPoint(start.X, start.Y, startPressure));
 
@@ -3015,12 +3277,43 @@ namespace Ink_Canvas
                 return;
             _handwritingBeautifyDebounceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
             {
-                Interval = TimeSpan.FromMilliseconds(HandwritingBeautifyDebounceMs)
+                Interval = TimeSpan.FromMilliseconds(CurrentHandwritingBeautifyDebounceMs)
             };
             _handwritingBeautifyDebounceTimer.Tick += HandwritingBeautifyDebounceTimer_Tick;
         }
 
-        /// <summary>深拷贝点集，供手写纠正识别输入（与笔锋/二次压感合成前的画布数据一致）。</summary>
+        /// <summary>
+        /// 把当前画布笔画复制为不可变的手写识别输入。识别快照只保留几何与压力，避免 WinRT await 期间画布 Stroke 被修改。
+        /// </summary>
+        private static Stroke CloneStrokeForHandwritingInput(Stroke source)
+        {
+            if (source?.StylusPoints == null || source.StylusPoints.Count == 0)
+                return null;
+
+            var points = CloneStylusPointCollectionForHandwritingInput(source.StylusPoints);
+            if (points == null || points.Count == 0)
+                return null;
+
+            return new Stroke(points)
+            {
+                DrawingAttributes = source.DrawingAttributes?.Clone() ?? new DrawingAttributes()
+            };
+        }
+
+        /// <summary>平滑替换后刷新对应识别快照，使异步平滑路径与同步路径使用相同的最终几何。</summary>
+        private void UpdateHandwritingBeautifyRecognitionSnapshot(Stroke canvasStroke)
+        {
+            if (canvasStroke == null || !Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
+                return;
+
+            var snapshot = CloneStrokeForHandwritingInput(canvasStroke);
+            if (snapshot != null)
+                _handwritingBeautifyInkInputByCanvasStroke[canvasStroke] = snapshot;
+            else
+                _handwritingBeautifyInkInputByCanvasStroke.Remove(canvasStroke);
+        }
+
+        /// <summary>深拷贝点集，供手写纠正识别输入。</summary>
         private static StylusPointCollection CloneStylusPointCollectionForHandwritingInput(StylusPointCollection source)
         {
             if (source == null || source.Count == 0)
@@ -3031,11 +3324,8 @@ namespace Ink_Canvas
             return copy;
         }
 
-        /// <summary>并入批次并重置 1s 计时器（多笔需停笔满延迟后才矫正）。</summary>
-        /// <param name="preBrushHandwritingPoints">笔锋与后续 InkStyle 压感合成前的点集；为 null 时识别输入与画布笔画一致（兼容旧行为）。</param>
-        private void ScheduleHandwritingGlyphReplaceAfterStrokeCollected(
-            Stroke strokeForBeautify,
-            StylusPointCollection preBrushHandwritingPoints = null)
+        /// <summary>并入批次并重置停笔防抖计时器。识别输入始终从最终画布几何复制。</summary>
+        private void ScheduleHandwritingGlyphReplaceAfterStrokeCollected(Stroke strokeForBeautify)
         {
             if (!Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
                 return;
@@ -3045,27 +3335,7 @@ namespace Ink_Canvas
                 return;
 
             _handwritingBeautifyScheduleRevision++;
-
-            if (preBrushHandwritingPoints != null && preBrushHandwritingPoints.Count > 0)
-            {
-                // 再拷贝一份给识别专用 Stroke，避免与外部 StylusPointCollection 或 WPF Stroke 内部共享后被改写。
-                var ptsForRecognizer = CloneStylusPointCollectionForHandwritingInput(preBrushHandwritingPoints);
-                if (ptsForRecognizer != null && ptsForRecognizer.Count > 0)
-                {
-                    _handwritingBeautifyInkInputByCanvasStroke[strokeForBeautify] = new Stroke(ptsForRecognizer)
-                    {
-                        DrawingAttributes = strokeForBeautify.DrawingAttributes.Clone()
-                    };
-                }
-                else
-                {
-                    _handwritingBeautifyInkInputByCanvasStroke.Remove(strokeForBeautify);
-                }
-            }
-            else
-            {
-                _handwritingBeautifyInkInputByCanvasStroke.Remove(strokeForBeautify);
-            }
+            UpdateHandwritingBeautifyRecognitionSnapshot(strokeForBeautify);
 
             var alreadyInBatch = false;
             foreach (Stroke x in _handwritingRecentStrokesForBeautify)
@@ -3090,7 +3360,7 @@ namespace Ink_Canvas
 
             EnsureHandwritingBeautifyDebounceTimer();
             _handwritingBeautifyDebounceTimer.Stop();
-            _handwritingBeautifyDebounceTimer.Interval = TimeSpan.FromMilliseconds(HandwritingBeautifyDebounceMs);
+            _handwritingBeautifyDebounceTimer.Interval = TimeSpan.FromMilliseconds(CurrentHandwritingBeautifyDebounceMs);
             _handwritingBeautifyDebounceTimer.Start();
         }
 
@@ -3135,7 +3405,7 @@ namespace Ink_Canvas
                     else
                     {
                         LogHelper.WriteLogToFile(
-                            "[手写体] 批次识别输入回退为画布笔画（未命中原始点快照）。画布点数=" +
+                            "[手写体] 批次识别输入回退为当前画布笔画（未命中最终几何快照）。画布点数=" +
                             (s.StylusPoints?.Count ?? 0),
                             LogHelper.LogType.Info);
                         recognitionInput.Add(s);

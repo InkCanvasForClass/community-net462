@@ -11,7 +11,6 @@ namespace Ink_Canvas.WorkflowAutomation.Services
 {
     /// <summary>
     /// 规则集服务，负责评估规则集是否满足。
-    /// 对齐 ClassIsland 的 RulesetService，实现 IRulesetService 接口。
     /// 事件驱动模式：订阅 SystemEventMonitor 的系统事件，仅在状态可能变化时重新评估。
     /// 保留 5s 兜底轮询防止遗漏。
     /// </summary>
@@ -164,7 +163,7 @@ namespace Ink_Canvas.WorkflowAutomation.Services
             if (info.Handle == null)
                 return false;
 
-            // 对齐 ClassIsland：反序列化 settings
+            // 反序列化 settings
             object settings = null;
             var settingsType = info.SettingsType;
             if (settingsType != null)
@@ -195,14 +194,22 @@ namespace Ink_Canvas.WorkflowAutomation.Services
 
         /// <summary>
         /// 注册规则处理程序。
-        /// 对齐 ClassIsland 的 RegisterRuleHandler。
         /// </summary>
         public void RegisterRuleHandler(string id, RuleRegistryInfo.HandleDelegate handler)
         {
             if (!AutomationRegistry.RegisteredRules.TryGetValue(id, out var ruleRegistryInfo))
                 throw new KeyNotFoundException($"找不到规则 {id}。");
 
+            // 幂等：同一 handler 注册多次直接返回，避免累加触发
+            if (ruleRegistryInfo.Handle == handler) return;
             ruleRegistryInfo.Handle += handler;
+        }
+
+        public void UnregisterRuleHandler(string id, RuleRegistryInfo.HandleDelegate handler)
+        {
+            if (!AutomationRegistry.RegisteredRules.TryGetValue(id, out var ruleRegistryInfo)) return;
+            if (ruleRegistryInfo.Handle == null) return;
+            ruleRegistryInfo.Handle -= handler;
         }
 
         /// <summary>

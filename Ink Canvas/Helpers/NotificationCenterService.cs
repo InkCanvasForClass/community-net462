@@ -11,13 +11,36 @@ namespace Ink_Canvas.Helpers
         private static readonly List<NotificationMessage> Queue = new List<NotificationMessage>();
         private static readonly List<NotificationMessage> History = new List<NotificationMessage>();
         private static bool isShowing;
-        private struct JudgeRepeatMessageStruct
+        private static bool _isFirstDuplicateInCurrentSequence;
+        private const short _deduplicationWindowSeconds = 2;
+        private class LastMessageInfo
         {
             public string Title { get; set; }
             public DateTime Time { get; set; }
             public string Source { get; set; }
+            public string Summary { get; set; }
         }
-        private static JudgeRepeatMessageStruct JudgeRepeatMessage = new JudgeRepeatMessageStruct();
+        private static LastMessageInfo _lastMessage = new LastMessageInfo();
+        private static bool IsDuplicate(NotificationMessage message)
+        {
+            ///<summary>
+            ///在一定时间内和前条标题相同，内容相同，来源相同的消息返回true
+            ///</summary>
+            if (string.IsNullOrWhiteSpace(_lastMessage.Title) || string.IsNullOrWhiteSpace(message.Title)) return false;
+
+            TimeSpan interval = message.CreatedAt - _lastMessage.Time;
+            if (interval.TotalSeconds < 0) LogHelper.WriteLogToFile("消息队列为乱序", LogHelper.LogType.Info);
+            double totalSeconds = Math.Abs(interval.TotalSeconds);
+            if (_lastMessage.Title == message.Title && totalSeconds <= _deduplicationWindowSeconds && message.Source == _lastMessage.Source && message.Summary == _lastMessage.Summary)
+            {
+                _lastMessage.Time = message.CreatedAt;
+                if (_isFirstDuplicateInCurrentSequence == true) LogHelper.WriteLogToFile($"{message.Source}发送的标题为{message.Title}的消息已被消息去重拦截", LogHelper.LogType.Info);
+                _isFirstDuplicateInCurrentSequence = false;
+                return true;
+            }
+
+            return false;
+        }
 
         public static event Action<NotificationMessage> NotificationRequested;
 
@@ -46,26 +69,16 @@ namespace Ink_Canvas.Helpers
 
             lock (SyncRoot)
             {
-                ///<summary>
-                ///在一定时间内和前一条相同且来源一样就不重复显示
-                ///场景：教学课堂环境，插件可能因异常（如死循环、网络重连）高频推送相同通知。
-                ///策略：采用滑动窗口去重（2秒内）。若同一来源的相同标题持续出现，每次出现都刷新窗口起点，使通知彻底沉默，直到插件停止刷屏 2 秒以上。
-                ///效果：杜绝课堂被反复弹窗干扰，同时不影响正常间隔（> 2秒）的有效通知。
-                ///</summary>
-                if (!string.IsNullOrEmpty(message.Title) && JudgeRepeatMessage.Title != null)
+                if (IsDuplicate(message)) return;
+                if (!string.IsNullOrWhiteSpace(message.Title))
                 {
-                    TimeSpan interval = message.CreatedAt - JudgeRepeatMessage.Time;
-                    double TotalSeconds = interval.TotalSeconds;
-                    if (JudgeRepeatMessage.Title == message.Title && TotalSeconds <= 2 && message.Source == JudgeRepeatMessage.Source)
-                    {
-                        JudgeRepeatMessage.Time = message.CreatedAt;
-                        return;
-                    }
-
+                    //只有非空消息才做去重
+                    _isFirstDuplicateInCurrentSequence = true;
+                    _lastMessage.Title = message.Title;
+                    _lastMessage.Time = message.CreatedAt;
+                    _lastMessage.Source = message.Source;
+                    _lastMessage.Summary = message.Summary;
                 }
-                JudgeRepeatMessage.Title = message.Title;
-                JudgeRepeatMessage.Time = message.CreatedAt;
-                JudgeRepeatMessage.Source = message.Source;
                 Queue.Add(message);
                 History.Insert(0, message);
                 if (History.Count > 100) History.RemoveRange(100, History.Count - 100);
@@ -99,6 +112,52 @@ namespace Ink_Canvas.Helpers
             }
 
             TryShowNext();
+        }
+
+        /// <summary>
+        /// 摘除属于指定插件的通知回调。通知消息的 <see cref="NotificationMessage.Action"/>
+        /// 字段直接指向插件 ALC 里的 Action，留在队列或历史中都会阻止插件 AssemblyLoadContext 卸载。
+        /// 该方法同时清空队列中指定来源的项，并把历史项的 <c>Action</c> 字段置空，
+        /// 避免插件用户的通知历史因热重载而被清空。
+        /// </summary>
+        public static int ClearPluginCallbacks(string pluginId, string providerId = "plugin")
+        {
+            if (string.IsNullOrEmpty(pluginId)) return 0;
+
+            var removed = 0;
+            lock (SyncRoot)
+            {
+                // 队列中待显示的：直接整条移除，避免用户点击触发旧回调。
+                for (var i = Queue.Count - 1; i >= 0; i--)
+                {
+                    var msg = Queue[i];
+                    if (msg == null) continue;
+                    if (msg.Action == null) continue;
+                    if (!pluginId.Equals(msg.Source, StringComparison.OrdinalIgnoreCase)
+                        && !pluginId.Equals(msg.ProviderId, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    Queue.RemoveAt(i);
+                    removed++;
+                }
+
+                // 历史中已显示的：保留文案给用户看，但清掉 Action 回调本身。
+                foreach (var msg in History)
+                {
+                    if (msg == null || msg.Action == null) continue;
+                    if (!pluginId.Equals(msg.Source, StringComparison.OrdinalIgnoreCase)
+                        && !pluginId.Equals(msg.ProviderId, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    msg.Action = null;
+                    removed++;
+                }
+
+                // 当前正在显示的那条走 NotificationRequested 事件的订阅；事件订阅由
+                // PluginDelegateCleaner.SweepStaticEvents 单独清理，这里不再处理。
+            }
+
+            return removed;
         }
 
         private static void TryShowNext()

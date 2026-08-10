@@ -241,21 +241,150 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
             return _items;
         }
 
-        public static void RegisterPluginItem(PluginToolbarItemInfo itemInfo)
+        public static void RegisterPluginItem(PluginToolbarItemInfo itemInfo, bool autoAddToActiveConfig = true)
         {
             if (itemInfo == null || string.IsNullOrEmpty(itemInfo.Id)) return;
+            if (_pluginItems.Any(item => string.Equals(item.Id, itemInfo.Id, StringComparison.OrdinalIgnoreCase))) return;
 
             _pluginItems.Add(itemInfo);
-            LogHelper.WriteLogToFile($"ToolbarRegistry: 插件注册工具栏项 [{itemInfo.Id}]", LogHelper.LogType.Info);
+            LogHelper.WriteLogToFile($"ToolbarRegistry: 插件注册工具栏项 [{itemInfo.Id}] (autoAddToActiveConfig={autoAddToActiveConfig})", LogHelper.LogType.Info);
 
-            // 如果 Discover 已经被调用过，需要重置缓存
+            if (autoAddToActiveConfig)
+            {
+                EnsurePluginItemInActiveConfig(itemInfo.Id);
+            }
+
             if (_items != null)
             {
                 _items.Add(new PluginToolbarItemWrapper(itemInfo));
             }
         }
 
+        private static void EnsurePluginItemInActiveConfig(string itemId)
+        {
+            EnsureDefaultConfigExists();
+
+            var configName = SettingsManager.Settings?.ToolbarConfigName;
+            if (string.IsNullOrWhiteSpace(configName))
+                configName = "default";
+
+            var layout = LoadActiveConfig() ?? CreateDefaultLayout();
+            layout.Components ??= new List<ToolbarComponentEntry>();
+            if (ContainsComponent(layout.Components, itemId)) return;
+
+            layout.Components.Add(new ToolbarComponentEntry
+            {
+                Id = itemId,
+                HidingRuleset = ToolbarRuleset.AlwaysShow().WithHideOnCollapsed()
+            });
+            SaveConfigFile(configName, layout);
+            LogHelper.WriteLogToFile(
+                $"ToolbarRegistry: 已将插件组件 [{itemId}] 加入当前配置 [{configName}]",
+                LogHelper.LogType.Info);
+        }
+
+        private static bool ContainsComponent(IEnumerable<ToolbarComponentEntry> entries, string itemId)
+        {
+            foreach (var entry in entries ?? Enumerable.Empty<ToolbarComponentEntry>())
+            {
+                if (string.Equals(entry.Id, itemId, StringComparison.OrdinalIgnoreCase))
+                    return true;
+                if (entry.Children != null && ContainsComponent(entry.Children, itemId))
+                    return true;
+            }
+            return false;
+        }
+
         public static IReadOnlyList<PluginToolbarItemInfo> GetPluginItems() => _pluginItems.AsReadOnly();
+
+        /// <summary>
+        /// 注销插件注册的工具栏组件，断开对插件程序集中委托（ViewFactory 等）的引用。
+        /// 热重载必需：这些委托只要还留在静态表里，插件 ALC 就永远卸载不掉。
+        /// 只清注册表与已构建的 <see cref="_items"/> 缓存，不动用户的布局配置文件——
+        /// 重载后同 Id 组件会重新注册，用户摆好的位置得以保留。
+        /// </summary>
+        public static bool UnregisterPluginItem(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId)) return false;
+
+            var removed = _pluginItems.RemoveAll(
+                item => string.Equals(item.Id, itemId, StringComparison.OrdinalIgnoreCase)) > 0;
+
+            // _items 里存的是包着 PluginToolbarItemInfo 的 wrapper，同样持有插件委托，必须一并移除。
+            _items?.RemoveAll(item => item is PluginToolbarItemWrapper
+                                      && string.Equals(item.Id, itemId, StringComparison.OrdinalIgnoreCase));
+
+            if (removed)
+                LogHelper.WriteLogToFile($"ToolbarRegistry: 已注销插件工具栏项 [{itemId}]", LogHelper.LogType.Info);
+
+            return removed;
+        }
+
+        /// <summary>
+        /// 从所有浮动工具栏配置文件里移除指定 Id 的组件条目（递归处理组合子项）。
+        /// 插件卸载时调用：用户把插件组件拖进了工具栏，卸载后该组件已不存在，
+        /// 不清理会导致 Populate 反复刷 "未找到条目" 警告，且工具栏持续保留空白位。
+        /// </summary>
+        /// <returns>被修改的配置文件数量。</returns>
+        public static int RemovePluginEntryFromAllConfigs(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId)) return 0;
+
+            var modified = 0;
+            foreach (var configName in ListConfigFiles())
+            {
+                try
+                {
+                    var layout = LoadConfigFile(configName);
+                    if (layout?.Components == null) continue;
+
+                    if (StripPluginEntry(layout.Components, itemId) > 0)
+                    {
+                        SaveConfigFile(configName, layout);
+                        modified++;
+                        LogHelper.WriteLogToFile(
+                            $"ToolbarRegistry: 已从配置 [{configName}] 移除插件组件条目 [{itemId}]",
+                            LogHelper.LogType.Info);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile(
+                        $"ToolbarRegistry: 清理配置 [{configName}] 中的插件组件失败: {ex.Message}",
+                        LogHelper.LogType.Warning);
+                }
+            }
+
+            return modified;
+        }
+
+        /// <summary>
+        /// 递归剔除 <see cref="ToolbarComponentEntry"/> 集合中 Id 等于 <paramref name="itemId"/> 的条目。
+        /// </summary>
+        private static int StripPluginEntry(List<ToolbarComponentEntry> entries, string itemId)
+        {
+            if (entries == null || entries.Count == 0) return 0;
+
+            var removed = 0;
+            for (var i = entries.Count - 1; i >= 0; i--)
+            {
+                var entry = entries[i];
+                if (entry == null) continue;
+
+                if (string.Equals(entry.Id, itemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    entries.RemoveAt(i);
+                    removed++;
+                    continue;
+                }
+
+                if (entry.Children != null && entry.Children.Count > 0)
+                    removed += StripPluginEntry(entry.Children, itemId);
+            }
+
+            return removed;
+        }
+
 
         #region Config file system
 
@@ -797,8 +926,8 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                 Child = contentPanel,
                 Tag = ContentBorderTag
             };
-            border.SetResourceReference(Border.BackgroundProperty, "FloatBarBackground");
-            border.SetResourceReference(Border.BorderBrushProperty, "FloatBarBorderBrush");
+            border.SetResourceReference(Border.BackgroundProperty, "FloatingBarBackgroundBrush");
+            border.SetResourceReference(Border.BorderBrushProperty, "FloatingBarBorderBrush");
 
             return border;
         }
@@ -834,8 +963,8 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                     Child = contentPanel,
                     Tag = ContentBorderTag
                 };
-                wrapper.SetResourceReference(Border.BackgroundProperty, "FloatBarBackground");
-                wrapper.SetResourceReference(Border.BorderBrushProperty, "FloatBarBorderBrush");
+                wrapper.SetResourceReference(Border.BackgroundProperty, "FloatingBarBackgroundBrush");
+                wrapper.SetResourceReference(Border.BorderBrushProperty, "FloatingBarBorderBrush");
 
                 view.HorizontalAlignment = HorizontalAlignment.Center;
                 view.VerticalAlignment = VerticalAlignment.Center;
@@ -866,8 +995,8 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                     Child = contentPanel,
                     Tag = ContentBorderTag
                 };
-                wrapper.SetResourceReference(Border.BackgroundProperty, "FloatBarBackground");
-                wrapper.SetResourceReference(Border.BorderBrushProperty, "FloatBarBorderBrush");
+                wrapper.SetResourceReference(Border.BackgroundProperty, "FloatingBarBackgroundBrush");
+                wrapper.SetResourceReference(Border.BorderBrushProperty, "FloatingBarBorderBrush");
 
                 view.HorizontalAlignment = HorizontalAlignment.Center;
                 view.VerticalAlignment = VerticalAlignment.Center;
@@ -1184,6 +1313,7 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                     Name = "PluginPopup_" + _info.Id.Replace('.', '_'),
                     AllowsTransparency = true,
                     StaysOpen = true,
+                    Focusable = true,
                     IsOpen = false,
                     PlacementTarget = btn,
                     Placement = System.Windows.Controls.Primitives.PlacementMode.Custom
@@ -1228,10 +1358,22 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                             mw.CloseAllPopups();
                         }
                         AnimationsHelper.ShowPopupWithSlideAndFade(popup);
+                        popup.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            if (popup.Child is UIElement child)
+                            {
+                                child.Focus();
+                                Keyboard.Focus(child);
+                                child.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                            }
+                        }), System.Windows.Threading.DispatcherPriority.Input);
                     }
                 };
 
-                // 弹窗关闭按钮支持
+                // 弹窗关闭按钮支持。
+                // 直接返回 PopupShellContent（或 PopupTabShellContent）时按原样接线；
+                // 插件常返回外层 UserControl、内含 Shell（如 PdfReader 的 ReaderPopupContent），
+                // 此时在视觉树里递归查找 Shell 再接线，否则标题栏关闭按钮点了没反应。
                 if (popupContent is PopupShellContent shell)
                 {
                     shell.CloseButtonControl.Click += (s, e) => popup.IsOpen = false;
@@ -1240,9 +1382,47 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar
                 {
                     tabShell.CloseButtonControl.Click += (s, e) => popup.IsOpen = false;
                 }
+                else if (popupContent is FrameworkElement contentElement)
+                {
+                    // 立即尝试一次；Popup 未打开时子元素的视觉树可能尚未完全展开，
+                    // 因此再在 Opened 后重试一次（视觉树此时一定完整）。
+                    WireNestedShellCloseButton(contentElement, popup);
+                    popup.Opened += (s, e) => WireNestedShellCloseButton(contentElement, popup);
+                }
             }
 
             return view;
+        }
+
+        /// <summary>在弹窗内容里递归查找 PopupShellContent，把它的标题栏关闭按钮接到 popup 收起。</summary>
+        private static void WireNestedShellCloseButton(FrameworkElement content, Popup popup)
+        {
+            if (content == null || popup == null) return;
+
+            foreach (var nestedShell in FindVisualChildren<PopupShellContent>(content))
+            {
+                var closeButton = nestedShell.CloseButtonControl;
+                if (closeButton == null) continue;
+
+                // 用 Tag 记录已接线的 popup，避免 Opened 重试时重复订阅导致连关两次。
+                if (ReferenceEquals(closeButton.Tag, popup)) return;
+                closeButton.Tag = popup;
+                closeButton.Click += (s, e) => popup.IsOpen = false;
+                return; // 只需接最外层那个 Shell
+            }
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) yield break;
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T result) yield return result;
+                foreach (var descendant in FindVisualChildren<T>(child))
+                    yield return descendant;
+            }
         }
 
         public void ApplyOrientation(FrameworkElement view, Orientation orientation)

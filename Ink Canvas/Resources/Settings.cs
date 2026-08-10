@@ -1,4 +1,5 @@
 using Ink_Canvas.Controls.Toolbar.FloatingToolbar;
+using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using OSVersionExtension;
 using System;
@@ -94,6 +95,11 @@ namespace Ink_Canvas
         public string LastTestTime { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// One session record in Configs/PerformanceHistory.json.
+    /// Default serialization omits zeros/nulls so normal CPU history stays compact.
+    /// Super-detailed realtime-ink fields are only populated when Debug 页开关开启.
+    /// </summary>
     public class PerformanceRunRecord
     {
         [JsonProperty("startTime")]
@@ -102,44 +108,136 @@ namespace Ink_Canvas
         [JsonProperty("endTime")]
         public string EndTime { get; set; } = string.Empty;
 
-        [JsonProperty("durationSeconds")]
+        [JsonProperty("durationSeconds", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double DurationSeconds { get; set; }
 
-        [JsonProperty("avgCpuPercent")]
+        [JsonProperty("avgCpuPercent", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double AvgCpuPercent { get; set; }
 
-        [JsonProperty("peakCpuPercent")]
+        [JsonProperty("peakCpuPercent", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double PeakCpuPercent { get; set; }
 
-        [JsonProperty("avgMemoryMb")]
+        [JsonProperty("avgMemoryMb", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double AvgMemoryMb { get; set; }
 
-        [JsonProperty("peakMemoryMb")]
+        [JsonProperty("peakMemoryMb", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double PeakMemoryMb { get; set; }
 
-        [JsonProperty("sampleCount")]
+        [JsonProperty("sampleCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public int SampleCount { get; set; }
 
-        [JsonProperty("smoothingSampleCount")]
+        // —— 墨迹平滑摘要（性能页历史展示用；不含逐条 stage sample）——
+        [JsonProperty("smoothingSampleCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public int SmoothingSampleCount { get; set; }
 
-        [JsonProperty("smoothingAvgTotalMs")]
+        [JsonProperty("smoothingAvgTotalMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double SmoothingAvgTotalMs { get; set; }
 
-        [JsonProperty("smoothingMaxTotalMs")]
+        [JsonProperty("smoothingMaxTotalMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double SmoothingMaxTotalMs { get; set; }
 
-        [JsonProperty("smoothingAvgBezierMs")]
+        [JsonProperty("smoothingAvgBezierMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double SmoothingAvgBezierMs { get; set; }
 
-        [JsonProperty("smoothingAvgResampleMs")]
+        [JsonProperty("smoothingAvgResampleMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double SmoothingAvgResampleMs { get; set; }
 
-        [JsonProperty("smoothingAvgInputPoints")]
+        [JsonProperty("smoothingAvgInputPoints", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double SmoothingAvgInputPoints { get; set; }
 
-        [JsonProperty("smoothingAvgOutputPoints")]
+        [JsonProperty("smoothingAvgOutputPoints", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double SmoothingAvgOutputPoints { get; set; }
+
+        // —— 以下字段仅 Debug 页「实时笔迹详细调试日志」开启时写入 ——
+        [JsonProperty("realtimeInkStrokeCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkStrokeCount { get; set; }
+
+        [JsonProperty("realtimeInkInputEventCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkInputEventCount { get; set; }
+
+        [JsonProperty("realtimeInkRawInputPointCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkRawInputPointCount { get; set; }
+
+        [JsonProperty("realtimeInkAddedPointCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkAddedPointCount { get; set; }
+
+        [JsonProperty("realtimeInkRedrawCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkRedrawCount { get; set; }
+
+        [JsonProperty("realtimeInkCommitCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkCommitCount { get; set; }
+
+        [JsonProperty("realtimeInkForceRedrawCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkForceRedrawCount { get; set; }
+
+        [JsonProperty("realtimeInkTotalInputProcessingMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkTotalInputProcessingMs { get; set; }
+
+        [JsonProperty("realtimeInkMaxInputProcessingMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkMaxInputProcessingMs { get; set; }
+
+        [JsonProperty("realtimeInkTotalRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkTotalRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkMaxRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkMaxRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkFrameWaitSampleCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkFrameWaitSampleCount { get; set; }
+
+        [JsonProperty("realtimeInkTotalFrameWaitMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkTotalFrameWaitMs { get; set; }
+
+        [JsonProperty("realtimeInkMaxFrameWaitMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkMaxFrameWaitMs { get; set; }
+
+        [JsonProperty("realtimeInkSlowInputOver1MsCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkSlowInputOver1MsCount { get; set; }
+
+        [JsonProperty("realtimeInkSlowRedrawOver1MsCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkSlowRedrawOver1MsCount { get; set; }
+
+        [JsonProperty("realtimeInkSlowRedrawOver3MsCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkSlowRedrawOver3MsCount { get; set; }
+
+        [JsonProperty("realtimeInkSlowRedrawOver5MsCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkSlowRedrawOver5MsCount { get; set; }
+
+        [JsonProperty("realtimeInkNormalRedrawCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkNormalRedrawCount { get; set; }
+
+        [JsonProperty("realtimeInkTotalNormalRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkTotalNormalRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkMaxNormalRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkMaxNormalRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkTotalForceRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkTotalForceRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkMaxForceRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkMaxForceRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkTotalCommitRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkTotalCommitRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkMaxCommitRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkMaxCommitRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkActiveRedrawCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public long RealtimeInkActiveRedrawCount { get; set; }
+
+        [JsonProperty("realtimeInkTotalActiveRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkTotalActiveRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkMaxActiveRedrawMs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public double RealtimeInkMaxActiveRedrawMs { get; set; }
+
+        [JsonProperty("realtimeInkByInputKind", NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, RealtimeInkInputPerformanceSnapshot> RealtimeInkByInputKind { get; set; }
+
+        [JsonProperty("realtimeInkSlowEvents", NullValueHandling = NullValueHandling.Ignore)]
+        public List<RealtimeInkSlowEventSnapshot> RealtimeInkSlowEvents { get; set; }
     }
 
     public class NotificationSettings
@@ -265,7 +363,7 @@ namespace Ink_Canvas
         [JsonProperty("eraserType")]
         public int EraserType { get; set; } // 0 - 图标切换模式      1 - 面积擦     2 - 线条擦
         [JsonProperty("eraserShapeType")]
-        public int EraserShapeType { get; set; } // 0 - 圆形擦  1 - 黑板擦
+        public int EraserShapeType { get; set; } = 1; // 0 - 圆形擦  1 - 黑板擦（默认）
         [JsonProperty("hideStrokeWhenSelecting")]
         public bool HideStrokeWhenSelecting { get; set; } = true;
         [JsonProperty("fitToCurve")]
@@ -356,6 +454,48 @@ namespace Ink_Canvas
         /// <summary>为 true 时，白板工具栏「展台」按钮启动希沃视频展台（sweclauncher），否则使用内置展台。</summary>
         [JsonProperty("launchSeewoVideoShowcaseForWhiteboardBooth")]
         public bool LaunchSeewoVideoShowcaseForWhiteboardBooth { get; set; } = false;
+
+        /// <summary>
+        /// 视频展台持久化：上次选中的摄像头设备名（DsDevice.Name）。
+        /// 下次启动展台时优先选中同名设备；找不到则回退到第一个。
+        /// 用设备名而非索引，因为索引会随设备热插拔变化。
+        /// </summary>
+        [JsonProperty("videoPresenterLastCameraName")]
+        public string VideoPresenterLastCameraName { get; set; } = null;
+
+        /// <summary>
+        /// 视频展台持久化：上次选中的分辨率键，格式 "WxH@FPS"（例如 "1920x1080@30"）。
+        /// 下次启动展台时优先选中相同键的 capability；找不到则回退到默认（最接近 1920×1080 的项）。
+        /// 用字符串键而非索引，因为索引会随驱动 capability 列表顺序变化。
+        /// </summary>
+        [JsonProperty("videoPresenterLastResolutionKey")]
+        public string VideoPresenterLastResolutionKey { get; set; } = null;
+
+        /// <summary>
+        /// 是否在书写位置贴近画布边缘时显示"扩展画布"提示按钮。
+        /// 默认关闭，避免在 PPT 演示、桌面批注等场景干扰；开启后在白板书写时贴近边缘会自动浮现提示。
+        /// </summary>
+        [JsonProperty("isEnableEdgeExpandHint")]
+        public bool IsEnableEdgeExpandHint { get; set; } = false;
+
+        /// <summary>
+        /// 触发"扩展画布"提示按钮的边缘阈值（像素）。当笔画的任意触点距画布四边的距离小于该值时，提示按钮会浮现。
+        /// 默认 80 像素，便于教师日常书写时容易触发。
+        /// </summary>
+        [JsonProperty("edgeExpandThreshold")]
+        public double EdgeExpandThreshold { get; set; } = 80;
+
+        /// <summary>
+        /// 点击"扩展画布"按钮时一次性平移墨迹的像素距离。值越大，单击腾出的书写空间越大。
+        /// </summary>
+        [JsonProperty("edgeExpandTranslateStep")]
+        public double EdgeExpandTranslateStep { get; set; } = 220;
+
+        /// <summary>
+        /// "扩展画布"按钮在无新触发后保持可见的时长（毫秒）。超过后自动隐藏。
+        /// </summary>
+        [JsonProperty("edgeExpandAutoHideMs")]
+        public double EdgeExpandAutoHideMs { get; set; } = 5000;
 
     }
 
@@ -588,6 +728,15 @@ namespace Ink_Canvas
         [JsonProperty("hideFloatingBarBorder")]
         public bool HideFloatingBarBorder { get; set; } = false;
 
+        [JsonProperty("floatingBarBorderColor")]
+        public string FloatingBarBorderColor { get; set; } = "";
+
+        [JsonProperty("floatingBarThemeId")]
+        public string FloatingBarThemeId { get; set; } = "default";
+
+        [JsonProperty("floatingBarBorderColorMode")]
+        public int FloatingBarBorderColorMode { get; set; } = 0;
+
         [JsonProperty("eraserDisplayOption")]
         public int EraserDisplayOption { get; set; }
 
@@ -599,6 +748,9 @@ namespace Ink_Canvas
 
         [JsonProperty("enableHotkeysInMouseMode")]
         public bool EnableHotkeysInMouseMode { get; set; } = false;
+
+        [JsonProperty("passThroughMouseWheelInDrawingMode")]
+        public bool PassThroughMouseWheelInDrawingMode { get; set; } = false;
 
         [JsonProperty("language")]
         public string Language { get; set; } = "";
@@ -620,6 +772,9 @@ namespace Ink_Canvas
 
         [JsonProperty("showPenColorOnFloatingBarIcon")]
         public bool ShowPenColorOnFloatingBarIcon { get; set; } = false;
+
+        [JsonProperty("showPenColorOnBoardToolbarIcon")]
+        public bool ShowPenColorOnBoardToolbarIcon { get; set; } = false;
 
         [JsonProperty("allowDragSidePanel")]
         public bool AllowDragSidePanel { get; set; } = true;
@@ -647,6 +802,29 @@ namespace Ink_Canvas
 
         [JsonProperty("disableToolbarAnimation")]
         public bool DisableToolbarAnimation { get; set; } = false;
+
+        // Issue #285 —— 更小批注栏（闲置状态下的紧凑圆角批注栏）
+        [JsonProperty("enableIdleMiniBar")]
+        public bool EnableIdleMiniBar { get; set; } = false;
+
+        [JsonProperty("idleMiniBarOpacity")]
+        public double IdleMiniBarOpacity { get; set; } = 0.5;
+
+        [JsonProperty("idleMiniBarAutoRestoreSeconds")]
+        public double IdleMiniBarAutoRestoreSeconds { get; set; } = 60.0;
+
+        // 液态玻璃浮动栏（独立置顶胶囊窗口，桌面截图 + 折射着色器）
+        [JsonProperty("enableLiquidGlassBar")]
+        public bool EnableLiquidGlassBar { get; set; } = false;
+
+        [JsonProperty("liquidGlassBarOpacity")]
+        public double LiquidGlassBarOpacity { get; set; } = 0.95;
+
+        [JsonProperty("liquidGlassBarPositionX")]
+        public double LiquidGlassBarPositionX { get; set; } = -1;
+
+        [JsonProperty("liquidGlassBarPositionY")]
+        public double LiquidGlassBarPositionY { get; set; } = -1;
     }
 
     public enum PPTLinkMode
@@ -1104,6 +1282,9 @@ namespace Ink_Canvas
         [JsonProperty("isSaveStrokesAsXML")]
         public bool IsSaveStrokesAsXML { get; set; } = false;
 
+        [JsonProperty("isSaveStrokesAsUInK")]
+        public bool IsSaveStrokesAsUInK { get; set; } = false;
+
         [JsonProperty("isAutoEnterAnnotationAfterKillHite")]
         public bool IsAutoEnterAnnotationAfterKillHite { get; set; }
 
@@ -1213,6 +1394,12 @@ namespace Ink_Canvas
         [JsonProperty("isPPTPageFlipPreviewVisible")]
         public bool IsPPTPageFlipPreviewVisible { get; set; } = false;
 
+        /// <summary>
+        /// 实时笔迹超级详细调试日志（FrameWait/Redraw/点数等），独立于性能监测开关，默认关闭。
+        /// </summary>
+        [JsonProperty("isRealtimeInkDebugLogEnabled")]
+        public bool IsRealtimeInkDebugLogEnabled { get; set; } = false;
+
         [JsonProperty("isEnableFullScreenHelper")]
         public bool IsEnableFullScreenHelper { get; set; }
 
@@ -1298,6 +1485,12 @@ namespace Ink_Canvas
         public bool EnableWinRtHandwritingStrokeBeautify { get; set; }
         [JsonProperty("handwritingCorrectionFontFamily")]
         public string HandwritingCorrectionFontFamily { get; set; } = "Ink Free,KaiTi,Segoe Script";
+        /// <summary>手写识别器语言覆盖 LCID。0=跟随系统；其余值见 HandwritingRecognitionTuning 支持。</summary>
+        [JsonProperty("handwritingLanguageOverrideLcid")]
+        public int HandwritingLanguageOverrideLcid { get; set; }
+        /// <summary>收笔后延迟识别的毫秒数（300-5000，默认 2000），多笔一字时等用户写完再识别。</summary>
+        [JsonProperty("handwritingBeautifyDebounceMs")]
+        public int HandwritingBeautifyDebounceMs { get; set; } = 2000;
     }
 
     public class RandSettings
@@ -1346,6 +1539,38 @@ namespace Ink_Canvas
         public double MLAvoidanceWeight { get; set; } = 1.0;
         [JsonProperty("enableQuickDraw")]
         public bool EnableQuickDraw { get; set; } = true;
+        [JsonProperty("quickDrawExternalCaller")]
+        public bool QuickDrawExternalCaller { get; set; }
+        [JsonProperty("nameRosters")]
+        public List<NameRoster> NameRosters { get; set; } = new List<NameRoster>();
+        [JsonProperty("selectedNameRosterGuid")]
+        public string SelectedNameRosterGuid { get; set; } = "";
+    }
+
+    public class NameRoster
+    {
+        [JsonProperty("guid")]
+        public string Guid { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        // 名单内容（每行一人），与 Names.txt 的格式保持一致
+        [JsonProperty("namesContent")]
+        public string NamesContent { get; set; } = "";
+
+        // 替换规则内容（每行一条），与 Replace.txt 的格式保持一致
+        [JsonProperty("replaceContent")]
+        public string ReplaceContent { get; set; } = "";
+
+        public NameRoster(string guid, string name)
+        {
+            Guid = guid;
+            Name = name;
+        }
+
+        // 用于JSON序列化
+        public NameRoster() { }
     }
 
     public class CustomPickNameBackground

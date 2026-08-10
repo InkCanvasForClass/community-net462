@@ -13,13 +13,19 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Console;
+using Windows.Win32.UI.Accessibility;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using SplashScreen = Ink_Canvas.Windows.SplashScreen;
@@ -54,6 +60,34 @@ namespace Ink_Canvas
         public static string[] StartArgs;
         public static string RootPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
+        /// <summary>
+        /// 从 DispatcherOperation 提取回调委托的可读方法名。
+        /// WPF 内部把委托存在私有字段里，反射枚举拿；失败退回 Priority 类别。
+        /// </summary>
+        private static string ExtractDispatcherOpName(System.Windows.Threading.DispatcherOperation op)
+        {
+            try
+            {
+                if (op == null)
+                    return "<null>";
+                // 反射枚举私有字段找 Delegate 类型字段（_callback / _method 等）。
+                foreach (var field in op.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+                {
+                    var value = field.GetValue(op);
+                    if (value is Delegate del && del.Method != null)
+                        return $"{del.Method.Name} ({op.Priority})";
+                }
+                return $"{op.Priority}";
+            }
+            catch
+            {
+                try { return $"{op.Priority}"; }
+                catch { return "<error>"; }
+            }
+        }
+        // 新增：版本字符串（在 App_Startup 中计算赋值，形如 "1.7.18.0 (sha)"）
+        public static string AppVersion = "";
+
         // 新增：标记是否通过--board参数启动
         public static bool StartWithBoardMode = false;
         // 新增：标记是否通过--show参数启动
@@ -64,6 +98,8 @@ namespace Ink_Canvas
         public static Process watchdogProcess;
         // 新增：标记是否为软件内主动退出
         public static bool IsAppExitByUser;
+        // 新增：插件事件服务引用，App_Exit 时向插件广播 AppExiting
+        private static Plugins.EventService _pluginEventService;
         // 新增：标记是否正在触发安装更新（用于跳过某些交互确认）
         public static bool IsUpdateInstalling;
         // 新增：标记是否启用了UIA置顶功能
@@ -92,10 +128,10 @@ namespace Ink_Canvas
         private static DateTime previousCpuSampleTime = DateTime.MinValue;
         private static double? lastSystemCpuUsagePercent;
         private static double? lastProcessCpuUsagePercent;
-        private IntPtr processDestroyHook = IntPtr.Zero;
+        private UnhookWinEventSafeHandle processDestroyHook = new UnhookWinEventSafeHandle();
         private IntPtr monitoredMainWindowHandle = IntPtr.Zero;
         private bool mainWindowDestroyedLogged;
-        private WinEventDelegate processDestroyHookCallback;
+        private WINEVENTPROC processDestroyHookCallback;
         // 新增：启动画面相关
         private static SplashScreen _splashScreen;
         private static bool _isSplashScreenShown = false;
@@ -103,8 +139,8 @@ namespace Ink_Canvas
         private static readonly Stopwatch startupStopwatch = new Stopwatch();
         private static readonly Stopwatch splashStopwatch = new Stopwatch();
 
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
+        //[DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        //private static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
 
         public App()
         {
@@ -113,12 +149,11 @@ namespace Ink_Canvas
             // （gong-wpf-dragdrop 库内部使用）的模态消息循环无法接收触摸释放消息。
             // 在模拟触摸屏（UU 远程、spacedesk 等远程控制软件注入的虚拟触摸）下，
             // 拖动操作会进入假死状态，直到呼出鼠标或点击其他窗口生成真实鼠标消息才解除。
-            // ClassIsland 项目同样注释掉了该开关，参考其做法保持一致。
             // AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", true);
 
             try
             {
-                SetCurrentProcessExplicitAppUserModelID("InkCanvasForClass.CE");
+                PInvoke.SetCurrentProcessExplicitAppUserModelID("InkCanvasForClass.CE");
             }
             catch
             {
@@ -126,6 +161,31 @@ namespace Ink_Canvas
 
             // 配置TLS协议以支持Windows 7
             ConfigureTlsForWindows7();
+
+            // Dispatcher 长任务监控（诊断用）：
+            // OperationStarted = 操作真正开始执行，记录执行时长（Completed-Started），
+            // 排除 Background 优先级排队等待的虚高（posted→completed 含排队）。
+            try
+            {
+                Dispatcher.Hooks.OperationStarted += (s, e) =>
+                {
+                    var sw = Stopwatch.StartNew();
+                    e.Operation.Completed += (_, __) =>
+                    {
+                        sw.Stop();
+                        if (sw.ElapsedMilliseconds > 20)
+                        {
+                            var name = ExtractDispatcherOpName(e.Operation);
+                            var elapsed = sw.Elapsed.TotalMilliseconds;
+                            Debug.WriteLine($"Dispatcher Exec:{elapsed:F1}ms {name}");
+                        }
+                    };
+                };
+            }
+            catch
+            {
+                // 监控失败不影响启动
+            }
 
             // 如果是看门狗子进程，直接进入看门狗主循环并终止主流程
             var args = Environment.GetCommandLineArgs();
@@ -164,25 +224,21 @@ namespace Ink_Canvas
             // CrashAction 的值将在 App_Startup 中通过缓存的 Settings.json 同步，
             // 构造函数中先用默认值（ShowCrashWindow），LoadSettings 运行后会被覆盖。
 
+            // 注意：Exit 事件在 Application.Shutdown() 或 Application.Run() 正常返回时触发，
+            // 用于释放 mutex、清理 IpcIACoreClient、卸载插件、写看门狗退出信号、记录设备退出等。
+            // 若不挂载此事件，App_Exit 中已实现的所有清理与看门狗通知逻辑都不会执行，
+            // 软件正常关闭后会被看门狗误判为崩溃并触发重复重启。
             Startup += App_Startup;
             SessionEnding += App_SessionEnding;
             DispatcherUnhandledException += App_DispatcherUnhandledException;
+            Exit += App_Exit;
             StartHeartbeatMonitor();
 
             // 初始化全局异常和进程结束处理
             InitializeCrashListeners();
 
-            // 仅在崩溃后操作为静默重启时才启动看门狗
-            // 在更新模式下不启动看门狗，避免干扰更新流程
-            args = Environment.GetCommandLineArgs();
-            bool isUpdateMode = args.Contains("--update-mode");
-            bool isFinalApp = args.Contains("--final-app");
-
-            if (CrashAction == CrashActionType.SilentRestart && !isUpdateMode && !isFinalApp)
-            {
-                StartWatchdogIfNeeded();
-            }
-            Exit += App_Exit; // 注册退出事件
+            // 看门狗必须在 App_Startup 读取 Settings.json 并同步 CrashAction 后启动。
+            // 构造函数阶段仍使用默认 CrashAction，不能在此处做判断。
         }
 
         // 配置TLS协议以支持Windows 7
@@ -241,8 +297,9 @@ namespace Ink_Canvas
                 // 注册进程退出处理程序
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
+                PHANDLER_ROUTINE handlerRoutine = new PHANDLER_ROUTINE(ConsoleCtrlHandler);
                 // 尝试注册Windows关闭消息监听
-                SetConsoleCtrlHandler(ConsoleCtrlHandler, true);
+                PInvoke.SetConsoleCtrlHandler(handlerRoutine, true);
 
                 try
                 {
@@ -318,27 +375,27 @@ namespace Ink_Canvas
 
         private void RegisterMainWindowDestroyHook()
         {
-            if (processDestroyHook != IntPtr.Zero || monitoredMainWindowHandle == IntPtr.Zero)
+            if (!processDestroyHook.IsInvalid || monitoredMainWindowHandle == IntPtr.Zero)
             {
                 return;
             }
 
-            processDestroyHook = SetWinEventHook(
+            processDestroyHook = PInvoke.SetWinEventHook(
                 EVENT_OBJECT_DESTROY,
                 EVENT_OBJECT_DESTROY,
-                IntPtr.Zero,
+                null,
                 processDestroyHookCallback,
                 (uint)currentProcessId,
                 0,
                 WINEVENT_OUTOFCONTEXT);
 
-            if (processDestroyHook == IntPtr.Zero)
+            if (!processDestroyHook.IsInvalid)
             {
                 return;
             }
         }
 
-        private void OnWinEventMainWindowDestroyed(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+        private void OnWinEventMainWindowDestroyed(HWINEVENTHOOK hWinEventHook, uint eventType, HWND hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
             if (eventType != EVENT_OBJECT_DESTROY || mainWindowDestroyedLogged)
             {
@@ -362,10 +419,10 @@ namespace Ink_Canvas
         {
             try
             {
-                if (processDestroyHook != IntPtr.Zero)
+                if (!processDestroyHook.IsInvalid)
                 {
-                    UnhookWinEvent(processDestroyHook);
-                    processDestroyHook = IntPtr.Zero;
+                    PInvoke.UnhookWinEvent(new HWINEVENTHOOK(processDestroyHook.DangerousGetHandle()));
+                    processDestroyHook = new UnhookWinEventSafeHandle();
                 }
             }
             catch
@@ -374,35 +431,35 @@ namespace Ink_Canvas
         }
 
         // Windows控制台控制处理程序
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handler, bool add);
+        //[DllImport("kernel32.dll", SetLastError = true)]
+        //private static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handler, bool add);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetSystemTimes(out FILETIME lpIdleTime, out FILETIME lpKernelTime, out FILETIME lpUserTime);
+        //[DllImport("kernel32.dll", SetLastError = true)]
+        //private static extern bool GetSystemTimes(out FILETIME lpIdleTime, out FILETIME lpKernelTime, out FILETIME lpUserTime);
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct FILETIME
-        {
-            public uint dwLowDateTime;
-            public uint dwHighDateTime;
-        }
+        //[StructLayout(LayoutKind.Sequential)]
+        //private struct FILETIME
+        //{
+        //    public uint dwLowDateTime;
+        //    public uint dwHighDateTime;
+        //}
 
-        private delegate bool ConsoleCtrlDelegate(int ctrlType);
-        private delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
+        //private delegate bool ConsoleCtrlDelegate(int ctrlType);
+        //private delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 
         private const uint EVENT_OBJECT_DESTROY = 0x8001;
         private const uint WINEVENT_OUTOFCONTEXT = 0x0000;
         private const int OBJID_WINDOW = 0;
         private const int CHILDID_SELF = 0;
 
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
+        //[DllImport("user32.dll")]
+        //private static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
 
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWinEvent(IntPtr hWinEventHook);
+        //[DllImport("user32.dll")]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        //private static extern bool UnhookWinEvent(IntPtr hWinEventHook);
 
-        private static bool ConsoleCtrlHandler(int ctrlType)
+        private static BOOL ConsoleCtrlHandler(uint ctrlType)
         {
             string eventType = "未知控制类型";
 
@@ -596,7 +653,7 @@ namespace Ink_Canvas
         {
             try
             {
-                if (!GetSystemTimes(out FILETIME idleTime, out FILETIME kernelTime, out FILETIME userTime))
+                if (!PInvoke.GetSystemTimes(out FILETIME idleTime, out FILETIME kernelTime, out FILETIME userTime))
                 {
                     return;
                 }
@@ -643,7 +700,7 @@ namespace Ink_Canvas
 
         private static ulong ToUInt64(FILETIME fileTime)
         {
-            return ((ulong)fileTime.dwHighDateTime << 32) | fileTime.dwLowDateTime;
+            return ((ulong)(uint)fileTime.dwHighDateTime << 32) | (uint)fileTime.dwLowDateTime;
         }
 
         private static string FormatCpuUsagePercent(double? cpuUsagePercent)
@@ -904,6 +961,20 @@ namespace Ink_Canvas
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
+
+            // ARM64 渲染模式自适应：Surface Pro X 等 ARM64 设备走 WARP 软件光栅，
+            // WPF 默认按 GPU 路径会触发无效 GPU 句柄的探测耗时与偶发 fallback。
+            // 提前显式声明 SoftwareOnly，让 InkCanvas/浮动栏/墨迹预览的渲染直接走软件，
+            // 减少启动抖动与首帧延迟。x86/x64 不动。
+            // 注意：RenderOptions 位于 System.Windows.Media，RenderMode enum 位于
+            // System.Windows.Interop；本文件已 using System.Windows.Interop，
+            // 引用 RenderMode 直接走短名即可。
+            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            {
+                RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+                LogHelper.WriteLogToFile("App | ARM64 detected, RenderMode=SoftwareOnly");
+            }
+
             appStartupStartTime = DateTime.Now;
             startupStopwatch.Restart();
 
@@ -929,8 +1000,10 @@ namespace Ink_Canvas
                 SetSplashMessage("正在启动 Ink Canvas...");
                 SetSplashProgress(25);
 
-                // 强制刷新UI，确保启动画面显示
-                Application.Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
+                // 强制刷新UI，确保启动画面显示。
+                // 注意：在 App 构造阶段同步调用 Dispatcher.Invoke 会让当前线程等待自身调度，
+                // 形成可见卡顿甚至死锁。此处直接返回，依靠 Splash 自身 Loaded 事件完成首帧渲染即可。
+                Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
             }
             RootPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
@@ -946,6 +1019,7 @@ namespace Ink_Canvas
                     versionString += " (" + infoVersion.Substring(lastDotIndex + 1) + ")";
                 }
             }
+            AppVersion = versionString;
             LogHelper.NewLog(string.Format("Ink Canvas Starting (Version: {0})", versionString));
 
             // 检查是否为最终应用启动（更新后的应用）
@@ -984,6 +1058,12 @@ namespace Ink_Canvas
             // 处理更新模式启动
             bool isUpdateMode = AutoUpdateHelper.HandleUpdateModeStartup(e.Args);
 
+            // 配置已加载后再启动看门狗，避免使用默认的 CrashAction 覆盖用户设置。
+            if (!isUpdateMode && !isFinalApp && CrashAction == CrashActionType.SilentRestart)
+            {
+                StartWatchdogIfNeeded();
+            }
+
             // 如果是更新模式，不显示主窗口但保持应用运行
             if (isUpdateMode)
             {
@@ -994,9 +1074,6 @@ namespace Ink_Canvas
             // 检查是否存在更新标记文件
             string updateMarkerFile = Path.Combine(RootPath, "update_in_progress.tmp");
             bool isUpdateInProgress = false;
-
-            // 检查是否以更新模式启动
-            isUpdateMode = e.Args.Contains("--update-mode");
 
             // 如果是最终应用启动，立即清理更新标记文件
             if (isFinalApp)
@@ -1299,6 +1376,7 @@ namespace Ink_Canvas
             };
 
             mainWindow.Show();
+            MemoryBreakdownHelper.StartAutomaticDumpMonitor();
 
             if (IsFastStartupEnabled)
             {
@@ -1785,8 +1863,19 @@ namespace Ink_Canvas
         {
             isAppExiting = true;
 
+            // 在卸载插件前广播 AppExiting，让插件有机会清理自身资源。
+            try
+            {
+                _pluginEventService?.OnAppExiting();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"广播插件 AppExiting 失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+
             try { heartbeatTimer?.Stop(); } catch { }
             try { watchdogTimer?.Change(Timeout.Infinite, Timeout.Infinite); watchdogTimer?.Dispose(); } catch { }
+            MemoryBreakdownHelper.StopAutomaticDumpMonitor();
 
             CleanupTerminationMonitoring();
 
@@ -1837,6 +1926,16 @@ namespace Ink_Canvas
                 catch (Exception perfEx)
                 {
                     LogHelper.WriteLogToFile($"保存性能监测数据失败: {perfEx.Message}", LogHelper.LogType.Warning);
+                }
+
+                // 实时笔迹详细调试日志独立写盘（仅 Debug 页开启过时才会落盘）
+                try
+                {
+                    RealtimeInkPerformanceMonitor.StopAndSave();
+                }
+                catch (Exception inkPerfEx)
+                {
+                    LogHelper.WriteLogToFile($"保存实时笔迹调试日志失败: {inkPerfEx.Message}", LogHelper.LogType.Warning);
                 }
 
                 // 记录应用退出（设备标识符）

@@ -35,10 +35,38 @@ namespace Ink_Canvas.Helpers
                 InterpolationSteps = _config.InterpolationSteps,
                 UseHardwareAcceleration = _config.UseHardwareAcceleration,
                 MaxConcurrentTasks = _config.MaxConcurrentTasks,
+                UseAdaptiveInterpolation = _config.UseAdaptiveInterpolation,
+                CurveTension = _config.CurveTension,
                 PerformanceMonitor = _performanceMonitor
             };
 
             _hardwareProcessor = new HardwareAcceleratedInkProcessor();
+        }
+
+        /// <summary>
+        /// 把 <paramref name="source"/> 的全部 property data 复制到 <paramref name="target"/>。
+        /// 平滑器（AsyncAdvancedBezierSmoothing / HardwareAcceleratedInkProcessor / AdvancedBezierSmoothing）
+        /// 创建的新 Stroke 只克隆 DrawingAttributes，会丢失 LaserRenderModeGuid 等标记——
+        /// 激光笔迹会因此失去激光渲染效果。
+        /// 必须在 UI 线程调用（property data 值可能是 DispatcherObject）。
+        /// </summary>
+        public static void CopyPropertyData(Stroke source, Stroke target)
+        {
+            if (source == null || target == null || ReferenceEquals(source, target))
+                return;
+
+            foreach (var id in source.GetPropertyDataIds())
+            {
+                try
+                {
+                    if (!target.ContainsPropertyData(id))
+                        target.AddPropertyData(id, source.GetPropertyData(id));
+                }
+                catch
+                {
+                    // 个别 property data 值无法复制（如 DispatcherObject），跳过不阻断替换。
+                }
+            }
         }
 
         /// <summary>
@@ -90,7 +118,8 @@ namespace Ink_Canvas.Helpers
             finally
             {
                 stopwatch.Stop();
-                _performanceMonitor.RecordProcessingTime(stopwatch.Elapsed);
+                if (!_config.UseAsyncProcessing)
+                    _performanceMonitor.RecordProcessingTime(stopwatch.Elapsed);
                 PerformanceMonitorHelper.UpdateSmoothingStats(GetDetailedStats());
             }
 
@@ -112,16 +141,31 @@ namespace Ink_Canvas.Helpers
             {
                 if (_config.UseHardwareAcceleration)
                 {
-                    // 使用硬件加速的同步版本（使用异步等待避免阻塞）
+                    // GPU 平滑为异步任务，此处是同步 API 的向后兼容入口；
+                    // 用带超时的 GetAwaiter().GetResult() 有界等待，超时/失败/取消回退原始笔画。
+                    // 注意：调用方在 UI 线程上时仍会发生 sync-over-async 阻塞，调用方应优先走 SmoothStrokeAsync。
                     var task = _hardwareProcessor.SmoothStrokeWithGPU(originalStroke);
-                    if (task.Wait(5000)) // 5秒超时
+                    using (var cts = new CancellationTokenSource(5000))
                     {
-                        result = task.Result;
-                    }
-                    else
-                    {
-                        LogHelper.WriteLogToFile("墨迹平滑超时，返回原始笔画", LogHelper.LogType.Warning);
-                        result = originalStroke;
+                        try
+                        {
+                            result = task.WaitAsync(cts.Token).GetAwaiter().GetResult();
+                        }
+                        catch (TimeoutException)
+                        {
+                            LogHelper.WriteLogToFile("墨迹平滑超时，返回原始笔画", LogHelper.LogType.Warning);
+                            result = originalStroke;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            Debug.WriteLine("同步墨迹平滑被取消，返回原始笔画");
+                            result = originalStroke;
+                        }
+                        catch (Exception hwEx)
+                        {
+                            Debug.WriteLine($"硬件加速平滑失败，回退原始笔画: {hwEx.Message}");
+                            result = originalStroke;
+                        }
                     }
                 }
                 else
@@ -164,6 +208,8 @@ namespace Ink_Canvas.Helpers
             _asyncSmoothing.InterpolationSteps = newConfig.InterpolationSteps;
             _asyncSmoothing.UseHardwareAcceleration = newConfig.UseHardwareAcceleration;
             _asyncSmoothing.MaxConcurrentTasks = newConfig.MaxConcurrentTasks;
+            _asyncSmoothing.UseAdaptiveInterpolation = newConfig.UseAdaptiveInterpolation;
+            _asyncSmoothing.CurveTension = newConfig.CurveTension;
         }
 
         /// <summary>
@@ -181,6 +227,12 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public InkSmoothingPerformanceMonitor PerformanceMonitor => _performanceMonitor;
 
+        public void ResetPerformanceStats()
+        {
+            _performanceMonitor.Reset();
+            PerformanceMonitorHelper.UpdateSmoothingStats(GetDetailedStats());
+        }
+
         /// <summary>
         /// 获取详细的墨迹纠正性能统计
         /// </summary>
@@ -193,8 +245,23 @@ namespace Ink_Canvas.Helpers
                 MaxTotalMs = _performanceMonitor.GetMaxProcessingTimeMs(),
                 AvgBezierMs = _performanceMonitor.GetAverageBezierTimeMs(),
                 AvgResampleMs = _performanceMonitor.GetAverageResampleTimeMs(),
+                AvgSemaphoreWaitMs = _performanceMonitor.GetAverageSemaphoreWaitMs(),
+                MaxSemaphoreWaitMs = _performanceMonitor.GetMaxSemaphoreWaitMs(),
+                AvgThreadPoolQueueMs = _performanceMonitor.GetAverageThreadPoolQueueMs(),
+                MaxThreadPoolQueueMs = _performanceMonitor.GetMaxThreadPoolQueueMs(),
+                AvgComputeMs = _performanceMonitor.GetAverageComputeMs(),
+                MaxComputeMs = _performanceMonitor.GetMaxComputeMs(),
+                AvgPointCopyMs = _performanceMonitor.GetAveragePointCopyMs(),
+                MaxPointCopyMs = _performanceMonitor.GetMaxPointCopyMs(),
+                AvgStrokeConstructionMs = _performanceMonitor.GetAverageStrokeConstructionMs(),
+                MaxStrokeConstructionMs = _performanceMonitor.GetMaxStrokeConstructionMs(),
+                AvgDispatcherWaitMs = _performanceMonitor.GetAverageDispatcherWaitMs(),
+                MaxDispatcherWaitMs = _performanceMonitor.GetMaxDispatcherWaitMs(),
+                AvgUiCallbackMs = _performanceMonitor.GetAverageUiCallbackMs(),
+                MaxUiCallbackMs = _performanceMonitor.GetMaxUiCallbackMs(),
                 AvgInputPoints = _performanceMonitor.GetAverageInputPointCount(),
-                AvgOutputPoints = _performanceMonitor.GetAverageOutputPointCount()
+                AvgOutputPoints = _performanceMonitor.GetAverageOutputPointCount(),
+                Samples = _performanceMonitor.GetSamples()
             };
         }
 
@@ -308,7 +375,23 @@ namespace Ink_Canvas.Helpers
         public double MaxTotalMs { get; set; }
         public double AvgBezierMs { get; set; }
         public double AvgResampleMs { get; set; }
+        public double AvgSemaphoreWaitMs { get; set; }
+        public double MaxSemaphoreWaitMs { get; set; }
+        public double AvgThreadPoolQueueMs { get; set; }
+        public double MaxThreadPoolQueueMs { get; set; }
+        public double AvgComputeMs { get; set; }
+        public double MaxComputeMs { get; set; }
+        public double AvgPointCopyMs { get; set; }
+        public double MaxPointCopyMs { get; set; }
+        public double AvgStrokeConstructionMs { get; set; }
+        public double MaxStrokeConstructionMs { get; set; }
+        public double AvgDispatcherWaitMs { get; set; }
+        public double MaxDispatcherWaitMs { get; set; }
+        public double AvgUiCallbackMs { get; set; }
+        public double MaxUiCallbackMs { get; set; }
         public double AvgInputPoints { get; set; }
         public double AvgOutputPoints { get; set; }
+        public System.Collections.Generic.List<InkSmoothingPipelineSample> Samples { get; set; }
+            = new System.Collections.Generic.List<InkSmoothingPipelineSample>();
     }
 }

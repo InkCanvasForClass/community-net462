@@ -364,6 +364,36 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             if (mw != null) mw.ApplyHideFloatingBarBorder(isOn);
         }
 
+        public static void OnFloatingBarBorderColorChanged()
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyFloatingBarBorderColor();
+        }
+
+        public static void OnEnableIdleMiniBarChanged(bool isOn)
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyIdleMiniBarEnabled(isOn);
+        }
+
+        public static void OnIdleMiniBarOpacityChanged(double value)
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyIdleMiniBarOpacity(value);
+        }
+
+        public static void OnEnableLiquidGlassBarChanged(bool isOn)
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyLiquidGlassBarEnabled(isOn);
+        }
+
+        public static void OnLiquidGlassBarOpacityChanged(double value)
+        {
+            var mw = GetMainWindow();
+            if (mw != null) mw.ApplyLiquidGlassBarOpacity(value);
+        }
+
         #endregion
 
         #region Advanced
@@ -579,7 +609,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 mw.PPTUIManager.ShowPPTButton = isOn;
                 mw.PPTUIManager.UpdateNavigationPanelsVisibility();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnShowPPTSidebarByDefaultChanged()
@@ -592,9 +621,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         public static void OnPPTButtonPositionChanged()
         {
             var mw = GetMainWindow();
-            mw?.UpdatePPTBtnSlidersStatus();
             mw?.UpdatePPTUIManagerSettings();
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnPPTButtonOpacityChanged(string buttonKey, double value)
@@ -611,7 +638,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 }
                 mw.PPTUIManager.UpdateNavigationButtonStyles();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnPPTButtonsDisplayOptionChanged()
@@ -622,7 +648,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 mw.PPTUIManager.PPTButtonsDisplayOption = SettingsManager.Settings.PowerPointSettings.PPTButtonsDisplayOption;
                 mw.PPTUIManager.UpdateNavigationPanelsVisibility();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnPPTSButtonsOptionChanged()
@@ -633,7 +658,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 mw.PPTUIManager.PPTSButtonsOption = SettingsManager.Settings.PowerPointSettings.PPTSButtonsOption;
                 mw.PPTUIManager.UpdateNavigationButtonStyles();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnPPTSButtonsOptionWithOpacityChanged()
@@ -647,7 +671,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 mw.PPTUIManager.PPTRSButtonOpacity = ppt.PPTRSButtonOpacity;
                 mw.PPTUIManager.UpdateNavigationButtonStyles();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnPPTBButtonsOptionChanged()
@@ -658,7 +681,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 mw.PPTUIManager.PPTBButtonsOption = SettingsManager.Settings.PowerPointSettings.PPTBButtonsOption;
                 mw.PPTUIManager.UpdateNavigationButtonStyles();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnPPTBButtonsOptionWithOpacityChanged()
@@ -672,7 +694,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 mw.PPTUIManager.PPTRBButtonOpacity = ppt.PPTRBButtonOpacity;
                 mw.PPTUIManager.UpdateNavigationButtonStyles();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         public static void OnPPTTimeCapsuleChanged()
@@ -720,7 +741,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 mw.PPTUIManager.PPTNavBarScale = scale;
                 mw.PPTUIManager.UpdateNavigationButtonStyles();
             }
-            mw?.UpdatePPTBtnPreview();
         }
 
         /// <summary>
@@ -731,7 +751,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         {
             var mw = GetMainWindow();
             mw?.UpdatePPTUIManagerSettings();
-            mw?.UpdatePPTBtnPreview();
             PPTPageFlipPreviewWindow.ActiveInstance?.UpdatePreview();
         }
 
@@ -770,6 +789,19 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                     mw.FloatingBarToggleSwitchEnableInkToShape.IsOn = isOn;
                 if (mw.BoardToggleSwitchEnableInkToShape != null)
                     mw.BoardToggleSwitchEnableInkToShape.IsOn = isOn;
+            }
+        }
+
+        /// <summary>手写识别语言覆盖（LCID）变化时清空识别器缓存，下一次识别按新语言重解析。</summary>
+        public static void OnHandwritingRecognizerLanguageChanged()
+        {
+            try
+            {
+                HandwritingRecognitionTuning.InvalidateCache();
+            }
+            catch
+            {
+                // 调优缓存失效失败不影响主流程；下次识别仍可继续。
             }
         }
 

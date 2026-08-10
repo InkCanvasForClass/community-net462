@@ -13,6 +13,8 @@ The final stance of stubbornness based on the `InkCanvas` control...
 ![GitHub forks](https://img.shields.io/github/forks/InkCanvasForClass/community)
 [![All Contributors](https://img.shields.io/github/all-contributors/InkCanvasForClass/community?color=ee8449)](#贡献者)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/InkCanvasForClass/community)
+[![NuGet PluginSdk](https://img.shields.io/nuget/v/InkCanvas.PluginSdk?label=PluginSdk&logo=nuget)](https://www.nuget.org/packages/InkCanvas.PluginSdk)
+[![NuGet Controls](https://img.shields.io/nuget/v/InkCanvas.Controls?label=Controls&logo=nuget)](https://www.nuget.org/packages/InkCanvas.Controls)
 
 [![Discord](https://img.shields.io/discord/1383039050184917053?label=Discord&logo=discord)](https://discord.gg/ahj7eJWhEG)
 [![QQ](https://img.shields.io/badge/-1054377349-white?logo=qq&label=QQ)](https://qm.qq.com/q/qo32AclNh6)
@@ -109,6 +111,13 @@ If it still doesn't run, please [install `Microsoft Office`](https://www.coolhub
     <tr>
       <td align="center" valign="top" width="20%"><a href="http://lrsgzs.top"><img src="https://avatars.githubusercontent.com/u/99574908?v=4?s=100" width="100px;" alt="lrs2187"/><br /><sub><b>lrs2187</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=lrsgzs" title="Code">💻</a></td>
       <td align="center" valign="top" width="20%"><a href="http://jbyc.cc"><img src="https://avatars.githubusercontent.com/u/177214309?v=4?s=100" width="100px;" alt="Jbyccc"/><br /><sub><b>Jbyccc</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=Braydenccc" title="Code">💻</a></td>
+      <td align="center" valign="top" width="20%"><a href="http://diann.top"><img src="https://avatars.githubusercontent.com/u/95152427?v=4?s=100" width="100px;" alt="Nikoa"/><br /><sub><b>Nikoa</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=diann34" title="Code">💻</a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/chenjei2011"><img src="https://avatars.githubusercontent.com/u/194592960?v=4?s=100" width="100px;" alt="NullptrVoid"/><br /><sub><b>NullptrVoid</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=chenjei2011" title="Code">💻</a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/wwiinnddyy"><img src="https://avatars.githubusercontent.com/u/170236045?v=4?s=100" width="100px;" alt="lincube"/><br /><sub><b>lincube</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=wwiinnddyy" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/Makitoid"><img src="https://avatars.githubusercontent.com/u/123004192?v=4?s=100" width="100px;" alt="Makitoid Wang"/><br /><sub><b>Makitoid Wang</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=Makitoid" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="20%"><a href="https://hhh2309.github.io/"><img src="https://avatars.githubusercontent.com/u/179317266?v=4?s=100" width="100px;" alt="HHH2309"/><br /><sub><b>HHH2309</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=HHH2309" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

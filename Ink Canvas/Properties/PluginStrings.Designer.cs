@@ -78,6 +78,8 @@ namespace Ink_Canvas.Properties
 
         public static string Market_RestartToApply => ResourceManager.GetString(nameof(Market_RestartToApply), _resourceCulture);
 
+        public static string Market_ApplyPendingUpdate => ResourceManager.GetString(nameof(Market_ApplyPendingUpdate), _resourceCulture);
+
         public static string Market_SelectPluginHint => ResourceManager.GetString(nameof(Market_SelectPluginHint), _resourceCulture);
 
         public static string Market_ProjectHomepage => ResourceManager.GetString(nameof(Market_ProjectHomepage), _resourceCulture);
@@ -100,6 +102,12 @@ namespace Ink_Canvas.Properties
 
         public static string Market_InstallLocalFailed => ResourceManager.GetString(nameof(Market_InstallLocalFailed), _resourceCulture);
 
+        public static string Market_HotUpdateMessage => ResourceManager.GetString(nameof(Market_HotUpdateMessage), _resourceCulture);
+
+        public static string Market_HotInstallPending => ResourceManager.GetString(nameof(Market_HotInstallPending), _resourceCulture);
+
+        public static string Market_HotInstallFailedRestart => ResourceManager.GetString(nameof(Market_HotInstallFailedRestart), _resourceCulture);
+
         public static string Market_RestartMessage => ResourceManager.GetString(nameof(Market_RestartMessage), _resourceCulture);
 
         public static string Market_RestartTitle => ResourceManager.GetString(nameof(Market_RestartTitle), _resourceCulture);
@@ -107,6 +115,14 @@ namespace Ink_Canvas.Properties
         public static string Market_RestartFailed => ResourceManager.GetString(nameof(Market_RestartFailed), _resourceCulture);
 
         public static string Plugin_Update => ResourceManager.GetString(nameof(Plugin_Update), _resourceCulture);
+
+        public static string Plugin_Reload => ResourceManager.GetString(nameof(Plugin_Reload), _resourceCulture);
+
+        public static string Plugin_ReloadSuccess => ResourceManager.GetString(nameof(Plugin_ReloadSuccess), _resourceCulture);
+
+        public static string Plugin_ReloadPartial => ResourceManager.GetString(nameof(Plugin_ReloadPartial), _resourceCulture);
+
+        public static string Plugin_ReloadFailed => ResourceManager.GetString(nameof(Plugin_ReloadFailed), _resourceCulture);
 
         public static string Plugin_Delete => ResourceManager.GetString(nameof(Plugin_Delete), _resourceCulture);
 
@@ -121,6 +137,8 @@ namespace Ink_Canvas.Properties
         public static string Plugin_ErrorAutoDisabled => ResourceManager.GetString(nameof(Plugin_ErrorAutoDisabled), _resourceCulture);
 
         public static string Plugin_ErrorReset => ResourceManager.GetString(nameof(Plugin_ErrorReset), _resourceCulture);
+
+        public static string Plugin_ErrorResetConfirm => ResourceManager.GetString(nameof(Plugin_ErrorResetConfirm), _resourceCulture);
 
         public static string Plugin_ExportConfig => ResourceManager.GetString(nameof(Plugin_ExportConfig), _resourceCulture);
 
@@ -138,9 +156,19 @@ namespace Ink_Canvas.Properties
 
         public static string Plugin_ImportFailed => ResourceManager.GetString(nameof(Plugin_ImportFailed), _resourceCulture);
 
+        public static string Plugin_ExternalDllAuthorizationTitle => ResourceManager.GetString(nameof(Plugin_ExternalDllAuthorizationTitle), _resourceCulture);
+
+        public static string Plugin_ExternalDllAuthorizationMessage => ResourceManager.GetString(nameof(Plugin_ExternalDllAuthorizationMessage), _resourceCulture);
+
         public static string Market_SecurityWarning => ResourceManager.GetString(nameof(Market_SecurityWarning), _resourceCulture);
 
         public static string Market_SecurityTitle => ResourceManager.GetString(nameof(Market_SecurityTitle), _resourceCulture);
+
+        public static string Market_UntrustedInstallConfirmation => ResourceManager.GetString(nameof(Market_UntrustedInstallConfirmation), _resourceCulture);
+
+        public static string Market_SecurityUnknownReason => ResourceManager.GetString(nameof(Market_SecurityUnknownReason), _resourceCulture);
+
+        public static string Market_SecurityNone => ResourceManager.GetString(nameof(Market_SecurityNone), _resourceCulture);
 
         public static string Market_OpenLogsFolder => ResourceManager.GetString(nameof(Market_OpenLogsFolder), _resourceCulture);
 
@@ -183,5 +211,11 @@ namespace Ink_Canvas.Properties
         public static string Market_SourceNameRequired => ResourceManager.GetString(nameof(Market_SourceNameRequired), _resourceCulture);
 
         public static string Market_RemoveSourceConfirmation => ResourceManager.GetString(nameof(Market_RemoveSourceConfirmation), _resourceCulture);
+
+        public static string Compat_HostVersionTooLow => ResourceManager.GetString(nameof(Compat_HostVersionTooLow), _resourceCulture);
+
+        public static string Compat_ApiVersionMismatch => ResourceManager.GetString(nameof(Compat_ApiVersionMismatch), _resourceCulture);
+
+        public static string Compat_HostVersionOutOfRange => ResourceManager.GetString(nameof(Compat_HostVersionOutOfRange), _resourceCulture);
     }
 }

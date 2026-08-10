@@ -490,6 +490,35 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
+                <ui:NavigationViewItemHeader Content="{x:Static props:ThemeStrings.Theme_FloatingBarThemesTitle}"/>
+                <ui:NavigationViewItem
+                    x:Name="FloatingBarThemeItem"
+                    Content="{x:Static props:ThemeStrings.Theme_FloatingBarThemesTitle}"
+                    SelectsOnInvoked="False"
+                    ToolTipService.ToolTip="{x:Static props:ThemeStrings.Theme_FloatingBarThemesDescription}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            x:Name="FloatingBarThemePageItem"
+                            Content="{x:Static props:ThemeStrings.Theme_FloatingBarThemesTitle}"
+                            Tag="FloatingBarThemePage">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
+                            x:Name="FloatingBarThemeMarketPageItem"
+                            Content="{x:Static props:ThemeStrings.Theme_FloatingBarThemeMarketTitle}"
+                            Tag="FloatingBarThemeMarketPage">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shop}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+
                 <ui:NavigationViewItemHeader Content="{x:Static props:NavStrings.Nav_PluginSettings}"/>
                 <ui:NavigationViewItem
                     x:Name="PluginItem"
@@ -524,5 +553,20 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
             <ui:Frame x:Name="rootFrame" Navigated="OnRootFrameNavigated" NavigationUIVisibility="Hidden" />
             <!--我要玩原神-->
         </ui:NavigationView>
+
+        <!-- 复制设置项 URL 后的瞬态通知 -->
+        <ui:InfoBar
+            x:Name="CopyUriInfoBar"
+            Grid.Column="1"
+            Grid.RowSpan="2"
+            IsOpen="False"
+            IsClosable="False"
+            Severity="Success"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,24"
+            MaxWidth="420"
+            Canvas.ZIndex="20"
+            Visibility="Collapsed" />
     </Grid>
 </Window>

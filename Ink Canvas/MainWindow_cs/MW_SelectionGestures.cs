@@ -656,7 +656,14 @@ namespace Ink_Canvas
         {
             forceEraser = true;
             drawingShapeMode = 0;
-            inkCanvas.IsManipulationEnabled = false;
+            // 视频展台特殊模式下必须保持 IsManipulationEnabled=true，
+            // 否则 WPF 不会把触摸提升为 Manipulation 事件，VideoPresenterSpecialMode_ManipulationDelta
+            // 收不到拖动/缩放事件，用户切到"选择"后无法拖动摄像头画面（Q7 根因之二）。
+            // 普通模式下仍然设为 false（保持原有行为：选择模式下不让 InkCanvas 触发 Manipulation）。
+            if (!_isVideoPresenterSpecialMode)
+            {
+                inkCanvas.IsManipulationEnabled = false;
+            }
             if (inkCanvas.EditingMode == InkCanvasEditingMode.Select)
             {
                 if (inkCanvas.GetSelectedStrokes().Count == inkCanvas.Strokes.Count)

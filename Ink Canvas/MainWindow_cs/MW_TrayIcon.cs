@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using ContextMenu = System.Windows.Controls.ContextMenu;
@@ -29,12 +30,18 @@ namespace Ink_Canvas
         {
             var action = Ink_Canvas.MainWindow.Settings.Appearance.TrayLeftClickAction;
             ExecuteTrayClickAction(action);
+
+            try { PluginTrayLeftClicked?.Invoke(); }
+            catch (Exception ex) { LogHelper.WriteLogToFile($"转发插件托盘左键事件失败: {ex.Message}", LogHelper.LogType.Warning); }
         }
 
         private void TaskbarTrayIcon_TrayRightMouseDown(object sender, RoutedEventArgs e)
         {
             var action = Ink_Canvas.MainWindow.Settings.Appearance.TrayRightClickAction;
             ExecuteTrayClickAction(action);
+
+            try { PluginTrayRightClicked?.Invoke(); }
+            catch (Exception ex) { LogHelper.WriteLogToFile($"转发插件托盘右键事件失败: {ex.Message}", LogHelper.LogType.Warning); }
         }
 
         private void ExecuteTrayClickAction(TrayClickAction action)
@@ -89,7 +96,7 @@ namespace Ink_Canvas
             }
         }
 
-        private void ShowTrayContextMenu()
+        internal void ShowTrayContextMenu()
         {
             try
             {
@@ -470,10 +477,9 @@ namespace Ink_Canvas
             if (mainWin != null && mainWin.IsLoaded)
             {
                 var isInPPTPresentationMode = false;
-                Dispatcher.Invoke(() =>
-                {
-                    isInPPTPresentationMode = mainWin.IsInPPTPresentationMode;
-                });
+                // 托盘菜单的 Click 事件可能在 UI 线程触发；此处读取主窗口属性已在 UI 线程完成，
+                // 改为本地直接读取，避免在 UI 线程上同步等待自身的 Dispatcher.Invoke 形成自锁。
+                isInPPTPresentationMode = mainWin.IsInPPTPresentationMode;
                 if (!mainWin.isFloatingBarFolded)
                 {
                     // 清空保存的状态，强制动画走默认位置分支
@@ -651,6 +657,149 @@ namespace Ink_Canvas
                 }
             }
         }
+
+        #region 插件托盘服务（ITrayService 宿主支持）
+
+        internal event Action PluginTrayLeftClicked;
+        internal event Action PluginTrayRightClicked;
+
+        internal H.NotifyIcon.TaskbarIcon GetPluginTaskbarIcon()
+        {
+            try { return Current.Resources["TaskbarTrayIcon"] as H.NotifyIcon.TaskbarIcon; }
+            catch { return null; }
+        }
+
+        internal void SetPluginTrayIconVisibility(bool visible)
+        {
+            var icon = GetPluginTaskbarIcon();
+            if (icon != null) icon.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// 向托盘右键菜单注入一个插件菜单项，插入到「重启程序」之前，
+        /// 保持 SysTrayMenu_Opened / HideICCMainWindowTrayIconMenuItem_Checked 等
+        /// 用倒数索引访问固定菜单项的兼容性。
+        /// </summary>
+        internal bool AddPluginTrayMenuItem(string id, string text, Action onClicked)
+        {
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(text) || onClicked == null) return false;
+            try
+            {
+                var trayMenu = GetPluginTaskbarIcon()?.ContextMenu;
+                if (trayMenu == null) return false;
+
+                string menuName = "PluginTray." + id;
+                if (trayMenu.Items.OfType<MenuItem>().Any(mi => mi.Name == menuName)) return false;
+
+                var item = new MenuItem
+                {
+                    Name = menuName,
+                    Header = new TextBlock
+                    {
+                        Text = text,
+                        FontSize = 14,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x18, 0x18, 0x1b))
+                    }
+                };
+                item.Click += (s, e) => onClicked();
+
+                var restartItem = trayMenu.Items.OfType<MenuItem>()
+                    .FirstOrDefault(mi => mi.Name == "RestartAppTrayIconMenuItem");
+                int insertIndex = restartItem != null ? trayMenu.Items.IndexOf(restartItem) : trayMenu.Items.Count;
+                trayMenu.Items.Insert(insertIndex, item);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"添加插件托盘菜单项失败: {ex.Message}", LogHelper.LogType.Warning);
+                return false;
+            }
+        }
+
+        internal bool RemovePluginTrayMenuItem(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return false;
+            try
+            {
+                var trayMenu = GetPluginTaskbarIcon()?.ContextMenu;
+                if (trayMenu == null) return false;
+
+                var item = trayMenu.Items.OfType<MenuItem>()
+                    .FirstOrDefault(mi => mi.Name == "PluginTray." + id);
+                if (item == null) return false;
+
+                trayMenu.Items.Remove(item);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"移除插件托盘菜单项失败: {ex.Message}", LogHelper.LogType.Warning);
+                return false;
+            }
+        }
+
+        internal bool HasPluginTrayMenuItem(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return false;
+            try
+            {
+                var trayMenu = GetPluginTaskbarIcon()?.ContextMenu;
+                return trayMenu?.Items.OfType<MenuItem>().Any(mi => mi.Name == "PluginTray." + id) == true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// 移除某个插件注册的所有托盘菜单项。插件热重载时调用：菜单项的 Click 处理器
+        /// 闭包持有插件程序集中的回调，留着会阻止插件 AssemblyLoadContext 卸载。
+        /// 按 "PluginTray.&lt;pluginId&gt;" 前缀匹配，覆盖插件注册多个菜单项的情况。
+        /// </summary>
+        internal int RemovePluginTrayMenuItemsByPrefix(string pluginId)
+        {
+            if (string.IsNullOrWhiteSpace(pluginId)) return 0;
+            try
+            {
+                var trayMenu = GetPluginTaskbarIcon()?.ContextMenu;
+                if (trayMenu == null) return 0;
+
+                var prefix = "PluginTray." + pluginId;
+                var doomed = trayMenu.Items.OfType<MenuItem>()
+                    .Where(mi => mi.Name != null
+                                 && (mi.Name == prefix || mi.Name.StartsWith(prefix + ".", StringComparison.Ordinal)))
+                    .ToList();
+
+                foreach (var item in doomed) trayMenu.Items.Remove(item);
+                return doomed.Count;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"按插件移除托盘菜单项失败: {ex.Message}", LogHelper.LogType.Warning);
+                return 0;
+            }
+        }
+
+        internal void ShowPluginMainWindow()
+        {
+            var mainWin = Current.MainWindow as MainWindow;
+            if (mainWin?.IsLoaded != true) return;
+
+            var hideItem = FindTrayMenuItem("HideICCMainWindowTrayIconMenuItem");
+            if (hideItem != null) hideItem.IsChecked = false; // 触发 UnChecked → Show + 启用相关菜单项
+            else if (!mainWin.IsVisible) mainWin.Show();
+        }
+
+        internal void HidePluginMainWindow()
+        {
+            var mainWin = Current.MainWindow as MainWindow;
+            if (mainWin?.IsLoaded != true) return;
+
+            var hideItem = FindTrayMenuItem("HideICCMainWindowTrayIconMenuItem");
+            if (hideItem != null) hideItem.IsChecked = true; // 触发 Checked → Hide + 禁用相关菜单项
+            else if (mainWin.IsVisible) mainWin.Hide();
+        }
+
+        #endregion
 
     }
 }

@@ -61,6 +61,112 @@
                         </ui:SettingsExpander.Items>
                     </ui:SettingsExpander>
 
+                    <ui:SettingsExpander x:Name="ExpanderIdleMiniBar"
+                            Header="{x:Static props:ThemeStrings.Theme_IdleMiniBar}"
+                            Description="{x:Static props:ThemeStrings.Theme_IdleMiniBarHint}"
+                            IsExpanded="False">
+                        <ui:SettingsExpander.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FitPage}" />
+                        </ui:SettingsExpander.HeaderIcon>
+                        <ui:ToggleSwitch x:Name="ToggleSwitchEnableIdleMiniBar"
+                                Toggled="ToggleSwitchEnableIdleMiniBar_Toggled" />
+                        <ui:SettingsExpander.Items>
+                            <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_IdleMiniBarOpacity}">
+                                <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock x:Name="IdleMiniBarOpacityText"
+                                               VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                                    <Slider x:Name="IdleMiniBarOpacitySlider" Minimum="0.1"
+                                            Maximum="1" Width="200"
+                                            IsSnapToTickEnabled="True" Value="0.5" TickFrequency="0.05"
+                                            TickPlacement="None" AutoToolTipPlacement="None"
+                                            ValueChanged="IdleMiniBarOpacitySlider_ValueChanged" />
+                                </ikw:SimpleStackPanel>
+                            </ui:SettingsCard>
+                            <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_IdleMiniBarAutoRestore}">
+                                <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock x:Name="IdleMiniBarAutoRestoreText"
+                                               VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                                    <Slider x:Name="IdleMiniBarAutoRestoreSlider" Minimum="0"
+                                            Maximum="180" Width="200"
+                                            IsSnapToTickEnabled="True" Value="60" TickFrequency="5"
+                                            TickPlacement="None" AutoToolTipPlacement="None"
+                                            ValueChanged="IdleMiniBarAutoRestoreSlider_ValueChanged" />
+                                </ikw:SimpleStackPanel>
+                            </ui:SettingsCard>
+                        </ui:SettingsExpander.Items>
+                    </ui:SettingsExpander>
+
+                    <ui:SettingsExpander x:Name="ExpanderLiquidGlassBar"
+                            Header="{x:Static props:ThemeStrings.Theme_LiquidGlassBar}"
+                            Description="{x:Static props:ThemeStrings.Theme_LiquidGlassBarHint}"
+                            IsExpanded="False">
+                        <ui:SettingsExpander.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Drop}" />
+                        </ui:SettingsExpander.HeaderIcon>
+                        <ui:ToggleSwitch x:Name="ToggleSwitchEnableLiquidGlassBar"
+                                Toggled="ToggleSwitchEnableLiquidGlassBar_Toggled" />
+                        <ui:SettingsExpander.Items>
+                            <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_LiquidGlassBarOpacity}">
+                                <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock x:Name="LiquidGlassBarOpacityText"
+                                               VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                                    <Slider x:Name="LiquidGlassBarOpacitySlider" Minimum="0.2"
+                                            Maximum="1" Width="200"
+                                            IsSnapToTickEnabled="True" Value="0.95" TickFrequency="0.05"
+                                            TickPlacement="None" AutoToolTipPlacement="None"
+                                            ValueChanged="LiquidGlassBarOpacitySlider_ValueChanged" />
+                                </ikw:SimpleStackPanel>
+                            </ui:SettingsCard>
+                        </ui:SettingsExpander.Items>
+                    </ui:SettingsExpander>
+
+                    <ui:SettingsCard x:Name="CardFloatingBarBorderColor"
+                            Header="{x:Static props:ThemeStrings.Theme_FloatingBarBorderColor}"
+                            Description="{x:Static props:ThemeStrings.Theme_FloatingBarBorderColorHint}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <ComboBox x:Name="ComboBoxFloatingBarBorderColorMode"
+                                      MinWidth="160"
+                                      SelectedIndex="0"
+                                      SelectionChanged="ComboBoxFloatingBarBorderColorMode_SelectionChanged">
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingBarBorderColor_Default}" />
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingBarBorderColor_FollowBackground}" />
+                                <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_FloatingBarBorderColor_Custom}" />
+                            </ComboBox>
+                            <Button x:Name="ButtonFloatingBarBorderColor"
+                                    Width="40" Height="28"
+                                    Padding="0"
+                                    Visibility="Collapsed"
+                                    Click="ButtonFloatingBarBorderColor_Click"
+                                    ToolTip="{x:Static props:ThemeStrings.Theme_FloatingBarBorderColor_Custom}">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Grid>
+                                            <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="#888888"
+                                                    BorderThickness="1"
+                                                    CornerRadius="3"/>
+                                            <Border x:Name="HoverOverlay"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    CornerRadius="3"/>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="HoverOverlay" Property="Background" Value="#22000000"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="HoverOverlay" Property="Background" Value="#44000000"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:ThemeStrings.Theme_FloatingBarIcon}" />
 
@@ -96,7 +202,7 @@
                     <Rectangle Height="16" />
                     <ui:SettingsCard Header="工具栏位置" Description="设置工具栏相对于拖动图标的显示位置">
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <ComboBox x:Name="ToolbarPositionComboBox" Width="200" SelectionChanged="ToolbarPositionComboBox_SelectionChanged">
+                            <ComboBox x:Name="ToolbarPositionComboBox" MinWidth="200" SelectionChanged="ToolbarPositionComboBox_SelectionChanged">
                                 <ComboBoxItem Tag="Right" Content="右侧" />
                                 <ComboBoxItem Tag="Left" Content="左侧" />
                                 <ComboBoxItem Tag="Top" Content="上方" />

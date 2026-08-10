@@ -287,6 +287,24 @@ namespace Ink_Canvas
                                     CenterAndScaleElement(mediaControl);
                                 }
                             }
+                            else if (item.InsertedElement is FrameworkElement genericElement
+                                     && !(genericElement is Image)
+                                     && !(genericElement is MediaElement))
+                            {
+                                // 插件插入的自定义控件（见 ICanvasElementService）：
+                                // 撤销重做重插后若位置缺失则居中，并补齐 TransformGroup。
+                                double left = InkCanvas.GetLeft(genericElement);
+                                double top = InkCanvas.GetTop(genericElement);
+                                if (double.IsNaN(left) || double.IsNaN(top))
+                                {
+                                    CenterAndScaleElement(genericElement);
+                                }
+                                if (genericElement.RenderTransform == null
+                                    || genericElement.RenderTransform == Transform.Identity)
+                                {
+                                    InitializeElementTransform(genericElement);
+                                }
+                            }
                         }
                     }
                 }
@@ -405,6 +423,7 @@ namespace Ink_Canvas
         private void TimeMachine_OnUndoStateChanged(bool status)
         {
             IsUndoEnabled = status;
+            RaisePluginEvent(PluginUndoRedoStateChanged, IsUndoEnabled, IsRedoEnabled, nameof(PluginUndoRedoStateChanged));
         }
 
         /// <summary>
@@ -417,6 +436,7 @@ namespace Ink_Canvas
         private void TimeMachine_OnRedoStateChanged(bool status)
         {
             IsRedoEnabled = status;
+            RaisePluginEvent(PluginUndoRedoStateChanged, IsUndoEnabled, IsRedoEnabled, nameof(PluginUndoRedoStateChanged));
         }
 
         /// <summary>
@@ -460,10 +480,23 @@ namespace Ink_Canvas
                 return;
             }
 
+            // 通知插件墨迹集合变化。冻结页回滚已在上面 return，不会误报；
+            // 程序性 CodeInput 变化（含插件自身经 ICanvasInkService 的插入/清除）也会触发，
+            // 插件需避免在处理器内再次写入造成循环。
+            RaisePluginEvent(PluginStrokesChanged, e?.Added, e?.Removed, nameof(PluginStrokesChanged));
+
             if (!isHidingSubPanelsWhenInking)
             {
                 isHidingSubPanelsWhenInking = true;
                 HideSubPanels(); // 书写时自动隐藏二级菜单
+            }
+
+            // 视频展台特殊模式下，用户新增墨迹意味着基准快照已过期，下次旋转重新保存。
+            // 程序自身在旋转墨迹（_isApplyingRotationToStrokes）时不重置。
+            if (_isVideoPresenterSpecialMode && e?.Added != null && e.Added.Count > 0
+                && !_isApplyingRotationToStrokes)
+            {
+                ResetRotationBaseline();
             }
 
             foreach (var stroke in e?.Removed)

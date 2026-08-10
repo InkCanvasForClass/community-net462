@@ -109,6 +109,10 @@ namespace Ink_Canvas.Helpers
                     _cpuSamples.Clear();
                     _memorySamples.Clear();
                 }
+                // Realtime ink detailed debug log is independent; do not reset it here.
+                _cachedSmoothingStats = null;
+                var mainWindow = System.Windows.Application.Current?.MainWindow as MainWindow;
+                mainWindow?.InkSmoothingManagerInstance?.ResetPerformanceStats();
                 SampleCount = 0;
                 CurrentAvgCpu = 0;
                 CurrentMemoryMb = 0;
@@ -161,7 +165,8 @@ namespace Ink_Canvas.Helpers
                         SampleCount = SampleCount
                     };
 
-                    // 记录墨迹平滑统计
+                    // 仅写性能页历史需要的平滑摘要；不落盘逐条 stage sample / 中间阶段细节。
+                    // 实时笔迹超级详细日志由 Debug 页开关控制，RealtimeInkPerformanceMonitor 单独写盘。
                     if (_cachedSmoothingStats != null && _cachedSmoothingStats.SampleCount > 0)
                     {
                         record.SmoothingSampleCount = _cachedSmoothingStats.SampleCount;
@@ -342,7 +347,12 @@ namespace Ink_Canvas.Helpers
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
 
-                var json = JsonConvert.SerializeObject(history, Formatting.Indented);
+                var json = JsonConvert.SerializeObject(history, Formatting.Indented,
+                    new JsonSerializerSettings
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        DefaultValueHandling = DefaultValueHandling.Ignore
+                    });
                 File.WriteAllText(path, json);
             }
             catch (Exception ex)

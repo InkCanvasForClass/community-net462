@@ -214,8 +214,8 @@ namespace InkCanvas.PowerPointAddIn.Core
                 var slide = view.Slide;
                 if (slide == null) return response;
 
-                // 通过 Win32 API 获取放映窗口的物理像素坐标和 DPI
-                IntPtr hwnd = FindWindow("screenClass", null);
+                // 使用当前放映窗口自身的 HWND，避免 FindWindow 命中其他屏幕或陈旧的放映窗口。
+                IntPtr hwnd = new IntPtr(ssw.HWND);
                 response.SlideShowWindowHandle = hwnd.ToInt64();
 
                 double winLeft, winTop, winWidth, winHeight;
@@ -244,7 +244,7 @@ namespace InkCanvas.PowerPointAddIn.Core
                 response.SlideWidth = slideWidth;
                 response.SlideHeight = slideHeight;
 
-                // 仅识别视频控件（ppMediaTypeVideo = 13）
+                // 仅识别视频控件（ppMediaTypeMovie = 3，排除音频与普通 OLE 控件）
                 foreach (Microsoft.Office.Interop.PowerPoint.Shape shape in slide.Shapes)
                 {
                     if (!IsVideoShape(shape)) continue;
@@ -276,20 +276,55 @@ namespace InkCanvas.PowerPointAddIn.Core
         {
             try
             {
-                // msoMedia = 16
+                // msoWebVideo = 26：在线视频（YouTube 等），本身就是视频控件
+                if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoWebVideo)
+                    return true;
+
+                // msoMedia = 16：多媒体形状，用 MediaType 区分视频/音频
                 if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoMedia)
-                    return true;
+                {
+                    try
+                    {
+                        int mediaType = (int)(object)shape.MediaType;
+                        // ppMediaTypeMovie = 3（视频）；raw 15 为旧版 Flash（ppMediaTypeFlash），亦属视频类
+                        return mediaType == 3 || mediaType == 15;
+                    }
+                    catch
+                    {
+                        // MediaType 读取失败时保守放行（保持原行为）
+                        return true;
+                    }
+                }
 
-                // OLE 控件（ActiveX 媒体播放器等）
+                // msoOLEControlObject = 12：ActiveX 控件，仅当确认为媒体播放器时才视为视频
                 if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoOLEControlObject)
-                    return true;
+                {
+                    try
+                    {
+                        string progId = shape.OLEFormat?.ProgID ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(progId))
+                        {
+                            progId = progId.ToUpperInvariant();
+                            // Windows Media Player / VLC / Flash / RealPlayer 等媒体播放器控件
+                            if (progId.StartsWith("WMPlayer.", StringComparison.Ordinal) ||
+                                progId.StartsWith("VideoLAN.", StringComparison.Ordinal) ||
+                                progId.StartsWith("ShockwaveFlash.", StringComparison.Ordinal) ||
+                                progId.StartsWith("RealPlayer.", StringComparison.Ordinal) ||
+                                progId.StartsWith("RealMedia.", StringComparison.Ordinal))
+                                return true;
+                        }
+                    }
+                    catch { }
+                    // 无法确认是否为媒体播放器时，不视为视频，避免把普通 ActiveX 控件误判为视频
+                    return false;
+                }
 
-                // 嵌入式视频（旧版格式）
+                // msoEmbeddedOLEObject = 7：嵌入式 OLE，旧版视频格式，MediaType 必须为 ppMediaTypeMovie = 3
                 if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoEmbeddedOLEObject)
                 {
                     try
                     {
-                        if ((int)(object)shape.MediaType == 14)  // ppMediaTypeMovie
+                        if ((int)(object)shape.MediaType == 3)  // ppMediaTypeMovie
                             return true;
                     }
                     catch { }

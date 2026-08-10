@@ -13,8 +13,7 @@ using System.Linq;
 namespace Ink_Canvas.WorkflowAutomation
 {
     /// <summary>
-    /// 自动化系统启动引导。
-    /// 对齐 ClassIsland 的 App.xaml.cs 注册模式，使用 DI 容器注册所有组件。
+    /// 自动化系统启动引导，使用 DI 容器注册所有组件。
     /// </summary>
     public static class AutomationBootstrap
     {
@@ -55,99 +54,111 @@ namespace Ink_Canvas.WorkflowAutomation
 
         /// <summary>
         /// 初始化自动化系统。
-        /// 对齐 ClassIsland：通过 IServiceCollection 注册所有触发器、行动和规则，
-        /// 然后通过 DI 容器解析。
+        /// 通过 IServiceCollection 注册所有触发器、行动和规则，然后通过 DI 容器解析。
         /// </summary>
         public static void Initialize()
         {
             if (_isInitialized) return;
-            _isInitialized = true;
 
-            // 1. 创建 DI 容器
-            var services = new ServiceCollection();
+            try
+            {
+                // 0. 清空全局 Registry 中残留的 Handler / Rule，避免重新初始化时累加
+                // Registry 是进程级单例字典，DI Handler 是 Transient 每次 Resolve 产生新 lambda 引用，
+                // 单纯靠 delegate 引用判等无法在 lambda 场景下命中幂等检查；直接重置是最简单可靠的做法。
+                ClearGlobalRegistryHandlers();
 
-            // 2. 注册核心服务
-            services.AddSingleton<SystemEventMonitor>();
-            services.AddSingleton<IActionService, ActionService>();
-            services.AddSingleton<IRulesetService, RulesetService>();
+                // 1. 创建 DI 容器
+                var services = new ServiceCollection();
 
-            // 3. 注册触发器（对齐 ClassIsland 的 AddTrigger<T>()）
-            services.AddTrigger<ProcessDetectedTrigger>();
-            services.AddTrigger<PPTSlideShowTrigger>();
-            services.AddTrigger<TimerTrigger>();
-            services.AddTrigger<WindowFocusChangedTrigger>();
-            services.AddTrigger<PPTSlideShowEnterTrigger>();
-            services.AddTrigger<PPTSlideShowExitTrigger>();
-            services.AddTrigger<AnnotationModeEnterTrigger>();
-            services.AddTrigger<AnnotationModeExitTrigger>();
-            services.AddTrigger<WhiteboardEnterTrigger>();
-            services.AddTrigger<WhiteboardExitTrigger>();
-            services.AddTrigger<RulesetChangedTrigger>();
+                // 2. 注册核心服务
+                services.AddSingleton<SystemEventMonitor>();
+                services.AddSingleton<IActionService, ActionService>();
+                services.AddSingleton<IRulesetService, RulesetService>();
 
-            // 4. 注册行动（对齐 ClassIsland 的 AddAction<TSettings>()）
-            services.AddAction<FoldActionSettings>("inkcanvas.fold", "折叠/展开工具栏", "DockBottom");
-            services.AddAction<KillProcessActionSettings>("inkcanvas.killprocess", "结束进程", "CloseOutline");
-            services.AddAction<SaveStrokesActionSettings>("inkcanvas.savestrokes", "保存笔画", "ContentSaveOutline");
-            services.AddAction<ToggleAnnotationModeActionSettings>("inkcanvas.toggleannotationmode", "切换批注模式", "PenTool");
-            services.AddAction<ClearStrokesActionSettings>("inkcanvas.clearstrokes", "清空笔画", "Eraser");
-            services.AddAction<ShowNotificationActionSettings>("inkcanvas.shownotification", "显示通知", "BellOutline");
-            services.AddAction<ToggleTopmostActionSettings>("inkcanvas.toggletopmost", "切换窗口置顶", "PinOutline");
-            services.AddAction<ResetDesktopPositionActionSettings>("inkcanvas.resetdesktopposition", "重置桌面模式位置", "DockBottom");
-            services.AddAction<ResetPPTPositionActionSettings>("inkcanvas.resetpptposition", "重置PPT模式位置", "Presentation");
+                // 3. 注册触发器
+                services.AddTrigger<ProcessDetectedTrigger>();
+                services.AddTrigger<PPTSlideShowTrigger>();
+                services.AddTrigger<TimerTrigger>();
+                services.AddTrigger<WindowFocusChangedTrigger>();
+                services.AddTrigger<PPTSlideShowEnterTrigger>();
+                services.AddTrigger<PPTSlideShowExitTrigger>();
+                services.AddTrigger<AnnotationModeEnterTrigger>();
+                services.AddTrigger<AnnotationModeExitTrigger>();
+                services.AddTrigger<WhiteboardEnterTrigger>();
+                services.AddTrigger<WhiteboardExitTrigger>();
+                services.AddTrigger<RulesetChangedTrigger>();
 
-            // 5. 注册规则（对齐 ClassIsland 的 AddRule<TSettings>()）
-            services.AddRule<ProcessRunningRuleSettings>("inkcanvas.processrunning", "进程正在运行", "ApplicationCogOutline");
-            services.AddRule<WindowTitleContainsRuleSettings>("inkcanvas.windowtitlecontains", "窗口标题包含", "FormatTitle");
-            services.AddRule<IsAnnotationModeRuleSettings>("inkcanvas.isannotationmode", "批注模式", "PenTool");
-            services.AddRule<IsPPTSlideshowRuleSettings>("inkcanvas.ispptslideshow", "PPT放映中", "Presentation");
-            services.AddRule<ForegroundWindowProcessRuleSettings>("inkcanvas.foregroundwindowprocess", "前台窗口进程名", "Window");
-            services.AddRule<IsFloatingBarFoldedRuleSettings>("inkcanvas.isfloatingbarfolded", "工具栏已折叠", "DockBottom");
-            services.AddRule<IsForegroundWhiteboardRuleSettings>("inkcanvas.isforegroundwhiteboard", "前台窗口是 ICC-CE 白板", "Whiteboard");
+                // 4. 注册行动
+                services.AddAction<FoldActionSettings>("inkcanvas.fold", "折叠/展开工具栏", "DockBottom");
+                services.AddAction<KillProcessActionSettings>("inkcanvas.killprocess", "结束进程", "CloseOutline");
+                services.AddAction<SaveStrokesActionSettings>("inkcanvas.savestrokes", "保存笔画", "ContentSaveOutline");
+                services.AddAction<ToggleAnnotationModeActionSettings>("inkcanvas.toggleannotationmode", "切换批注模式", "PenTool");
+                services.AddAction<ClearStrokesActionSettings>("inkcanvas.clearstrokes", "清空笔画", "Eraser");
+                services.AddAction<ShowNotificationActionSettings>("inkcanvas.shownotification", "显示通知", "BellOutline");
+                services.AddAction<ToggleTopmostActionSettings>("inkcanvas.toggletopmost", "切换窗口置顶", "PinOutline");
+                services.AddAction<ResetDesktopPositionActionSettings>("inkcanvas.resetdesktopposition", "重置桌面模式位置", "DockBottom");
+                services.AddAction<ResetPPTPositionActionSettings>("inkcanvas.resetpptposition", "重置PPT模式位置", "Presentation");
 
-            // 6. 注册行动处理器（对齐 ClassIsland 的 IHostedService 模式）
-            services.AddTransient<FoldActionHandler>();
-            services.AddTransient<KillProcessActionHandler>();
-            services.AddTransient<SaveStrokesActionHandler>();
-            services.AddTransient<ToggleAnnotationModeActionHandler>();
-            services.AddTransient<ClearStrokesActionHandler>();
-            services.AddTransient<ShowNotificationActionHandler>();
-            services.AddTransient<ToggleTopmostActionHandler>();
-            services.AddTransient<ResetDesktopPositionActionHandler>();
-            services.AddTransient<ResetPPTPositionActionHandler>();
+                // 5. 注册规则
+                services.AddRule<ProcessRunningRuleSettings>("inkcanvas.processrunning", "进程正在运行", "ApplicationCogOutline");
+                services.AddRule<WindowTitleContainsRuleSettings>("inkcanvas.windowtitlecontains", "窗口标题包含", "FormatTitle");
+                services.AddRule<IsAnnotationModeRuleSettings>("inkcanvas.isannotationmode", "批注模式", "PenTool");
+                services.AddRule<IsPPTSlideshowRuleSettings>("inkcanvas.ispptslideshow", "PPT放映中", "Presentation");
+                services.AddRule<ForegroundWindowProcessRuleSettings>("inkcanvas.foregroundwindowprocess", "前台窗口进程名", "Window");
+                services.AddRule<IsFloatingBarFoldedRuleSettings>("inkcanvas.isfloatingbarfolded", "工具栏已折叠", "DockBottom");
+                services.AddRule<IsForegroundWhiteboardRuleSettings>("inkcanvas.isforegroundwhiteboard", "前台窗口是 ICC-CE 白板", "Whiteboard");
 
-            // 7. 构建容器
-            _serviceProvider = services.BuildServiceProvider();
+                // 6. 注册行动处理器
+                services.AddTransient<FoldActionHandler>();
+                services.AddTransient<KillProcessActionHandler>();
+                services.AddTransient<SaveStrokesActionHandler>();
+                services.AddTransient<ToggleAnnotationModeActionHandler>();
+                services.AddTransient<ClearStrokesActionHandler>();
+                services.AddTransient<ShowNotificationActionHandler>();
+                services.AddTransient<ToggleTopmostActionHandler>();
+                services.AddTransient<ResetDesktopPositionActionHandler>();
+                services.AddTransient<ResetPPTPositionActionHandler>();
 
-            // 8. 初始化核心服务
-            _monitor = _serviceProvider.GetRequiredService<SystemEventMonitor>();
-            _monitor.Start();
+                // 7. 构建容器
+                _serviceProvider = services.BuildServiceProvider();
 
-            _actionService = (ActionService)_serviceProvider.GetRequiredService<IActionService>();
-            _rulesetService = (RulesetService)_serviceProvider.GetRequiredService<IRulesetService>();
+                // 8. 初始化核心服务
+                _monitor = _serviceProvider.GetRequiredService<SystemEventMonitor>();
+                _monitor.Start();
 
-            // 9. 初始化行动处理器（注册 Handle/RevertHandle 委托）
-            // 对齐 ClassIsland：ActionHandler 在构造时通过 IActionService 注册处理程序
-            _serviceProvider.GetRequiredService<FoldActionHandler>();
-            _serviceProvider.GetRequiredService<KillProcessActionHandler>();
-            _serviceProvider.GetRequiredService<SaveStrokesActionHandler>();
-            _serviceProvider.GetRequiredService<ToggleAnnotationModeActionHandler>();
-            _serviceProvider.GetRequiredService<ClearStrokesActionHandler>();
-            _serviceProvider.GetRequiredService<ShowNotificationActionHandler>();
-            _serviceProvider.GetRequiredService<ToggleTopmostActionHandler>();
-            _serviceProvider.GetRequiredService<ResetDesktopPositionActionHandler>();
-            _serviceProvider.GetRequiredService<ResetPPTPositionActionHandler>();
+                _actionService = (ActionService)_serviceProvider.GetRequiredService<IActionService>();
+                _rulesetService = (RulesetService)_serviceProvider.GetRequiredService<IRulesetService>();
 
-            // 10. 注册规则处理程序（对齐 ClassIsland 的 RegisterRuleHandler）
-            RegisterRuleHandlers();
+                // 9. 初始化行动处理器（注册 Handle/RevertHandle 委托）
+                _serviceProvider.GetRequiredService<FoldActionHandler>();
+                _serviceProvider.GetRequiredService<KillProcessActionHandler>();
+                _serviceProvider.GetRequiredService<SaveStrokesActionHandler>();
+                _serviceProvider.GetRequiredService<ToggleAnnotationModeActionHandler>();
+                _serviceProvider.GetRequiredService<ClearStrokesActionHandler>();
+                _serviceProvider.GetRequiredService<ShowNotificationActionHandler>();
+                _serviceProvider.GetRequiredService<ToggleTopmostActionHandler>();
+                _serviceProvider.GetRequiredService<ResetDesktopPositionActionHandler>();
+                _serviceProvider.GetRequiredService<ResetPPTPositionActionHandler>();
 
-            // 11. 加载配置
-            Service.RefreshConfigs();
-            Service.LoadConfig();
+                // 10. 注册规则处理程序
+                RegisterRuleHandlers();
+
+                // 11. 加载配置
+                Service.RefreshConfigs();
+                Service.LoadConfig();
+
+                _isInitialized = true;
+            }
+            catch
+            {
+                // 任意步骤失败时整体回滚到未初始化状态，避免后续 AutomationBootstrap 调用走错误路径
+                try { Shutdown(); } catch { }
+                throw;
+            }
         }
 
         /// <summary>
         /// 注册规则处理程序。
-        /// 对齐 ClassIsland：规则处理程序通过 IRulesetService.RegisterRuleHandler 注册。
         /// </summary>
         private static void RegisterRuleHandlers()
         {
@@ -161,18 +172,39 @@ namespace Ink_Canvas.WorkflowAutomation
         }
 
         /// <summary>
+        /// 清空全局 Action/Rule Registry 中的已注册 Handler。
+        /// 在 Bootstrap 重新初始化时调用，避免累加重复触发。
+        /// </summary>
+        private static void ClearGlobalRegistryHandlers()
+        {
+            foreach (var info in Ink_Canvas.WorkflowAutomation.Services.AutomationRegistry.RegisteredActions.Values)
+            {
+                info.Handle = null;
+                info.RevertHandle = null;
+            }
+            foreach (var info in Ink_Canvas.WorkflowAutomation.Services.AutomationRegistry.RegisteredRules.Values)
+            {
+                info.Handle = null;
+            }
+        }
+
+        /// <summary>
         /// 关闭自动化系统
         /// </summary>
         public static void Shutdown()
         {
             // 卸载所有工作流
-            foreach (var workflow in Service.Workflows.ToList())
+            if (Service?.Workflows != null)
             {
-                Service.UnloadWorkflow(workflow);
+                foreach (var workflow in Service.Workflows.ToList())
+                {
+                    Service.UnloadWorkflow(workflow);
+                }
             }
 
             // 释放规则集服务
             (_rulesetService as IDisposable)?.Dispose();
+            _rulesetService = null;
 
             // 释放系统事件监控器
             _monitor?.Dispose();
@@ -181,6 +213,9 @@ namespace Ink_Canvas.WorkflowAutomation
             // 释放 DI 容器
             (_serviceProvider as IDisposable)?.Dispose();
             _serviceProvider = null;
+
+            // 重置单例状态，允许重新初始化
+            _isInitialized = false;
         }
     }
 }

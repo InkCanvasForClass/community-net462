@@ -138,26 +138,56 @@ namespace Ink_Canvas
             var boardGestureBtn = FindView("board.gesture") as BoardToolbarButton;
             if (boardGestureBtn != null)
             {
+                var boardThemeAccent = Application.Current.TryFindResource("FloatingBarAccentBrush") as Brush
+                    ?? new SolidColorBrush(Color.FromRgb(37, 99, 235));
                 if (boardAnyOn)
                 {
-                    boardGestureBtn.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
+                    boardGestureBtn.Background = boardThemeAccent;
                     boardGestureBtn.IconGeometryDrawing.Brush = new SolidColorBrush(Colors.GhostWhite);
                     boardGestureBtn.IconGeometryDrawing2.Brush = new SolidColorBrush(Colors.GhostWhite);
                     boardGestureBtn.Foreground = new SolidColorBrush(Colors.GhostWhite);
-                    boardGestureBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
+                    boardGestureBtn.BorderBrush = Brushes.Transparent;
                     boardGestureBtn.IconGeometryDrawing.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.EnabledGestureIcon);
                     boardGestureBtn.IconGeometryDrawing2.Geometry = Geometry.Parse("F0 M24,24z M0,0z " + XamlGraphicsIconGeometries.EnabledGestureIconBadgeCheck);
                 }
                 else
                 {
-                    boardGestureBtn.Background = new SolidColorBrush(boardBgColor);
-                    boardGestureBtn.IconGeometryDrawing.Brush = new SolidColorBrush(boardIconColor);
-                    boardGestureBtn.IconGeometryDrawing2.Brush = new SolidColorBrush(boardIconColor);
-                    boardGestureBtn.Foreground = new SolidColorBrush(boardTextColor);
-                    boardGestureBtn.BorderBrush = new SolidColorBrush(boardBorderColor);
+                    var boardThemeNormalBackground = Application.Current.TryFindResource("FloatingBarBackgroundBrush") as Brush
+                        ?? Application.Current.TryFindResource("BoardFloatBarBackground") as Brush
+                        ?? new SolidColorBrush(boardBgColor);
+                    var boardThemeNormalForeground = Application.Current.TryFindResource("FloatingBarForegroundBrush") as Brush
+                        ?? Application.Current.TryFindResource("FloatBarForeground") as Brush
+                        ?? new SolidColorBrush(boardIconColor);
+                    boardGestureBtn.Background = Brushes.Transparent;
+                    boardGestureBtn.IconGeometryDrawing.Brush = boardThemeNormalForeground;
+                    boardGestureBtn.IconGeometryDrawing2.Brush = boardThemeNormalForeground;
+                    boardGestureBtn.Foreground = boardThemeNormalForeground;
+                    boardGestureBtn.BorderBrush = Brushes.Transparent;
                     boardGestureBtn.IconGeometryDrawing.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.DisabledGestureIcon);
                     boardGestureBtn.IconGeometryDrawing2.Geometry = Geometry.Parse("F0 M24,24z M0,0z");
                 }
+            }
+
+            UpdateBoardInkFreezeButtonStyle();
+        }
+
+        private void UpdateBoardInkFreezeButtonStyle()
+        {
+            var boardInkFreezeBtn = FindView("board.inkFreeze") as BoardToolbarButton;
+            if (boardInkFreezeBtn != null)
+            {
+                var accent = Application.Current.TryFindResource("FloatingBarAccentBrush") as Brush
+                    ?? new SolidColorBrush(Color.FromRgb(37, 99, 235));
+                var normalBackground = Application.Current.TryFindResource("FloatingBarBackgroundBrush") as Brush
+                    ?? Application.Current.TryFindResource("BoardFloatBarBackground") as Brush
+                    ?? new SolidColorBrush(Color.FromRgb(42, 42, 42));
+                var normalForeground = Application.Current.TryFindResource("FloatingBarForegroundBrush") as Brush
+                    ?? Application.Current.TryFindResource("FloatBarForeground") as Brush
+                    ?? Brushes.White;
+
+                boardInkFreezeBtn.Background = Brushes.Transparent;
+                boardInkFreezeBtn.IconGeometryDrawing.Brush = normalForeground;
+                boardInkFreezeBtn.Foreground = normalForeground;
             }
         }
 
@@ -391,6 +421,7 @@ namespace Ink_Canvas
                 _popupManager.RegisterPopup(BoardImageOptionsPanel);
                 _popupManager.RegisterPopup(TwoFingerGestureBorder);
                 _popupManager.RegisterPopup(BoardTwoFingerGestureBorder);
+                _popupManager.RegisterPopup(BoardRoamingPopup);
                 _popupManager.RegisterPopup(BackgroundPalette);
 
                 _popupManager.Initialize(this);
@@ -474,6 +505,30 @@ namespace Ink_Canvas
         }
 
         /// <summary>
+        /// 返回 <see cref="HideSubPanels"/> 中已由 <see cref="AnimationsHelper"/> 播放关闭动画的宿主自带弹窗。
+        /// 供 <c>CloseAllRegisteredPopups</c> 跳过，避免直接置 IsOpen=false 截断动画。
+        /// </summary>
+        private HashSet<Popup> GetAnimatedSubPanelPopups()
+        {
+            return new HashSet<Popup>
+            {
+                BorderTools,
+                BoardBorderToolsPopup,
+                PenPalette,
+                BoardPenPalette,
+                BoardEraserSizePanel,
+                EraserSizePanel,
+                BorderDrawShape,
+                BoardBorderDrawShape,
+                BoardImageOptionsPanel,
+                TwoFingerGestureBorder,
+                BoardTwoFingerGestureBorder,
+                BackgroundPalette,
+                BoothPopup
+            };
+        }
+
+        /// <summary>
         /// HideSubPanels的简化版，立即隐藏所有子面板，无动画效果
         /// </summary>
         private void HideSubPanelsImmediately()
@@ -491,11 +546,17 @@ namespace Ink_Canvas
             BoardImageOptionsPanel.IsOpen = false;
             TwoFingerGestureBorder.IsOpen = false;
             BoardTwoFingerGestureBorder.IsOpen = false;
+            BoardRoamingPopup.IsOpen = false;
             // 添加隐藏图形工具的二级菜单面板
             BorderDrawShape.IsOpen = false;
             BoardBorderDrawShape.IsOpen = false;
 
             BackgroundPalette.IsOpen = false;
+            BoothPopup.IsOpen = false;
+
+            // 上面是按名字硬编码的宿主自带面板；插件注册的弹窗不在其中，
+            // 统一交给 PopupManagerHelper 兜底关闭，保证点击空白处时行为一致。
+            _popupManager?.CloseAllRegisteredPopups();
         }
 
         /// <summary>
@@ -565,6 +626,15 @@ namespace Ink_Canvas
             var boardEraser = FindView("board.eraser") as BoardToolbarButton;
             var boardStrokeEraser = FindView("board.strokeEraser") as BoardToolbarButton;
             var boardSelect = FindView("board.select") as BoardToolbarButton;
+            var boardRoaming = FindView("board.roaming") as BoardToolbarButton;
+            var boardThemeBackground = Application.Current.TryFindResource("FloatingBarBackgroundBrush") as Brush
+                ?? Application.Current.TryFindResource("BoardFloatBarBackground") as Brush
+                ?? Brushes.Transparent;
+            var boardThemeForeground = Application.Current.TryFindResource("FloatingBarForegroundBrush") as Brush
+                ?? Application.Current.TryFindResource("FloatBarForeground") as Brush
+                ?? Brushes.White;
+            var boardThemeAccent = Application.Current.TryFindResource("FloatingBarAccentBrush") as Brush
+                ?? new SolidColorBrush(Color.FromRgb(37, 99, 235));
 
             AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
             AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
@@ -581,8 +651,18 @@ namespace Ink_Canvas
             AnimationsHelper.HidePopupWithSlideAndFade(BoardImageOptionsPanel);
             AnimationsHelper.HidePopupWithSlideAndFade(TwoFingerGestureBorder);
             AnimationsHelper.HidePopupWithSlideAndFade(BoardTwoFingerGestureBorder);
+            // 漫游弹窗必须同步关闭，避免关闭动画的 Completed 在重新打开后再次将其关闭。
+            BoardRoamingPopup.IsOpen = false;
 
             AnimationsHelper.HidePopupWithSlideAndFade(BackgroundPalette);
+
+            // 视频展台弹窗也属于"子面板"，HideSubPanels 时一并隐藏
+            AnimationsHelper.HidePopupWithSlideAndFade(BoothPopup);
+
+            // 上面是按名字硬编码的宿主自带面板；插件注册的弹窗不在其中，
+            // 统一交给 PopupManagerHelper 兜底关闭，保证点击空白处时行为一致。
+            // 已启动关闭动画的要跳过，否则直接置 IsOpen=false 会截断动画。
+            _popupManager?.CloseAllRegisteredPopups(GetAnimatedSubPanelPopups());
 
             if (mode != null)
             {
@@ -598,17 +678,19 @@ namespace Ink_Canvas
                                                  (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
                     if (isDarkThemeForButtons)
                     {
-                        if (boardPen != null) { boardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardPen.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardPen.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); }
-                        if (boardSelect != null) { boardSelect.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardSelect.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardSelect.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardSelect.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); }
-                        if (boardEraser != null) { boardEraser.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardEraser.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); }
-                        if (boardStrokeEraser != null) { boardStrokeEraser.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardStrokeEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardStrokeEraser.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardStrokeEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); }
+                        if (boardPen != null) { boardPen.Background = Brushes.Transparent; boardPen.IconGeometryDrawing.Brush = boardThemeForeground; boardPen.Foreground = boardThemeForeground; }
+                        if (boardSelect != null) { boardSelect.Background = Brushes.Transparent; boardSelect.IconGeometryDrawing.Brush = boardThemeForeground; boardSelect.Foreground = boardThemeForeground; }
+                        if (boardRoaming != null) { boardRoaming.Background = Brushes.Transparent; boardRoaming.IconGeometryDrawing.Brush = boardThemeForeground; boardRoaming.Foreground = boardThemeForeground; }
+                        if (boardEraser != null) { boardEraser.Background = Brushes.Transparent; boardEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardEraser.Foreground = boardThemeForeground; }
+                        if (boardStrokeEraser != null) { boardStrokeEraser.Background = Brushes.Transparent; boardStrokeEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardStrokeEraser.Foreground = boardThemeForeground; }
                     }
                     else
                     {
-                        if (boardPen != null) { boardPen.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardPen.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardPen.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); }
-                        if (boardSelect != null) { boardSelect.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardSelect.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardSelect.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardSelect.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); }
-                        if (boardEraser != null) { boardEraser.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardEraser.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); }
-                        if (boardStrokeEraser != null) { boardStrokeEraser.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardStrokeEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardStrokeEraser.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardStrokeEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); }
+                        if (boardPen != null) { boardPen.Background = Brushes.Transparent; boardPen.IconGeometryDrawing.Brush = boardThemeForeground; boardPen.Foreground = boardThemeForeground; }
+                        if (boardSelect != null) { boardSelect.Background = Brushes.Transparent; boardSelect.IconGeometryDrawing.Brush = boardThemeForeground; boardSelect.Foreground = boardThemeForeground; }
+                        if (boardRoaming != null) { boardRoaming.Background = Brushes.Transparent; boardRoaming.IconGeometryDrawing.Brush = boardThemeForeground; boardRoaming.Foreground = boardThemeForeground; }
+                        if (boardEraser != null) { boardEraser.Background = Brushes.Transparent; boardEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardEraser.Foreground = boardThemeForeground; }
+                        if (boardStrokeEraser != null) { boardStrokeEraser.Background = Brushes.Transparent; boardStrokeEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardStrokeEraser.Foreground = boardThemeForeground; }
                     }
                 }
 
@@ -644,10 +726,9 @@ namespace Ink_Canvas
                             }
                             if (boardPen != null)
                             {
-                                boardPen.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardPen.IconGeometryDrawing.Brush = new SolidColorBrush(Colors.GhostWhite);
-                                boardPen.Foreground = new SolidColorBrush(Colors.GhostWhite);
+                                boardPen.Background = boardThemeAccent;
+                                boardPen.IconGeometryDrawing.Brush = Brushes.White;
+                                boardPen.Foreground = Brushes.White;
                             }
 
                             SetFloatingBarHighlightPosition("pen");
@@ -664,10 +745,9 @@ namespace Ink_Canvas
                             }
                             if (boardEraser != null)
                             {
-                                boardEraser.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Colors.GhostWhite);
-                                boardEraser.Foreground = new SolidColorBrush(Colors.GhostWhite);
+                                boardEraser.Background = boardThemeAccent;
+                                boardEraser.IconGeometryDrawing.Brush = Brushes.White;
+                                boardEraser.Foreground = Brushes.White;
                             }
 
                             SetFloatingBarHighlightPosition("eraser");
@@ -684,10 +764,9 @@ namespace Ink_Canvas
                             }
                             if (boardStrokeEraser != null)
                             {
-                                boardStrokeEraser.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardStrokeEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardStrokeEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Colors.GhostWhite);
-                                boardStrokeEraser.Foreground = new SolidColorBrush(Colors.GhostWhite);
+                                boardStrokeEraser.Background = boardThemeAccent;
+                                boardStrokeEraser.IconGeometryDrawing.Brush = Brushes.White;
+                                boardStrokeEraser.Foreground = Brushes.White;
                             }
 
                             SetFloatingBarHighlightPosition("eraserByStrokes");
@@ -704,13 +783,24 @@ namespace Ink_Canvas
                             }
                             if (boardSelect != null)
                             {
-                                boardSelect.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardSelect.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-                                boardSelect.IconGeometryDrawing.Brush = new SolidColorBrush(Colors.GhostWhite);
-                                boardSelect.Foreground = new SolidColorBrush(Colors.GhostWhite);
+                                boardSelect.Background = boardThemeAccent;
+                                boardSelect.IconGeometryDrawing.Brush = Brushes.White;
+                                boardSelect.Foreground = Brushes.White;
                             }
 
                             SetFloatingBarHighlightPosition("select");
+                            break;
+                        }
+                    case "roaming":
+                        {
+                            if (boardRoaming != null)
+                            {
+                                boardRoaming.Background = boardThemeAccent;
+                                boardRoaming.IconGeometryDrawing.Brush = Brushes.White;
+                                boardRoaming.Foreground = Brushes.White;
+                            }
+
+                            SetFloatingBarHighlightPosition("roaming");
                             break;
                         }
                     case "cursor":
@@ -726,32 +816,32 @@ namespace Ink_Canvas
                                                         (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
                             if (isDarkThemeForCursor)
                             {
-                                if (boardPen != null) { boardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); boardPen.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardPen.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); }
-                                if (boardEraser != null) { boardEraser.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); boardEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardEraser.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); }
-                                if (boardStrokeEraser != null) { boardStrokeEraser.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardStrokeEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); boardStrokeEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardStrokeEraser.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); }
-                                if (boardSelect != null) { boardSelect.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42)); boardSelect.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85)); boardSelect.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255)); boardSelect.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)); }
+                                if (boardPen != null) { boardPen.Background = Brushes.Transparent; boardPen.IconGeometryDrawing.Brush = boardThemeForeground; boardPen.Foreground = boardThemeForeground; }
+                                if (boardEraser != null) { boardEraser.Background = Brushes.Transparent; boardEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardEraser.Foreground = boardThemeForeground; }
+                                if (boardStrokeEraser != null) { boardStrokeEraser.Background = Brushes.Transparent; boardStrokeEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardStrokeEraser.Foreground = boardThemeForeground; }
+                                if (boardSelect != null) { boardSelect.Background = Brushes.Transparent; boardSelect.IconGeometryDrawing.Brush = boardThemeForeground; boardSelect.Foreground = boardThemeForeground; }
+                                if (boardRoaming != null) { boardRoaming.Background = Brushes.Transparent; boardRoaming.IconGeometryDrawing.Brush = boardThemeForeground; boardRoaming.Foreground = boardThemeForeground; }
 
                                 if (BoardInkFreezeBtn != null)
                                 {
-                                    BoardInkFreezeBtn.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
-                                    BoardInkFreezeBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85));
-                                    BoardInkFreezeBtn.IconBrush = new SolidColorBrush(Color.FromRgb(255, 255, 255));
-                                    BoardInkFreezeBtn.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+                                    BoardInkFreezeBtn.Background = Brushes.Transparent;
+                                    BoardInkFreezeBtn.IconBrush = boardThemeForeground;
+                                    BoardInkFreezeBtn.Foreground = boardThemeForeground;
                                 }
                             }
                             else
                             {
-                                if (boardPen != null) { boardPen.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); boardPen.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardPen.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); }
-                                if (boardEraser != null) { boardEraser.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); boardEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardEraser.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); }
-                                if (boardStrokeEraser != null) { boardStrokeEraser.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardStrokeEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); boardStrokeEraser.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardStrokeEraser.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); }
-                                if (boardSelect != null) { boardSelect.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245)); boardSelect.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170)); boardSelect.IconGeometryDrawing.Brush = new SolidColorBrush(Color.FromRgb(24, 24, 27)); boardSelect.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27)); }
+                                if (boardPen != null) { boardPen.Background = Brushes.Transparent; boardPen.IconGeometryDrawing.Brush = boardThemeForeground; boardPen.Foreground = boardThemeForeground; }
+                                if (boardEraser != null) { boardEraser.Background = Brushes.Transparent; boardEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardEraser.Foreground = boardThemeForeground; }
+                                if (boardStrokeEraser != null) { boardStrokeEraser.Background = Brushes.Transparent; boardStrokeEraser.IconGeometryDrawing.Brush = boardThemeForeground; boardStrokeEraser.Foreground = boardThemeForeground; }
+                                if (boardSelect != null) { boardSelect.Background = Brushes.Transparent; boardSelect.IconGeometryDrawing.Brush = boardThemeForeground; boardSelect.Foreground = boardThemeForeground; }
+                                if (boardRoaming != null) { boardRoaming.Background = Brushes.Transparent; boardRoaming.IconGeometryDrawing.Brush = boardThemeForeground; boardRoaming.Foreground = boardThemeForeground; }
 
                                 if (BoardInkFreezeBtn != null)
                                 {
-                                    BoardInkFreezeBtn.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245));
-                                    BoardInkFreezeBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170));
-                                    BoardInkFreezeBtn.IconBrush = new SolidColorBrush(Color.FromRgb(24, 24, 27));
-                                    BoardInkFreezeBtn.Foreground = new SolidColorBrush(Color.FromRgb(24, 24, 27));
+                                    BoardInkFreezeBtn.Background = Brushes.Transparent;
+                                    BoardInkFreezeBtn.IconBrush = boardThemeForeground;
+                                    BoardInkFreezeBtn.Foreground = boardThemeForeground;
                                 }
                             }
 
@@ -827,6 +917,11 @@ namespace Ink_Canvas
         /// 是否正在显示或隐藏黑板
         /// </summary>
         private bool isDisplayingOrHidingBlackboard;
+
+        /// <summary>
+        /// 进入白板后的程序性切笔是否需要抑制一次笔设置弹窗。
+        /// </summary>
+        private bool suppressNextPenPaletteOpen;
 
         /// <summary>
         /// 白板按钮点击事件处理
@@ -1015,7 +1110,12 @@ namespace Ink_Canvas
                         Application.Current.Dispatcher.Invoke(() => { ViewboxFloatingBarMarginAnimation(60); });
                     }).Start();
 
-                if (GetSelectionBGLeft() != 28) PenIcon_Click(null, null);
+                if (GetSelectionBGLeft() != 28)
+                {
+                    // 退出白板是程序内部的状态同步，不应触发笔设置弹窗。
+                    suppressNextPenPaletteOpen = true;
+                    PenIcon_Click(null, null);
+                }
 
                 StopChickenSoupAutoRotation();
                 WaterMarkTime.Visibility = Visibility.Collapsed;
@@ -1074,6 +1174,22 @@ namespace Ink_Canvas
 
             SwitchToDefaultPen(null, null);
             CheckColorTheme(true);
+
+            // 进入白板模式后刷新页码按钮状态：启动时硬编码的禁用色不随主题切换，
+            // 需要在此用当前主题的 IconForeground 重新计算上一页按钮的灰色画刷，否则深色主题下图标不可见
+            if (currentMode != 0)
+            {
+                UpdateIndexInfoDisplay();
+
+                // 进入白板模式时显式切换到笔模式：SwitchBackground 不会更新 _currentToolMode，
+                // 这里需要复用 PenIcon_Click 的完整切笔逻辑，但应避免被误判为"再次点击笔"而弹出笔设置面板。
+                if (inkCanvas.EditingMode != InkCanvasEditingMode.Ink
+                    && inkCanvas.EditingMode != InkCanvasEditingMode.Select)
+                {
+                    suppressNextPenPaletteOpen = true;
+                    PenIcon_Click(null, null);
+                }
+            }
         }
 
         #endregion
@@ -1392,10 +1508,10 @@ namespace Ink_Canvas
             // 根据设置决定使用哪个点名窗口
             if (Settings.RandSettings.UseNewRollCallUI)
             {
-                // 使用新点名UI - 随机抽模式
+                // 使用新点名UI - 随机抽模式（非模态，可与主窗口同时操作）
                 var rollCallWindow = new NewStyleRollCallWindow(Settings, false);
                 rollCallWindow.Owner = this;
-                rollCallWindow.ShowDialog();
+                rollCallWindow.Show();
             }
             else
             {
@@ -1468,9 +1584,9 @@ namespace Ink_Canvas
                     // 调用失败时回退到相应的点名窗口
                     if (Settings.RandSettings.UseNewRollCallUI)
                     {
-                        var rollCallWindow = new NewStyleRollCallWindow(Settings, true); // 单次抽模式
+                        var rollCallWindow = new NewStyleRollCallWindow(Settings, true); // 单次抽模式（非模态）
                         rollCallWindow.Owner = this;
-                        rollCallWindow.ShowDialog();
+                        rollCallWindow.Show();
                     }
                     else
                     {
@@ -1485,10 +1601,10 @@ namespace Ink_Canvas
                 // 根据设置决定使用哪个点名窗口
                 if (Settings.RandSettings.UseNewRollCallUI)
                 {
-                    // 使用新点名UI - 单次抽模式
+                    // 使用新点名UI - 单次抽模式（非模态，可与主窗口同时操作）
                     var rollCallWindow = new NewStyleRollCallWindow(Settings, true);
                     rollCallWindow.Owner = this;
-                    rollCallWindow.ShowDialog();
+                    rollCallWindow.Show();
                 }
                 else
                 {
@@ -2627,6 +2743,9 @@ namespace Ink_Canvas
                 {
                     SetFloatingBarHighlightPosition(_currentToolMode);
                 }
+
+                // Issue #285：动画会重新显示完整浮动栏，若此时应处于迷你栏状态则重新接管
+                RefreshIdleMiniBarState();
             });
         }
 
@@ -3241,7 +3360,8 @@ namespace Ink_Canvas
                     return;
                 }
 
-                if (currentMode == 1 || isDragDropInEffect || ViewboxFloatingBar.Visibility != Visibility.Visible)
+                if (currentMode == 1 || isFloatingBarFolded || isFloatingBarChangingHideMode ||
+                    isDragDropInEffect || ViewboxFloatingBar.Visibility != Visibility.Visible)
                 {
                     return;
                 }
@@ -3460,6 +3580,8 @@ namespace Ink_Canvas
         {
             if (TryBlockFrozenPageMutation("切换到画笔")) return;
 
+            EndBoardRoaming();
+
             if (lastBorderMouseDownObject is Panel panel)
                 panel.Background = new SolidColorBrush(Colors.Transparent);
 
@@ -3560,6 +3682,8 @@ namespace Ink_Canvas
 
                 SetFloatingBarHighlightPosition("pen");
 
+                UpdateBoardPenIconColor();
+
                 forceEraser = false;
                 forcePointEraser = false;
                 drawingShapeMode = 0;
@@ -3587,17 +3711,7 @@ namespace Ink_Canvas
                 // 如果之前是激光笔模式，则保持激光笔属性
                 else if (penType == 2)
                 {
-                    drawingAttributes.IsHighlighter = false;
-                    drawingAttributes.StylusTip = StylusTip.Ellipse;
-                    drawingAttributes.Width = Settings.Canvas.LaserPenWidth;
-                    drawingAttributes.Height = Settings.Canvas.LaserPenWidth;
-                    Settings.Canvas.EnableInkFade = true;
-                    if (_inkFadeManager != null)
-                    {
-                        _inkFadeManager.IsEnabled = true;
-                        _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
-                        _inkFadeManager.UpdateFadeSpeedMultiplier(Settings.Canvas.InkFadeSpeedMultiplier);
-                    }
+                    ApplyLaserPenModeCore(refreshUi: false, updateIndicators: false);
                 }
 
                 ColorSwitchCheck();
@@ -3637,17 +3751,7 @@ namespace Ink_Canvas
                         // 如果之前是激光笔模式，则保持激光笔属性
                         else if (penType == 2)
                         {
-                            drawingAttributes.IsHighlighter = false;
-                            drawingAttributes.StylusTip = StylusTip.Ellipse;
-                            drawingAttributes.Width = Settings.Canvas.LaserPenWidth;
-                            drawingAttributes.Height = Settings.Canvas.LaserPenWidth;
-                            Settings.Canvas.EnableInkFade = true;
-                            if (_inkFadeManager != null)
-                            {
-                                _inkFadeManager.IsEnabled = true;
-                                _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
-                                _inkFadeManager.UpdateFadeSpeedMultiplier(Settings.Canvas.InkFadeSpeedMultiplier);
-                            }
+                            ApplyLaserPenModeCore(refreshUi: false, updateIndicators: false);
                         }
 
                         // 在非白板模式下，从线擦切换到批注时不直接弹出子面板
@@ -3662,6 +3766,11 @@ namespace Ink_Canvas
                     {
                         AnimationsHelper.HidePopupWithSlideAndFade(PenPalette);
                         AnimationsHelper.HidePopupWithSlideAndFade(BoardPenPalette);
+                    }
+                    else if (suppressNextPenPaletteOpen)
+                    {
+                        suppressNextPenPaletteOpen = false;
+                        HideSubPanels("pen", true);
                     }
                     else
                     {
@@ -3690,6 +3799,8 @@ namespace Ink_Canvas
 
                     // 更新模式缓存
                     UpdateCurrentToolMode("pen");
+
+                    UpdateBoardPenIconColor();
 
                     forceEraser = false;
                     forcePointEraser = false;
@@ -4061,6 +4172,7 @@ namespace Ink_Canvas
             };
             SetQuickColor(color);
             ScheduleBrushAutoRestore();
+            RefreshLiquidGlassBarActiveState();
         }
 
         /// <summary>
@@ -4286,16 +4398,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         public void ToggleFingerDragMode(object sender, RoutedEventArgs e)
         {
-            if (isSingleFingerDragMode)
-            {
-                isSingleFingerDragMode = false;
-                { /* Old UI removed */ }
-            }
-            else
-            {
-                isSingleFingerDragMode = true;
-                { /* Old UI removed */ }
-            }
+            isSingleFingerDragMode = !isSingleFingerDragMode;
         }
 
         /// <summary>
@@ -4363,8 +4466,11 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         public void ExitApplication(object sender, RoutedEventArgs e)
         {
-            _forceCloseFromExitOrRestartButton = true;
             App.IsAppExitByUser = true;
+            _exitApplicationRequested = true;
+            _forceCloseFromExitOrRestartButton = false;
+            // 通过主窗口 Close 进入统一的 Closing 验证流程。
+            // Window_Closed 中再显式关闭 Application，确保托盘和隐藏窗口一并退出。
             Close();
         }
 
@@ -4387,6 +4493,7 @@ namespace Ink_Canvas
 
             Process.Start(System.Windows.Forms.Application.ExecutablePath, "-m");
             _forceCloseFromExitOrRestartButton = true;
+            _exitApplicationRequested = true;
             App.IsAppExitByUser = true;
             CloseIsFromButton = true;
             Close();
@@ -4606,6 +4713,12 @@ namespace Ink_Canvas
                     case 0: //屏幕模式
                         VideoPresenter_OnExitWhiteboardMode();
                         currentMode = 0;
+
+                        // 退出白板的公共兜底：所有入口（浮动栏按钮、白板工具栏、热键、自动收纳、IPC）
+                        // 都汇聚到这里，统一按当前放映状态重新评估翻页条可见性。
+                        // 真实 PPT 与外部演示源（插件注册的 PDF 等）都能恢复，非放映场景维持隐藏。
+                        _pptUIManager?.UpdateNavigationPanelsVisibility();
+
                         AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
                         GridBackgroundCover.Visibility = Visibility.Collapsed;
                         AnimationsHelper.HideWithSlideAndFade(BlackboardLeftSide);
@@ -5740,13 +5853,6 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// 更新形状绘制面板（BorderDrawShape）的弹出位置，使其水平中心对齐形状按钮。
-        /// </summary>
-        private void UpdateBorderDrawShapePosition()
-        {
-        }
-
-        /// <summary>
         /// 更新手势面板（TwoFingerGestureBorder）的弹出位置，使其水平中心对齐手势按钮。
         /// </summary>
         private void UpdateTwoFingerGestureBorderPosition()
@@ -5996,6 +6102,11 @@ namespace Ink_Canvas
                 }
                 else if (inkCanvas.EditingMode == InkCanvasEditingMode.None)
                 {
+                    // Native freehand keeps physical EditingMode at None while logical
+                    // tool remains pen/color. Prefer cached mode; fall back to cursor.
+                    if (!string.IsNullOrEmpty(_currentToolMode)
+                        && !string.Equals(_currentToolMode, "cursor", StringComparison.OrdinalIgnoreCase))
+                        return _currentToolMode;
                     return "cursor";
                 }
                 else if (drawingShapeMode != 0)
@@ -6018,16 +6129,39 @@ namespace Ink_Canvas
         private void UpdateCurrentToolMode(string mode)
         {
             _currentToolMode = NormalizeToolModeForFreeze(mode);
+            UpdateBoardRoamingButtonState();
 
-            // 动态切换 EnablePointerSupport：仅在画笔批注模式下启用 WM_POINTER 触摸栈，
-            // 其他模式下禁用以避免 DragMove/DoDragDrop 在模拟触摸屏下假死。
-            try
+            // Issue #285 更小批注栏：根据当前工具模式刷新迷你栏显示状态
+            RefreshIdleMiniBarState();
+
+            // 液态玻璃浮动栏：同步选中态高亮
+            RefreshLiquidGlassBarActiveState();
+
+            // 通知自动化系统：逻辑工具模式已变化。原生笔路径下物理 EditingMode 不变，
+            // 触发器无法靠 EditingModeChanged 感知进/出批注，必须在此显式通知。
+            AutomationBootstrap.Monitor?.NotifyInternalStateChanged();
+
+            // 工具模式变化后同步刷新工具栏形态（批注/鼠标布局按 IsAnnotating 决定），
+            // 否则会出现指示器已切到鼠标、形态仍停在批注的失步（退出白板时的两步走流程即如此）。
+            UpdateToolbarComponentVisibility();
+        }
+
+        /// <summary>
+        /// 自动化「切换批注模式」动作入口：进入/退出批注模式。
+        /// 与画笔/光标按钮保持一致的 SetCurrentToolMode + UpdateCurrentToolMode 序列，
+        /// 保证 _currentToolMode（逻辑工具）与原生湿墨迹管线同步。
+        /// </summary>
+        internal void SetAnnotationModeFromAutomation(bool enterAnnotation)
+        {
+            if (enterAnnotation)
             {
-                AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", _currentToolMode == "pen");
+                if (SetCurrentToolMode(InkCanvasEditingMode.Ink))
+                    UpdateCurrentToolMode("pen");
             }
-            catch (Exception ex)
+            else
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to toggle EnablePointerSupport: {ex}");
+                if (SetCurrentToolMode(InkCanvasEditingMode.None))
+                    UpdateCurrentToolMode("cursor");
             }
         }
 

@@ -5,6 +5,9 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Ink_Canvas.Helpers
 {
@@ -135,6 +138,38 @@ namespace Ink_Canvas.Helpers
             _needsUpdate = true;
         }
 
+        /// <summary>
+        /// 关闭所有已注册的 Popup。
+        /// <para>
+        /// 供 <c>HideSubPanels</c> / <c>HideSubPanelsImmediately</c> 兜底调用：宿主自带面板是按名字逐个关闭的，
+        /// 插件通过 <see cref="RegisterPopup"/> 注册的弹窗不在那份硬编码列表里，
+        /// 需要在此统一关闭，否则点击画布空白处时插件弹窗不会收起。
+        /// </para>
+        /// </summary>
+        /// <param name="skip">
+        /// 需要跳过的 Popup（调用方已自行处理，例如正在播放关闭动画）。
+        /// 传 <c>null</c> 表示不跳过任何一个。
+        /// </param>
+        public void CloseAllRegisteredPopups(ICollection<Popup> skip = null)
+        {
+            // 关闭过程会触发 Closed 事件并修改 _openPopups，遍历注册表的副本避免集合被修改。
+            var snapshot = _registeredPopups.ToArray();
+            foreach (var popup in snapshot)
+            {
+                if (popup == null || !popup.IsOpen) continue;
+                if (skip != null && skip.Contains(popup)) continue;
+
+                try
+                {
+                    popup.IsOpen = false;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PopupManager] CloseAllRegisteredPopups error: {ex.Message}");
+                }
+            }
+        }
+
         public void BringToFront(Popup popup)
         {
             if (popup?.Child == null) return;
@@ -252,13 +287,13 @@ namespace Ink_Canvas.Helpers
 
         private IntPtr GetPopupHwnd(Popup popup)
         {
-            if (_hwndCache.TryGetValue(popup, out IntPtr cached) && NativeWindowHelper.IsWindow(cached))
+            if (_hwndCache.TryGetValue(popup, out IntPtr cached) && PInvoke.IsWindow(new HWND(cached)))
             {
                 return cached;
             }
 
             var source = PresentationSource.FromVisual(popup.Child) as HwndSource;
-            if (source?.Handle == IntPtr.Zero || !NativeWindowHelper.IsWindow(source.Handle))
+            if (source?.Handle == IntPtr.Zero || !PInvoke.IsWindow(new HWND(source.Handle)))
             {
                 _hwndCache.Remove(popup);
                 return IntPtr.Zero;
@@ -282,25 +317,25 @@ namespace Ink_Canvas.Helpers
 
                 if (shouldBeTopmost)
                 {
-                    NativeWindowHelper.SetWindowPos(popupHwnd, NativeWindowHelper.HWND_TOPMOST, 0, 0, 0, 0,
-                        NativeWindowHelper.SWP_NOMOVE | NativeWindowHelper.SWP_NOSIZE | NativeWindowHelper.SWP_NOACTIVATE | NativeWindowHelper.SWP_NOOWNERZORDER);
+                    PInvoke.SetWindowPos(new HWND(popupHwnd), new HWND(NativeWindowHelper.HWND_TOPMOST), 0, 0, 0, 0,
+                        SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOOWNERZORDER);
 
                     if (_ownerHwnd != IntPtr.Zero)
                     {
-                        NativeWindowHelper.SetWindowPos(_ownerHwnd, popupHwnd, 0, 0, 0, 0,
-                            NativeWindowHelper.SWP_NOMOVE | NativeWindowHelper.SWP_NOSIZE | NativeWindowHelper.SWP_NOACTIVATE);
+                        PInvoke.SetWindowPos(new HWND(_ownerHwnd), new HWND(popupHwnd), 0, 0, 0, 0,
+                            SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
                     }
                 }
                 else
                 {
-                    int exStyle = NativeWindowHelper.GetWindowLong(popupHwnd, NativeWindowHelper.GWL_EXSTYLE);
+                    int exStyle = PInvoke.GetWindowLong(new HWND(popupHwnd), WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
                     if ((exStyle & NativeWindowHelper.WS_EX_TOPMOST) != 0)
                     {
-                        NativeWindowHelper.SetWindowLong(popupHwnd, NativeWindowHelper.GWL_EXSTYLE, exStyle & ~NativeWindowHelper.WS_EX_TOPMOST);
+                        PInvoke.SetWindowLong(new HWND(popupHwnd), WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, exStyle & ~NativeWindowHelper.WS_EX_TOPMOST);
                     }
 
-                    NativeWindowHelper.SetWindowPos(popupHwnd, NativeWindowHelper.HWND_NOTOPMOST, 0, 0, 0, 0,
-                        NativeWindowHelper.SWP_NOMOVE | NativeWindowHelper.SWP_NOSIZE | NativeWindowHelper.SWP_NOACTIVATE);
+                    PInvoke.SetWindowPos(new HWND(popupHwnd), new HWND(NativeWindowHelper.HWND_NOTOPMOST), 0, 0, 0, 0,
+                        SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
                 }
             }
             catch (Exception ex)
@@ -322,8 +357,8 @@ namespace Ink_Canvas.Helpers
                         var source = PresentationSource.FromVisual(childPopup.Child) as HwndSource;
                         if (source?.Handle != IntPtr.Zero)
                         {
-                            NativeWindowHelper.SetWindowPos(source.Handle, NativeWindowHelper.HWND_TOPMOST, 0, 0, 0, 0,
-                                NativeWindowHelper.SWP_NOMOVE | NativeWindowHelper.SWP_NOSIZE | NativeWindowHelper.SWP_NOACTIVATE | NativeWindowHelper.SWP_NOOWNERZORDER);
+                            PInvoke.SetWindowPos(new HWND(source.Handle), new HWND(NativeWindowHelper.HWND_TOPMOST), 0, 0, 0, 0,
+                                SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOOWNERZORDER);
                         }
                     }
                 }

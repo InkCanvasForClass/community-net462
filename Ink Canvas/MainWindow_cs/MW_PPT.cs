@@ -18,9 +18,9 @@ using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Windows.Win32;
 using Application = System.Windows.Application;
 using File = System.IO.File;
-using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
@@ -29,62 +29,62 @@ namespace Ink_Canvas
     public partial class MainWindow : Ink_Canvas.Helpers.PerformanceTransparentWin
     {
         #region Win32 API Declarations
-        [DllImport("user32.dll")]
-        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        //[DllImport("user32.dll")]
+        //private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
-        [DllImport("user32.dll")]
-        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+        //[DllImport("user32.dll")]
+        //private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-        [DllImport("user32.dll")]
-        private static extern uint GetDpiForWindow(IntPtr hWnd);
+        //[DllImport("user32.dll")]
+        //private static extern uint GetDpiForWindow(IntPtr hWnd);
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT
-        {
-            public int Left, Top, Right, Bottom;
-        }
+        //[StructLayout(LayoutKind.Sequential)]
+        //private struct RECT
+        //{
+        //    public int Left, Top, Right, Bottom;
+        //}
 
-        [DllImport("user32.dll")]
-        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        //[DllImport("user32.dll")]
+        //private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
-        [DllImport("user32.dll")]
-        private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+        //[DllImport("user32.dll")]
+        //private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
-        [DllImport("user32.dll")]
-        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        //[DllImport("user32.dll")]
+        //private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool IsWindowVisible(IntPtr hWnd);
+        //[DllImport("user32.dll")]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        //private static extern bool IsWindowVisible(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        private static extern bool IsIconic(IntPtr hWnd);
+        //[DllImport("user32.dll")]
+        //private static extern bool IsIconic(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        private static extern bool IsZoomed(IntPtr hWnd);
+        //[DllImport("user32.dll")]
+        //private static extern bool IsZoomed(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
+        //[DllImport("user32.dll")]
+        //private static extern IntPtr GetForegroundWindow();
 
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+        //[DllImport("user32.dll")]
+        //private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
 
-        [DllImport("user32.dll")]
-        private static extern bool IsWindow(IntPtr hWnd);
+        //[DllImport("user32.dll")]
+        //private static extern bool IsWindow(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        private static extern bool GetWindowRect(IntPtr hWnd, out ForegroundWindowInfo.RECT lpRect);
+        //[DllImport("user32.dll")]
+        //private static extern bool GetWindowRect(IntPtr hWnd, out ForegroundWindowInfo.RECT lpRect);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+        //[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        //private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
-        private const int GWL_STYLE = -16;
-        private const int WS_VISIBLE = 0x10000000;
-        private const int WS_MINIMIZE = 0x20000000;
-        private const uint GW_HWNDNEXT = 2;
-        private const uint GW_HWNDPREV = 3;
+        //private const int GWL_STYLE = -16;
+        //private const int WS_VISIBLE = 0x10000000;
+        //private const int WS_MINIMIZE = 0x20000000;
+        //private const uint GW_HWNDNEXT = 2;
+        //private const uint GW_HWNDPREV = 3;
 
-        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+        //private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
         #endregion
 
         #region PPT Application Variables
@@ -460,7 +460,7 @@ namespace Ink_Canvas
                 // 直接设置PPTManager的PPTApplication属性，绕过COM注册问题
                 Task.Delay(1000).ContinueWith(_ =>
                 {
-                    Dispatcher.Invoke(() =>
+                    Dispatcher.BeginInvoke(() =>
                     {
                         try
                         {
@@ -896,13 +896,13 @@ namespace Ink_Canvas
             try
             {
                 bool found = false;
-                EnumWindows((hWnd, _) =>
+                PInvoke.EnumWindows((hWnd, _) =>
                 {
-                    if (!IsWindow(hWnd) || !IsWindowVisible(hWnd))
+                    if (!PInvoke.IsWindow(hWnd) || !PInvoke.IsWindowVisible(hWnd))
                         return true;
 
                     var cls = new StringBuilder(256);
-                    if (GetClassName(hWnd, cls, cls.Capacity) == 0)
+                    if (PInvoke.GetClassName(hWnd, new Span<char>(cls.ToString().ToCharArray())) == 0)
                         return true;
 
                     if (!string.Equals(cls.ToString(), PowerPointSlideShowWindowClassName, StringComparison.OrdinalIgnoreCase))
@@ -910,7 +910,7 @@ namespace Ink_Canvas
 
                     try
                     {
-                        GetWindowThreadProcessId(hWnd, out uint pid);
+                        PInvoke.GetWindowThreadProcessId(hWnd, out uint pid);
                         using (var proc = Process.GetProcessById((int)pid))
                         {
                             var name = proc.ProcessName;
@@ -1403,7 +1403,7 @@ namespace Ink_Canvas
                     new Thread(() =>
                     {
                         Thread.Sleep(100);
-                        Application.Current.Dispatcher.Invoke(() =>
+                        Application.Current.Dispatcher.BeginInvoke(() =>
                         {
                             ViewboxFloatingBarMarginAnimation(60);
                         });
@@ -1564,8 +1564,6 @@ namespace Ink_Canvas
                     return;
                 }
 
-                LogHelper.WriteLogToFile($"[SmartMode] 开始刷新, PPTLinkMode={Settings.PowerPointSettings.PPTLinkMode}, Manager={_pptManager?.GetType().Name}", LogHelper.LogType.Info);
-
                 if (_pptManager is PPTAgentLinkManager agentManager)
                 {
                     var response = agentManager.GetSmartRegions();
@@ -1580,17 +1578,19 @@ namespace Ink_Canvas
                     }
                     else
                     {
-                        LogHelper.WriteLogToFile("[SmartMode] Agent 返回空区域列表", LogHelper.LogType.Info);
-                        _smartModeRegions = null;
+                        LogHelper.WriteLogToFile("[SmartMode] Agent 返回空区域列表，回退 COM 直接获取（VSTO 未加载/无加载项）", LogHelper.LogType.Info);
+                        _smartModeRegions = GetVideoRegionsViaCom();
+                        _smartModeSlideIndex = _currentSlideShowPosition;
+                        if (_smartModeRegions != null)
+                            LogHelper.WriteLogToFile($"[SmartMode] COM 回退获取到 {_smartModeRegions.Count} 个区域", LogHelper.LogType.Info);
                     }
                 }
                 else
                 {
-                    // COM/ROT 模式：尝试直接通过 COM interop 获取视频区域
-                    LogHelper.WriteLogToFile("[SmartMode] 非 Agent 模式，尝试 COM 直接获取", LogHelper.LogType.Info);
+                    // COM/ROT 模式：直接获取视频区域
                     _smartModeRegions = GetVideoRegionsViaCom();
                     _smartModeSlideIndex = _currentSlideShowPosition;
-                    if (_smartModeRegions != null)
+                    if (_smartModeRegions != null && _smartModeRegions.Count > 0)
                         LogHelper.WriteLogToFile($"[SmartMode] COM 获取到 {_smartModeRegions.Count} 个区域", LogHelper.LogType.Info);
                 }
             }
@@ -1600,32 +1600,52 @@ namespace Ink_Canvas
                 _smartModeRegions = null;
             }
 
-            // 将磅值坐标转换为 WPF 窗口坐标（必须在 UI 线程执行）
-            Application.Current.Dispatcher.Invoke(() => BuildSmartModeRects());
+            // 将磅值坐标转换为 WPF 窗口坐标（必须在 UI 线程执行）。
+            if (Dispatcher.CheckAccess())
+            {
+                BuildSmartModeRects();
+            }
+            else
+            {
+                Application.Current.Dispatcher.InvokeAsync(() => BuildSmartModeRects());
+            }
         }
 
         /// <summary>
         /// 通过 COM interop 直接从 PowerPoint 获取当前幻灯片的视频控件区域（适用于 COM/ROT 模式）。
         /// </summary>
+        /// <remarks>
+        /// 优先通过 _pptManager.PPTApplication 获取应用实例（ROT 模式下静态字段 pptApplication 为 null），
+        /// 再通过活动演示文稿的 SlideShowWindow 定位当前幻灯片，避免依赖静态状态。
+        /// </remarks>
         private List<SmartRegion> GetVideoRegionsViaCom()
         {
             try
             {
-                var app = pptApplication;
-                if (app == null) return null;
+                // 优先使用管理器持有的 COM 实例（ROT 模式下静态字段 pptApplication 为 null）。
+                object appObj = _pptManager?.PPTApplication ?? pptApplication;
+                if (appObj == null)
+                {
+                    LogHelper.WriteLogToFile("[SmartMode] COM 获取失败: 未找到 PowerPoint 应用程序实例", LogHelper.LogType.Warning);
+                    return null;
+                }
 
-                Presentation pres = null;
-                try { pres = app.ActivePresentation; } catch { return null; }
+                dynamic app = appObj;
+
+                Microsoft.Office.Interop.PowerPoint.Presentation pres = null;
+                try { pres = app.ActivePresentation as Microsoft.Office.Interop.PowerPoint.Presentation; } catch { return null; }
                 if (pres == null) return null;
 
-                SlideShowWindow ssw = null;
+                Microsoft.Office.Interop.PowerPoint.SlideShowWindow ssw = null;
                 try { ssw = pres.SlideShowWindow; } catch { return null; }
                 if (ssw == null) return null;
 
-                var view = ssw.View;
+                dynamic view = null;
+                try { view = ssw.View; } catch { return null; }
                 if (view == null) return null;
 
-                var slide = view.Slide;
+                Microsoft.Office.Interop.PowerPoint.Slide slide = null;
+                try { slide = view.Slide as Microsoft.Office.Interop.PowerPoint.Slide; } catch { return null; }
                 if (slide == null) return null;
 
                 float slideWidth = pres.PageSetup.SlideWidth;
@@ -1633,7 +1653,12 @@ namespace Ink_Canvas
 
                 _smartModeSlideWidth = slideWidth;
                 _smartModeSlideHeight = slideHeight;
-                _smartModeSlideShowHwnd = FindWindow(PowerPointSlideShowWindowClassName, null);
+                // 优先使用放映窗口自身的 HWND，避免 FindWindow 命中陈旧窗口
+                try { _smartModeSlideShowHwnd = new IntPtr(ssw.HWND); } catch { _smartModeSlideShowHwnd = IntPtr.Zero; }
+                if (_smartModeSlideShowHwnd == IntPtr.Zero)
+                {
+                    _smartModeSlideShowHwnd = FindActiveScreenClassWindow();
+                }
 
                 var regions = new List<SmartRegion>();
                 foreach (Microsoft.Office.Interop.PowerPoint.Shape shape in slide.Shapes)
@@ -1663,26 +1688,98 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// 判断一个 Shape 是否为视频控件。
+        /// 枚举顶层 screenClass 窗口，返回当前可见且非最小化的放映窗口句柄。
         /// </summary>
+        /// <remarks>
+        /// FindWindow("screenClass", null) 会返回 Z 序最前的窗口，可能命中陈旧或已结束的放映；
+        /// 此处枚举所有顶层窗口并校验可见性，挑选最合适的放映窗口。
+        /// </remarks>
+        private IntPtr FindActiveScreenClassWindow()
+        {
+            IntPtr best = IntPtr.Zero;
+            try
+            {
+                PInvoke.EnumWindows((hWnd, lParam) =>
+                {
+                    if (hWnd == IntPtr.Zero) return true;
+                    if (!PInvoke.IsWindowVisible(hWnd)) return true;
+                    if (PInvoke.IsIconic(hWnd)) return true;
+
+                    var sb = new StringBuilder(64);
+                    if (PInvoke.GetClassName(hWnd, new Span<char>(sb.ToString().ToCharArray())) == 0) return true;
+                    if (!string.Equals(sb.ToString(), PowerPointSlideShowWindowClassName, StringComparison.Ordinal)) return true;
+
+                    best = hWnd;
+                    return false; // 停止枚举
+                }, IntPtr.Zero);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[SmartMode] 枚举放映窗口失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// 判断一个 Shape 是否为视频控件（仅识别视频，排除纯音频与普通 ActiveX 控件）。
+        /// </summary>
+        /// <remarks>
+        /// PpMediaType（.NET PIA）取值：ppMediaTypeMovie = 3（视频）、ppMediaTypeSound = 2（音频）、
+        /// ppMediaTypeOther = 1、ppMediaTypeMixed = -2；旧代码误用 14 判等导致嵌入式视频分支永不命中。
+        /// </remarks>
         private static bool IsVideoShape(Microsoft.Office.Interop.PowerPoint.Shape shape)
         {
             try
             {
-                // msoMedia = 16
+                // msoWebVideo = 26：在线视频（YouTube 等），本身就是视频控件
+                if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoWebVideo)
+                    return true;
+
+                // msoMedia = 16：多媒体形状，用 MediaType 区分视频/音频
                 if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoMedia)
-                    return true;
+                {
+                    try
+                    {
+                        int mediaType = (int)(object)shape.MediaType;
+                        // ppMediaTypeMovie = 3（视频）；raw 15 为旧版 Flash（ppMediaTypeFlash），亦属视频类
+                        return mediaType == 3 || mediaType == 15;
+                    }
+                    catch
+                    {
+                        // MediaType 读取失败时保守放行（保持原行为）
+                        return true;
+                    }
+                }
 
-                // OLE 控件（ActiveX 媒体播放器等）
+                // msoOLEControlObject = 12：ActiveX 控件，仅当确认为媒体播放器时才视为视频
                 if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoOLEControlObject)
-                    return true;
+                {
+                    try
+                    {
+                        string progId = shape.OLEFormat?.ProgID ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(progId))
+                        {
+                            progId = progId.ToUpperInvariant();
+                            // Windows Media Player / VLC / Flash / RealPlayer 等媒体播放器控件
+                            if (progId.StartsWith("WMPlayer.", StringComparison.Ordinal) ||
+                                progId.StartsWith("VideoLAN.", StringComparison.Ordinal) ||
+                                progId.StartsWith("ShockwaveFlash.", StringComparison.Ordinal) ||
+                                progId.StartsWith("RealPlayer.", StringComparison.Ordinal) ||
+                                progId.StartsWith("RealMedia.", StringComparison.Ordinal))
+                                return true;
+                        }
+                    }
+                    catch { }
+                    // 无法确认是否为媒体播放器时，不视为视频，避免把普通 ActiveX 控件误判为视频
+                    return false;
+                }
 
-                // 嵌入式视频（旧版格式）
+                // msoEmbeddedOLEObject = 7：嵌入式 OLE，旧版视频格式，MediaType 必须为 ppMediaTypeMovie = 3
                 if (shape.Type == Microsoft.Office.Core.MsoShapeType.msoEmbeddedOLEObject)
                 {
                     try
                     {
-                        if ((int)(object)shape.MediaType == 14)  // ppMediaTypeMovie
+                        if ((int)(object)shape.MediaType == 3)  // ppMediaTypeMovie
                             return true;
                     }
                     catch { }
@@ -1816,26 +1913,33 @@ namespace Ink_Canvas
                             if (!Directory.Exists(folderPathForSave))
                                 Directory.CreateDirectory(folderPathForSave);
 
+                            // 先在锁内快照出 (页码, 字节) 列表，再在锁外做磁盘 IO。
+                            // 之前在 lock 内直接 File.WriteAllBytes 把磁盘 IO 与字典保护混在一起，
+                            // 磁盘繁忙/AV 扫描锁定文件时 _memoryStreams 被独占数十秒，
+                            // 期间 OnPPTSlideShowNextSlide/ExitPPTPresentation 任何持锁访问全卡死。
+                            var snapshot = new List<(int page, byte[] bytes)>();
                             lock (_memoryStreams)
                             {
                                 for (int i = 1; i <= totalSlidesForSave; i++)
                                 {
                                     if (_memoryStreams.TryGetValue(i, out MemoryStream value) && value != null)
-                                    {
-                                        try
-                                        {
-                                            byte[] allBytes = value.ToArray();
-                                            string filePath = Path.Combine(folderPathForSave, i.ToString("0000") + ".icstk");
-                                            if (allBytes.Length > 8)
-                                                File.WriteAllBytes(filePath, allBytes);
-                                            else if (File.Exists(filePath))
-                                                File.Delete(filePath);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            LogHelper.WriteLogToFile($"为第 {i} 页保存墨迹文件失败: {ex}", LogHelper.LogType.Warning);
-                                        }
-                                    }
+                                        snapshot.Add((i, value.ToArray()));
+                                }
+                            }
+
+                            foreach (var (page, bytes) in snapshot)
+                            {
+                                try
+                                {
+                                    string filePath = Path.Combine(folderPathForSave, page.ToString("0000") + ".icstk");
+                                    if (bytes.Length > 8)
+                                        File.WriteAllBytes(filePath, bytes);
+                                    else if (File.Exists(filePath))
+                                        File.Delete(filePath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogHelper.WriteLogToFile($"为第 {page} 页保存墨迹文件失败: {ex}", LogHelper.LogType.Warning);
                                 }
                             }
                         }
@@ -1936,7 +2040,7 @@ namespace Ink_Canvas
                         {
                             Task.Delay(350).ContinueWith(_ =>
                             {
-                                Application.Current.Dispatcher.Invoke(() =>
+                                Application.Current.Dispatcher.BeginInvoke(() =>
                                 {
                                     if (!isFloatingBarFolded)
                                     {
@@ -2156,14 +2260,20 @@ namespace Ink_Canvas
             try
             {
                 bool hasHiddenSlides = agentState?.HasHiddenSlides == true;
-                if (!hasHiddenSlides && pres?.Slides != null)
+
+                // PPT 刚打开时 COM RCW 可能尚未稳定，延迟一小段时间再访问 Slides
+                if (!hasHiddenSlides)
                 {
-                    foreach (Slide slide in pres.Slides)
+                    await Task.Delay(500);
+                    if (pres?.Slides != null)
                     {
-                        if (slide.SlideShowTransition.Hidden == MsoTriState.msoTrue)
+                        foreach (Slide slide in pres.Slides)
                         {
-                            hasHiddenSlides = true;
-                            break;
+                            if (slide.SlideShowTransition.Hidden == MsoTriState.msoTrue)
+                            {
+                                hasHiddenSlides = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2232,15 +2342,21 @@ namespace Ink_Canvas
                 if (IsInPPTPresentationMode) return;
 
                 bool hasSlideTimings = agentState?.HasAutoPlayTimings == true;
-                if (!hasSlideTimings && pres?.Slides != null)
+
+                // PPT 刚打开时 COM RCW 可能尚未稳定，延迟一小段时间再访问 Slides
+                if (!hasSlideTimings)
                 {
-                    foreach (Slide slide in pres.Slides)
+                    await Task.Delay(500);
+                    if (pres?.Slides != null)
                     {
-                        if (slide.SlideShowTransition.AdvanceOnTime == MsoTriState.msoTrue &&
-                            slide.SlideShowTransition.AdvanceTime > 0)
+                        foreach (Slide slide in pres.Slides)
                         {
-                            hasSlideTimings = true;
-                            break;
+                            if (slide.SlideShowTransition.AdvanceOnTime == MsoTriState.msoTrue &&
+                                slide.SlideShowTransition.AdvanceTime > 0)
+                            {
+                                hasSlideTimings = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2398,51 +2514,6 @@ namespace Ink_Canvas
         #endregion
 
         /// <summary>
-        /// 发起一次手动的 PowerPoint 连接检查并在短延迟后报告结果。
-        /// </summary>
-        /// <remarks>
-        /// 如果尚未初始化 PPT 管理器则先进行初始化，然后重载连接并启动监控；
-        /// 延迟约 800 毫秒后在 UI 线程上检查连接状态：若已连接仅记录事件日志，若未连接则弹出提示并记录警告；
-        /// 若过程中抛出异常则记录错误日志、将 UI 连接状态置为断开并提示用户未找到幻灯片。
-        /// </remarks>
-        private void BtnCheckPPT_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 使用新的PPT管理器进行连接检查
-                if (_pptManager == null)
-                {
-                    InitializePPTManagers();
-                }
-
-                _pptManager?.ReloadConnection();
-                _pptManager?.StartMonitoring();
-
-                Task.Delay(800).ContinueWith(_ =>
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        if (_pptManager?.IsConnected == true)
-                        {
-                            LogHelper.WriteLogToFile("手动PPT连接检查成功", LogHelper.LogType.Event);
-                        }
-                        else
-                        {
-                            MessageBox.Show(Properties.PPTStrings.PPT_SlidesNotFound);
-                            LogHelper.WriteLogToFile("手动PPT连接检查失败", LogHelper.LogType.Warning);
-                        }
-                    });
-                });
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"手动检查PPT应用程序失败: {ex}", LogHelper.LogType.Error);
-                _pptUIManager?.UpdateConnectionStatus(false);
-                MessageBox.Show(Properties.PPTStrings.PPT_SlidesNotFound);
-            }
-        }
-
-        /// <summary>
         /// 处理PowerPoint增强功能开关的切换事件
         /// </summary>
         /// <param name="sender">事件的来源对象</param>
@@ -2576,6 +2647,10 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数。</param>
         private void BtnPPTSlidesUp_Click(object sender, RoutedEventArgs e)
         {
+            // 外部演示源（插件把自己的文档接入放映模式）优先接管翻页，
+            // 此时不存在 PPT COM 会话，不能走下面的 STA COM 路径。
+            if (TryRouteNavigationToPresentationSource(Plugins.PresentationNavigation.Previous)) return;
+
             int strokeCount = inkCanvas?.Strokes?.Count ?? 0;
             bool needScreenshot = strokeCount > Settings.Automation.MinimumAutomationStrokeNumber &&
                 Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint;
@@ -2590,7 +2665,10 @@ namespace Ink_Canvas
                 }
             }
 
-            Task.Run(() =>
+            // 改用 STA worker 跑 COM 翻页：Task.Run 跑到 MTA 线程池会触发 RPC_E_WRONG_THREAD，
+            // COM 模式 PPTManager.TryNavigatePrevious 直接调 SlideShowWindows.View.Next()，
+            // 跨单元封送在 PPT 忙于播放动画时超时或掉线。RunOnStaAsync 在文件内已定义。
+            RunOnStaAsync(() =>
             {
                 try
                 {
@@ -2605,8 +2683,10 @@ namespace Ink_Canvas
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
+                    // IsFaulted 由前面的 if 单独处理；剩余两种终态中 RanToCompletion 才允许读 Result，
+                    // Canceled 直接走"切换失败"分支，避免 t.Result 再次抛 OperationCanceledException。
                     if (t.IsFaulted) { _pptUIManager?.UpdateConnectionStatus(false); return; }
-                    if (t.Result)
+                    if (t.IsCompletedSuccessfully && t.Result)
                     {
                         if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) ExceptionHandler.TryExecute(() => this.Activate(), "激活主窗口失败（PPT 上一页时）");
                     }
@@ -2627,6 +2707,9 @@ namespace Ink_Canvas
         /// </remarks>
         private void BtnPPTSlidesDown_Click(object sender, RoutedEventArgs e)
         {
+            // 外部演示源优先接管翻页，理由同 BtnPPTSlidesUp_Click。
+            if (TryRouteNavigationToPresentationSource(Plugins.PresentationNavigation.Next)) return;
+
             int strokeCount = inkCanvas?.Strokes?.Count ?? 0;
             bool needScreenshot = strokeCount > Settings.Automation.MinimumAutomationStrokeNumber &&
                 Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint;
@@ -2641,7 +2724,8 @@ namespace Ink_Canvas
                 }
             }
 
-            Task.Run(() =>
+            // 同 BtnPPTSlidesUp_Click：用 STA worker 跑 COM 翻页，避免 MTA RPC_E_WRONG_THREAD。
+            RunOnStaAsync(() =>
             {
                 try
                 {
@@ -2656,8 +2740,10 @@ namespace Ink_Canvas
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
+                    // IsFaulted 由前面的 if 单独处理；Canceled 走"切换失败"分支，
+                    // 只有 RanToCompletion 才允许读 t.Result。
                     if (t.IsFaulted) { _pptUIManager?.UpdateConnectionStatus(false); return; }
-                    if (t.Result)
+                    if (t.IsCompletedSuccessfully && t.Result)
                     {
                         if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) ExceptionHandler.TryExecute(() => this.Activate(), "激活主窗口失败（PPT 下一页时）");
                     }
@@ -2689,6 +2775,17 @@ namespace Ink_Canvas
         private async Task OnPPTNavBarPageClickAsync(Controls.PPTNavBar bar)
         {
             if (!Settings.PowerPointSettings.EnablePPTButtonPageClickable) return;
+
+            // 外部演示源没有幻灯片导航对话框，也没有缩略图来源；
+            // 未显式允许时直接忽略点击，避免走下面依赖 PPT COM 的分支。
+            if (_presentationSourceService?.IsActive == true)
+            {
+                if (_presentationSourceService.IsPageNumberClickDisabled()) return;
+                LogHelper.WriteLogToFile("外部演示源允许页码点击，但宿主未提供跳页 UI，已忽略。",
+                    LogHelper.LogType.Info);
+                return;
+            }
+
             if (_pptManager?.IsConnected != true || _pptManager?.IsInSlideShow != true)
             {
                 LogHelper.WriteLogToFile("PPT未连接或未在放映状态，无法执行页码点击操作", LogHelper.LogType.Warning);
@@ -2842,6 +2939,37 @@ namespace Ink_Canvas
                     "重置 PPT 导航栏预览状态失败",
                     continueOnError: true);
             }
+        }
+
+        /// <summary>
+        /// 外部演示源服务（插件把自己的文档接入放映模式）。
+        /// 由 App 启动时通过 <see cref="AttachPresentationSourceService"/> 注入。
+        /// </summary>
+        private Plugins.Services.PresentationSourceService _presentationSourceService;
+
+        /// <summary>供 App 在创建服务实例后注入，使翻页条能路由到外部演示源。</summary>
+        internal void AttachPresentationSourceService(Plugins.Services.PresentationSourceService service)
+        {
+            _presentationSourceService = service;
+        }
+
+        /// <summary>当前是否由外部演示源（而非真实 PowerPoint）占用放映模式。</summary>
+        internal bool IsExternalPresentationActive => _presentationSourceService?.IsActive == true;
+
+        /// <summary>外部演示源的总页数；未激活时为 0。供 PPTUIManager 判断翻页条可见性。</summary>
+        internal int ExternalPresentationPageCount => _presentationSourceService?.PageCount ?? 0;
+
+        /// <summary>
+        /// 若外部演示源处于激活状态，把翻页请求交给它并返回 true；否则返回 false 让调用方走 PPT COM 路径。
+        /// </summary>
+        private bool TryRouteNavigationToPresentationSource(Plugins.PresentationNavigation direction)
+        {
+            var service = _presentationSourceService;
+            if (service?.IsActive != true) return false;
+
+            // 不 await：翻页条点击是同步事件，插件渲染完成后会通过服务回写页码。
+            _ = service.HandleNavigationAsync(direction);
+            return true;
         }
 
         /// <summary>在 MainWindow 加载完成后调用,把 4 个 PPTNavBar 的事件接到本类。</summary>
@@ -3069,7 +3197,9 @@ namespace Ink_Canvas
                 if (ReferenceEquals(_pptEnhancedPreviewBuildTask, task))
                     _pptEnhancedPreviewBuildTask = null;
 
-                if (task.Status == TaskStatus.RanToCompletion)
+                // 用 IsCompletedSuccessfully 而非 Status == RanToCompletion：前者排除 Canceled，
+                // 后者会读取 task.Result，对 Canceled 任务会再次抛 OperationCanceledException。
+                if (task.IsCompletedSuccessfully)
                 {
                     var result = task.Result;
                     if (generation == _pptEnhancedPreviewCacheGeneration && result != null && result.Count > 0)
@@ -3210,7 +3340,10 @@ namespace Ink_Canvas
         /// </remarks>
         private void BtnPPTSlideShow_Click(object sender, RoutedEventArgs e)
         {
-            new Thread(() =>
+            // TryStartSlideShow 在 COM/ROT 模式下会调用 PPT COM 对象，必须在 STA 线程跑，
+            // 否则会偶发 0x8001010E (RPC_E_WRONG_THREAD) 导致联动掉线。
+            // 默认 new Thread 是 MTA，需显式 SetApartmentState。
+            var t = new Thread(() =>
             {
                 try
                 {
@@ -3223,29 +3356,63 @@ namespace Ink_Canvas
                 {
                     LogHelper.WriteLogToFile($"启动幻灯片放映异常: {ex}", LogHelper.LogType.Error);
                 }
-            }).Start();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
         }
 
         public async Task ExitPPTPresentation()
         {
             try
             {
+                // 外部演示源（插件文档，如 PDF）激活时，退出按钮等价于结束该演示源：
+                // 没有 PPT COM 会话，下面的幻灯片墨迹保存与 TryEndSlideShow 全部不适用。
+                if (IsExternalPresentationActive)
+                {
+                    _presentationSourceService?.ForceEnd("用户点击退出按钮");
+                    return;
+                }
+
                 var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                 if (currentSlide > 0)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    // ExitPPTPresentation 通常在 UI 线程上调用。直接在当前线程保存墨迹，
+                    // 避免 Dispatcher.Invoke 在 UI 线程等待自身调度形成自锁。
+                    if (Dispatcher.CheckAccess())
                     {
                         if (inkCanvas?.Strokes != null && inkCanvas.Strokes.Count > 0)
                         {
                             var ms = new MemoryStream();
                             inkCanvas.Strokes.Save(ms);
                             ms.Position = 0;
-                            if (_memoryStreams.ContainsKey(currentSlide))
-                                _memoryStreams[currentSlide]?.Dispose();
-                            _memoryStreams[currentSlide] = ms;
+                            lock (_memoryStreams)
+                            {
+                                if (_memoryStreams.ContainsKey(currentSlide))
+                                    _memoryStreams[currentSlide]?.Dispose();
+                                _memoryStreams[currentSlide] = ms;
+                            }
                         }
                         timeMachine.ClearStrokeHistory();
-                    });
+                    }
+                    else
+                    {
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            if (inkCanvas?.Strokes != null && inkCanvas.Strokes.Count > 0)
+                            {
+                                var ms = new MemoryStream();
+                                inkCanvas.Strokes.Save(ms);
+                                ms.Position = 0;
+                                lock (_memoryStreams)
+                                {
+                                    if (_memoryStreams.ContainsKey(currentSlide))
+                                        _memoryStreams[currentSlide]?.Dispose();
+                                    _memoryStreams[currentSlide] = ms;
+                                }
+                            }
+                            timeMachine.ClearStrokeHistory();
+                        });
+                    }
                 }
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>

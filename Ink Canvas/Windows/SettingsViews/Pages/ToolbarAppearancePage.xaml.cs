@@ -4,6 +4,7 @@ using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
@@ -50,6 +51,20 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             ViewboxFloatingBarOpacityInPPTValueSlider.Value = settings.Appearance.ViewboxFloatingBarOpacityInPPTValue;
             FloatingBarMenuOpacitySlider.Value = settings.Appearance.FloatingBarMenuOpacity;
             FloatingBarMenuOpacityInPPTSlider.Value = settings.Appearance.FloatingBarMenuOpacityInPPT;
+
+            // 加载更小批注栏（Issue #285）设置
+            if (ToggleSwitchEnableIdleMiniBar != null)
+                ToggleSwitchEnableIdleMiniBar.IsOn = settings.Appearance.EnableIdleMiniBar;
+            if (IdleMiniBarOpacitySlider != null)
+                IdleMiniBarOpacitySlider.Value = settings.Appearance.IdleMiniBarOpacity;
+            if (IdleMiniBarAutoRestoreSlider != null)
+                IdleMiniBarAutoRestoreSlider.Value = settings.Appearance.IdleMiniBarAutoRestoreSeconds;
+
+            // 加载液态玻璃浮动栏设置
+            if (ToggleSwitchEnableLiquidGlassBar != null)
+                ToggleSwitchEnableLiquidGlassBar.IsOn = settings.Appearance.EnableLiquidGlassBar;
+            if (LiquidGlassBarOpacitySlider != null)
+                LiquidGlassBarOpacitySlider.Value = settings.Appearance.LiquidGlassBarOpacity;
 
             // 加载工具栏位置
             string positionTag = settings.Appearance.ToolbarPosition.ToString();
@@ -101,6 +116,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             // 加载隐藏浮动栏边框设置
             if (ToggleSwitchHideFloatingBarBorder != null)
                 ToggleSwitchHideFloatingBarBorder.IsOn = settings.Appearance.HideFloatingBarBorder;
+
+            // 加载浮动栏边框颜色设置
+            int mode = settings.Appearance.FloatingBarBorderColorMode;
+            if (mode < 0 || mode > 2) mode = 0;
+            ComboBoxFloatingBarBorderColorMode.SelectedIndex = mode;
+            UpdateFloatingBarBorderColorSwatch();
         }
 
         private void UpdateAllSliderTexts()
@@ -110,6 +131,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             UpdateSliderText(ViewboxFloatingBarOpacityInPPTValueSlider, ViewboxFloatingBarOpacityInPPTText, "{0:F2}");
             UpdateSliderText(FloatingBarMenuOpacitySlider, FloatingBarMenuOpacityText, "{0:F2}");
             UpdateSliderText(FloatingBarMenuOpacityInPPTSlider, FloatingBarMenuOpacityInPPTText, "{0:F2}");
+            UpdateSliderText(IdleMiniBarOpacitySlider, IdleMiniBarOpacityText, "{0:F2}");
+            UpdateSliderText(IdleMiniBarAutoRestoreSlider, IdleMiniBarAutoRestoreText, "{0:F0}s");
+            UpdateSliderText(LiquidGlassBarOpacitySlider, LiquidGlassBarOpacityText, "{0:F2}");
             UpdateFloatingBarActualScaleText();
         }
 
@@ -265,6 +289,98 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsActionHub.OnHideFloatingBarBorderChanged(ToggleSwitchHideFloatingBarBorder.IsOn);
         }
 
+        /// <summary>
+        /// 边框颜色模式：0=默认（主题色），1=跟随背景颜色，2=自定义。
+        /// </summary>
+        private const int BorderColorMode_Default = 0;
+        private const int BorderColorMode_FollowBackground = 1;
+        private const int BorderColorMode_Custom = 2;
+
+        /// <summary>
+        /// 根据当前模式刷新色块按钮显示：仅自定义模式显示色块，色块颜色为已保存的自定义色或回退到主题默认色。
+        /// </summary>
+        private void UpdateFloatingBarBorderColorSwatch()
+        {
+            if (ButtonFloatingBarBorderColor == null) return;
+            int mode = ComboBoxFloatingBarBorderColorMode?.SelectedIndex ?? BorderColorMode_Default;
+            bool isCustom = mode == BorderColorMode_Custom;
+            ButtonFloatingBarBorderColor.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
+            if (!isCustom) return;
+
+            var color = TryGetFloatingBarBorderColor(out var c) ? c : GetThemeDefaultBorderColor();
+            ButtonFloatingBarBorderColor.Background = new SolidColorBrush(color);
+        }
+
+        /// <summary>
+        /// 解析设置中保存的自定义边框颜色（hex 字符串），失败返回 false。
+        /// </summary>
+        private static bool TryGetFloatingBarBorderColor(out Color color)
+        {
+            var saved = SettingsManager.Settings?.Appearance?.FloatingBarBorderColor;
+            if (string.IsNullOrWhiteSpace(saved))
+            {
+                color = Colors.Transparent;
+                return false;
+            }
+            try
+            {
+                var text = saved.Trim();
+                if (text.StartsWith("#")) text = text.Substring(1);
+                if (text.Length == 6)
+                    text = "FF" + text;
+                color = (Color)ColorConverter.ConvertFromString("#" + text);
+                return true;
+            }
+            catch
+            {
+                color = Colors.Transparent;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 从应用资源中读取当前主题的浮动栏默认边框色。
+        /// </summary>
+        private static Color GetThemeDefaultBorderColor()
+        {
+            if (Application.Current.TryFindResource("FloatBarBorderBrush") is SolidColorBrush brush)
+                return brush.Color;
+            return Colors.Black;
+        }
+
+        private void ComboBoxFloatingBarBorderColorMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // 始终刷新色块显示，避免初始化阶段被 _isLoaded 拦截时控件状态仍正确
+            UpdateFloatingBarBorderColorSwatch();
+            if (!_isLoaded) return;
+            if (ComboBoxFloatingBarBorderColorMode.SelectedItem is not ComboBoxItem selectedItem) return;
+
+            int mode = ComboBoxFloatingBarBorderColorMode.SelectedIndex;
+            SettingsManager.Settings.Appearance.FloatingBarBorderColorMode = mode;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnFloatingBarBorderColorChanged();
+        }
+
+        private void ButtonFloatingBarBorderColor_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            var current = TryGetFloatingBarBorderColor(out var c) ? c : GetThemeDefaultBorderColor();
+            using (var dialog = new System.Windows.Forms.ColorDialog
+            {
+                FullOpen = true,
+                Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B)
+            })
+            {
+                if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+                var picked = dialog.Color;
+                var hex = $"#{picked.A:X2}{picked.R:X2}{picked.G:X2}{picked.B:X2}";
+                SettingsManager.Settings.Appearance.FloatingBarBorderColor = hex;
+                SettingsManager.SaveSettingsToFile();
+                UpdateFloatingBarBorderColorSwatch();
+                SettingsActionHub.OnFloatingBarBorderColorChanged();
+            }
+        }
+
         private void FloatingBarMenuOpacitySlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             UpdateSliderText(FloatingBarMenuOpacitySlider, FloatingBarMenuOpacityText, "{0:F2}");
@@ -295,6 +411,75 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.Settings.Appearance.FloatingBarMenuOpacityInPPT = val;
             SettingsManager.SaveSettingsToFile();
             SettingsActionHub.OnFloatingBarMenuOpacityInPPTChanged(val);
+        }
+
+        // —— 更小批注栏（Issue #285）——
+
+        private void ToggleSwitchEnableIdleMiniBar_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            if (ToggleSwitchEnableIdleMiniBar == null) return;
+            SettingsManager.Settings.Appearance.EnableIdleMiniBar = ToggleSwitchEnableIdleMiniBar.IsOn;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnEnableIdleMiniBarChanged(ToggleSwitchEnableIdleMiniBar.IsOn);
+        }
+
+        private void IdleMiniBarOpacitySlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateSliderText(IdleMiniBarOpacitySlider, IdleMiniBarOpacityText, "{0:F2}");
+            if (!_isLoaded) return;
+            var slider = IdleMiniBarOpacitySlider;
+            var val = Math.Round(slider.Value, 2);
+            if (slider.Value != val)
+            {
+                slider.Value = val;
+                return;
+            }
+            SettingsManager.Settings.Appearance.IdleMiniBarOpacity = val;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnIdleMiniBarOpacityChanged(val);
+        }
+
+        private void IdleMiniBarAutoRestoreSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateSliderText(IdleMiniBarAutoRestoreSlider, IdleMiniBarAutoRestoreText, "{0:F0}s");
+            if (!_isLoaded) return;
+            var slider = IdleMiniBarAutoRestoreSlider;
+            var val = Math.Round(slider.Value, 0);
+            if (slider.Value != val)
+            {
+                slider.Value = val;
+                return;
+            }
+            SettingsManager.Settings.Appearance.IdleMiniBarAutoRestoreSeconds = val;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        // —— 液态玻璃浮动栏 ——
+
+        private void ToggleSwitchEnableLiquidGlassBar_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            if (ToggleSwitchEnableLiquidGlassBar == null) return;
+            SettingsManager.Settings.Appearance.EnableLiquidGlassBar = ToggleSwitchEnableLiquidGlassBar.IsOn;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnEnableLiquidGlassBarChanged(ToggleSwitchEnableLiquidGlassBar.IsOn);
+        }
+
+        private void LiquidGlassBarOpacitySlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateSliderText(LiquidGlassBarOpacitySlider, LiquidGlassBarOpacityText, "{0:F2}");
+            if (!_isLoaded) return;
+            var slider = LiquidGlassBarOpacitySlider;
+            var val = Math.Round(slider.Value, 2);
+            if (slider.Value != val)
+            {
+                slider.Value = val;
+                return;
+            }
+            SettingsManager.Settings.Appearance.LiquidGlassBarOpacity = val;
+            SettingsManager.SaveSettingsToFile();
+            SettingsActionHub.OnLiquidGlassBarOpacityChanged(val);
         }
 
         #region Floating Bar Icon

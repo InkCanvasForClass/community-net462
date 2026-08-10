@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace Ink_Canvas
 {
@@ -40,7 +42,6 @@ namespace Ink_Canvas
 
             if (_smartModeRegions == null || _smartModeRegions.Count == 0)
             {
-                LogHelper.WriteLogToFile("[SmartMode] BuildRects: 无区域数据", LogHelper.LogType.Info);
                 return;
             }
 
@@ -87,8 +88,28 @@ namespace Ink_Canvas
 
             if (_smartModeSlideShowHwnd == IntPtr.Zero)
             {
-                _smartModeSlideShowHwnd = FindWindow(PowerPointSlideShowWindowClassName, null);
-                LogHelper.WriteLogToFile($"[SmartMode] FindWindow 回退获取 Hwnd=0x{_smartModeSlideShowHwnd.ToInt64():X}", LogHelper.LogType.Info);
+                // 优先通过 _pptManager 获取放映窗口 HWND（适用于 COM/ROT 模式，静态字段 pptApplication 可能为 null）
+                try
+                {
+                    var appObj = _pptManager?.PPTApplication;
+                    if (appObj != null)
+                    {
+                        dynamic app = appObj;
+                        dynamic ssw = null;
+                        try { ssw = app.ActivePresentation?.SlideShowWindow; } catch { }
+                        if (ssw != null)
+                        {
+                            try { _smartModeSlideShowHwnd = new IntPtr(ssw.HWND); } catch { }
+                        }
+                    }
+                }
+                catch { }
+
+                if (_smartModeSlideShowHwnd == IntPtr.Zero)
+                {
+                    _smartModeSlideShowHwnd = FindActiveScreenClassWindow();
+                    LogHelper.WriteLogToFile($"[SmartMode] FindActiveScreenClassWindow 回退获取 Hwnd=0x{_smartModeSlideShowHwnd.ToInt64():X}", LogHelper.LogType.Info);
+                }
             }
 
             if (_smartModeSlideShowHwnd == IntPtr.Zero || _smartModeSlideWidth <= 0 || _smartModeSlideHeight <= 0)
@@ -98,20 +119,20 @@ namespace Ink_Canvas
             }
 
             // 通过 Win32 获取放映窗口的物理像素坐标
-            if (!GetWindowRect(_smartModeSlideShowHwnd, out RECT winRect))
+            if (!PInvoke.GetWindowRect(new HWND(_smartModeSlideShowHwnd), out RECT winRect))
             {
                 LogHelper.WriteLogToFile("[SmartMode] BuildRects: GetWindowRect 失败", LogHelper.LogType.Warning);
                 return;
             }
 
             uint dpi = 96;
-            try { dpi = GetDpiForWindow(_smartModeSlideShowHwnd); } catch { }
+            try { dpi = PInvoke.GetDpiForWindow(new HWND(_smartModeSlideShowHwnd)); } catch { }
             double dpiScale = dpi / 96.0;
 
-            double winLeft = winRect.Left;
-            double winTop = winRect.Top;
-            double winWidthPx = winRect.Right - winRect.Left;
-            double winHeightPx = winRect.Bottom - winRect.Top;
+            double winLeft = winRect.left;
+            double winTop = winRect.top;
+            double winWidthPx = winRect.right - winRect.left;
+            double winHeightPx = winRect.bottom - winRect.top;
 
             // 将像素尺寸转为磅，与 slideWidth/slideHeight（磅）计算比例
             double winWidthPt = winWidthPx / dpiScale;
@@ -262,8 +283,7 @@ namespace Ink_Canvas
                    || ContainsPoint(QuickDrawFloatingButton, windowPoint)
                    || ContainsPoint(BorderInkReplayToolBox, windowPoint)
                    || ContainsPoint(PPTTimeCapsuleContainer, windowPoint)
-                   || ContainsPoint(PPTQuickPanelContainer, windowPoint)
-                   || ContainsPoint(VideoPresenterSidebar, windowPoint);
+                   || ContainsPoint(PPTQuickPanelContainer, windowPoint);
         }
 
         private bool ContainsPoint(FrameworkElement element, Point windowPoint)

@@ -1143,6 +1143,9 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_TouchMove(object sender, TouchEventArgs e)
         {
+            // 视频展台特殊模式：触摸移动交给 VideoPresenterSpecialModeContainer 的 Manipulation 处理
+            if (_isVideoPresenterSpecialMode) return;
+
             if (isSingleFingerDragMode) return;
             if (drawingShapeMode != 0)
             {
@@ -2326,6 +2329,11 @@ namespace Ink_Canvas
         private List<Point> GenerateEllipseGeometry(Point st, Point ed, bool isDrawTop = true,
             bool isDrawBottom = true)
         {
+            // 防御：画布被极端缩放/平移时识别出的椭圆中心/半轴可能非有限，直接返回空避免生成 NaN 点。
+            if (!double.IsFinite(st.X) || !double.IsFinite(st.Y) ||
+                !double.IsFinite(ed.X) || !double.IsFinite(ed.Y))
+                return new List<Point>();
+
             var a = 0.5 * (ed.X - st.X);
             var b = 0.5 * (ed.Y - st.Y);
             var pointList = new List<Point>();
@@ -2368,13 +2376,18 @@ namespace Ink_Canvas
         private StrokeCollection GenerateDashedLineEllipseStrokeCollection(Point st, Point ed, bool isDrawTop = true,
             bool isDrawBottom = true)
         {
+            var strokes = new StrokeCollection();
+            // 防御：非有限坐标直接返回空集，避免生成 NaN 笔画。
+            if (!double.IsFinite(st.X) || !double.IsFinite(st.Y) ||
+                !double.IsFinite(ed.X) || !double.IsFinite(ed.Y))
+                return strokes;
+
             var a = 0.5 * (ed.X - st.X);
             var b = 0.5 * (ed.Y - st.Y);
             var step = 0.05;
             var pointList = new List<Point>();
             StylusPointCollection point;
             Stroke stroke;
-            var strokes = new StrokeCollection();
             if (isDrawBottom)
                 for (var i = 0.0; i < 1.0; i += step * 1.66)
                 {
@@ -2632,9 +2645,17 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockInkInputOverFloatingBar(e.GetPosition(this), e))
+            if (IsBoardRoamingMode && e.ChangedButton == MouseButton.Left)
+            {
+                inkCanvas.CaptureMouse();
+                ViewboxFloatingBar.IsHitTestVisible = false;
+                BlackboardUIGridForInkReplay.IsHitTestVisible = false;
+                BeginBoardRoaming(e.GetPosition(inkCanvas));
+                e.Handled = true;
                 return;
+            }
 
+            // 鼠标自由书写：启用实时笔锋（InkStyle==3）时走实时墨迹收集路径
             if (e.ChangedButton == MouseButton.Left && ShouldUseRealtimeVelocityBrushTipForMouse() && drawingShapeMode == 0)
             {
                 _isMouseRealtimeInking = true;
@@ -2643,8 +2664,9 @@ namespace Ink_Canvas
                 CancelPauseStraightenTimer(MouseRealtimeStrokeId);
                 InitializeRealtimeBrushTipStateFromPoint(MouseRealtimeStrokeId, p);
                 var sv = GetStrokeVisual(MouseRealtimeStrokeId);
+                RealtimeInkPerformanceMonitor.BeginStroke(sv, RealtimeInkInputKind.Mouse);
                 TryAppendRealtimeVelocityBrushTipPoint(sv, MouseRealtimeStrokeId, p);
-                sv.ForceRedraw();
+                RealtimeInkFrameScheduler.RequestRedraw(sv);
             }
 
             inkCanvas.CaptureMouse();
@@ -2667,12 +2689,28 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_MouseMove(object sender, MouseEventArgs e)
         {
+            // 视频展台特殊模式：鼠标拖动摄像头预览画面
+            if (_isBoothMouseDragging)
+            {
+                VideoPresenterSpecialMode_HandleMouseMove(e);
+                e.Handled = true;
+                return;
+            }
+
+            // 板漫游：鼠标拖动移动整个板内容
+            if (_isBoardRoamingPointerDown)
+            {
+                MoveBoardRoaming(e.GetPosition(inkCanvas));
+                e.Handled = true;
+                return;
+            }
+
             if (_isMouseRealtimeInking && isMouseDown)
             {
                 var sv = GetStrokeVisual(MouseRealtimeStrokeId);
                 if (TryAppendRealtimeVelocityBrushTipPoint(sv, MouseRealtimeStrokeId, e.GetPosition(inkCanvas)))
                 {
-                    sv.ForceRedraw();
+                    RealtimeInkFrameScheduler.RequestRedraw(sv);
                     ResetPauseStraightenTimer(MouseRealtimeStrokeId);
                 }
                 else
@@ -2712,12 +2750,32 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            // 视频展台特殊模式：结束鼠标拖动
+            if (_isBoothMouseDragging)
+            {
+                VideoPresenterSpecialMode_HandleMouseUp(e);
+                e.Handled = true;
+                return;
+            }
+
+            // 板漫游：结束拖动
+            if (_isBoardRoamingPointerDown)
+            {
+                EndBoardRoaming();
+                inkCanvas.ReleaseMouseCapture();
+                ViewboxFloatingBar.IsHitTestVisible = true;
+                BlackboardUIGridForInkReplay.IsHitTestVisible = true;
+                e.Handled = true;
+                return;
+            }
+
             if (_isMouseRealtimeInking)
             {
+                StrokeVisual sv = null;
                 try
                 {
-                    var sv = GetStrokeVisual(MouseRealtimeStrokeId);
-                    sv?.ForceRedraw();
+                    sv = GetStrokeVisual(MouseRealtimeStrokeId);
+                    RealtimeInkFrameScheduler.Flush(sv);
                     var stroke = sv?.Stroke;
                     if (stroke != null)
                     {
@@ -2733,6 +2791,7 @@ namespace Ink_Canvas
                 }
                 finally
                 {
+                    RealtimeInkFrameScheduler.Cancel(sv);
                     if (VisualCanvasList.TryGetValue(MouseRealtimeStrokeId, out var vc) && inkCanvas.Children.Contains(vc))
                         inkCanvas.Children.Remove(vc);
                     StrokeVisualList.Remove(MouseRealtimeStrokeId);
@@ -2740,6 +2799,7 @@ namespace Ink_Canvas
                     TouchDownPointsList.Remove(MouseRealtimeStrokeId);
                     CleanupRealtimeBrushTipState(MouseRealtimeStrokeId);
                     CancelPauseStraightenTimer(MouseRealtimeStrokeId);
+                    RealtimeInkPerformanceMonitor.EndStroke(sv);
                     _isMouseRealtimeInking = false;
                 }
             }

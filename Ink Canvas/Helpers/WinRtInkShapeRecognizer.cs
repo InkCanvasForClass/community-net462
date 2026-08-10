@@ -20,6 +20,7 @@ namespace Ink_Canvas.Helpers
         private readonly Dictionary<Stroke, uint> _strokeIdMap = new Dictionary<Stroke, uint>();
         private readonly Dictionary<uint, Stroke> _reverseIdMap = new Dictionary<uint, Stroke>();
         private readonly object _syncLock = new object();
+        private readonly SemaphoreSlim _analysisGate = new SemaphoreSlim(1, 1);
 
         public ModernInkAnalyzer()
         {
@@ -53,12 +54,22 @@ namespace Ink_Canvas.Helpers
             if (_internalAnalyzer == null || strokes == null || strokes.Count == 0)
                 return InkShapeRecognitionResult.Empty;
 
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-            var token = _cts.Token;
+            var currentCts = new CancellationTokenSource();
+            CancellationTokenSource previousCts;
+            lock (_syncLock)
+            {
+                previousCts = _cts;
+                _cts = currentCts;
+                previousCts?.Cancel();
+            }
 
+            await _analysisGate.WaitAsync().ConfigureAwait(true);
             try
             {
+                var token = currentCts.Token;
+                if (token.IsCancellationRequested || _internalAnalyzer == null)
+                    return InkShapeRecognitionResult.Empty;
+
                 lock (_syncLock)
                 {
                     _internalAnalyzer.ClearDataForAllStrokes();
@@ -66,56 +77,46 @@ namespace Ink_Canvas.Helpers
                     _reverseIdMap.Clear();
 
                     foreach (var stroke in strokes)
-                    {
                         AddStrokeInternal(stroke);
-                    }
                 }
 
-                if (_strokeIdMap.Count == 0)
+                if (_strokeIdMap.Count == 0 || token.IsCancellationRequested)
                     return InkShapeRecognitionResult.Empty;
 
-                var result = await _internalAnalyzer.AnalyzeAsync().AsTask(token).ConfigureAwait(true);
+                var analysisResult = await _internalAnalyzer.AnalyzeAsync().AsTask(token).ConfigureAwait(true);
+                if (analysisResult == null ||
+                    analysisResult.Status != global::Windows.UI.Input.Inking.Analysis.InkAnalysisStatus.Updated ||
+                    token.IsCancellationRequested)
+                    return InkShapeRecognitionResult.Empty;
 
-                if (token.IsCancellationRequested) return InkShapeRecognitionResult.Empty;
-
-                // Use the internal method from WinRtInkShapeRecognizer to find the primary drawing
                 var drawing = WinRtInkShapeRecognizer.FindPrimaryDrawing(_internalAnalyzer);
                 if (drawing == null)
                     return InkShapeRecognitionResult.Empty;
 
-                if (drawing.DrawingKind == global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Drawing)
-                    return InkShapeRecognitionResult.Empty;
-
-                var name = WinRtInkShapeRecognizer.MapDrawingKindToShapeName(drawing.DrawingKind);
-                if (string.IsNullOrEmpty(name) || name == "Drawing")
-                    return InkShapeRecognitionResult.Empty;
-
-                var winPts = WinRtInkShapeRecognizer.CopyWinRtPoints(drawing);
-                var hot = WinRtInkShapeRecognizer.ToWpfPointCollection(winPts);
-                var c = drawing.Center;
-                var centroid = new SysPoint(c.X, c.Y);
-                WinRtInkShapeRecognizer.BoundsFromPoints(winPts, out double w, out double h);
-
-                var toRemove = new StrokeCollection();
+                Dictionary<uint, Stroke> strokeMap;
                 lock (_syncLock)
-                {
-                    foreach (var id in drawing.GetStrokeIds())
-                    {
-                        if (_reverseIdMap.TryGetValue(id, out var stroke))
-                        {
-                            toRemove.Add(stroke);
-                        }
-                    }
-                }
+                    strokeMap = new Dictionary<uint, Stroke>(_reverseIdMap);
 
-                if (toRemove.Count == 0)
-                    return InkShapeRecognitionResult.Empty;
-
-                return new InkShapeRecognitionResult(name, centroid, hot, w, h, toRemove);
+                return WinRtInkShapeRecognizer.CreateRecognitionResult(drawing, strokeMap);
+            }
+            catch (OperationCanceledException) when (currentCts.IsCancellationRequested)
+            {
+                return InkShapeRecognitionResult.Empty;
             }
             catch (Exception)
             {
                 return InkShapeRecognitionResult.Empty;
+            }
+            finally
+            {
+                lock (_syncLock)
+                {
+                    if (ReferenceEquals(_cts, currentCts))
+                        _cts = null;
+                }
+
+                currentCts.Dispose();
+                _analysisGate.Release();
             }
         }
 
@@ -130,7 +131,15 @@ namespace Ink_Canvas.Helpers
 
         public void Dispose()
         {
-            _internalAnalyzer = null;
+            lock (_syncLock)
+            {
+                _cts?.Cancel();
+                _cts?.Dispose();
+                _cts = null;
+                _internalAnalyzer = null;
+            }
+
+            _analysisGate.Dispose();
         }
     }
 
@@ -175,6 +184,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 var analyzer = new WinRtInkAnalyzer();
+                var idToWpf = new Dictionary<uint, Stroke>();
                 var added = 0;
                 foreach (Stroke s in strokes)
                 {
@@ -186,41 +196,80 @@ namespace Ink_Canvas.Helpers
                     analyzer.SetStrokeDataKind(
                         inkStroke.Id,
                         global::Windows.UI.Input.Inking.Analysis.InkAnalysisStrokeKind.Drawing);
+                    idToWpf[inkStroke.Id] = s;
                     added++;
                 }
 
                 if (added == 0)
                     return InkShapeRecognitionResult.Empty;
 
-                await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(true);
+                var analysisResult = await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(true);
+                if (analysisResult == null ||
+                    analysisResult.Status != global::Windows.UI.Input.Inking.Analysis.InkAnalysisStatus.Updated)
+                    return InkShapeRecognitionResult.Empty;
 
                 var drawing = FindPrimaryDrawing(analyzer);
-                if (drawing == null)
-                    return InkShapeRecognitionResult.Empty;
-
-                if (drawing.DrawingKind == global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Drawing)
-                    return InkShapeRecognitionResult.Empty;
-
-                var name = MapDrawingKindToShapeName(drawing.DrawingKind);
-                if (string.IsNullOrEmpty(name) || name == "Drawing")
-                    return InkShapeRecognitionResult.Empty;
-
-                var winPts = CopyWinRtPoints(drawing);
-                var hot = ToWpfPointCollection(winPts);
-                var c = drawing.Center;
-                var centroid = new SysPoint(c.X, c.Y);
-                BoundsFromPoints(winPts, out double w, out double h);
-
-                var toRemove = new StrokeCollection();
-                foreach (Stroke s in strokes)
-                    toRemove.Add(s);
-
-                return new InkShapeRecognitionResult(name, centroid, hot, w, h, toRemove);
+                return CreateRecognitionResult(drawing, idToWpf);
             }
             catch (Exception)
             {
                 return InkShapeRecognitionResult.Empty;
             }
+        }
+
+        internal static InkShapeRecognitionResult CreateRecognitionResult(
+            global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing drawing,
+            IReadOnlyDictionary<uint, Stroke> idToWpf)
+        {
+            if (drawing == null ||
+                drawing.DrawingKind == global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Drawing)
+                return InkShapeRecognitionResult.Empty;
+
+            var name = MapDrawingKindToShapeName(drawing.DrawingKind);
+            if (string.IsNullOrEmpty(name) || name == "Drawing")
+                return InkShapeRecognitionResult.Empty;
+
+            var winPts = CopyWinRtPoints(drawing);
+            if (!HasValidGeometry(drawing, winPts))
+                return InkShapeRecognitionResult.Empty;
+
+            var hot = ToWpfPointCollection(winPts);
+            var c = drawing.Center;
+            var centroid = new SysPoint(c.X, c.Y);
+            BoundsFromPoints(winPts, out double w, out double h);
+
+            var toRemove = new StrokeCollection();
+            var strokeIds = drawing.GetStrokeIds();
+            if (strokeIds == null || idToWpf == null)
+                return InkShapeRecognitionResult.Empty;
+
+            foreach (var id in strokeIds)
+            {
+                if (idToWpf.TryGetValue(id, out var stroke))
+                    toRemove.Add(stroke);
+            }
+
+            if (toRemove.Count == 0)
+                return InkShapeRecognitionResult.Empty;
+
+            return new InkShapeRecognitionResult(name, centroid, hot, w, h, toRemove);
+        }
+
+        private static bool HasValidGeometry(
+            global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing drawing,
+            IReadOnlyList<global::Windows.Foundation.Point> points)
+        {
+            if (points == null || points.Count == 0 || drawing == null)
+                return false;
+
+            var requiredPointCount = drawing.DrawingKind ==
+                global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Circle ||
+                drawing.DrawingKind == global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Ellipse
+                ? 4
+                : 3;
+
+            BoundsFromPoints(points, out double width, out double height);
+            return points.Count >= requiredPointCount && width > 0 && height > 0;
         }
 
         /// <summary>
@@ -240,7 +289,9 @@ namespace Ink_Canvas.Helpers
             return col;
         }
 
-        /// <summary>供 WinRT 手写等模块复用：将 WPF <see cref="Stroke"/> 转为 WinRT <see cref="global::Windows.UI.Input.Inking.InkStroke"/>。</summary>
+        /// <summary>供 WinRT 手写等模块复用：将 WPF <see cref="Stroke"/> 转为 WinRT <see cref="global::Windows.UI.Input.Inking.InkStroke"/>。
+        /// 显式保留 InkAnalysis 手写笔触的推荐配置（FitToCurve=true、IgnorePressure=false），与官方 Convert-ink-to-text 示例一致，
+        /// 不附加 PencilProperties（普通笔杆场景；铅笔纹理/软边/透明不应继承到手写识别输入）。</summary>
         internal static global::Windows.UI.Input.Inking.InkStroke CreateInkStrokeFromWpf(Stroke stroke)
         {
             if (stroke?.StylusPoints == null || stroke.StylusPoints.Count == 0)
@@ -250,12 +301,9 @@ namespace Ink_Canvas.Helpers
             if (da == null)
                 return null;
 
-            var wda = new global::Windows.UI.Input.Inking.InkDrawingAttributes
-            {
-                PenTip = global::Windows.UI.Input.Inking.PenTipShape.Circle,
-                Color = global::Windows.UI.Color.FromArgb(da.Color.A, da.Color.R, da.Color.G, da.Color.B),
-                Size = new global::Windows.Foundation.Size((float)da.Width, (float)da.Height)
-            };
+            var wda = CreateRecognizerDrawingAttributes(da);
+            if (wda == null)
+                return null;
 
             var builder = new global::Windows.UI.Input.Inking.InkStrokeBuilder();
             builder.SetDefaultDrawingAttributes(wda);
@@ -273,28 +321,93 @@ namespace Ink_Canvas.Helpers
             return builder.CreateStroke(points);
         }
 
+        /// <summary>
+        /// 直接构造一份标准的 WinRT <see cref="global::Windows.UI.Input.Inking.InkDrawingAttributes"/> 而不调用
+        /// <c>CreateForPencil</c>。返回的对象同时供形状与手写识别共用，必须保证：
+        /// <list type="bullet">
+        ///   <item><description><c>FitToCurve = true</c>：让 WinRT InkAnalysis 自己进行曲线平滑。</description></item>
+        ///   <item><description><c>IgnorePressure = false</c>：明确不忽略压力，与官方示例一致。</description></item>
+        ///   <item><description><c>PenTip = Circle</c>：保持与既有行为兼容，普通笔画不必切到矩形笔尖。</description></item>
+        /// </list>
+        /// </summary>
+        internal static global::Windows.UI.Input.Inking.InkDrawingAttributes CreateRecognizerDrawingAttributes(DrawingAttributes wpfDa)
+        {
+            if (wpfDa == null)
+                return null;
+
+            return new global::Windows.UI.Input.Inking.InkDrawingAttributes
+            {
+                PenTip = global::Windows.UI.Input.Inking.PenTipShape.Circle,
+                Color = global::Windows.UI.Color.FromArgb(wpfDa.Color.A, wpfDa.Color.R, wpfDa.Color.G, wpfDa.Color.B),
+                Size = new global::Windows.Foundation.Size((float)wpfDa.Width, (float)wpfDa.Height),
+                FitToCurve = true,
+                IgnorePressure = false
+            };
+        }
+
         internal static global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing FindPrimaryDrawing(
             global::Windows.UI.Input.Inking.Analysis.InkAnalyzer analyzer)
         {
+            if (analyzer?.AnalysisRoot == null)
+                return null;
+
+            // 收集所有非 Drawing 的图形候选（含面积、笔画数）。
+            // 仅按最大包围盒面积选主图形会把"用很多笔画凑出的大包围盒"误判为形状，
+            // 因此在面积 ≥ 最大面积 60% 的候选里，优先选笔画数最少（最紧凑、最像单笔形状）的那个。
+            var candidates = new List<global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing>();
+            var areaByCandidate = new Dictionary<global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing, double>();
+            Collect(analyzer.AnalysisRoot);
+            if (candidates.Count == 0)
+                return null;
+
+            double maxArea = -1;
+            foreach (var c in candidates)
+            {
+                var area = areaByCandidate[c];
+                if (area > maxArea) maxArea = area;
+            }
+
             global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing best = null;
-            double bestArea = -1;
-            if (analyzer?.AnalysisRoot != null)
-                Visit(analyzer.AnalysisRoot);
+            int bestStrokeCount = int.MaxValue;
+            double areaThreshold = maxArea * 0.6;
+            foreach (var c in candidates)
+            {
+                if (areaByCandidate[c] < areaThreshold) continue;
+                var ids = c.GetStrokeIds();
+                int sc = ids?.Count ?? 0;
+                if (sc == 0) sc = int.MaxValue; // 无笔画信息时不作为紧凑度优势
+                if (sc < bestStrokeCount)
+                {
+                    bestStrokeCount = sc;
+                    best = c;
+                }
+            }
+
+            // 退化兜底：没有候选达到 60% 阈值（不应发生），回退最大面积
+            if (best == null)
+            {
+                double bestArea = -1;
+                foreach (var c in candidates)
+                {
+                    if (areaByCandidate[c] > bestArea)
+                    {
+                        bestArea = areaByCandidate[c];
+                        best = c;
+                    }
+                }
+            }
+
             return best;
 
-            void Visit(global::Windows.UI.Input.Inking.Analysis.IInkAnalysisNode node)
+            void Collect(global::Windows.UI.Input.Inking.Analysis.IInkAnalysisNode node)
             {
                 if (node == null) return;
 
                 if (node is global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing d &&
                     d.DrawingKind != global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Drawing)
                 {
-                    double area = EstimateDrawingArea(d);
-                    if (area > bestArea)
-                    {
-                        bestArea = area;
-                        best = d;
-                    }
+                    candidates.Add(d);
+                    areaByCandidate[d] = EstimateDrawingArea(d);
                 }
 
                 // WinRT IInkAnalysisNode.Children 可能为 null，不可直接 foreach。
@@ -302,7 +415,7 @@ namespace Ink_Canvas.Helpers
                 if (children == null) return;
 
                 foreach (var child in children)
-                    Visit(child);
+                    Collect(child);
             }
         }
 

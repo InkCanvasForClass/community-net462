@@ -20,7 +20,7 @@
                                      VerticalAlignment="Center"
                                      HorizontalAlignment="Center">
                     <Label Content="{x:Static props:FloatingBarStrings.Board_Size}" FontWeight="Bold"
-                           Foreground="{DynamicResource FloatBarForeground}" FontSize="16"
+                           Foreground="{DynamicResource FloatingBarForegroundBrush}" FontSize="16"
                            VerticalAlignment="Center" />
                     <ComboBox x:Name="ComboBoxEraserSize"
                                   SelectedIndex="2">
@@ -33,7 +33,7 @@
                 </ikw:SimpleStackPanel>
                 <TabControl x:Name="EraserTypeTabControl"
                             Style="{StaticResource {x:Static ui:ThemeKeys.TabControlPivotStyleKey}}"
-                            SelectedIndex="0">
+                            SelectedIndex="1">
                     <TabControl.Resources>
                         <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="PivotHeaderItemFontSize">16</sys:Double>
                         <Style x:Key="CompactPivotTabItem" TargetType="TabItem" BasedOn="{StaticResource TabItemPivotStyle}">

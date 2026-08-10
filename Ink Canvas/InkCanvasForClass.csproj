@@ -31,7 +31,12 @@
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU;x86;x64</Platforms>
     <LangVersion>10</LangVersion>
-    <NoWarn>$(NoWarn);CA1416;NU1701;MSB3270;CS8012;NETSDK1138</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;NU1701;MSB3270;CS8012;NETSDK1138;CS9269</NoWarn>
+    <!-- PolySharp (传递依赖，经 Vortice→SharpGen.Runtime 引入) 在 .NET 10 SDK 下与既有的
+         UnscopedRefAttribute 定义冲突 (CS0101/CS0579)。该 polyfill 类型已由其他来源提供，
+         故排除 PolySharp 对该类型的生成。CS9269 仅来自 CsWin32 生成的 InlineArrays.g.cs
+         （在 net6.0/C#10 下 [UnscopedRef] 为 no-op），属于生成代码的良性提示，予以屏蔽。 -->
+    <PolySharpExcludeGeneratedTypes>System.Diagnostics.CodeAnalysis.UnscopedRefAttribute</PolySharpExcludeGeneratedTypes>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
@@ -77,17 +82,28 @@
     <PackageProjectUrl>https://inkcanvasforclass.github.io</PackageProjectUrl>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
+  <!-- ARM64 平台：.NET 6 在 ARM64 上 JIT 成本相对 x64 高 30%，
+       启用 Tiered Compilation + PGO 让循环/分支预测迅速收敛；
+       Release 启用 ReadyToRun Composite 把多程序集合并为单一 R2R 映像，
+       冷启动时间比纯 JIT 快 30%+。ARM 设备一般不预装 .NET 6，
+       单文件+自包含发布时这些属性同时生效。 -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'">
     <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
     <DebugType>full</DebugType>
     <PlatformTarget>ARM64</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredPGO>true</TieredPGO>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'">
     <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>ARM64</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredPGO>true</TieredPGO>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
@@ -116,6 +132,10 @@
     <PackageReference Include="iNKORE.UI.WPF" Version="1.2.8" />
     <PackageReference Include="MdXaml" Version="1.27.0" />
     <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1018" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.298">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="MicrosoftOfficeCore" Version="15.0.0" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
     <PackageReference Include="Microsoft.International.Converters.PinYinConverter" Version="1.0.0" />
@@ -127,16 +147,26 @@
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Management" Version="6.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <!-- UInk 1.0 规范：主文件为 MessagePack 对象流（Header/HeaderExtension/Canvas/Ink/Shape/Media），由 UInk/ 下的读写器使用 -->
+    <PackageReference Include="MessagePack" Version="3.1.8" />
     <PackageReference Include="NHotkey.Wpf" Version="4.0.0" />
     <PackageReference Include="OSVersionExt" Version="4.1.0" />
-    <PackageReference Include="AForge.Video" Version="2.2.5" />
-    <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
+    <!-- PDFsharp 6.1.x 是最后一个以 net6.0 为目标框架的版本；用于插件「背景 + 墨迹」导出 PDF -->
+    <PackageReference Include="PDFsharp" Version="6.1.1" />
+    <!-- AForge.Imaging / AForge.Math 仅用于照片校正（Grayscale/CannyEdgeDetector/BlobCounter/QuadrilateralTransformation）；摄像头采集已切换到 DirectShow（DirectShowLib） -->
     <PackageReference Include="AForge.Imaging" Version="2.2.5" />
     <PackageReference Include="AForge.Math" Version="2.2.5" />
     <PackageReference Include="System.Private.Uri" Version="4.3.2" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
     <PackageReference Include="WebDav.Client" Version="2.9.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Vortice.Direct2D1" Version="3.2.0" />
+    <PackageReference Include="Vortice.Direct3D11" Version="3.2.0" />
+    <PackageReference Include="Vortice.DirectComposition" Version="3.2.0" />
+    <PackageReference Include="Vortice.DXGI" Version="3.2.0" />
+    <!-- 视频展台：DirectShow + VMR9 Renderless + D3DImage 零拷贝 GPU 渲染（兼容 Win7 SP1+ 和 Win10+） -->
+    <PackageReference Include="JerryShaw.WPFMediaKit" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup Condition="$(EnableNativeImage) == 'true' And $(Platform) != 'AnyCPU' And $(Platform) != 'ARM64'">
     <PackageReference Include="Microsoft.DotNet.Framework.NativeImageCompiler" Version="1.0.0">
@@ -149,6 +179,10 @@
     <ProjectReference Include="..\InkCanvas.Controls\InkCanvas.Controls.csproj" />
     <ProjectReference Include="..\InkCanvas.PPTAgent.Contracts\InkCanvas.PPTAgent.Contracts.csproj" />
     <ProjectReference Include="..\InkCanvas.IACoreHelper\InkCanvas.IACoreHelper.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\InkCanvas.LiquidGlassMagHost\InkCanvas.LiquidGlassMagHost.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Private>false</Private>
     </ProjectReference>
@@ -268,6 +302,8 @@
     <Resource Include="Resources\new-icons\hand-move_white.png" />
     <Resource Include="Resources\new-icons\zoom_white.png" />
     <Resource Include="Resources\new-icons\rotate_white.png" />
+    <!-- 液态玻璃浮动栏折射着色器（必须是 Resource，否则 pack URI 找不到而退回无折射） -->
+    <Resource Include="Shaders\LiquidGlassEffect.ps" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-png\twoFingelMove-Blue.png" />
@@ -288,6 +324,7 @@
     <Resource Include="Resources\DeveloperAvatars\PANDA-JSR.jpg" Condition="'$(Minimize)' != 'true'" />
     <Resource Include="Resources\DeveloperAvatars\Super-Yyt.png" Condition="'$(Minimize)' != 'true'" />
     <Resource Include="Resources\DeveloperAvatars\CreeperAWA.png" Condition="'$(Minimize)' != 'true'" />
+    <Resource Include="Resources\DeveloperAvatars\AstrZero.png" />
   </ItemGroup>
 <ItemGroup>
     <Resource Include="Resources\Icons-png\EasiCamera.png" />
@@ -487,6 +524,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AssemblyInfo.cs" />
+    <!-- 新墨迹系统（原生 WM_POINTER + DirectComposition 湿墨管线）已于 1.7.19.9 回退，
+         代码文件保留原地供后续复用/测试（InkCanvas.NativeInk.Tests 通过 Link 单独编译），
+         此处仅从主项目排除编译。 -->
+    <Compile Remove="Ink\Native\**" />
+    <Compile Remove="MainWindow_cs\MW_NativeWetInk.cs" />
+    <!-- 实时墨迹 FPS/延迟 HUD 与新墨迹渲染配套，数据源（WetInkWindowHost）已排除，一并保留文件、排除编译。 -->
+    <Compile Remove="Helpers\InkPerformanceMonitor.cs" />
+    <Compile Remove="Helpers\RealtimeInkFpsOverlay.cs" />
+    <Compile Remove="MainWindow_cs\MW_RealtimeInkFpsOverlay.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -604,6 +650,31 @@
       <IACoreHelperFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.IACoreHelper\bin\$(Configuration)\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(IACoreHelperFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="'@(IACoreHelperFiles)' != ''" />
+  </Target>
+
+  <!-- InkCanvas.LiquidGlassMagHost：独立放大镜抓屏辅助进程。
+       MagHost 是 SDK 项目，SDK 会按平台给输出目录加前缀：x86/x64 平台输出到
+       bin\$(Platform)\$(Configuration)\$(TargetFramework)\，AnyCPU 输出到 bin\$(Configuration)\$(TargetFramework)\。
+       这里在 Build / Publish 后把 exe 复制到主程序输出目录，与 IACoreHelper 的 Copy target 模式一致，
+       CI 的 AnyCPU(=x64 产物)/x86 构建都能带上辅助 exe；单文件发布走 Publish 分支。 -->
+  <Target Name="CopyLiquidGlassMagHost" AfterTargets="Build" Condition="'$(PublishSingleFile)' != 'true'">
+    <ItemGroup>
+      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
+                                Condition="'$(Platform)' != 'AnyCPU'" />
+      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
+                                Condition="'$(Platform)' == 'AnyCPU'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LiquidGlassMagHostFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="'@(LiquidGlassMagHostFiles)' != ''" />
+  </Target>
+
+  <Target Name="CopyLiquidGlassMagHostToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishSingleFile)' == 'true'">
+    <ItemGroup>
+      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
+                                      Condition="'$(Platform)' != 'AnyCPU'" />
+      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*"
+                                      Condition="'$(Platform)' == 'AnyCPU'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LiquidGlassMagHostPublishFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="'@(LiquidGlassMagHostPublishFiles)' != ''" />
   </Target>
 
   <Target Name="CopyIACoreHelperToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishSingleFile)' == 'true'">

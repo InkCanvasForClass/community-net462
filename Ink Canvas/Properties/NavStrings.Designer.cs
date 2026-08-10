@@ -82,6 +82,10 @@ namespace Ink_Canvas.Properties
 
         public static string Nav_Home_Tooltip => ResourceManager.GetString(nameof(Nav_Home_Tooltip), _resourceCulture);
 
+        public static string Nav_CopySettingsUri_Tooltip => ResourceManager.GetString(nameof(Nav_CopySettingsUri_Tooltip), _resourceCulture);
+
+        public static string Nav_CopySettingsUri_Copied => ResourceManager.GetString(nameof(Nav_CopySettingsUri_Copied), _resourceCulture);
+
         public static string Nav_ICCSettings => ResourceManager.GetString(nameof(Nav_ICCSettings), _resourceCulture);
 
         public static string Nav_Basic => ResourceManager.GetString(nameof(Nav_Basic), _resourceCulture);
@@ -189,5 +193,23 @@ namespace Ink_Canvas.Properties
         public static string Nav_WhiteboardTips => ResourceManager.GetString(nameof(Nav_WhiteboardTips), _resourceCulture);
 
         public static string Nav_WhiteboardTips_Tooltip => ResourceManager.GetString(nameof(Nav_WhiteboardTips_Tooltip), _resourceCulture);
+
+        public static string Menu_AddedItems => ResourceManager.GetString(nameof(Menu_AddedItems), _resourceCulture);
+
+        public static string Menu_AvailableItems => ResourceManager.GetString(nameof(Menu_AvailableItems), _resourceCulture);
+
+        public static string Menu_ResetLayout => ResourceManager.GetString(nameof(Menu_ResetLayout), _resourceCulture);
+
+        public static string Menu_LimitReached => ResourceManager.GetString(nameof(Menu_LimitReached), _resourceCulture);
+
+        public static string Menu_ResetConfirmTitle => ResourceManager.GetString(nameof(Menu_ResetConfirmTitle), _resourceCulture);
+
+        public static string Menu_ResetConfirmMsg => ResourceManager.GetString(nameof(Menu_ResetConfirmMsg), _resourceCulture);
+
+        public static string Menu_ResetDone => ResourceManager.GetString(nameof(Menu_ResetDone), _resourceCulture);
+
+        public static string Menu_ToolbarDesc => ResourceManager.GetString(nameof(Menu_ToolbarDesc), _resourceCulture);
+
+        public static string Menu_BoardDesc => ResourceManager.GetString(nameof(Menu_BoardDesc), _resourceCulture);
     }
 }

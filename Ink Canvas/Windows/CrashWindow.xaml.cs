@@ -1,10 +1,11 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Properties;
 using System;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace Ink_Canvas
 {
@@ -27,17 +28,33 @@ namespace Ink_Canvas
                 ? CrashStrings.CrashWindowNoDetails
                 : CrashInfo;
 
+            // 延迟到 Background 优先级，确保窗口 HWND 已完全创建并显示后再 Activate
+            // （Loaded 时机 HWND 可能尚未创建，调用 Activate 会抛 InvalidOperationException
+            //  "显示 Window 之前，无法调用 DragMove 或 Activate"）
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                Activate();
-                Focus();
-                Topmost = true;
-                SetForegroundWindow(new WindowInteropHelper(this).Handle);
-            }), DispatcherPriority.Loaded);
+                try
+                {
+                    if (!IsVisible) return;
+                    Activate();
+                    Focus();
+                    Topmost = true;
+                    var hwnd = new WindowInteropHelper(this).Handle;
+                    if (hwnd != IntPtr.Zero)
+                    {
+                        PInvoke.SetForegroundWindow(new HWND(hwnd));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 崩溃窗口本身不应再抛异常导致二次崩溃，仅记录日志
+                    LogHelper.WriteLogToFile($"CrashWindow 激活失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
+            }), DispatcherPriority.Background);
         }
 
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        //[DllImport("user32.dll")]
+        //private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         private void ButtonCopy_Click(object sender, RoutedEventArgs e)
         {
