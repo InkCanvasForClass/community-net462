@@ -2752,9 +2752,7 @@ namespace Ink_Canvas
         private void ViewboxFloatingBarMarginAnimationCore(int MarginFromEdge,
             bool PosXCaculatedWithTaskbarHeight = false, bool animate = false)
         {
-            if (!Topmost)
-                MarginFromEdge = -60;
-            else
+            if (Topmost)
             {
                 ViewboxFloatingBar.Visibility = Visibility.Visible;
                 ViewboxFloatingBar.UpdateLayout();
@@ -2786,6 +2784,10 @@ namespace Ink_Canvas
                 screenHeight = screen.Bounds.Height / dpiScaleY;
                 toolbarHeight = ForegroundWindowInfo.GetTaskbarHeight(screen, dpiScaleY);
             }
+
+            // 非置顶时使用 rcWork 获取的任务栏高度，确保浮动栏完全隐藏到屏幕底部以下
+            if (!Topmost)
+                MarginFromEdge = -60 - (int)Math.Round(toolbarHeight);
 
             double baseWidth = ViewboxFloatingBar.ActualWidth;
 
@@ -2872,7 +2874,7 @@ namespace Ink_Canvas
                 }
             }
 
-            if (MarginFromEdge != -60)
+            if (MarginFromEdge > -60)
             {
                 if (!IsVerticalToolbar && QuickColorPalette?.Visibility == Visibility.Visible)
                 {
@@ -3539,10 +3541,13 @@ namespace Ink_Canvas
             inkCanvas.Select(new StrokeCollection());
             GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
 
-            if (currentMode != 0)
+            // 视频展台特殊模式下不执行 SaveStrokes/RestoreStrokes，
+            // 否则会清空 timeMachine 历史并 Children.Clear() 移除直播帧，
+            // 导致撤销变灰色且视频预览消失
+            if (currentMode != 0 && !_isVideoPresenterSpecialMode)
             {
                 SaveStrokes();
-                RestoreStrokes(true);
+                RestoreStrokes();
             }
 
             if (ThemeManager.Current.ApplicationTheme == ApplicationTheme.Dark)
@@ -3790,7 +3795,8 @@ namespace Ink_Canvas
                 else
                 {
                     // 切换到批注模式时，确保保存当前图片信息
-                    if (currentMode != 0)
+                    // 视频展台特殊模式下不执行 SaveStrokes，否则会清空 timeMachine 历史
+                    if (currentMode != 0 && !_isVideoPresenterSpecialMode)
                     {
                         SaveStrokes();
                     }
@@ -5357,6 +5363,7 @@ namespace Ink_Canvas
         private ToolbarImageButton _lastHighlightButton;
         private int _indicatorAnimationGeneration;
         private Storyboard _activeIndicatorStoryboard;
+        private EventHandler _activeIndicatorCompletedHandler;
         private string _pendingHighlightMode;
         private int _highlightPositionVersion;
         private int _highlightLayoutRetryCount;
@@ -5655,7 +5662,17 @@ namespace Ink_Canvas
                 {
                     var oldStoryboard = _activeIndicatorStoryboard;
                     _activeIndicatorStoryboard = null;
-                    try { oldStoryboard.Stop(indicatorBar); } catch { }
+                    try
+                    {
+                        oldStoryboard.Stop(indicatorBar);
+                        // 解除 Completed 订阅，避免 lambda 闭包持有 indicatorBar 长期存活
+                        if (_activeIndicatorCompletedHandler != null)
+                        {
+                            oldStoryboard.Completed -= _activeIndicatorCompletedHandler;
+                            _activeIndicatorCompletedHandler = null;
+                        }
+                    }
+                    catch { }
                     indicatorBar.RenderTransform = null;
                     indicatorBar.Opacity = 1.0;
                 }
@@ -5738,12 +5755,17 @@ namespace Ink_Canvas
 
                 int currentGeneration = _indicatorAnimationGeneration;
                 _activeIndicatorStoryboard = storyboard;
-                storyboard.Completed += (s, e) =>
+                EventHandler completedHandler = null;
+                completedHandler = (s, e) =>
                 {
+                    storyboard.Completed -= completedHandler;
+                    _activeIndicatorCompletedHandler = null;
                     if (currentGeneration != _indicatorAnimationGeneration) return;
                     _activeIndicatorStoryboard = null;
                     indicatorBar.RenderTransform = null;
                 };
+                _activeIndicatorCompletedHandler = completedHandler;
+                storyboard.Completed += completedHandler;
 
                 storyboard.Begin(indicatorBar, true);
                 storyboard.Pause(indicatorBar);

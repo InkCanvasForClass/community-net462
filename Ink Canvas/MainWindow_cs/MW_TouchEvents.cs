@@ -1130,7 +1130,8 @@ namespace Ink_Canvas
         {
             // 视频展台特殊模式：所有触摸交给 VideoPresenterSpecialModeContainer 的 Manipulation 处理，
             // 不进入下面的 EditingMode 切换逻辑（避免把 Ink 切到 None 干扰预览绘制）。
-            if (_isVideoPresenterSpecialMode) return;
+            // 图形绘制模式例外：需要走正常绘制流程
+            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0) return;
 
             if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
                 || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
@@ -1779,7 +1780,8 @@ namespace Ink_Canvas
             // 视频展台特殊模式：不在此处切换 EditingMode，
             // PreviewTouchDown 已临时切到 None 抑制 InkCanvas 框选/绘制；
             // 这里再切会覆盖 None → Ink，导致特殊模式下仍画出墨迹（Q7 真正根因）。
-            if (_isVideoPresenterSpecialMode)
+            // 图形绘制模式例外：需要走正常绘制流程
+            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
             {
                 return;
             }
@@ -1893,7 +1895,7 @@ namespace Ink_Canvas
             // 注意：不能用 e.Handled = true —— 这样会同时阻断 Manipulation 事件的提升，
             //      导致 VideoPresenterSpecialMode_ManipulationDelta 永远收不到事件（Q7 根因）。
             // 仍维护 dec，保证 InkCanvas_PreviewTouchUp 中的 dec.Remove 配对。
-            if (_isVideoPresenterSpecialMode)
+            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
             {
                 bool isSecondFinger = dec.Count >= 1;
                 dec.Add(e.TouchDevice.Id);
@@ -2220,17 +2222,21 @@ namespace Ink_Canvas
         {
             // 视频展台特殊模式：所有手指抬起后恢复用户原本的 EditingMode
             // （PreviewTouchDown 中为了抑制 InkCanvas 内部框选临时切到了 None）
-            if (_isVideoPresenterSpecialMode)
+            // 图形绘制模式例外：需要走正常绘制流程完成图形
+            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
             {
                 dec.Remove(e.TouchDevice.Id);
-                if (dec.Count == 0 && _boothTouchSavedInkEditingMode.HasValue && inkCanvas != null)
+                if (dec.Count == 0)
                 {
-                    try
+                    if (_boothTouchSavedInkEditingMode.HasValue && inkCanvas != null)
                     {
-                        inkCanvas.EditingMode = _boothTouchSavedInkEditingMode.Value;
+                        try
+                        {
+                            inkCanvas.EditingMode = _boothTouchSavedInkEditingMode.Value;
+                        }
+                        catch { }
+                        _boothTouchSavedInkEditingMode = null;
                     }
-                    catch { }
-                    _boothTouchSavedInkEditingMode = null;
                 }
                 // 仍然执行常规清理（释放触摸捕获、恢复浮动栏可见性等）
                 inkCanvas?.ReleaseAllTouchCaptures();
@@ -2448,7 +2454,8 @@ namespace Ink_Canvas
         {
             // 视频展台特殊模式：不在此处恢复 EditingMode，
             // PreviewTouchUp 已经在所有手指抬起后恢复用户原本的模式
-            if (_isVideoPresenterSpecialMode)
+            // 图形绘制模式例外：需要走正常绘制流程
+            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
             {
                 return;
             }
@@ -2521,7 +2528,7 @@ namespace Ink_Canvas
             // 只缩放墨迹不缩放预览画面（画面不同步），并留下第一指的残留墨迹。
             // VideoPresenterSpecialModeContainer 在 Z 顺序最底层，触摸事件被 inkCanvas 拦截，
             // 根本到不了 Container 上的处理器，必须在此转发。
-            if (_isVideoPresenterSpecialMode && inkCanvas != null)
+            if (_isVideoPresenterSpecialMode && inkCanvas != null && drawingShapeMode == 0)
             {
                 int manipulatorCount = e.Manipulators?.Count() ?? 0;
                 bool penInkSingleFinger = inkCanvas.EditingMode == InkCanvasEditingMode.Ink && manipulatorCount < 2;

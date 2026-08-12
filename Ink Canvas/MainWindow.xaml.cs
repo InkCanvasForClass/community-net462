@@ -470,6 +470,7 @@ namespace Ink_Canvas
 
             content.CameraDevicesComboBoxControl.SelectionChanged += CameraDevicesComboBox_SelectionChanged;
             content.BoothResolutionComboBoxControl.SelectionChanged += BoothResolutionComboBox_SelectionChanged;
+            content.PhotoCorrectionAccelerationComboBox.SelectionChanged += PhotoCorrectionAccelerationComboBox_SelectionChanged;
             content.CapturePhotoButton.Click += BtnCapturePhoto_Click;
             content.RotateImageButton.Click += BtnRotateImage_Click;
             content.ExitVideoPresenterButton.Click += BtnExitVideoPresenter_Click;
@@ -482,6 +483,9 @@ namespace Ink_Canvas
                 if (BoothPopup != null)
                     AnimationsHelper.HidePopupWithSlideAndFade(BoothPopup);
             };
+            // 注意：此处不恢复 PhotoCorrectionAccelerationComboBox.SelectedIndex，
+            // 因为 WireUpBoothPopupContentEvents 在 LoadSettings 之前调用，Settings 仍为默认值。
+            // 改为在 ToggleVideoPresenterSidebar 打开 BoothPopup 时同步，确保读到已加载的设置。
         }
 
         /// <summary>
@@ -801,8 +805,10 @@ namespace Ink_Canvas
                     {
                         Interval = TimeSpan.FromMilliseconds(500)
                     };
-                    oobeTimer.Tick += (s, e) =>
+                    EventHandler oobeTickHandler = null;
+                    oobeTickHandler = (s, e) =>
                     {
+                        oobeTimer.Tick -= oobeTickHandler;  // 解除订阅，打破循环引用
                         oobeTimer.Stop();
                         oobeTimer = null;
                         try
@@ -835,6 +841,7 @@ namespace Ink_Canvas
                             }
                         }
                     };
+                    oobeTimer.Tick += oobeTickHandler;
                     oobeTimer.Start();
                 }
             }
