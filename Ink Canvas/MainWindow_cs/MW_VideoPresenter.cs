@@ -1,6 +1,8 @@
-using AForge.Imaging;
-using AForge.Imaging.Filters;
-using AForge.Math.Geometry;
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
+using Point = OpenCvSharp.Point;
+using Size = OpenCvSharp.Size;
+using Point2f = OpenCvSharp.Point2f;
 using DirectShowLib;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Models;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -66,10 +69,15 @@ namespace Ink_Canvas
         private readonly List<CapturedImage> _capturedPhotos = new List<CapturedImage>();
         private const int MaxCapturedPhotos = 50; // 容量上限：比 UI 显示的 30 项多一些，避免频繁清理
 
-        // 视频展台虚拟分页的 per-page 墨迹存储：key = _boothCurrentPhotoIndex（-1=直播页，0..N-1=照片页）。
-        // 切换虚拟页时保存当前墨迹、恢复目标页墨迹；退出特殊模式时整体清空（booth 墨迹不持久化到白板）。
-        // 不接入 timeMachine：booth 墨迹退出即丢弃，不需要撤销/重做。
-        private readonly Dictionary<int, StrokeCollection> _boothStrokesByPage = new Dictionary<int, StrokeCollection>();
+        // 直播页墨迹快照：与每张照片的 CapturedImage.Strokes 对应，
+        // 切换页码时把当前 inkCanvas.Strokes 保存到当前槽位，再从目标槽位恢复。
+        // 直播页的墨迹槽位独立存放（不与任何照片绑定），用户在直播页画的批注不会因切到照片页而丢失。
+        private System.Windows.Ink.StrokeCollection _liveStrokesSnapshot = new System.Windows.Ink.StrokeCollection();
+
+        // 照片预览页：把 FillImage 的 LayoutTransform/RenderTransform 替换为 VideoCaptureElement 的同名实例，
+        // 让照片预览完全复用实时画面的变换管线（旋转/缩放/移动走同一条代码路径）。
+        // _frozenFrameOriginalRenderTransform 保存照片 Image 原始的 RenderTransform，返回直播页时恢复。
+        private System.Windows.Media.TransformGroup _frozenFrameOriginalRenderTransform = null;
 
         // 按页绑定：每一页对应一个“实时画面”元素与布局/设备信息
         private readonly Dictionary<int, System.Windows.Controls.Image> _liveFrameImageByPage = new Dictionary<int, System.Windows.Controls.Image>();
@@ -88,7 +96,32 @@ namespace Ink_Canvas
         private DateTime _lastCaptureTime = DateTime.MinValue;
         private const int VideoPresenterCaptureCooldownMs = 1000;
 
-        private const int CorrectedPaperHeight = 600;
+        // A4 纸实时识别框：定时检测间隔与矫正框动画时长对齐到 200ms，
+        // 动画能完整跑完不被打断，避免拖影感。检测仍由 Interlocked 防重入保证不会堆积。
+        private DispatcherTimer _paperDetectTimer;
+        private const int PaperDetectIntervalMs = 200;
+        // 上一次实时检测到的角点（已映射到 overlay 坐标），null 表示未检测到
+        private System.Windows.Point[] _lastOverlayCorners;
+        // 实时检测任务防重入标志（上一次后台检测未完成时不启动新的）
+        private int _paperDetectRunning;
+
+        // 矫正框移动动画：检测到新角点时，从上一帧位置平滑过渡到新位置，避免跳变。
+        // 动画期间 _lastOverlayCorners 实时记录"当前显示的中间位置"，新目标到来时以此为新起点，自然衔接。
+        private DispatcherTimer _overlayAnimTimer;
+        private System.Windows.Point[] _animFromCorners;
+        private System.Windows.Point[] _animToCorners;
+        private DateTime _animStartTime;
+        // 动画时长与抓帧间隔对齐到 200ms：每次新角点到来时上一次动画已刚好跑完，
+        // 不会被频繁打断，框平滑过渡且能跟上纸张移动。
+        private const int OverlayAnimDurationMs = 200;
+        // 复用元素：动画过程中不 Clear+重建，直接更新 Points/位置，避免闪烁
+        private System.Windows.Shapes.Polygon _overlayPolygon;
+        private System.Windows.Shapes.Ellipse[] _overlayEllipses;
+        // 诊断日志：记录新角点到来间隔，用于验证实际帧间隔与定时器间隔是否吻合
+        private DateTime? _lastOverlayDrawTime;
+        // 诊断日志：动画完成(正常结束)与被打断重启的计数，便于观察动画是否总在被截断
+        private int _overlayAnimCompletedCount;
+        private int _overlayAnimInterruptedCount;
 
         /// <summary>
         /// 切换视频呈现侧边栏的显示状态（显示或隐藏）。
@@ -131,6 +164,11 @@ namespace Ink_Canvas
         private void ToggleVideoPresenterSidebar()
         {
             if (BoothPopup == null) return;
+
+            // 打开 BoothPopup 前同步加速模式 ComboBox 选中项。
+            // WireUpBoothPopupContentEvents 在 LoadSettings 之前调用，无法读到用户保存的值，
+            // 必须在此处（LoadSettings 已完成）同步，避免 ComboBox 始终显示 CPU。
+            SyncPhotoCorrectionAccelerationComboBox();
 
             if (BoothPopup.IsOpen)
             {
@@ -383,6 +421,12 @@ namespace Ink_Canvas
                 UpdateBoothPageInfoDisplay();
                 // 刷新侧栏页码列表：填充第 0 项（直播页，文字"再次点击返回直播画面"）
                 RefreshBoothPageListView();
+
+                // 若矫正开关已开启，启动实时识别框定时器
+                if (Settings?.Automation?.IsEnablePhotoCorrection == true)
+                {
+                    StartPaperDetectTimer();
+                }
             }
             catch (Exception ex)
             {
@@ -396,10 +440,11 @@ namespace Ink_Canvas
             if (!_isVideoPresenterSpecialMode) return;
             _isVideoPresenterSpecialMode = false;
 
+            // 停止 A4 纸实时识别定时器并隐藏覆盖层
+            StopPaperDetectTimer();
+
             // 重置虚拟分页状态：退出后默认回到直播页，但保留照片列表
             _boothCurrentPhotoIndex = -1;
-            // booth per-page 墨迹仍按原逻辑清空，不持久化到下次进入
-            _boothStrokesByPage.Clear();
 
             try
             {
@@ -423,7 +468,19 @@ namespace Ink_Canvas
                 if (inkCanvas != null)
                 {
                     inkCanvas.Strokes.Clear();
+                    // 同步清空 timeMachine 历史，避免 SaveStrokes 保存脏引用
+                    // （strokes 已从画布移除但 history 中仍有引用）
+                    timeMachine?.ClearStrokeHistory();
                     inkCanvas.EditingMode = _inkEditingModeBeforeSpecialMode;
+                }
+                // 重置旋转基准
+                ResetRotationBaseline();
+                // 同步清空直播页墨迹快照与每张照片的 Strokes，
+                // 避免下次进入特殊模式时残留上一次的批注
+                _liveStrokesSnapshot.Clear();
+                foreach (var p in _capturedPhotos)
+                {
+                    try { p?.Strokes?.Clear(); } catch { }
                 }
 
                 // 清理鼠标拖动状态（防止退出时鼠标仍被捕获）
@@ -487,6 +544,265 @@ namespace Ink_Canvas
             if (VideoPresenterFrozenFrameScale != null) VideoPresenterFrozenFrameScale.ScaleY = _boothPreviewScale;
             if (VideoPresenterFrozenFrameTranslate != null) VideoPresenterFrozenFrameTranslate.X = _boothPreviewTranslateX;
             if (VideoPresenterFrozenFrameTranslate != null) VideoPresenterFrozenFrameTranslate.Y = _boothPreviewTranslateY;
+        }
+
+        /// <summary>
+        /// 把当前 inkCanvas.Strokes 保存到当前槽位：
+        /// 若当前在照片预览页（_boothCurrentPhotoIndex >= 0），保存到对应 CapturedImage.Strokes；
+        /// 若当前在直播页（_boothCurrentPhotoIndex == -1），保存到 _liveStrokesSnapshot。
+        /// 切换页码前调用，避免墨迹串台。
+        /// </summary>
+        private void SaveCurrentBoothStrokesToSlot()
+        {
+            if (inkCanvas == null) return;
+            try
+            {
+                var current = inkCanvas.Strokes;
+                System.Windows.Ink.StrokeCollection target;
+                if (_boothCurrentPhotoIndex >= 0 && _boothCurrentPhotoIndex < _capturedPhotos.Count)
+                {
+                    target = _capturedPhotos[_boothCurrentPhotoIndex].Strokes;
+                }
+                else
+                {
+                    target = _liveStrokesSnapshot;
+                }
+                target.Clear();
+                if (current != null && current.Count > 0)
+                {
+                    // Clone 避免后续 inkCanvas.Strokes.Clear() 影响快照
+                    foreach (var s in current) target.Add(s.Clone());
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"保存当前页墨迹失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+        }
+
+        /// <summary>
+        /// 从指定槽位恢复墨迹到 inkCanvas.Strokes：
+        /// photoIndex >= 0 时从对应照片的 Strokes 恢复；&lt; 0 时从直播页快照恢复。
+        /// 切换页码后调用，让墨迹跟着照片切换。
+        /// </summary>
+        private void RestoreBoothStrokesFromSlot(int photoIndex)
+        {
+            if (inkCanvas == null) return;
+            try
+            {
+                System.Windows.Ink.StrokeCollection source;
+                if (photoIndex >= 0 && photoIndex < _capturedPhotos.Count)
+                {
+                    source = _capturedPhotos[photoIndex].Strokes;
+                }
+                else
+                {
+                    source = _liveStrokesSnapshot;
+                }
+                inkCanvas.Strokes.Clear();
+                if (source != null && source.Count > 0)
+                {
+                    // Clone 避免后续编辑影响快照
+                    foreach (var s in source) inkCanvas.Strokes.Add(s.Clone());
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"恢复页墨迹失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+        }
+
+        /// <summary>
+        /// 计算指定角度下视频画面的变换矩阵（绕画面视觉中心旋转 + 90/270 缩小 fit 容器）。
+        /// 画面视觉中心 = 容器中心经 RenderTransform 缩放和平移后的位置：
+        ///   cx = containerW/2 * previewScale + previewTranslateX
+        ///   cy = containerH/2 * previewScale + previewTranslateY
+        /// 墨迹在 inkCanvas 坐标系（容器坐标），移动时已同步平移，所以旋转中心必须用画面视觉中心，
+        /// 否则移动后旋转墨迹会绕容器中心转，与画面不同步。
+        /// 0°/180°：scale=1.0；90°/270°：scale=min(H/imgW, W/imgH)/min(W/imgW, H/imgH)。
+        /// 当 imgW/imgH=0 时回退到老公式 min(W/H, H/W)（适用于横屏视频，video=1920x1080）。
+        /// </summary>
+        private System.Windows.Media.Matrix GetBoothRotationMatrix(double angleDegrees, double containerW, double containerH, double imgW = 0, double imgH = 0)
+        {
+            // 画面视觉中心：考虑 RenderTransform 的缩放和平移
+            double cx = (containerW / 2.0) * _boothPreviewScale + _boothPreviewTranslateX;
+            double cy = (containerH / 2.0) * _boothPreviewScale + _boothPreviewTranslateY;
+            double angle = angleDegrees % 360.0;
+            if (angle < 0) angle += 360.0;
+            bool rotated = Math.Abs(angle - 90.0) < 0.01 || Math.Abs(angle - 270.0) < 0.01;
+            double scale = 1.0;
+            if (rotated && containerW > 0 && containerH > 0)
+            {
+                if (imgW > 0 && imgH > 0)
+                {
+                    // 按图像实际比例算缩放：
+                    // 0° 时 Stretch scale = min(W/iw, H/ih)
+                    // 90° 时（容器交换 HxW）Stretch scale = min(H/iw, W/ih)
+                    // delta scale = s_90 / s_0
+                    double s0 = Math.Min(containerW / imgW, containerH / imgH);
+                    double s90 = Math.Min(containerH / imgW, containerW / imgH);
+                    if (s0 > 0) scale = s90 / s0;
+                }
+                else
+                {
+                    // 老公式：适用于横屏视频（image aspect ≈ container aspect）
+                    scale = Math.Min(containerW / containerH, containerH / containerW);
+                }
+            }
+
+            var m = System.Windows.Media.Matrix.Identity;
+            m.RotateAt(angle, cx, cy);
+            var s = System.Windows.Media.Matrix.Identity;
+            s.ScaleAt(scale, scale, cx, cy);
+            return m * s;
+        }
+
+        /// <summary>
+        /// 在旋转前保存当前墨迹为基准（若尚未保存），并记录当前角度。
+        /// 必须在修改 Rotation.Angle 之前调用，否则记录的基准角度会是目标角度导致 delta=Identity。
+        /// </summary>
+        private void EnsureRotationBaseline()
+        {
+            if (_rotationBaselineStrokes != null) return;
+            if (inkCanvas == null || inkCanvas.Strokes.Count == 0) return;
+            _rotationBaselineStrokes = inkCanvas.Strokes.Clone();
+            // 记录墨迹当前对应的"实时画面视觉角度"：
+            // - 实时画面：VideoPresenterFullCanvasRotation.Angle（= cameraRotation*90）
+            // - 照片预览：照片内容是实时画面旋转 cameraRotation*90° 后的样子，
+            //   Angle 被重置为 0，但墨迹对应实时 cameraRotation*90° 状态，
+            //   所以视觉角度 = cameraRotation*90 + Angle（照片预览旋转的增量）
+            _rotationBaselineAngle = GetBoothVisualAngle();
+        }
+
+        /// <summary>
+        /// 获取墨迹当前对应的"实时画面视觉角度"。
+        /// 实时画面：= VideoPresenterFullCanvasRotation.Angle。
+        /// 照片预览：照片内容是实时画面旋转 cameraRotation*90° 后的样子，
+        ///   Angle 从 0 开始（照片预览自身的旋转增量），视觉角度 = cameraRotation*90 + Angle。
+        /// </summary>
+        /// <summary>
+        /// 获取墨迹当前对应的旋转角度。
+        /// 照片预览页：照片位图在拍照时已 RotateFlip 旋转到正向，Angle=0 即"正向显示"，
+        ///   所以缩放系数只取决于 Angle（LayoutTransform 旋转角）和照片实际比例，与 cameraService 无关。
+        /// 实时画面：Angle = cameraService.RotationAngle*90（由旋转按钮同步设置）。
+        /// 两种场景都直接返回 VideoPresenterFullCanvasRotation.Angle。
+        /// </summary>
+        private int GetBoothVisualAngle()
+        {
+            double angle = VideoPresenterFullCanvasRotation?.Angle ?? 0;
+            return (int)(angle % 360.0 + 360.0) % 360;
+        }
+
+        /// <summary>
+        /// 从基准墨迹重新变换到目标角度，避免 delta 累积导致越来越小。
+        /// 基准墨迹在保存时记录对应角度，每次旋转从基准重新算：
+        /// delta = Transform(baselineAngle)^(-1) * Transform(targetAngle)
+        /// 用户画新墨迹后基准重置（StrokesChanged 触发 ResetRotationBaseline）。
+        /// 调用前必须先 EnsureRotationBaseline()（在修改角度前）。
+        /// </summary>
+        private void RotateBoothStrokesFromBaseline(double targetAngleDegrees)
+        {
+            if (inkCanvas == null) return;
+            if (inkCanvas.Strokes.Count == 0) return;
+            try
+            {
+                double containerW = VideoPresenterSpecialModeContainer?.ActualWidth ?? inkCanvas.ActualWidth;
+                double containerH = VideoPresenterSpecialModeContainer?.ActualHeight ?? inkCanvas.ActualHeight;
+                if (containerW <= 0 || containerH <= 0) return;
+
+                // 获取当前图像实际尺寸（照片预览页用照片位图尺寸，实时画面用 0 走老公式回退）
+                double imgW = 0, imgH = 0;
+                bool photoVisible = VideoPresenterFrozenFrameImage != null
+                    && VideoPresenterFrozenFrameImage.Visibility == Visibility.Visible;
+                if (photoVisible && VideoPresenterFrozenFrameImage.Source is BitmapSource bs)
+                {
+                    imgW = bs.PixelWidth;
+                    imgH = bs.PixelHeight;
+                }
+
+                // 从当前角度变换到目标角度：delta = M_current^(-1) * M_target
+                // _rotationBaselineAngle 在每次旋转后更新为当前画布墨迹对应的角度
+                var currentMatrix = GetBoothRotationMatrix(_rotationBaselineAngle, containerW, containerH, imgW, imgH);
+                var targetMatrix = GetBoothRotationMatrix(targetAngleDegrees, containerW, containerH, imgW, imgH);
+                if (!currentMatrix.HasInverse) return;
+                var currentInv = currentMatrix;
+                currentInv.Invert();
+                var delta = currentInv * targetMatrix;
+
+                // 诊断日志：照片预览页时记录墨迹变换矩阵
+                try
+                {
+                    if (photoVisible)
+                    {
+                        LogHelper.WriteLogToFile(
+                            $"[BoothDiag] RotateStrokesFromBaseline: baselineAngle={_rotationBaselineAngle}, targetAngle={targetAngleDegrees}, " +
+                            $"container={containerW}x{containerH}, imgSize={imgW}x{imgH}, scale={_boothPreviewScale}, translate=({_boothPreviewTranslateX},{_boothPreviewTranslateY}), " +
+                            $"currentM22={currentMatrix.M22}, targetM22={targetMatrix.M22}, " +
+                            $"delta=[{delta.M11},{delta.M12},{delta.M21},{delta.M22}|{delta.OffsetX},{delta.OffsetY}], " +
+                            $"strokesCount={inkCanvas.Strokes.Count}",
+                            LogHelper.LogType.Info);
+                    }
+                }
+                catch { }
+
+                _isApplyingRotationToStrokes = true;
+                var prevCommitType = _currentCommitType;
+                _currentCommitType = CommitReason.CodeInput;
+                try
+                {
+                    // 旋转前墨迹 bbox（容器坐标）
+                    System.Windows.Rect beforeBBox = inkCanvas.Strokes.GetBounds();
+                    // 旋转前照片视觉中心
+                    double cx = (containerW / 2.0) * _boothPreviewScale + _boothPreviewTranslateX;
+                    double cy = (containerH / 2.0) * _boothPreviewScale + _boothPreviewTranslateY;
+
+                    // 原地变换：保留 Stroke 对象引用，使 TimeMachine 历史中的 Stroke 引用与画布一致
+                    inkCanvas.Strokes.Transform(delta, false);
+                    // 同步变换历史中不在画布上的笔画（如形状识别的 ReplacedStroke）
+                    timeMachine?.TransformStrokesInHistory(delta, inkCanvas.Strokes);
+
+                    // 更新 StrokeInitialHistory 为旋转后的状态，避免后续用户操作（拖动/缩放墨迹）
+                    // 时用旋转前的旧坐标作为初始值，导致撤销恢复到错误位置
+                    foreach (var stroke in inkCanvas.Strokes)
+                    {
+                        StrokeInitialHistory[stroke] = stroke.StylusPoints.Clone();
+                    }
+
+                    // 旋转后墨迹 bbox
+                    System.Windows.Rect afterBBox = inkCanvas.Strokes.GetBounds();
+                    try
+                    {
+                        LogHelper.WriteLogToFile(
+                            $"[BoothDiag] StrokesBBox: before=[{beforeBBox.X:F1},{beforeBBox.Y:F1},{beforeBBox.Width:F1}x{beforeBBox.Height:F1}], " +
+                            $"after=[{afterBBox.X:F1},{afterBBox.Y:F1},{afterBBox.Width:F1}x{afterBBox.Height:F1}], " +
+                            $"visualCenter=({cx:F1},{cy:F1}), beforeCenter=({beforeBBox.X+beforeBBox.Width/2:F1},{beforeBBox.Y+beforeBBox.Height/2:F1}), " +
+                            $"afterCenter=({afterBBox.X+afterBBox.Width/2:F1},{afterBBox.Y+afterBBox.Height/2:F1})",
+                            LogHelper.LogType.Info);
+                    }
+                    catch { }
+                }
+                finally
+                {
+                    _isApplyingRotationToStrokes = false;
+                    _currentCommitType = prevCommitType;
+                }
+
+                // 更新当前角度，供下次旋转计算 delta
+                _rotationBaselineAngle = (int)(targetAngleDegrees % 360.0 + 360.0) % 360;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"从基准变换墨迹失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+        }
+
+        /// <summary>
+        /// 重置旋转基准（用户在非 0° 画新墨迹后，或切换页面/退出展台时调用）。
+        /// 下次旋转会重新保存基准。
+        /// </summary>
+        private void ResetRotationBaseline()
+        {
+            _rotationBaselineStrokes = null;
         }
 
         /// <summary>
@@ -1265,7 +1581,9 @@ namespace Ink_Canvas
                         {
                             stroke.Transform(translateMatrix, false);
                         }
+                        // 同步变换历史中不在画布上的笔画（如形状识别的 ReplacedStroke）
                         timeMachine?.TransformStrokesInHistory(translateMatrix, inkCanvas.Strokes);
+                        // 墨迹位置已改变，旋转基准过期，重置以便下次旋转重新保存
                         ResetRotationBaseline();
                     }
                     catch { }
@@ -1357,6 +1675,8 @@ namespace Ink_Canvas
             if (IsBoardRoamingMode) return false;
             // Ink 模式下让 InkCanvas 正常绘制墨迹
             if (inkCanvas.EditingMode == InkCanvasEditingMode.Ink) return false;
+            // 图形绘制模式下让正常绘制流程处理（不拦截为拖动）
+            if (drawingShapeMode != 0) return false;
 
             // 非 Ink/擦除/漫游模式（Select/Cursor 等）：阻止 InkCanvas 框选，启动鼠标拖动
             _isBoothMouseDragging = true;
@@ -1411,7 +1731,9 @@ namespace Ink_Canvas
                         {
                             stroke.Transform(translateMatrix, false);
                         }
+                        // 同步变换历史中不在画布上的笔画（如形状识别的 ReplacedStroke）
                         timeMachine?.TransformStrokesInHistory(translateMatrix, inkCanvas.Strokes);
+                        // 墨迹位置已改变，旋转基准过期，重置以便下次旋转重新保存
                         ResetRotationBaseline();
                     }
                     catch { }
@@ -1456,7 +1778,9 @@ namespace Ink_Canvas
                 var matrix = new System.Windows.Media.Matrix();
                 matrix.ScaleAt(ratio, ratio, inkOrigin.X, inkOrigin.Y);
                 inkCanvas.Strokes.Transform(matrix, false);
+                // 同步变换历史中不在画布上的笔画（如形状识别的 ReplacedStroke）
                 timeMachine?.TransformStrokesInHistory(matrix, inkCanvas.Strokes);
+                // 墨迹大小已改变，旋转基准过期，重置以便下次旋转重新保存
                 ResetRotationBaseline();
             }
             catch (Exception ex)
@@ -1861,6 +2185,12 @@ namespace Ink_Canvas
                 if ((DateTime.Now - _lastCaptureTime).TotalMilliseconds < VideoPresenterCaptureCooldownMs) return;
                 _lastCaptureTime = DateTime.Now;
 
+                bool correctionEnabled = Settings?.Automation?.IsEnablePhotoCorrection == true;
+                int rotationAngle = _cameraService?.RotationAngle ?? 0;
+                LogHelper.WriteLogToFile(
+                    $"视频展台拍照: 开始 (矫正开关={correctionEnabled}, 旋转角度={rotationAngle * 90}°, 特殊模式={_isVideoPresenterSpecialMode})",
+                    LogHelper.LogType.Trace);
+
                 // 两条拍照路径（互为兜底）：
                 //   1. _lastFrame：由 NewVideoSample 事件（SampleGrabber）填充 —— 可能不触发
                 //   2. CaptureCurrentFrame()：从 D3DImage.CopyBackBuffer 拿 BitmapSource（GPU 内存拷贝）
@@ -1887,87 +2217,117 @@ namespace Ink_Canvas
                         ShowBoothTransientMessage("预览未就绪，请稍后再试");
                         return;
                     }
+                    LogHelper.WriteLogToFile(
+                        $"视频展台拍照: 走路径2(D3DImage) BitmapSource={fallbackBitmapSource.PixelWidth}x{fallbackBitmapSource.PixelHeight}",
+                        LogHelper.LogType.Trace);
                 }
                 else if (frame == null)
                 {
                     return;
+                }
+                else
+                {
+                    LogHelper.WriteLogToFile(
+                        $"视频展台拍照: 走路径1(_lastFrame) Bitmap={frame.Width}x{frame.Height}",
+                        LogHelper.LogType.Trace);
                 }
 
                 Task.Run(() =>
                 {
                     try
                     {
+                        // 统一两条路径：都拿到一个 System.Drawing.Bitmap (toSave)，再做矫正，最后转 BitmapImage
                         Bitmap toSave;
-                        BitmapSource directBitmapSource = null;
+                        bool ownsToSave; // toSave 是否需要 Dispose（frame 由调用方 Dispose，矫正产物需要 Dispose）
+
                         if (frame != null)
                         {
-                            // 路径 1：使用 _lastFrame（System.Drawing.Bitmap）
+                            // 路径 1：使用 _lastFrame（System.Drawing.Bitmap，已应用旋转）
                             toSave = frame;
-
-                            if (Settings?.Automation?.IsEnablePhotoCorrection == true
-                                && TryDetectPaperCorners(toSave, out List<AForge.IntPoint> corners))
-                            {
-                                var corrected = ApplyPerspectiveCorrection(toSave, corners);
-                                if (corrected != null) toSave = corrected;
-                            }
-
-                            var bmpImage = ConvertBitmapToBitmapImage(toSave);
-                            if (!ReferenceEquals(toSave, frame))
-                            {
-                                toSave.Dispose();
-                            }
-                            frame.Dispose();
-
-                            if (bmpImage == null) return;
-
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                var ci = new CapturedImage(bmpImage);
-                                _capturedPhotos.Insert(0, ci);
-
-                                while (_capturedPhotos.Count > MaxCapturedPhotos)
-                                {
-                                    _capturedPhotos.RemoveAt(_capturedPhotos.Count - 1);
-                                }
-
-                                // 视频展台特殊模式：直接把照片插入到白板右下角页码预览（RefreshBoothPageListView），
-                                // 不再走已废弃的侧栏照片列表（UpdateCapturedPhotosDisplay / CapturedPhotosStackPanel）
-                                if (_isVideoPresenterSpecialMode)
-                                    InsertPhotoToCanvas(ci);
-                            }));
+                            ownsToSave = false;
                         }
                         else
                         {
-                            // 路径 2：直接用 D3DImage 拿到的 BitmapSource
+                            // 路径 2：D3DImage → BitmapSource → Bitmap
                             // 应用旋转（D3DImage 是预览状态，未经过 LayoutTransform 旋转）
-                            directBitmapSource = fallbackBitmapSource;
-                            if (_cameraService != null && _cameraService.RotationAngle != 0)
+                            BitmapSource directBitmapSource = fallbackBitmapSource;
+                            if (rotationAngle != 0)
                             {
-                                directBitmapSource = ApplyRotationToBitmapSource(
-                                    directBitmapSource, _cameraService.RotationAngle);
+                                directBitmapSource = ApplyRotationToBitmapSource(directBitmapSource, rotationAngle);
                             }
-                            if (directBitmapSource == null) return;
-
-                            // CapturedImage 需要 BitmapImage，把 BitmapSource 编码成 PNG 再转
-                            var bmpImage = ConvertBitmapSourceToBitmapImage(directBitmapSource);
-                            if (bmpImage == null) return;
-
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            if (directBitmapSource == null)
                             {
-                                var ci = new CapturedImage(bmpImage);
-                                _capturedPhotos.Insert(0, ci);
-
-                                while (_capturedPhotos.Count > MaxCapturedPhotos)
-                                {
-                                    _capturedPhotos.RemoveAt(_capturedPhotos.Count - 1);
-                                }
-
-                                // 视频展台特殊模式：直接把照片插入到白板右下角页码预览（RefreshBoothPageListView），
-                                // 不再走已废弃的侧栏照片列表（UpdateCapturedPhotosDisplay / CapturedPhotosStackPanel）
-                                if (_isVideoPresenterSpecialMode)
-                                    InsertPhotoToCanvas(ci);
-                            }));
+                                LogHelper.WriteLogToFile("视频展台拍照: 路径2 旋转后 BitmapSource 为 null", LogHelper.LogType.Warning);
+                                return;
+                            }
+                            toSave = BitmapSourceToBitmap(directBitmapSource);
+                            if (toSave == null)
+                            {
+                                LogHelper.WriteLogToFile("视频展台拍照: 路径2 BitmapSource→Bitmap 转换失败", LogHelper.LogType.Warning);
+                                return;
+                            }
+                            ownsToSave = true;
+                            LogHelper.WriteLogToFile(
+                                $"视频展台拍照: 路径2 转换为 Bitmap={toSave.Width}x{toSave.Height}",
+                                LogHelper.LogType.Trace);
                         }
+
+                        // 照片矫正（两条路径统一）：检测纸张角点 → 透视矫正
+                        bool corrected = false;
+                        if (correctionEnabled)
+                        {
+                            if (TryDetectPaperCorners(toSave, out List<OpenCvSharp.Point> corners))
+                            {
+                                var correctedBitmap = ApplyPerspectiveCorrection(toSave, corners);
+                                if (correctedBitmap != null)
+                                {
+                                    if (ownsToSave) toSave.Dispose();
+                                    toSave = correctedBitmap;
+                                    ownsToSave = true;
+                                    corrected = true;
+                                }
+                                else
+                                {
+                                    LogHelper.WriteLogToFile("照片矫正: ApplyPerspectiveCorrection 返回 null，使用原图", LogHelper.LogType.Trace);
+                                }
+                            }
+                            else
+                            {
+                                LogHelper.WriteLogToFile("照片矫正: TryDetectPaperCorners 未检测到纸张，使用原图", LogHelper.LogType.Trace);
+                            }
+                        }
+
+                        var bmpImage = ConvertBitmapToBitmapImage(toSave);
+                        if (ownsToSave) toSave.Dispose();
+                        if (frame != null) frame.Dispose();
+
+                        if (bmpImage == null)
+                        {
+                            LogHelper.WriteLogToFile("视频展台拍照: Bitmap→BitmapImage 转换失败", LogHelper.LogType.Warning);
+                            return;
+                        }
+
+                        LogHelper.WriteLogToFile(
+                            $"视频展台拍照: 完成 输出 BitmapImage={bmpImage.PixelWidth}x{bmpImage.PixelHeight} (矫正应用={corrected})",
+                            LogHelper.LogType.Trace);
+
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            var ci = new CapturedImage(bmpImage);
+                            // 追加到列表末尾：让照片按拍摄时间顺序排列，
+                            // 第一张拍 → 1/1，第二张拍 → 2/2（新照片在最后，符合自然页码递增直觉）
+                            _capturedPhotos.Add(ci);
+
+                            while (_capturedPhotos.Count > MaxCapturedPhotos)
+                            {
+                                _capturedPhotos.RemoveAt(0);
+                            }
+
+                            // 视频展台特殊模式：直接把照片插入到白板右下角页码预览（RefreshBoothPageListView），
+                            // 不再走已废弃的侧栏照片列表（UpdateCapturedPhotosDisplay / CapturedPhotosStackPanel）
+                            if (_isVideoPresenterSpecialMode)
+                                InsertPhotoToCanvas(ci);
+                        }));
                     }
                     catch (Exception ex)
                     {
@@ -2026,122 +2386,60 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// 计算指定角度下视频画面的变换矩阵：绕画面视觉中心（含 RenderTransform 缩放/平移）
-        /// 旋转，并在 90°/270° 时按真实图像比例 + 容器比例计算一次 fit 缩放，使墨迹与
-        /// 预览的 Stretch 行为保持一致。实时画面用相机分辨率作为图像尺寸，照片预览用位图尺寸。
+/// 把 WPF BitmapSource 转换为 System.Drawing.Bitmap（直接像素拷贝，无 PNG 编解码）。
+        /// 用于 D3DImage 拍照路径需要做照片矫正时：OpenCvSharp 的 BitmapConverter.ToMat 只接受 System.Drawing.Bitmap。
+        /// 性能：相比 PNG 编解码省 15-25ms（4K 帧从 ~30ms 降到 ~5ms），实时检测关键路径。
+        /// 原理：BitmapSource.CopyPixels 直接拷贝 GPU→CPU 的像素数据，用 Stride 对齐构造 Bitmap。
         /// </summary>
-        private System.Windows.Media.Matrix GetBoothRotationMatrix(
-            double angleDegrees,
-            double containerW,
-            double containerH,
-            double imgW,
-            double imgH)
+        private static Bitmap BitmapSourceToBitmap(BitmapSource src)
         {
-            double centerX = (containerW / 2.0) * _boothPreviewScale + _boothPreviewTranslateX;
-            double centerY = (containerH / 2.0) * _boothPreviewScale + _boothPreviewTranslateY;
-            double angle = angleDegrees % 360.0;
-            if (angle < 0) angle += 360.0;
-            bool rotated90 = Math.Abs(angle - 90.0) < 0.01 || Math.Abs(angle - 270.0) < 0.01;
-
-            double scale = 1.0;
-            if (rotated90 && containerW > 0 && containerH > 0 && imgW > 0 && imgH > 0)
-            {
-                double s0 = Math.Min(containerW / imgW, containerH / imgH);
-                double s90 = Math.Min(containerH / imgW, containerW / imgH);
-                if (s0 > 0) scale = s90 / s0;
-            }
-
-            var rotate = System.Windows.Media.Matrix.Identity;
-            rotate.RotateAt(angle, centerX, centerY);
-            var scaleMatrix = System.Windows.Media.Matrix.Identity;
-            scaleMatrix.ScaleAt(scale, scale, centerX, centerY);
-            return rotate * scaleMatrix;
-        }
-
-        /// <summary>当前画布墨迹对应的视觉角度（0/90/180/270）。</summary>
-        private int GetBoothVisualAngle()
-        {
-            var angle = VideoPresenterFullCanvasRotation?.Angle ?? 0;
-            return ((int)(angle % 360.0) + 360) % 360;
-        }
-
-        /// <summary>旋转前保存当前画布快照作为基准（仅保存一次）。</summary>
-        private void EnsureRotationBaseline()
-        {
-            if (_rotationBaselineStrokes != null) return;
-            if (inkCanvas == null || inkCanvas.Strokes.Count == 0) return;
-            _rotationBaselineStrokes = inkCanvas.Strokes.Clone();
-            _rotationBaselineAngle = GetBoothVisualAngle();
-        }
-
-        /// <summary>用户编辑/移动/缩放/切页后基准过期，下次旋转重新保存。</summary>
-        private void ResetRotationBaseline()
-        {
-            _rotationBaselineStrokes = null;
-        }
-
-        /// <summary>
-        /// 从基准快照按 delta = M_baseline⁻¹ · M_target 一次性变换墨迹到目标角度，
-        /// 不再每转一次都叠加缩放。旋转中心用预览视觉中心（含 RenderTransform）。
-        /// </summary>
-        private void RotateBoothStrokesFromBaseline(double targetAngleDegrees)
-        {
-            if (inkCanvas == null || inkCanvas.Strokes.Count == 0) return;
+            if (src == null) return null;
             try
             {
-                double containerW = VideoPresenterSpecialModeContainer?.ActualWidth ?? inkCanvas.ActualWidth;
-                double containerH = VideoPresenterSpecialModeContainer?.ActualHeight ?? inkCanvas.ActualHeight;
-                if (containerW <= 0 || containerH <= 0) return;
+                int w = src.PixelWidth;
+                int h = src.PixelHeight;
+                if (w <= 0 || h <= 0) return null;
 
-                double imgW, imgH;
-                if (VideoPresenterFrozenFrameImage != null
-                    && VideoPresenterFrozenFrameImage.Visibility == Visibility.Visible
-                    && VideoPresenterFrozenFrameImage.Source is BitmapSource bs)
+                // 统一到 BGRA 32bpp（OpenCvSharp BitmapConverter.ToMat 期望的格式，支持 4 通道）
+                var dstFormat = System.Drawing.Imaging.PixelFormat.Format32bppPArgb;
+                int bytesPerPixel = 4;
+                int stride = w * bytesPerPixel;
+                byte[] pixels = new byte[stride * h];
+
+                // CopyPixels 会按 src 的格式填充，需要用 BitmapSource.Create 转格式或直接用合适的 stride
+                // 若 src 不是 32bpp，先转成 32bpp Bgra 再拷贝
+                if (src.Format != System.Windows.Media.PixelFormats.Bgra32 &&
+                    src.Format != System.Windows.Media.PixelFormats.Pbgra32)
                 {
-                    imgW = bs.PixelWidth;
-                    imgH = bs.PixelHeight;
+                    // 转格式：用 FormatConvertedBitmap（不拷贝大数据，只在读取时转换）
+                    var converted = new FormatConvertedBitmap(src, System.Windows.Media.PixelFormats.Bgra32, null, 0);
+                    converted.Freeze();
+                    converted.CopyPixels(pixels, stride, 0);
                 }
                 else
                 {
-                    // 实时画面：用相机分辨率作为图像尺寸，90°/270° 时墨迹跟着画面一起缩小。
-                    imgW = _boothResolutionWidth;
-                    imgH = _boothResolutionHeight;
+                    src.CopyPixels(pixels, stride, 0);
                 }
 
-                var currentMatrix = GetBoothRotationMatrix(_rotationBaselineAngle, containerW, containerH, imgW, imgH);
-                var targetMatrix = GetBoothRotationMatrix(targetAngleDegrees, containerW, containerH, imgW, imgH);
-                if (!currentMatrix.HasInverse) return;
-                var currentInv = currentMatrix;
-                currentInv.Invert();
-                var delta = currentInv * targetMatrix;
-
+                // 构造 Bitmap：直接用像素数组，不再走 PNG 编解码
+                // 注意：PArgb 与 Bgra 在内存布局上一致，只是 alpha 预乘语义不同；
+                //       OpenCvSharp ToMat 会按 Format32bppPArgb 处理，CvtColor BGRA2GRAY 能正确工作
+                var bmp = new Bitmap(w, h, dstFormat);
+                var data = bmp.LockBits(
+                    new System.Drawing.Rectangle(0, 0, w, h),
+                    System.Drawing.Imaging.ImageLockMode.WriteOnly,
+                    dstFormat);
                 try
                 {
-                    LogHelper.WriteLogToFile(
-                        $"[BoothDiag] Rotate: baseline={_rotationBaselineAngle}, target={targetAngleDegrees}, " +
-                        $"container={containerW}x{containerH}, imgSize={imgW}x{imgH}, " +
-                        $"delta=[{delta.M11:F3},{delta.M12:F3}|{delta.M21:F3},{delta.M22:F3}|{delta.OffsetX:F2},{delta.OffsetY:F2}]",
-                        LogHelper.LogType.Info);
-                }
-                catch { }
-
-                _isApplyingRotationToStrokes = true;
-                try
-                {
-                    inkCanvas.Strokes.Transform(delta, false);
-                    timeMachine?.TransformStrokesInHistory(delta, inkCanvas.Strokes);
+                    Marshal.Copy(pixels, 0, data.Scan0, pixels.Length);
                 }
                 finally
                 {
-                    _isApplyingRotationToStrokes = false;
+                    bmp.UnlockBits(data);
                 }
-
-                _rotationBaselineAngle = ((int)(targetAngleDegrees % 360.0) + 360) % 360;
+                return bmp;
             }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"从基准旋转墨迹失败: {ex.Message}", LogHelper.LogType.Warning);
-            }
+            catch { return null; }
         }
 
         /// <summary>
@@ -2199,6 +2497,52 @@ namespace Ink_Canvas
         {
             try
             {
+                // 图片预览状态：直接旋转冻结照片，不返回直播
+                // （冻结照片内容已通过拍照时 RotateFlip 旋转到正向，这里仅旋转 LayoutTransform 即可）
+                // 照片预览页已共享 VideoPresenterFullCanvasRotation，旋转它即可同时旋转照片。
+                if (_isVideoPresenterSpecialMode
+                    && VideoPresenterFrozenFrameImage != null
+                    && VideoPresenterFrozenFrameImage.Visibility == Visibility.Visible
+                    && VideoPresenterFullCanvasRotation != null)
+                {
+                    // 与直播页逻辑完全一致：只设 Rotation.Angle，不重置缩放/平移。
+                    // 照片用 FillImage 填满容器，LayoutTransform 旋转后 WPF 自动用交换的 constraint 重算 fit，
+                    // 行为与 VideoCaptureElement 一致。
+                    double beforeAngle = VideoPresenterFullCanvasRotation.Angle;
+                    EnsureRotationBaseline();
+                    // 诊断日志：旋转前状态
+                    try
+                    {
+                        double containerW = VideoPresenterSpecialModeContainer?.ActualWidth ?? 0;
+                        double containerH = VideoPresenterSpecialModeContainer?.ActualHeight ?? 0;
+                        double imgW = 0, imgH = 0;
+                        if (VideoPresenterFrozenFrameImage.Source is BitmapSource bs)
+                        { imgW = bs.PixelWidth; imgH = bs.PixelHeight; }
+                        LogHelper.WriteLogToFile(
+                            $"[BoothDiag] BtnRotate BEFORE: beforeAngle={beforeAngle}, " +
+                            $"container={containerW}x{containerH}, imgSize={imgW}x{imgH}, " +
+                            $"baselineAngle={_rotationBaselineAngle}, baselineStrokes={_rotationBaselineStrokes?.Count ?? 0}, " +
+                            $"canvasStrokes={inkCanvas?.Strokes?.Count ?? 0}, " +
+                            $"scale={_boothPreviewScale}, translate=({_boothPreviewTranslateX},{_boothPreviewTranslateY})",
+                            LogHelper.LogType.Info);
+                    }
+                    catch { }
+                    VideoPresenterFullCanvasRotation.Angle = (VideoPresenterFullCanvasRotation.Angle + 90.0) % 360.0;
+                    // 传视觉角度（cameraRotation*90 + Angle）给墨迹变换，
+                    // 因为 GetBoothRotationMatrix 按"实时画面 0° 基准"算缩放，照片预览需用视觉角度
+                    RotateBoothStrokesFromBaseline(GetBoothVisualAngle());
+                    // 诊断日志：旋转后状态
+                    try
+                    {
+                        LogHelper.WriteLogToFile(
+                            $"[BoothDiag] BtnRotate AFTER: afterAngle={VideoPresenterFullCanvasRotation.Angle}, " +
+                            $"photo.ActualSize={VideoPresenterFrozenFrameImage.ActualWidth}x{VideoPresenterFrozenFrameImage.ActualHeight}",
+                            LogHelper.LogType.Info);
+                    }
+                    catch { }
+                    return;
+                }
+
                 EnsureCameraService();
                 _cameraService.RotationAngle = (_cameraService.RotationAngle + 1) % 4;
 
@@ -2225,22 +2569,499 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 在启用照片校正的切换按钮被选中时，将该偏好设置为开启并保存到设置文件。
+        /// 同时启动实时识别框定时器，在直播画面上叠加 A4 纸检测框。
         /// </summary>
         private void ToggleBtnPhotoCorrection_Checked(object sender, RoutedEventArgs e)
         {
             if (Settings?.Automation == null) return;
             Settings.Automation.IsEnablePhotoCorrection = true;
             SaveSettingsToFile();
+            StartPaperDetectTimer();
         }
 
         /// <summary>
         /// 关闭“相片校正”设置并将变更持久化到设置文件。
+        /// 同时停止实时识别框定时器并隐藏覆盖层。
         /// </summary>
         private void ToggleBtnPhotoCorrection_Unchecked(object sender, RoutedEventArgs e)
         {
             if (Settings?.Automation == null) return;
             Settings.Automation.IsEnablePhotoCorrection = false;
             SaveSettingsToFile();
+            StopPaperDetectTimer();
+        }
+
+        /// <summary>
+        /// 从 Settings 同步加速模式 ComboBox 选中项。
+        /// 因 WireUpBoothPopupContentEvents 早于 LoadSettings 执行，需在 BoothPopup 打开时补同步。
+        /// SelectionChanged 处理函数内有 early return（Settings == newMode 时不保存），故设置 SelectedIndex 安全。
+        /// </summary>
+        private void SyncPhotoCorrectionAccelerationComboBox()
+        {
+            try
+            {
+                var cb = BoothPopupContent?.PhotoCorrectionAccelerationComboBox;
+                if (cb == null) return;
+                int accelIdx = (int)(Settings?.Automation?.PhotoCorrectionAcceleration ?? PhotoCorrectionAccelerationMode.Cpu);
+                if (accelIdx >= 0 && accelIdx < cb.Items.Count && cb.SelectedIndex != accelIdx)
+                    cb.SelectedIndex = accelIdx;
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// 加速模式 ComboBox 选择变化：保存到设置并立即应用（运行时检测可用性，不可用则回退）。
+        /// ComboBox 索引与 <see cref="PhotoCorrectionAccelerationMode"/> 枚举值一致：0=CPU, 1=OpenCL, 2=CUDA。
+        /// </summary>
+        private void PhotoCorrectionAccelerationComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Settings?.Automation == null) return;
+            // 初始化期间 ComboBox 还在绑定，跳过
+            if (BoothPopupContent?.PhotoCorrectionAccelerationComboBox == null) return;
+            int idx = BoothPopupContent.PhotoCorrectionAccelerationComboBox.SelectedIndex;
+            if (idx < 0 || idx > 2) return;
+            var newMode = (PhotoCorrectionAccelerationMode)idx;
+            if (Settings.Automation.PhotoCorrectionAcceleration == newMode) return;
+            Settings.Automation.PhotoCorrectionAcceleration = newMode;
+            SaveSettingsToFile();
+
+            // 立即检测可用性，不可用则回退（避免下次检测时才发现不可用导致卡顿）
+            var effective = PaperDetectAccelerationResolver.ResolveEffective(newMode);
+            if (effective != newMode)
+            {
+                LogHelper.WriteLogToFile(
+                    $"照片矫正: 加速模式 {newMode} 不可用，回退到 {effective}",
+                    LogHelper.LogType.Warning);
+                // 把回退结果也写回设置，避免下次启动重复尝试
+                Settings.Automation.PhotoCorrectionAcceleration = effective;
+                SaveSettingsToFile();
+                // 同步 ComboBox 显示（避免显示与实际不符）
+                BoothPopupContent.PhotoCorrectionAccelerationComboBox.SelectedIndex = (int)effective;
+                ShowBoothTransientMessage(
+                    $"{newMode} 不可用，已回退到 {effective}" +
+                    (newMode == PhotoCorrectionAccelerationMode.CUDA
+                        ? "（未检测到 NVIDIA 显卡）"
+                        : string.Empty));
+            }
+            else
+            {
+                LogHelper.WriteLogToFile(
+                    $"照片矫正: 加速模式切换到 {newMode}",
+                    LogHelper.LogType.Trace);
+                // CUDA 模式下 OPENCV_OPENCL_DEVICE 环境变量必须进程启动时设置，
+                // 运行时切换不会重置已初始化的 OpenCL 上下文。提示用户下次启动生效。
+                if (newMode == PhotoCorrectionAccelerationMode.CUDA
+                    || Settings.Automation.PhotoCorrectionAcceleration == PhotoCorrectionAccelerationMode.CUDA
+                    || (effective == PhotoCorrectionAccelerationMode.CUDA && newMode != PhotoCorrectionAccelerationMode.CUDA))
+                {
+                    ShowBoothTransientMessage("加速模式切换将在下次启动后完全生效");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 启动 A4 纸实时识别定时器。仅在视频展台特殊模式 + 矫正开关开启 + 非冻结状态时有效。
+        /// 定时器在后台线程做检测，结果回到 UI 线程画框，不影响直播渲染性能。
+        /// </summary>
+        private void StartPaperDetectTimer()
+        {
+            if (PaperDetectOverlayCanvas == null) return;
+            // 显示覆盖层（即使还没检测到角点，也保持可见，检测到时再画框）
+            PaperDetectOverlayCanvas.Visibility = Visibility.Visible;
+
+            if (_paperDetectTimer == null)
+            {
+                _paperDetectTimer = new DispatcherTimer(DispatcherPriority.Background)
+                {
+                    Interval = TimeSpan.FromMilliseconds(PaperDetectIntervalMs)
+                };
+                _paperDetectTimer.Tick += PaperDetectTimer_Tick;
+            }
+            if (!_paperDetectTimer.IsEnabled)
+                _paperDetectTimer.Start();
+        }
+
+        /// <summary>
+        /// 停止 A4 纸实时识别定时器并清空覆盖层。
+        /// </summary>
+        private void StopPaperDetectTimer()
+        {
+            if (_paperDetectTimer != null && _paperDetectTimer.IsEnabled)
+                _paperDetectTimer.Stop();
+            StopOverlayAnim();
+            if (PaperDetectOverlayCanvas != null)
+            {
+                PaperDetectOverlayCanvas.Children.Clear();
+                PaperDetectOverlayCanvas.Visibility = Visibility.Collapsed;
+            }
+            _overlayPolygon = null;
+            _overlayEllipses = null;
+            _lastOverlayCorners = null;
+            _lastOverlayDrawTime = null;
+            _overlayAnimCompletedCount = 0;
+            _overlayAnimInterruptedCount = 0;
+        }
+
+        /// <summary>
+        /// 实时识别定时器 Tick：从 D3DImage 拿当前帧 → 后台线程检测角点 → UI 线程画框。
+        /// 用 Interlocked 防重入（上一次检测未完成时跳过本次）。
+        /// </summary>
+        private void PaperDetectTimer_Tick(object sender, EventArgs e)
+        {
+            // 仅在特殊模式 + 非冻结状态 + VideoCaptureElement 可见时检测
+            if (!_isVideoPresenterSpecialMode) return;
+            if (VideoPresenterFullCanvasImage == null) return;
+            if (VideoPresenterFullCanvasImage.Visibility != Visibility.Visible) return;
+            // 冻结状态（拍照后显示冻结照片）：清空覆盖层，不检测
+            if (VideoPresenterFrozenFrameImage != null
+                && VideoPresenterFrozenFrameImage.Visibility == Visibility.Visible)
+            {
+                if (PaperDetectOverlayCanvas != null && PaperDetectOverlayCanvas.Children.Count > 0)
+                {
+                    StopOverlayAnim();
+                    PaperDetectOverlayCanvas.Children.Clear();
+                    _overlayPolygon = null;
+                    _overlayEllipses = null;
+                    _lastOverlayCorners = null;
+                }
+                return;
+            }
+
+            // 防重入：上一次后台检测还在跑就跳过
+            if (System.Threading.Interlocked.CompareExchange(ref _paperDetectRunning, 1, 0) != 0) return;
+
+            // 拿当前帧（D3DImage.CopyBackBuffer）
+            BitmapSource frameSrc = null;
+            try { frameSrc = VideoPresenterFullCanvasImage.CaptureCurrentFrame(); }
+            catch { }
+            if (frameSrc == null)
+            {
+                System.Threading.Interlocked.Exchange(ref _paperDetectRunning, 0);
+                return;
+            }
+
+            // 应用旋转（与拍照路径一致：D3DImage 拿到的是原始帧，需要手动旋转）
+            int rotation = _cameraService?.RotationAngle ?? 0;
+            BitmapSource rotated = rotation != 0 ? ApplyRotationToBitmapSource(frameSrc, rotation) : frameSrc;
+            if (rotated == null)
+            {
+                System.Threading.Interlocked.Exchange(ref _paperDetectRunning, 0);
+                return;
+            }
+
+            int frameW = rotated.PixelWidth;
+            int frameH = rotated.PixelHeight;
+
+            // 后台线程做检测（TryDetectPaperCorners 内部会下采样，~30ms）
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                Bitmap bmp = null;
+                List<OpenCvSharp.Point> corners = null;
+                try
+                {
+                    bmp = BitmapSourceToBitmap(rotated);
+                    if (bmp != null)
+                    {
+                        // verbose=false：实时检测不输出日志/不保存诊断图，避免每 400ms 刷屏
+                        TryDetectPaperCorners(bmp, out corners, verbose: false);
+                    }
+                }
+                catch { corners = null; }
+                finally
+                {
+                    bmp?.Dispose();
+                }
+
+                // 映射角点到 overlay 坐标
+                System.Windows.Point[] overlayPts = null;
+                if (corners != null && corners.Count == 4)
+                {
+                    overlayPts = new System.Windows.Point[4];
+                    for (int i = 0; i < 4; i++)
+                    {
+                        overlayPts[i] = MapFramePointToOverlay(
+                            corners[i].X, corners[i].Y, frameW, frameH);
+                    }
+                }
+
+                // 回到 UI 线程画框
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    DrawPaperDetectOverlay(overlayPts);
+                    System.Threading.Interlocked.Exchange(ref _paperDetectRunning, 0);
+                }));
+            });
+        }
+
+        /// <summary>
+        /// 把帧坐标 (frameX, frameY) 映射到 PaperDetectOverlayCanvas 的坐标空间。
+        /// 需要考虑：VideoCaptureElement 的 Stretch=Uniform + LayoutTransform 旋转 + RenderTransform(缩放/平移)。
+        /// 映射流程：帧坐标 → 旋转后帧坐标 → Uniform 缩放到 VideoCaptureElement 布局尺寸
+        ///          → 应用 RenderTransform(Scale + Translate，含 RenderTransformOrigin=(0,0) 规则)
+        ///          → 加 VideoCaptureElement 在 overlay 中的布局偏移
+        ///          → overlay 坐标
+        /// 注意：RenderTransformOrigin=(0,0)，缩放公式为 translate_new = origin - (origin - translate_old) * ratio，
+        ///       在 origin=(0,0) 下化简为 translate_new = translate_old * ratio，即缩放是以"平移后的左上角"为锚点。
+        ///       最终屏幕位置 = Scale * 布局坐标 + Translate。
+        /// </summary>
+        private System.Windows.Point MapFramePointToOverlay(double frameX, double frameY, int frameW, int frameH)
+        {
+            if (PaperDetectOverlayCanvas == null) return new System.Windows.Point(0, 0);
+            double overlayW = PaperDetectOverlayCanvas.ActualWidth;
+            double overlayH = PaperDetectOverlayCanvas.ActualHeight;
+            if (overlayW <= 0 || overlayH <= 0) return new System.Windows.Point(0, 0);
+
+            int rotation = _cameraService?.RotationAngle ?? 0;
+
+            // 1. 帧坐标 → 旋转后坐标（旋转后帧的"显示"尺寸会宽高交换）
+            double rx, ry, rotW, rotH;
+            if (rotation == 1) // 90° 顺时针
+            {
+                rx = frameH - frameY;
+                ry = frameX;
+                rotW = frameH; rotH = frameW;
+            }
+            else if (rotation == 2) // 180°
+            {
+                rx = frameW - frameX;
+                ry = frameH - frameY;
+                rotW = frameW; rotH = frameH;
+            }
+            else if (rotation == 3) // 270°
+            {
+                rx = frameY;
+                ry = frameW - frameX;
+                rotW = frameH; rotH = frameW;
+            }
+            else // 0°
+            {
+                rx = frameX; ry = frameY;
+                rotW = frameW; rotH = frameH;
+            }
+
+            // 2. VideoCaptureElement 的布局尺寸（经过 LayoutTransform 旋转后的实际占用尺寸）
+            //    父容器用 Grid.Stretch=Fill 或类似布局，VideoCaptureElement 自身 Stretch=Uniform
+            //    所以它的布局尺寸 = 父容器尺寸（overlay 尺寸），再在内部 Uniform 拉伸留黑边
+            double elemW = VideoPresenterFullCanvasImage?.ActualWidth ?? overlayW;
+            double elemH = VideoPresenterFullCanvasImage?.ActualHeight ?? overlayH;
+            if (elemW <= 0 || elemH <= 0) { elemW = overlayW; elemH = overlayH; }
+
+            // 3. Uniform 缩放：旋转后帧 → VideoCaptureElement 布局框（留黑边居中）
+            double stretch = Math.Min(elemW / rotW, elemH / rotH);
+            double uniformX = rx * stretch;   // VideoCaptureElement 内部坐标（左上角对齐）
+            double uniformY = ry * stretch;
+            // Uniform 居中偏移（黑边）
+            double uniformOffsetX = (elemW - rotW * stretch) / 2.0;
+            double uniformOffsetY = (elemH - rotH * stretch) / 2.0;
+            double layoutX = uniformX + uniformOffsetX;   // VideoCaptureElement 布局坐标
+            double layoutY = uniformY + uniformOffsetY;
+
+            // 4. 应用 RenderTransform：Scale + Translate（RenderTransformOrigin=(0,0)）
+            //    屏幕坐标 = Scale * 布局坐标 + Translate
+            double scale = _boothPreviewScale;
+            double tx = _boothPreviewTranslateX;
+            double ty = _boothPreviewTranslateY;
+            double screenX = layoutX * scale + tx;
+            double screenY = layoutY * scale + ty;
+
+            // 5. VideoCaptureElement 在 overlay 中的偏移（Grid 布局通常对齐到 overlay 左上角，偏移=0）
+            //    若 Grid 有 Margin/非零对齐，需要加 VideoCaptureElement 相对 overlay 的偏移；
+            //    这里用 TranslatePoint 从 VideoCaptureElement 坐标系转换到 overlay 坐标系，更鲁棒
+            if (VideoPresenterFullCanvasImage != null && PaperDetectOverlayCanvas != null)
+            {
+                try
+                {
+                    var pt = VideoPresenterFullCanvasImage.TranslatePoint(
+                        new System.Windows.Point(screenX, screenY), PaperDetectOverlayCanvas);
+                    return pt;
+                }
+                catch { /* 转换失败时退回到直接返回 screenX/screenY（视为偏移=0） */ }
+            }
+
+            return new System.Windows.Point(screenX, screenY);
+        }
+
+        /// <summary>
+        /// 在覆盖 Canvas 上绘制 A4 纸检测框（红色四边形 + 4 个角点圆）。
+        /// overlayPts 为 null 时清空覆盖层。
+        /// 有上一帧角点时，启动移动动画从上一帧位置平滑过渡到当前帧，避免框跳变；
+        /// 动画进行中又来新目标时，以当前中间位置为新起点继续追赶，自然衔接。
+        /// </summary>
+        private void DrawPaperDetectOverlay(System.Windows.Point[] overlayPts)
+        {
+            if (PaperDetectOverlayCanvas == null) return;
+
+            if (overlayPts == null || overlayPts.Length != 4)
+            {
+                // 丢失检测：停止动画，清空覆盖层与复用元素引用
+                StopOverlayAnim();
+                PaperDetectOverlayCanvas.Children.Clear();
+                _overlayPolygon = null;
+                _overlayEllipses = null;
+                _lastOverlayCorners = null;
+                _lastOverlayDrawTime = null;
+                // 若有动画统计，输出汇总后重置
+                if (_overlayAnimCompletedCount > 0 || _overlayAnimInterruptedCount > 0)
+                {
+                    LogHelper.WriteLogToFile(
+                        $"矫正框: 丢失检测 本次统计 完成={_overlayAnimCompletedCount} 打断={_overlayAnimInterruptedCount}",
+                        LogHelper.LogType.Trace);
+                    _overlayAnimCompletedCount = 0;
+                    _overlayAnimInterruptedCount = 0;
+                }
+                return;
+            }
+
+            // 诊断：记录新角点到来间隔（验证实际间隔 ≠ 16ms 定时器间隔，受检测耗时限制约 30-50ms）
+            var now = DateTime.UtcNow;
+            if (_lastOverlayDrawTime.HasValue)
+            {
+                double intervalMs = (now - _lastOverlayDrawTime.Value).TotalMilliseconds;
+                bool animRunning = _overlayAnimTimer != null && _overlayAnimTimer.IsEnabled;
+                LogHelper.WriteLogToFile(
+                    $"矫正框: 新角点到来 间隔={intervalMs:F1}ms 动画运行中={animRunning} (完成={_overlayAnimCompletedCount},打断={_overlayAnimInterruptedCount})",
+                    LogHelper.LogType.Trace);
+            }
+            _lastOverlayDrawTime = now;
+
+            if (_lastOverlayCorners == null)
+            {
+                // 首次检测到（或丢失后重新检测到）：直接绘制，无动画
+                StopOverlayAnim();
+                EnsureOverlayElements();
+                ApplyOverlayPoints(overlayPts);
+                _lastOverlayCorners = (System.Windows.Point[])overlayPts.Clone();
+            }
+            else
+            {
+                // 有上一帧：启动动画从 _lastOverlayCorners（当前显示位置）过渡到 overlayPts
+                StartOverlayAnim(_lastOverlayCorners, overlayPts);
+            }
+        }
+
+        /// <summary>确保复用的 Polygon 与 4 个 Ellipse 已创建并加入覆盖层（动画中只更新属性，不重建）。</summary>
+        private void EnsureOverlayElements()
+        {
+            if (_overlayPolygon == null)
+            {
+                _overlayPolygon = new System.Windows.Shapes.Polygon
+                {
+                    Stroke = System.Windows.Media.Brushes.Red,
+                    StrokeThickness = 3,
+                    Fill = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromArgb(40, 255, 0, 0)) // 半透明红色填充
+                };
+                PaperDetectOverlayCanvas.Children.Add(_overlayPolygon);
+            }
+            if (_overlayEllipses == null)
+            {
+                _overlayEllipses = new System.Windows.Shapes.Ellipse[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    _overlayEllipses[i] = new System.Windows.Shapes.Ellipse
+                    {
+                        Width = 12,
+                        Height = 12,
+                        Fill = System.Windows.Media.Brushes.Red,
+                        Stroke = System.Windows.Media.Brushes.White,
+                        StrokeThickness = 1
+                    };
+                    PaperDetectOverlayCanvas.Children.Add(_overlayEllipses[i]);
+                }
+            }
+        }
+
+        /// <summary>把给定 4 点应用到复用的 Polygon.Points 与 4 个 Ellipse 的位置。</summary>
+        private void ApplyOverlayPoints(System.Windows.Point[] pts)
+        {
+            if (_overlayPolygon == null || _overlayEllipses == null) return;
+            _overlayPolygon.Points = new System.Windows.Media.PointCollection(pts);
+            for (int i = 0; i < 4; i++)
+            {
+                System.Windows.Controls.Canvas.SetLeft(_overlayEllipses[i], pts[i].X - 6);
+                System.Windows.Controls.Canvas.SetTop(_overlayEllipses[i], pts[i].Y - 6);
+            }
+        }
+
+        /// <summary>启动矫正框移动动画：from→to，时长 OverlayAnimDurationMs，ease-out 缓动。</summary>
+        private void StartOverlayAnim(System.Windows.Point[] from, System.Windows.Point[] to)
+        {
+            EnsureOverlayElements();
+
+            // 诊断：若动画正在运行，说明上一次还没跑完就被新目标打断，记录打断进度
+            if (_overlayAnimTimer != null && _overlayAnimTimer.IsEnabled
+                && _animFromCorners != null && _animToCorners != null)
+            {
+                double prevT = (DateTime.UtcNow - _animStartTime).TotalMilliseconds / OverlayAnimDurationMs;
+                if (prevT > 1.0) prevT = 1.0;
+                double prevEased = 1.0 - (1.0 - prevT) * (1.0 - prevT);
+                _overlayAnimInterruptedCount++;
+                LogHelper.WriteLogToFile(
+                    $"矫正框: 动画被打断重启 上次进度={prevT:F2}(eased={prevEased:F2}) 时长={OverlayAnimDurationMs}ms",
+                    LogHelper.LogType.Trace);
+            }
+
+            _animFromCorners = (System.Windows.Point[])from.Clone();
+            _animToCorners = (System.Windows.Point[])to.Clone();
+            _animStartTime = DateTime.UtcNow;
+            // _lastOverlayCorners 由 OverlayAnimTimer_Tick 实时更新为当前插值位置，
+            // 动画未结束又来新目标时，新一轮 from 即此中间位置，自然衔接。
+
+            if (_overlayAnimTimer == null)
+            {
+                _overlayAnimTimer = new DispatcherTimer(DispatcherPriority.Render)
+                {
+                    Interval = TimeSpan.FromMilliseconds(16)
+                };
+                _overlayAnimTimer.Tick += OverlayAnimTimer_Tick;
+            }
+            if (!_overlayAnimTimer.IsEnabled)
+                _overlayAnimTimer.Start();
+            // 立即触发一次，避免起点停顿
+            OverlayAnimTimer_Tick(null, EventArgs.Empty);
+        }
+
+        /// <summary>停止矫正框移动动画并清空起止角点。</summary>
+        private void StopOverlayAnim()
+        {
+            if (_overlayAnimTimer != null && _overlayAnimTimer.IsEnabled)
+                _overlayAnimTimer.Stop();
+            _animFromCorners = null;
+            _animToCorners = null;
+        }
+
+        /// <summary>动画定时器 Tick：按 progress 插值 4 个角点并更新覆盖层，progress≥1 时停止。</summary>
+        private void OverlayAnimTimer_Tick(object sender, EventArgs e)
+        {
+            if (_animFromCorners == null || _animToCorners == null)
+            {
+                StopOverlayAnim();
+                return;
+            }
+            double t = (DateTime.UtcNow - _animStartTime).TotalMilliseconds / OverlayAnimDurationMs;
+            if (t > 1.0) t = 1.0;
+            // ease-out：起步快、末段慢，贴合检测框"追上纸张"的直觉
+            double eased = 1.0 - (1.0 - t) * (1.0 - t);
+
+            var pts = new System.Windows.Point[4];
+            for (int i = 0; i < 4; i++)
+            {
+                pts[i] = new System.Windows.Point(
+                    _animFromCorners[i].X + (_animToCorners[i].X - _animFromCorners[i].X) * eased,
+                    _animFromCorners[i].Y + (_animToCorners[i].Y - _animFromCorners[i].Y) * eased);
+            }
+            ApplyOverlayPoints(pts);
+            // 实时记录当前显示位置：动画未结束时新目标到来，以此为新起点
+            _lastOverlayCorners = (System.Windows.Point[])pts.Clone();
+
+            if (t >= 1.0)
+            {
+                _overlayAnimCompletedCount++;
+                LogHelper.WriteLogToFile(
+                    $"矫正框: 动画正常完成 实际耗时={(DateTime.UtcNow - _animStartTime).TotalMilliseconds:F1}ms (累计完成={_overlayAnimCompletedCount},打断={_overlayAnimInterruptedCount})",
+                    LogHelper.LogType.Trace);
+                StopOverlayAnim();
+            }
         }
 
         /// <summary>
@@ -2322,55 +3143,14 @@ namespace Ink_Canvas
                 VideoPresenterFrozenFrameImage.Height = double.NaN;
                 VideoPresenterFrozenFrameImage.HorizontalAlignment = HorizontalAlignment.Stretch;
                 VideoPresenterFrozenFrameImage.VerticalAlignment = VerticalAlignment.Stretch;
+                // 解除与 VideoCaptureElement 的变换共享，恢复照片 Image 自己的变换实例
+                if (VideoPresenterFrozenFrameRotation != null)
+                    VideoPresenterFrozenFrameImage.LayoutTransform = VideoPresenterFrozenFrameRotation;
+                if (_frozenFrameOriginalRenderTransform != null)
+                    VideoPresenterFrozenFrameImage.RenderTransform = _frozenFrameOriginalRenderTransform;
                 // VideoPresenterFrozenOverlay（旧全屏蒙版）和 VideoPresenterFrozenThumbnail（侧栏小预览）均已从 XAML 移除
             }
             catch { }
-        }
-
-        /// <summary>
-        /// 保存当前虚拟页的墨迹到 _boothStrokesByPage，并清空画布墨迹。
-        /// 在切换虚拟页（直播页↔照片页、照片页↔照片页）之前调用。
-        /// 不接入 timeMachine：booth 墨迹仅在特殊模式内有效，退出即丢弃。
-        /// </summary>
-        private void SaveBoothStrokes()
-        {
-            if (inkCanvas == null) return;
-            try
-            {
-                var snapshot = new StrokeCollection();
-                foreach (var s in inkCanvas.Strokes)
-                    snapshot.Add(s);
-                _boothStrokesByPage[_boothCurrentPhotoIndex] = snapshot;
-                inkCanvas.Strokes.Clear();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"SaveBoothStrokes 异常: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 从 _boothStrokesByPage 恢复目标虚拟页的墨迹到画布。
-        /// 在切换虚拟页并更新 _boothCurrentPhotoIndex 之后调用。
-        /// </summary>
-        private void RestoreBoothStrokes()
-        {
-            if (inkCanvas == null) return;
-            try
-            {
-                inkCanvas.Strokes.Clear();
-                if (_boothStrokesByPage.TryGetValue(_boothCurrentPhotoIndex, out var snapshot) && snapshot != null)
-                {
-                    var restored = new StrokeCollection();
-                    foreach (var s in snapshot)
-                        restored.Add(s);
-                    inkCanvas.Strokes = restored;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"RestoreBoothStrokes 异常: {ex.Message}", LogHelper.LogType.Error);
-            }
         }
 
         /// <summary>
@@ -2393,63 +3173,77 @@ namespace Ink_Canvas
                 return;
             }
 
-            // 保存当前虚拟页墨迹，再切换到目标照片页（更新 _boothCurrentPhotoIndex 后恢复）
-            SaveBoothStrokes();
+            // 切换前保存当前页墨迹到当前槽位（直播页快照或旧照片的 Strokes），
+            // 避免新照片显示旧墨迹或当前墨迹丢失。
+            SaveCurrentBoothStrokesToSlot();
+            // 切换页面重置旋转基准（新页面的墨迹需要新的基准）
+            ResetRotationBaseline();
             _boothCurrentPhotoIndex = photoIndex;
-            RestoreBoothStrokes();
 
-            // 按需计算照片在冻结画面上的布局参数（每张照片尺寸可能不同）
+            // 照片预览页直接复用实时画面的变换管线：把 FillImage 的 LayoutTransform/RenderTransform
+            // 替换为 VideoCaptureElement 的同名实例（VideoPresenterFullCanvasRotation/Scale/Translate）。
+            // FillImage 重写了 MeasureOverride 返回 availableSize，与 VideoCaptureElement 行为一致
+            // （填满容器，Stretch=Uniform 内部按比例缩放居中），所以旋转/缩放/移动与实时画面走完全相同代码路径。
             if (VideoPresenterFrozenFrameImage != null)
             {
+                // 诊断日志：进入照片预览页前的状态
+                try
+                {
+                    double containerW = VideoPresenterSpecialModeContainer?.ActualWidth ?? 0;
+                    double containerH = VideoPresenterSpecialModeContainer?.ActualHeight ?? 0;
+                    double imgW = 0, imgH = 0;
+                    if (photo.Image is BitmapSource bs) { imgW = bs.PixelWidth; imgH = bs.PixelHeight; }
+                    LogHelper.WriteLogToFile(
+                        $"[BoothDiag] SwitchBoothToPhotoPage ENTER: photoIndex={photoIndex}, " +
+                        $"container={containerW}x{containerH}, imgSize={imgW}x{imgH}, " +
+                        $"liveRotation.Angle={VideoPresenterFullCanvasRotation?.Angle ?? -1}, " +
+                        $"cameraService.RotationAngle={_cameraService?.RotationAngle ?? -1}, " +
+                        $"strokesCount={inkCanvas?.Strokes?.Count ?? 0}",
+                        LogHelper.LogType.Info);
+                }
+                catch { }
+
+                VideoPresenterFrozenFrameImage.Source = photo.Image;
                 VideoPresenterFrozenFrameImage.Visibility = Visibility.Visible;
+                // FillImage 填满容器，不需要显式 Width/Height 和对齐方式
+                VideoPresenterFrozenFrameImage.Width = double.NaN;
+                VideoPresenterFrozenFrameImage.Height = double.NaN;
+                VideoPresenterFrozenFrameImage.HorizontalAlignment = HorizontalAlignment.Stretch;
+                VideoPresenterFrozenFrameImage.VerticalAlignment = VerticalAlignment.Stretch;
 
-                double containerWidth = VideoPresenterSpecialModeContainer?.ActualWidth ?? 0;
-                double containerHeight = VideoPresenterSpecialModeContainer?.ActualHeight ?? 0;
-                double imgWidth, imgHeight;
-                if (photo.Image is BitmapSource bs)
-                {
-                    imgWidth = bs.PixelWidth;
-                    imgHeight = bs.PixelHeight;
-                }
-                else
-                {
-                    imgWidth = photo.Image.Width;
-                    imgHeight = photo.Image.Height;
-                }
+                // 保存照片 Image 原始的 RenderTransform（仅首次），返回直播页时恢复
+                if (_frozenFrameOriginalRenderTransform == null)
+                    _frozenFrameOriginalRenderTransform = VideoPresenterFrozenFrameImage.RenderTransform as System.Windows.Media.TransformGroup;
+                // 共享实时画面的变换实例：LayoutTransform + RenderTransform 都指向 VideoCaptureElement 的同名对象
+                if (VideoPresenterFullCanvasRotation != null)
+                    VideoPresenterFrozenFrameImage.LayoutTransform = VideoPresenterFullCanvasRotation;
+                if (VideoPresenterFullCanvasImage?.RenderTransform != null)
+                    VideoPresenterFrozenFrameImage.RenderTransform = VideoPresenterFullCanvasImage.RenderTransform;
 
-                if (containerWidth > 0 && containerHeight > 0 && imgWidth > 0 && imgHeight > 0)
-                {
-                    double ratioW = containerWidth / imgWidth;
-                    double ratioH = containerHeight / imgHeight;
-                    double fitRatio = Math.Min(ratioW, ratioH);
-                    double displayWidth = imgWidth * fitRatio;
-                    double displayHeight = imgHeight * fitRatio;
-                    VideoPresenterFrozenFrameImage.Source = photo.Image;
-                    VideoPresenterFrozenFrameImage.Width = displayWidth;
-                    VideoPresenterFrozenFrameImage.Height = displayHeight;
-                    VideoPresenterFrozenFrameImage.HorizontalAlignment = HorizontalAlignment.Left;
-                    VideoPresenterFrozenFrameImage.VerticalAlignment = VerticalAlignment.Top;
-                    // 居中偏移
-                    _boothPreviewScale = 1.0;
-                    _boothPreviewTranslateX = (containerWidth - displayWidth) / 2.0;
-                    _boothPreviewTranslateY = (containerHeight - displayHeight) / 2.0;
-                }
-                else
-                {
-                    VideoPresenterFrozenFrameImage.Source = photo.Image;
-                    VideoPresenterFrozenFrameImage.Width = double.NaN;
-                    VideoPresenterFrozenFrameImage.Height = double.NaN;
-                    VideoPresenterFrozenFrameImage.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    VideoPresenterFrozenFrameImage.VerticalAlignment = VerticalAlignment.Stretch;
-                    _boothPreviewScale = 1.0;
-                    _boothPreviewTranslateX = 0;
-                    _boothPreviewTranslateY = 0;
-                }
+                // 重置变换：与直播页初始状态一致（Scale=1, Translate=0，Stretch 自动 fit 居中）
+                _boothPreviewScale = 1.0;
+                _boothPreviewTranslateX = 0;
+                _boothPreviewTranslateY = 0;
 
-                if (VideoPresenterFrozenFrameRotation != null)
-                    VideoPresenterFrozenFrameRotation.Angle = 0;
+                // 照片内容已在拍照时旋转到正向，预览旋转从 0° 开始
+                // （共享的 VideoPresenterFullCanvasRotation 同时影响已 Collapsed 的 VideoCaptureElement，不影响显示）
+                if (VideoPresenterFullCanvasRotation != null)
+                    VideoPresenterFullCanvasRotation.Angle = 0;
 
                 ApplyBoothPreviewTransform();
+
+                // 诊断日志：共享变换后的状态
+                try
+                {
+                    LogHelper.WriteLogToFile(
+                        $"[BoothDiag] SwitchBoothToPhotoPage SHARED: " +
+                        $"photo.LayoutTransform={VideoPresenterFrozenFrameImage.LayoutTransform?.GetType().Name ?? "null"}, " +
+                        $"photo.RenderTransform={VideoPresenterFrozenFrameImage.RenderTransform?.GetType().Name ?? "null"}, " +
+                        $"isSharedWithLive={(VideoPresenterFrozenFrameImage.RenderTransform == VideoPresenterFullCanvasImage?.RenderTransform)}, " +
+                        $"photo.ActualSize={VideoPresenterFrozenFrameImage.ActualWidth}x{VideoPresenterFrozenFrameImage.ActualHeight}",
+                        LogHelper.LogType.Info);
+                }
+                catch { }
             }
 
             // 停止并隐藏 VideoCaptureElement，只显示冻结照片
@@ -2474,6 +3268,9 @@ namespace Ink_Canvas
             var rightPageListView = FindView("board.pageList.right") as System.Windows.Controls.ListView;
             if (leftPageListView != null) leftPageListView.SelectedIndex = selectedIndex;
             if (rightPageListView != null) rightPageListView.SelectedIndex = selectedIndex;
+
+            // 切换后恢复该照片的墨迹（每张照片独立保存，互不干扰）
+            RestoreBoothStrokesFromSlot(photoIndex);
         }
 
         /// <summary>
@@ -2482,21 +3279,32 @@ namespace Ink_Canvas
         /// </summary>
         private void SwitchBoothToLivePage()
         {
-            // 保存当前虚拟页墨迹，再切换到直播页（更新 _boothCurrentPhotoIndex 后恢复）
-            SaveBoothStrokes();
+            // 返回直播前保存当前照片的墨迹到该照片槽位，避免丢失批注
+            SaveCurrentBoothStrokesToSlot();
+            // 切换页面重置旋转基准
+            ResetRotationBaseline();
             _boothCurrentPhotoIndex = -1;
-            RestoreBoothStrokes();
 
-            // 清除冻结照片
+            // 清除冻结照片，并恢复照片 Image 原始的变换实例（解除与 VideoCaptureElement 的共享）
             if (VideoPresenterFrozenFrameImage != null)
             {
                 VideoPresenterFrozenFrameImage.Visibility = Visibility.Collapsed;
+                // 恢复照片 Image 自己的 LayoutTransform / RenderTransform，
+                // 避免后续直播页操作通过共享实例意外影响照片 Image
+                if (VideoPresenterFrozenFrameRotation != null)
+                    VideoPresenterFrozenFrameImage.LayoutTransform = VideoPresenterFrozenFrameRotation;
+                if (_frozenFrameOriginalRenderTransform != null)
+                    VideoPresenterFrozenFrameImage.RenderTransform = _frozenFrameOriginalRenderTransform;
             }
 
             // 恢复 VideoCaptureElement 实时预览
             if (VideoPresenterFullCanvasImage != null && _cameraService != null)
             {
                 VideoPresenterFullCanvasImage.Visibility = Visibility.Visible;
+                // 照片预览页共享了 VideoPresenterFullCanvasRotation，退出时恢复直播画面角度
+                // （_cameraService.RotationAngle 在照片预览期间未变，直接用它的角度）
+                if (VideoPresenterFullCanvasRotation != null)
+                    VideoPresenterFullCanvasRotation.Angle = _cameraService.RotationAngle * 90.0;
                 // 重置缩放/平移为默认状态（直播页与照片页缩放状态不通用）
                 _boothPreviewScale = 1.0;
                 _boothPreviewTranslateX = 0;
@@ -2533,6 +3341,9 @@ namespace Ink_Canvas
             var rightPageListView = FindView("board.pageList.right") as System.Windows.Controls.ListView;
             if (leftPageListView != null) leftPageListView.SelectedIndex = 0;
             if (rightPageListView != null) rightPageListView.SelectedIndex = 0;
+
+            // 恢复直播页墨迹快照（与照片页墨迹相互独立）
+            RestoreBoothStrokesFromSlot(-1);
         }
 
         /// <summary>
@@ -2607,148 +3418,124 @@ namespace Ink_Canvas
             }
         }
 
+        // 照片矫正：检测下采样目标宽度（性能与精度平衡，>500px 缩放后检测，角点再按比例还原）
+        // 500 而非 640：x86 进程下 4K 帧 BitmapConverter.ToMat + MedianBlur 易 OOM，更小的下采样尺寸可显著降低峰值内存
+        private const int PaperDetectTargetWidth = 500;
+        // 矫正后输出尺寸上限（避免角点检测异常时生成超大位图导致 OOM）
+        private const int CorrectedPaperMaxSide = 2400;
+
         /// <summary>
-        /// 在给定帧中尝试检测纸张（四边形）角点，并返回按原始帧坐标排列的四个点。
+        /// 在给定帧中尝试检测纸张（四边形）角点，按 (左上、右上、右下、左下) 顺序返回。
+        /// 实现按用户选择的加速模式（CPU/OpenCL/CUDA）由 <see cref="Helpers.PaperDetectorFactory"/> 实例化对应检测器。
+        /// 算法参考 CSDN 博客思路：灰度 → 高斯模糊 → Canny → dilate → findContours → convexHull → approxPolyDP → 角度筛选 → boundingRect 最大。
         /// </summary>
         /// <param name="frame">要检测的输入位图帧。</param>
-        /// <param name="cornersOut">检测到的四个角点（按顺序：左上、右上、左下、右下），坐标以输入帧的像素空间为准；检测失败时为 null。</param>
-        /// <returns><see langword="true"/> 如果成功检测到四个角点并填充 <paramref name="cornersOut"/>，<see langword="false"/> 否则（包括输入为 null 或检测过程中发生错误）。</returns>
-        private static bool TryDetectPaperCorners(Bitmap frame, out List<AForge.IntPoint> cornersOut)
+        /// <param name="cornersOut">检测到的四个角点（按顺序：左上、右上、右下、左下），坐标以输入帧的像素空间为准；检测失败时为 null。</param>
+        /// <param name="verbose">true 时输出详细日志（含角点、Canny 阈值、候选数）；实时检测传 false 避免刷屏。</param>
+        /// <returns>true 如果成功检测到四个角点并填充 cornersOut，false 否则。</returns>
+        private static bool TryDetectPaperCorners(Bitmap frame, out List<OpenCvSharp.Point> cornersOut, bool verbose = true)
         {
             cornersOut = null;
             try
             {
                 if (frame == null) return false;
-
-                int targetWidth = 640;
-                int ow = frame.Width;
-                int oh = frame.Height;
-                double scale = 1.0;
-                Bitmap work = frame;
-                if (ow > targetWidth)
+                var mode = Settings?.Automation?.PhotoCorrectionAcceleration ?? PhotoCorrectionAccelerationMode.Cpu;
+                var detector = Helpers.PaperDetectorFactory.Get(mode);
+                if (detector.TryDetect(frame, out var pts, verbose))
                 {
-                    int nh = (int)Math.Round(oh * (targetWidth / (double)ow));
-                    var resize = new ResizeBilinear(targetWidth, nh);
-                    work = resize.Apply(frame);
-                    scale = (double)ow / targetWidth;
-                }
-
-                var gray = Grayscale.CommonAlgorithms.BT709.Apply(work);
-                var blur = new GaussianBlur(3, 3);
-                blur.ApplyInPlace(gray);
-                var canny = new CannyEdgeDetector();
-                canny.ApplyInPlace(gray);
-                var dilate = new Dilatation3x3();
-                dilate.ApplyInPlace(gray);
-
-                var bc = new BlobCounter
-                {
-                    FilterBlobs = true,
-                    MinHeight = 50,
-                    MinWidth = 50,
-                    ObjectsOrder = ObjectsOrder.Size
-                };
-                bc.ProcessImage(gray);
-                var blobs = bc.GetObjectsInformation();
-                var sc = new SimpleShapeChecker();
-                List<AForge.IntPoint> best = null;
-                double bestArea = 0;
-
-                foreach (var blob in blobs)
-                {
-                    var edgePoints = bc.GetBlobsEdgePoints(blob);
-                    if (edgePoints == null || edgePoints.Count < 4) continue;
-                    if (sc.IsQuadrilateral(edgePoints, out List<AForge.IntPoint> crn))
-                    {
-                        double area = Math.Abs(PolygonArea(crn));
-                        if (area > bestArea)
-                        {
-                            bestArea = area;
-                            best = crn;
-                        }
-                    }
-                }
-
-                if (best != null)
-                {
-                    var pts = best
-                        .Select(p => new AForge.IntPoint((int)Math.Round(p.X * scale), (int)Math.Round(p.Y * scale)))
-                        .ToList();
-                    pts.Sort((a, b) => a.Y.CompareTo(b.Y));
-                    if (pts[0].X > pts[1].X) (pts[0], pts[1]) = (pts[1], pts[0]);
-                    if (pts[2].X > pts[3].X) (pts[2], pts[3]) = (pts[3], pts[2]);
-                    cornersOut = pts;
-                    if (!ReferenceEquals(work, frame)) work.Dispose();
-                    gray.Dispose();
+                    cornersOut = pts.Select(p => new OpenCvSharp.Point(p.X, p.Y)).ToList();
                     return true;
                 }
-
-                if (!ReferenceEquals(work, frame)) work.Dispose();
-                gray.Dispose();
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
+                if (verbose) LogHelper.WriteLogToFile($"照片矫正: 调度异常 {ex.Message}", LogHelper.LogType.Warning);
                 return false;
             }
         }
 
         /// <summary>
-        /// 将源图像中由四个角点定义的纸张区域进行透视矫正并裁切为目标尺寸的位图，目标高度为 CorrectedPaperHeight，宽度按纸张比例计算。
+        /// 将源图像中由四个角点定义的纸张区域进行透视矫正并裁切。输出尺寸由四个角点的几何关系决定（取上下边宽、左右边高的平均值）以保持原纸张比例，
+        /// 并限制最大边长 CorrectedPaperMaxSide 以防角点异常时生成超大位图导致 OOM。
         /// </summary>
         /// <param name="frame">包含待矫正纸张的源位图。</param>
-        /// <param name="corners">纸张在源图像中的四个角点，按顺序提供：左上 (top-left)、右上 (top-right)、左下 (bottom-left)、右下 (bottom-right)。坐标为图像像素坐标系。</param>
+        /// <param name="corners">纸张在源图像中的四个角点，按顺序提供：左上 (top-left)、右上 (top-right)、右下 (bottom-right)、左下 (bottom-left)。坐标为图像像素坐标系。</param>
         /// <returns>透视矫正并裁切后的位图；在输入无效或矫正失败时返回 <see langword="null"/>。</returns>
-        private static Bitmap ApplyPerspectiveCorrection(Bitmap frame, List<AForge.IntPoint> corners)
+        private static Bitmap ApplyPerspectiveCorrection(Bitmap frame, List<OpenCvSharp.Point> corners)
         {
             try
             {
                 if (frame == null || corners == null || corners.Count != 4) return null;
-                var tl = corners[0];
-                var tr = corners[1];
-                var bl = corners[2];
-                var br = corners[3];
+                using var src = BitmapConverter.ToMat(frame);
+                if (src.Empty()) return null;
 
-                double topW = Math.Sqrt((tr.X - tl.X) * (tr.X - tl.X) + (tr.Y - tl.Y) * (tr.Y - tl.Y));
-                double bottomW = Math.Sqrt((br.X - bl.X) * (br.X - bl.X) + (br.Y - bl.Y) * (br.Y - bl.Y));
-                double leftH = Math.Sqrt((bl.X - tl.X) * (bl.X - tl.X) + (bl.Y - tl.Y) * (bl.Y - tl.Y));
-                double rightH = Math.Sqrt((br.X - tr.X) * (br.X - tr.X) + (br.Y - tr.Y) * (br.Y - tr.Y));
+                // c[0]=tl, c[1]=tr, c[2]=br, c[3]=bl
+                Point[] c = corners.ToArray();
+                Point2f[] srcPts = c.Select(p => new Point2f(p.X, p.Y)).ToArray();
 
-                double avgW = (topW + bottomW) / 2.0;
-                double avgH = (leftH + rightH) / 2.0;
-                if (avgH <= 0) avgH = 1;
-                double ratio = avgW / avgH;
+                double topW = Dist(c[0], c[1]);
+                double bottomW = Dist(c[2], c[3]);
+                double leftH = Dist(c[0], c[3]);
+                double rightH = Dist(c[1], c[2]);
+                int w = (int)Math.Round((topW + bottomW) / 2.0);
+                int h = (int)Math.Round((leftH + rightH) / 2.0);
+                if (w < 1) w = 1;
+                if (h < 1) h = 1;
 
-                int targetH = CorrectedPaperHeight;
-                int targetW = Math.Max(1, (int)Math.Round(targetH * ratio));
+                // 输出尺寸上限：防止角点检测异常（如散落很远）时生成超大位图
+                double maxSide = Math.Max(w, h);
+                if (maxSide > CorrectedPaperMaxSide)
+                {
+                    double r = CorrectedPaperMaxSide / maxSide;
+                    w = (int)Math.Round(w * r);
+                    h = (int)Math.Round(h * r);
+                    if (w < 1) w = 1;
+                    if (h < 1) h = 1;
+                }
 
-                var orderedCorners = new List<AForge.IntPoint> { tl, tr, br, bl };
-                var qtf = new QuadrilateralTransformation(orderedCorners, targetW, targetH);
-                return qtf.Apply(frame);
+                Point2f[] dstPts =
+                {
+                    new Point2f(0, 0),
+                    new Point2f(w, 0),
+                    new Point2f(w, h),
+                    new Point2f(0, h),
+                };
+                using var m = Cv2.GetPerspectiveTransform(srcPts, dstPts);
+                using var dst = new Mat();
+                Cv2.WarpPerspective(src, dst, m, new Size(w, h),
+                    InterpolationFlags.Linear, BorderTypes.Constant, Scalar.Black);
+
+                LogHelper.WriteLogToFile(
+                    $"照片矫正: 透视矫正完成 输出尺寸 {w}x{h} (上边 {topW:F0}, 下边 {bottomW:F0}, 左 {leftH:F0}, 右 {rightH:F0})",
+                    LogHelper.LogType.Trace);
+                return BitmapConverter.ToBitmap(dst);
             }
-            catch
+            catch (Exception ex)
             {
+                LogHelper.WriteLogToFile($"照片矫正: 透视矫正异常 {ex.Message}", LogHelper.LogType.Warning);
                 return null;
             }
         }
 
         /// <summary>
-        /// 计算由给定顶点按顺序构成的多边形的有向面积（使用高斯面积/鞋带公式）。
+        /// 将无序的 4 个角点排序为 左上 (tl)、右上 (tr)、右下 (br)、左下 (bl)。
+        /// 直接用四对角点的几何特征判定，对纸张倾斜/旋转场景比按 Y 排序更鲁棒：
+        ///   tl = (x+y) 最小      br = (x+y) 最大
+        ///   tr = (y-x) 最小（x 大 y 小，右上角）   bl = (y-x) 最大（x 小 y 大，左下角）
+        /// 注意：OrderBy 是升序（取最小），OrderByDescending 是降序（取最大）。
+        /// 之前版本 tr/bl 的查询方向写反了，导致输出水平镜像。
         /// </summary>
-        /// <param name="pts">按顶点顺序排列的多边形顶点列表（至少应包含三个点以形成多边形）。</param>
-        /// <returns>多边形的有向面积；当顶点顺时针时为负值，逆时针为正值；点数少于三时返回 0。</returns>
-        private static double PolygonArea(List<AForge.IntPoint> pts)
+        private static OpenCvSharp.Point[] OrderCorners(OpenCvSharp.Point[] pts)
         {
-            int n = pts.Count;
-            if (n < 3) return 0;
-            long sum = 0;
-            for (int i = 0; i < n; i++)
-            {
-                var p = pts[i];
-                var q = pts[(i + 1) % n];
-                sum += (long)p.X * q.Y - (long)p.Y * q.X;
-            }
-            return 0.5 * sum;
+            var tl = pts.OrderBy(p => p.X + p.Y).First();              // 左上：x+y 最小
+            var br = pts.OrderByDescending(p => p.X + p.Y).First();    // 右下：x+y 最大
+            var tr = pts.OrderBy(p => p.Y - p.X).First();              // 右上：y-x 最小（x-y 最大）
+            var bl = pts.OrderByDescending(p => p.Y - p.X).First();    // 左下：y-x 最大
+            return new[] { tl, tr, br, bl };
         }
+
+        private static double Dist(OpenCvSharp.Point a, OpenCvSharp.Point b)
+            => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
     }
 }

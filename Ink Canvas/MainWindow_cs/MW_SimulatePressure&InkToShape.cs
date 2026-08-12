@@ -308,21 +308,13 @@ namespace Ink_Canvas
                                 // 补回平滑器未复制的 property data（激光笔迹标记），否则激光笔迹失效。
                                 InkSmoothingManager.CopyPropertyData(e.Stroke, smoothedStroke);
                                 SetNewBackupOfStroke();
-                                if (Settings.Canvas.MergeInkSmoothingWithUndo)
-                                {
-                                    _currentCommitType = CommitReason.CodeInput;
-                                    inkCanvas.Strokes.Remove(e.Stroke);
-                                    inkCanvas.Strokes.Add(smoothedStroke);
-                                    timeMachine.TryReplaceLastUserInputHistory(new StrokeCollection { smoothedStroke });
-                                    _currentCommitType = CommitReason.UserInput;
-                                }
-                                else
-                                {
-                                    _currentCommitType = CommitReason.ShapeRecognition;
-                                    inkCanvas.Strokes.Remove(e.Stroke);
-                                    inkCanvas.Strokes.Add(smoothedStroke);
-                                    _currentCommitType = CommitReason.UserInput;
-                                }
+                                // 平滑始终走 TryReplaceLastUserInputHistory（1步撤销），
+                                // 替换原笔画为平滑后笔画，撤销时直接撤销整笔（不区分平滑前/后）。
+                                _currentCommitType = CommitReason.CodeInput;
+                                inkCanvas.Strokes.Remove(e.Stroke);
+                                inkCanvas.Strokes.Add(smoothedStroke);
+                                timeMachine.TryReplaceLastUserInputHistory(new StrokeCollection { smoothedStroke });
+                                _currentCommitType = CommitReason.UserInput;
                                 handwritingScheduleStroke = smoothedStroke;
                             }
                         }

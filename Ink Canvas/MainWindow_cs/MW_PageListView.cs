@@ -421,28 +421,23 @@ namespace Ink_Canvas
                 int photoIndex = item.Index - 1;
                 if (photoIndex < 0 || photoIndex >= _capturedPhotos.Count) return;
 
-                _capturedPhotos.RemoveAt(photoIndex);
-
-                // 同步移除被删照片的墨迹，并把后续照片页的墨迹 key 前移
-                _boothStrokesByPage.Remove(photoIndex);
-                var reindexed = new Dictionary<int, StrokeCollection>();
-                foreach (var kv in _boothStrokesByPage)
-                {
-                    int newKey = kv.Key > photoIndex ? kv.Key - 1 : kv.Key;
-                    reindexed[newKey] = kv.Value;
-                }
-                _boothStrokesByPage.Clear();
-                foreach (var kv in reindexed)
-                    _boothStrokesByPage[kv.Key] = kv.Value;
-
-                // 如果当前正在看被删的照片，切回直播页
+                // 若当前正在看被删照片，必须先切回直播页再 RemoveAt：
+                // SwitchBoothToLivePage → SaveCurrentBoothStrokesToSlot 会把画布墨迹
+                // 保存到 _capturedPhotos[photoIndex].Strokes（即将随照片 GC），
+                // 并从 _liveStrokesSnapshot 恢复直播页墨迹。
+                // 若先 RemoveAt 再切页，SaveCurrentBoothStrokesToSlot 会因列表已缩短
+                // 走错分支：删最后一张时把被删照片墨迹覆盖到 _liveStrokesSnapshot（污染直播页），
+                // 删中间张时覆盖到补位后的下一张照片 Strokes（破坏其他照片墨迹）。
                 if (_boothCurrentPhotoIndex == photoIndex)
                 {
                     SwitchBoothToLivePage();
                 }
-                else if (_boothCurrentPhotoIndex > photoIndex)
+
+                _capturedPhotos.RemoveAt(photoIndex);
+
+                // 当前在看被删照片之后的照片，索引前移（此时 _boothCurrentPhotoIndex 仍指向原照片）
+                if (_boothCurrentPhotoIndex > photoIndex)
                 {
-                    // 当前在看被删照片之后的照片，索引前移
                     _boothCurrentPhotoIndex--;
                 }
 

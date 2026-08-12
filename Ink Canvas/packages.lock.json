@@ -199,6 +199,26 @@
           "NHotkey": "4.0.0"
         }
       },
+      "OpenCvSharp4.Extensions": {
+        "type": "Direct",
+        "requested": "[4.13.0.20260627, )",
+        "resolved": "4.13.0.20260627",
+        "contentHash": "X3dZv/bewNFAGneNYZHMMDEkf6M0HKQBrXIkQYs8nrKrWqJhOSZnyn4bW76CrzCVIDIjAKD27AaaKuQYmzkPOA==",
+        "dependencies": {
+          "OpenCvSharp4": "4.13.0.20260627",
+          "System.Drawing.Common": "10.0.9"
+        }
+      },
+      "OpenCvSharp4.Windows": {
+        "type": "Direct",
+        "requested": "[4.13.0.20260627, )",
+        "resolved": "4.13.0.20260627",
+        "contentHash": "YYJAej4HZYPmN+fG2MCUFDZ/hxsb66PJxAxKuVLFolysGl6opszhILRT2NO/ZEagnlqZ3mlUYGiOjCN0Jj276A==",
+        "dependencies": {
+          "OpenCvSharp4": "4.13.0.20260627",
+          "OpenCvSharp4.runtime.win": "4.13.0.20260627"
+        }
+      },
       "OSVersionExt": {
         "type": "Direct",
         "requested": "[4.1.0, )",
@@ -432,10 +452,23 @@
         "resolved": "4.0.0",
         "contentHash": "5HKzttVKWeKoDQKJd3+J7Dy1MW6gbNNYfftkVufe2ddFQD0kXjnT1IN3ZJBfF6QVEQmHpQSp+/PT7Jo2YyHFcw=="
       },
+      "OpenCvSharp4": {
+        "type": "Transitive",
+        "resolved": "4.13.0.20260627",
+        "contentHash": "nYk95jkyYY9f0sF5KqZ3OB1SWkmqsfV7eN0ROiQds/rxpSn0v1G0QIedMbwuqbdPhvQnOIG2DDmpkLnHEJMh8Q==",
+        "dependencies": {
+          "System.Memory": "4.6.3"
+        }
+      },
+      "OpenCvSharp4.runtime.win": {
+        "type": "Transitive",
+        "resolved": "4.13.0.20260627",
+        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
+      },
       "System.Buffers": {
         "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "lN6tZi7Q46zFzAbRYXTIvfXcyvQQgxnY7Xm6C6xQ9784dEL1amjM6S6Iw4ZpsvesAKnRVsM4scrDQaDqSClkjA=="
+        "resolved": "4.6.1",
+        "contentHash": "N8GXpmiLMtljq7gwvyS+1QvKT/W2J8sNAvx+HVg4NGmsG/H+2k/y9QI23auLJRterrzCiDH+IWAw4V/GPwsMlw=="
       },
       "System.CodeDom": {
         "type": "Transitive",
@@ -456,20 +489,25 @@
         "resolved": "5.0.0",
         "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
       },
+      "System.Drawing.Common": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "ShkEj8jOhklJgrN3SoaVbCcopvqyIgVXHso2/eibQBL7IZxzJjND77UYVlViHqpwPxyQeA67IOut4b41clBkQw=="
+      },
       "System.Memory": {
         "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "OEkbBQoklHngJ8UD8ez2AERSk2g+/qpAaSWWCBFbpH727HxDq5ydVkuncBaKcKfwRqXGWx64dS6G1SUScMsitg==",
+        "resolved": "4.6.3",
+        "contentHash": "qdcDOgnFZY40+Q9876JUHnlHu7bosOHX8XISRoH94fwk6hgaeQGSgfZd8srWRZNt5bV9ZW2TljcegDNxsf+96A==",
         "dependencies": {
-          "System.Buffers": "4.6.0",
-          "System.Numerics.Vectors": "4.6.0",
-          "System.Runtime.CompilerServices.Unsafe": "6.1.0"
+          "System.Buffers": "4.6.1",
+          "System.Numerics.Vectors": "4.6.1",
+          "System.Runtime.CompilerServices.Unsafe": "6.1.2"
         }
       },
       "System.Numerics.Vectors": {
         "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "t+SoieZsRuEyiw/J+qXUbolyO219tKQQI0+2/YI+Qv7YdGValA6WiuokrNKqjrTNsy5ABWU11bdKOzUdheteXg=="
+        "resolved": "4.6.1",
+        "contentHash": "sQxefTnhagrhoq2ReR0D/6K0zJcr9Hrd6kikeXsA1I8kOCboTavcUC4r7TSfpKFeE163uMuxZcyfO1mGO3EN8Q=="
       },
       "System.Reflection.Emit": {
         "type": "Transitive",
@@ -488,8 +526,8 @@
       },
       "System.Runtime.CompilerServices.Unsafe": {
         "type": "Transitive",
-        "resolved": "6.1.0",
-        "contentHash": "5o/HZxx6RVqYlhKSq8/zronDkALJZUT2Vz0hx43f0gwe8mwlM0y2nYlqdBwLMzr262Bwvpikeb/yEwkAa5PADg=="
+        "resolved": "6.1.2",
+        "contentHash": "2hBr6zdbIBTDE3EhK7NSVNdX58uTK6iHW/P/Axmm9sl1xoGSLqDvMtpecn226TNwHByFokYwJmt/aQQNlO5CRw=="
       },
       "System.Runtime.WindowsRuntime": {
         "type": "Transitive",
@@ -572,6 +610,11 @@
           "System.Security.Principal.Windows": "5.0.0"
         }
       },
+      "OpenCvSharp4.runtime.win": {
+        "type": "Transitive",
+        "resolved": "4.13.0.20260627",
+        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
+      },
       "runtime.any.System.Runtime": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -624,6 +667,11 @@
           "System.Security.Principal.Windows": "5.0.0"
         }
       },
+      "OpenCvSharp4.runtime.win": {
+        "type": "Transitive",
+        "resolved": "4.13.0.20260627",
+        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
+      },
       "runtime.any.System.Runtime": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -675,6 +723,11 @@
           "System.Security.AccessControl": "5.0.0",
           "System.Security.Principal.Windows": "5.0.0"
         }
+      },
+      "OpenCvSharp4.runtime.win": {
+        "type": "Transitive",
+        "resolved": "4.13.0.20260627",
+        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
       },
       "runtime.any.System.Runtime": {
         "type": "Transitive",
