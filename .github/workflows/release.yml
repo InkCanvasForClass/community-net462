@@ -1,0 +1,287 @@
+name: Release
+
+on:
+  push:
+    tags: ['[0-9]*.[0-9]*.[0-9]*.[0-9]*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 发布版本号（留空则用最新 tag）
+        required: false
+        default: ""
+      draft:
+        description: 创建为草稿发布
+        required: false
+        default: false
+        type: boolean
+      prerelease:
+        description: 标记为预发布
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      tag_name: ${{ steps.meta.outputs.tag_name }}
+      is_prerelease: ${{ steps.meta.outputs.is_prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve version & tag
+        id: meta
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+            VERSION="${TAG#v}"
+          else
+            VERSION="${{ inputs.version }}"
+            if [ -z "$VERSION" ]; then
+              VERSION="$(git describe --tags --abbrev=0 2>/dev/null || echo '0.0.0.0')"
+              VERSION="${VERSION#v}"
+            fi
+            TAG="$VERSION"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$TAG" >> "$GITHUB_OUTPUT"
+          LAST="${VERSION##*.}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            [ "$LAST" = "0" ] && PRE="false" || PRE="true"
+          else
+            PRE="${{ inputs.prerelease }}"
+          fi
+          echo "is_prerelease=$PRE" >> "$GITHUB_OUTPUT"
+          echo "Resolved: version=$VERSION tag=$TAG prerelease=$PRE"
+
+  build:
+    name: Build ${{ matrix.architecture }}
+    runs-on: windows-latest
+    needs: [prepare]
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x86, x64, arm64]
+    steps:
+      - parallel:
+
+        - name: Checkout code
+          uses: actions/checkout@v7.0.1
+          with:
+            fetch-depth: 1
+
+        - name: Setup dotnet
+          uses: actions/setup-dotnet@v5
+
+        - name: Setup MSBuild
+          uses: microsoft/setup-msbuild@v3
+
+      - name: Install VSTO Runtime
+        shell: pwsh
+        run: |
+          $url = "https://go.microsoft.com/fwlink/?LinkId=158918"
+          $out = "$env:TEMP\VSTORuntime.exe"
+          Invoke-WebRequest -Uri $url -OutFile $out -MaximumRedirection 10
+          Start-Process -FilePath $out -ArgumentList "/quiet /norestart" -Wait -NoNewWindow
+          Write-Host "VSTO Runtime installed"
+
+      - parallel:
+
+        - name: Restore Package
+          run: dotnet restore "Ink Canvas.sln"
+
+        - name: Restore signing certificate
+          shell: pwsh
+          run: |
+            $ok = $false
+            if ("${{ secrets.CERT_PFX_BASE64 }}" -ne "") {
+              try {
+                $bytes = [Convert]::FromBase64String("${{ secrets.CERT_PFX_BASE64 }}")
+                [IO.File]::WriteAllBytes("clickonce.pfx", $bytes)
+                $pwd = ConvertTo-SecureString "${{ secrets.CERT_PFX_PASSWORD }}" -AsPlainText -Force
+                Import-PfxCertificate -FilePath "clickonce.pfx" -CertStoreLocation Cert:\CurrentUser\My -Password $pwd | Out-Null
+                $ok = $true
+                Write-Host "Certificate imported from secrets"
+              } catch {
+                Write-Host "Import PFX failed, falling back to self-signed: $($_.Exception.Message)"
+              }
+            }
+            if (-not $ok) {
+              New-SelfSignedCertificate `
+                -Type CodeSigningCert `
+                -Subject "CN=ICC PowerPoint Agent Release" `
+                -CertStoreLocation "Cert:\CurrentUser\My" `
+                -KeyExportPolicy Exportable `
+                -NotAfter (Get-Date).AddYears(2) | Out-Null
+              Write-Host "Generated self-signed certificate"
+            }
+            $found = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.HasPrivateKey -and $_.Subject -like "*ICC*" } | Select-Object -First 1
+            if (-not $found) { throw "No signing certificate found" }
+            echo "SIGN_THUMBPRINT=$($found.Thumbprint)" >> $env:GITHUB_ENV
+            Write-Host "Signing certificate ready: $($found.Thumbprint)"
+
+      - name: Build VSTO Add-in
+        shell: pwsh
+        run: |
+          msbuild "InkCanvas.PowerPointAddIn/InkCanvas.PowerPointAddIn.csproj" `
+            /p:Configuration=Release `
+            /p:SignManifests=true `
+            /p:ManifestCertificateThumbprint=$env:SIGN_THUMBPRINT `
+            /verbosity:minimal -maxcpucount
+          if (-not (Test-Path "InkCanvas.PowerPointAddIn\bin\Release\InkCanvas.PowerPointAddIn.vsto")) {
+            Write-Error "VSTO build failed"
+            exit 1
+          }
+
+      - name: Build the Solution
+        env:
+          DLASS_TELEMETRY_TOKEN: ${{ secrets.DLASS_TELEMETRY_TOKEN }}
+        run: dotnet build "Ink Canvas.sln" -c Release -p:Platform=${{ matrix.architecture }} --no-restore -m
+
+      - name: Package & Checksum
+        id: package
+        shell: pwsh
+        run: |
+          $arch = "${{ matrix.architecture }}"
+          $version = "${{ needs.prepare.outputs.version }}"
+          $suffix = ""
+          if ($arch -eq "x64") { $suffix = "-x64" }
+          elseif ($arch -eq "arm64") { $suffix = "-arm64" }
+          $zip = "InkCanvasForClass.CE.$version$suffix.zip"
+          $dir = "Ink Canvas\bin\Release\$arch\net462"
+
+          $exe = "$dir\InkCanvasForClass.exe"
+          $vsto = "$dir\ppt-agent\InkCanvas.PowerPointAddIn.vsto"
+          if (-not (Test-Path $exe)) { Write-Error "Missing $exe"; exit 1 }
+          if (-not (Test-Path $vsto)) { Write-Error "Missing $vsto (VSTO not bundled)"; exit 1 }
+
+          Compress-Archive -Path "$dir\*" -DestinationPath $zip -Force
+          $hash = (Get-FileHash -Algorithm SHA256 -Path $zip).Hash.Replace("-", "").ToLowerInvariant()
+          Set-Content -Path "$zip.sha256" -Value $hash -NoNewline
+
+          Write-Host "Package: $zip"
+          Write-Host "SHA256: $hash"
+          echo "zip_name=$zip" >> $env:GITHUB_OUTPUT
+
+      - parallel:
+
+        - name: Upload Artifact
+          uses: actions/upload-artifact@v7
+          with:
+            name: icc-release-${{ matrix.architecture }}
+            path: |
+              InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}*.zip
+              InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}*.zip.sha256
+            compression-level: 0
+
+        - name: Build Summary
+          if: always()
+          shell: bash
+          run: |
+            ZIP="${{ steps.package.outputs.zip_name }}"
+            echo "# Release Build (${{ matrix.architecture }})" >> $GITHUB_STEP_SUMMARY
+            if [ -n "$ZIP" ] && [ -f "$ZIP.sha256" ]; then
+              echo "## ✅ $ZIP" >> $GITHUB_STEP_SUMMARY
+              echo "**SHA-256:** \`$(cat "$ZIP.sha256")\`" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "## ❌ Build Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+
+  sign:
+    name: Sign with Sigstore
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      id-token: write
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v7
+        with:
+          pattern: icc-release-*
+          merge-multiple: true
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign release zips
+        shell: bash
+        run: |
+          for zip in *.zip; do
+            cosign sign-blob --yes --bundle "$zip.sig" "$zip"
+          done
+
+      - name: Upload Signatures
+        uses: actions/upload-artifact@v7
+        with:
+          name: icc-release-sig
+          path: "*.sig"
+          compression-level: 0
+
+  release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: [prepare, sign]
+    permissions:
+      contents: write
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v7
+        with:
+          pattern: icc-release-*
+          merge-multiple: true
+
+      - name: Compose Release Body
+        shell: bash
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          cat > body.md <<EOF
+          ## 下载 / Download
+
+          > **PPT 联动加载项（VSTO）已内置**：解压后 \`ppt-agent/\` 目录即包含 PowerPoint 加载项，安装主程序后自动完成配置，**无需单独下载 VSTO 加载项或运行时**。
+
+          | 文件 | 大小 | SHA-256 |
+          |---|---|---|
+          EOF
+          for sha in *.zip.sha256; do
+            [ -f "$sha" ] || continue
+            name="${sha%.sha256}"
+            [ -f "$name" ] || continue
+            size=$(wc -c < "$name")
+            hash=$(cat "$sha")
+            printf '| `%s` | %s bytes | `%s` |\n' "$name" "$size" "$hash" >> body.md
+          done
+          cat >> body.md <<EOF
+
+          ### 🔏 Sigstore 签名验证
+          每个 zip 均使用 Sigstore keyless（GitHub Actions OIDC + Fulcio + Rekor）签名，签名 bundle 为 \`<zip>.sig\`：
+          \`\`\`bash
+          cosign verify-blob --bundle InkCanvasForClass.CE.$VERSION.zip.sig InkCanvasForClass.CE.$VERSION.zip
+          \`\`\`
+          也可手动校验 SHA-256：\`Get-FileHash -Algorithm SHA256 <zip>\` 与上表比对。
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: ICC CE ${{ needs.prepare.outputs.version }}
+          body_path: body.md
+          draft: ${{ inputs.draft || false }}
+          prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' }}
+          files: InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
