@@ -209,14 +209,14 @@
           "System.Drawing.Common": "10.0.9"
         }
       },
-      "OpenCvSharp4.Windows": {
+      "OpenCvSharp4.Windows.Slim": {
         "type": "Direct",
         "requested": "[4.13.0.20260627, )",
         "resolved": "4.13.0.20260627",
-        "contentHash": "YYJAej4HZYPmN+fG2MCUFDZ/hxsb66PJxAxKuVLFolysGl6opszhILRT2NO/ZEagnlqZ3mlUYGiOjCN0Jj276A==",
+        "contentHash": "9G/r2q27c2w7XqUGXGCRkVXoFbP26IVuP+2ZSuJEXbtNEJUkczwb/Av/TeBgslFuVBzxrDPesk/XsPkfJjLdEg==",
         "dependencies": {
           "OpenCvSharp4": "4.13.0.20260627",
-          "OpenCvSharp4.runtime.win": "4.13.0.20260627"
+          "OpenCvSharp4.runtime.win.slim": "4.13.0.20260627"
         }
       },
       "OSVersionExt": {
@@ -460,10 +460,10 @@
           "System.Memory": "4.6.3"
         }
       },
-      "OpenCvSharp4.runtime.win": {
+      "OpenCvSharp4.runtime.win.slim": {
         "type": "Transitive",
         "resolved": "4.13.0.20260627",
-        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
+        "contentHash": "8A4slgE6f5uzX/HWn+AXRMisUOIAaLVfinj1yUTzq+c6b1qaPxPJ9jzW/fjLbZWe0dLjvfiyXcIdc4VK+2g4Dw=="
       },
       "System.Buffers": {
         "type": "Transitive",
@@ -610,10 +610,10 @@
           "System.Security.Principal.Windows": "5.0.0"
         }
       },
-      "OpenCvSharp4.runtime.win": {
+      "OpenCvSharp4.runtime.win.slim": {
         "type": "Transitive",
         "resolved": "4.13.0.20260627",
-        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
+        "contentHash": "8A4slgE6f5uzX/HWn+AXRMisUOIAaLVfinj1yUTzq+c6b1qaPxPJ9jzW/fjLbZWe0dLjvfiyXcIdc4VK+2g4Dw=="
       },
       "runtime.any.System.Runtime": {
         "type": "Transitive",
@@ -667,10 +667,10 @@
           "System.Security.Principal.Windows": "5.0.0"
         }
       },
-      "OpenCvSharp4.runtime.win": {
+      "OpenCvSharp4.runtime.win.slim": {
         "type": "Transitive",
         "resolved": "4.13.0.20260627",
-        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
+        "contentHash": "8A4slgE6f5uzX/HWn+AXRMisUOIAaLVfinj1yUTzq+c6b1qaPxPJ9jzW/fjLbZWe0dLjvfiyXcIdc4VK+2g4Dw=="
       },
       "runtime.any.System.Runtime": {
         "type": "Transitive",
@@ -724,10 +724,10 @@
           "System.Security.Principal.Windows": "5.0.0"
         }
       },
-      "OpenCvSharp4.runtime.win": {
+      "OpenCvSharp4.runtime.win.slim": {
         "type": "Transitive",
         "resolved": "4.13.0.20260627",
-        "contentHash": "POIxR+CTpwHJIdam6wd8U2fprWv5QnIUw50jw79WEGb37He3T1h11SdtwSj9p2PLSfrzonMjO2t71wqi5uFsoQ=="
+        "contentHash": "8A4slgE6f5uzX/HWn+AXRMisUOIAaLVfinj1yUTzq+c6b1qaPxPJ9jzW/fjLbZWe0dLjvfiyXcIdc4VK+2g4Dw=="
       },
       "runtime.any.System.Runtime": {
         "type": "Transitive",
