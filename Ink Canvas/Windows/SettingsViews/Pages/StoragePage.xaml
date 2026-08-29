@@ -6,6 +6,7 @@
       xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews.Pages"
       xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
       xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+      xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d"
       Title="{x:Static props:StorageStrings.Storage_Title}">
@@ -242,6 +243,95 @@
                     </ui:SettingsCard.HeaderIcon>
                     <TextBlock x:Name="OtherSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </ui:SettingsCard>
+
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                           Text="{x:Static props:StorageStrings.AutoSave_Title}" />
+
+                <controls:LabeledSettingsCard x:Name="CardSaveScreenshotsInDateFolders"
+                    Header="{x:Static props:StorageStrings.Storage_ScreenshotsByDateFolder}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Folder}"
+                    Toggled="ToggleSwitchSaveScreenshotsInDateFolders_Toggled"/>
+
+                <controls:LabeledSettingsCard x:Name="CardAutoSaveStrokesAtScreenshot"
+                    Header="{x:Static props:StorageStrings.Storage_AutoSaveInkOnScreenshot}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Toggled="ToggleSwitchAutoSaveStrokesAtScreenshot_Toggled"/>
+
+                <controls:LabeledSettingsCard x:Name="CardAutoSaveStrokesAtClear"
+                    Header="{x:Static props:StorageStrings.Storage_AutoScreenshotOnClear}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Toggled="ToggleSwitchAutoSaveStrokesAtClear_Toggled"/>
+
+                <controls:LabeledSettingsCard x:Name="CardSaveStrokesAsXML"
+                    Header="{x:Static props:StorageStrings.Storage_SaveAsXml}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Toggled="ToggleSwitchSaveStrokesAsXML_Toggled"/>
+
+                <controls:LabeledSettingsCard x:Name="CardEnableAutoSaveStrokes"
+                    Header="{x:Static props:StorageStrings.Storage_AutoSaveInk}"
+                    Description="{x:Static props:CanvasStrings.CanvasAndInkPanel_Hint_9}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Toggled="ToggleSwitchEnableAutoSaveStrokes_Toggled"/>
+
+                <ui:SettingsCard Header="{x:Static props:StorageStrings.Storage_AutoSaveInterval}">
+                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.QuietHours}"/></ui:SettingsCard.HeaderIcon>
+                    <ComboBox x:Name="ComboBoxAutoSaveStrokesInterval" SelectionChanged="ComboBoxAutoSaveStrokesInterval_SelectionChanged">
+                        <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_AutoSaveInterval_1Min}" Tag="1"/>
+                        <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_AutoSaveInterval_3Min}" Tag="3"/>
+                        <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_AutoSaveInterval_5Min}" Tag="5"/>
+                        <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_AutoSaveInterval_10Min}" Tag="10"/>
+                        <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_AutoSaveInterval_30Min}" Tag="30"/>
+                    </ComboBox>
+                </ui:SettingsCard>
+
+                <controls:LabeledSettingsCard x:Name="CardAutoDelSavedFiles"
+                    Header="{x:Static props:StorageStrings.Storage_AutoDeleteTitle}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Delete}"
+                    Toggled="ToggleSwitchAutoDelSavedFiles_Toggled"/>
+
+                <ui:SettingsCard Header="{x:Static props:AutomationStrings.Storage_AutoDeleteDaysThreshold}">
+                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Calendar}"/></ui:SettingsCard.HeaderIcon>
+                    <ComboBox x:Name="ComboBoxAutoDelSavedFilesDaysThreshold" SelectionChanged="ComboBoxAutoDelSavedFilesDaysThreshold_SelectionChanged">
+                        <ComboBoxItem Content="7"/><ComboBoxItem Content="14"/><ComboBoxItem Content="30"/><ComboBoxItem Content="60"/><ComboBoxItem Content="90"/>
+                    </ComboBox>
+                </ui:SettingsCard>
+
+                <ui:SettingsCard Header="{x:Static props:AutomationStrings.Storage_MinAutomationStrokes}">
+                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Calculator}"/></ui:SettingsCard.HeaderIcon>
+                    <Slider x:Name="SideControlMinimumAutomationSlider" Minimum="1" Maximum="50" Width="200" ValueChanged="SideControlMinimumAutomationSlider_ValueChanged"/>
+                </ui:SettingsCard>
+
+                <controls:LabeledSettingsCard x:Name="CardSaveFullPageStrokes"
+                    Header="{x:Static props:StorageStrings.Storage_SaveFullPageStrokes}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Toggled="ToggleSwitchSaveFullPageStrokes_Toggled"/>
+
+                <controls:LabeledSettingsCard x:Name="CardUseCustomSaveFileName"
+                    Header="{x:Static props:AutomationStrings.Automation_UseCustomSaveFileName_Header}"
+                    Description="{x:Static props:AutomationStrings.Automation_UseCustomSaveFileName_Desc}"
+                    Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                    Toggled="ToggleSwitchUseCustomSaveFileName_Toggled"/>
+
+                <ui:SettingsExpander x:Name="CardSaveFileNamePreset" Header="{x:Static props:AutomationStrings.Automation_SaveFileNameFormat}" IsExpanded="True">
+                    <ui:SettingsExpander.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/></ui:SettingsExpander.HeaderIcon>
+                    <ComboBox x:Name="ComboBoxSaveFileNamePreset" SelectionChanged="ComboBoxSaveFileNamePreset_SelectionChanged">
+                        <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_Timestamp}" Tag="{}{datetime}"/>
+                        <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_Date}" Tag="{}{date}"/>
+                        <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_DateTime}" Tag="{}{date}_{time}"/>
+                        <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_DateMode}" Tag="{}{date}_{mode}"/>
+                        <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_DateModePage}" Tag="{}{date}_{mode}_Page-{page}"/>
+                        <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_DateModePageCount}" Tag="{}{date}_{mode}_Page-{page}_Strokes-{count}"/>
+                        <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_Custom}" Tag="__custom__"/>
+                    </ComboBox>
+                    <ui:SettingsExpander.Items>
+                        <ui:SettingsCard x:Name="CardCustomSaveFileNameTemplate"
+                            Header="{x:Static props:AutomationStrings.Automation_SaveFileName_CustomTemplate_Header}"
+                            Description="{x:Static props:AutomationStrings.Automation_SaveFileName_CustomTemplate_Desc}"
+                            Visibility="Collapsed">
+                            <TextBox x:Name="TextBoxCustomSaveFileNameTemplate" MinWidth="260" LostFocus="TextBoxCustomSaveFileNameTemplate_LostFocus"/>
+                        </ui:SettingsCard>
+                    </ui:SettingsExpander.Items>
+                </ui:SettingsExpander>
 
                 <Rectangle Height="48" />
 

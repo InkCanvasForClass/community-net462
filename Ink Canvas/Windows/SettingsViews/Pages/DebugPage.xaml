@@ -9,7 +9,7 @@
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
 mc:Ignorable="d"
-      Title="Debug">
+      Title="调试">
 
     <ScrollViewer PanningMode="VerticalFirst">
         <Grid Margin="59,0,59,0">
@@ -29,7 +29,7 @@ mc:Ignorable="d"
                 Spacing="{StaticResource SettingsCardSpacing}">
 
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                    Text="Debug" />
+                    Text="调试" />
 
                 <controls:LabeledSettingsCard x:Name="ToggleSwitchDebugConsole"
                     Header="{x:Static props:AdvancedStrings.Debug_ShowConsole_Header}"

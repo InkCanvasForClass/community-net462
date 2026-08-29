@@ -3,35 +3,39 @@ using Ink_Canvas.Models;
 using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
-    public partial class NotificationPage : Page
+    public partial class NotificationCenterPage : Page
     {
         private bool _isLoaded;
 
-        public NotificationPage()
+        public NotificationCenterPage()
         {
             InitializeComponent();
-            Loaded += NotificationPage_Loaded;
-            Unloaded += NotificationPage_Unloaded;
+            Loaded += NotificationCenterPage_Loaded;
+            Unloaded += NotificationCenterPage_Unloaded;
         }
 
-        private void NotificationPage_Loaded(object sender, RoutedEventArgs e)
+        private void NotificationCenterPage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
             LoadProviders();
+            LoadAnnouncements();
             _isLoaded = true;
             SliderTouchHelper.AddTouchSupportToAllSliders(this);
         }
 
-        private void NotificationPage_Unloaded(object sender, RoutedEventArgs e)
+        private void NotificationCenterPage_Unloaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = false;
         }
+
+        #region Notification Settings
 
         private void LoadSettings()
         {
@@ -78,33 +82,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.SaveSettingsToFile();
         }
 
-        private void LoadProviders()
-        {
-            NotificationProviderRegistry.RegisterOrUpdate(new NotificationProviderStatus
-            {
-                ProviderId = "local",
-                DisplayName = NotificationStrings.Provider_Local,
-                Description = NotificationStrings.Provider_LocalDesc,
-                IsEnabled = true,
-                IsRunning = true,
-                Status = NotificationStrings.Provider_Running
-            });
-
-            NotificationProviderRegistry.RegisterOrUpdate(new NotificationProviderStatus
-            {
-                ProviderId = "windows-toast",
-                DisplayName = NotificationStrings.Provider_WindowsToast,
-                Description = NotificationStrings.Provider_WindowsToastDesc,
-                IsEnabled = SettingsManager.Settings.Notification.IsWindowsToastEnabled,
-                IsRunning = SettingsManager.Settings.Notification.IsWindowsToastEnabled,
-                Status = SettingsManager.Settings.Notification.IsWindowsToastEnabled
-                    ? NotificationStrings.Provider_Running
-                    : NotificationStrings.Provider_Disabled
-            });
-
-            ProviderItemsControl.ItemsSource = NotificationProviderRegistry.GetProviders();
-        }
-
         private void UpdateDurationTexts()
         {
             if (UpdateDurationText != null && UpdateDurationSlider != null)
@@ -117,22 +94,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 ReminderDurationText.Text = $"{ReminderDurationSlider.Value:F0}s";
             if (OtherDurationText != null && OtherDurationSlider != null)
                 OtherDurationText.Text = $"{OtherDurationSlider.Value:F0}s";
-        }
-
-        private void UpdateAnnouncementProviderEnabledState()
-        {
-            NotificationProviderRegistry.RegisterOrUpdate(new NotificationProviderStatus
-            {
-                ProviderId = "announcement",
-                DisplayName = NotificationStrings.Provider_Announcement,
-                Description = NotificationStrings.Provider_AnnouncementDesc,
-                IsEnabled = SettingsManager.Settings.Notification.IsAnnouncementEnabled,
-                IsRunning = false,
-                Status = SettingsManager.Settings.Notification.IsAnnouncementEnabled
-                    ? NotificationStrings.Provider_WaitingRestart
-                    : NotificationStrings.Provider_Disabled
-            });
-            LoadProviders();
         }
 
         private void ToggleSwitchEnableAnnouncements_Toggled(object sender, RoutedEventArgs e)
@@ -148,12 +109,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             SettingsManager.Settings.Notification.IsForcePopupEnabled = CardEnableForcePopup.IsOn;
             SaveSettings();
-        }
-
-        private void ViewAnnouncementsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var settingsWindow = Window.GetWindow(this) as SettingsWindow;
-            settingsWindow?.NavigateToPage("AnnouncementCenterPage");
         }
 
         private void ToggleSwitchEnableDynamic_Toggled(object sender, RoutedEventArgs e)
@@ -245,11 +200,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SaveSettings();
         }
 
-        private void RefreshProvidersButton_Click(object sender, RoutedEventArgs e)
-        {
-            LoadProviders();
-        }
-
         private void TestNotificationButton_Click(object sender, RoutedEventArgs e)
         {
             NotificationCenterService.Enqueue(new NotificationMessage
@@ -265,5 +215,147 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 ProviderId = "local"
             });
         }
+
+        #endregion
+
+        #region Providers
+
+        private void LoadProviders()
+        {
+            NotificationProviderRegistry.RegisterOrUpdate(new NotificationProviderStatus
+            {
+                ProviderId = "local",
+                DisplayName = NotificationStrings.Provider_Local,
+                Description = NotificationStrings.Provider_LocalDesc,
+                IsEnabled = true,
+                IsRunning = true,
+                Status = NotificationStrings.Provider_Running
+            });
+
+            NotificationProviderRegistry.RegisterOrUpdate(new NotificationProviderStatus
+            {
+                ProviderId = "windows-toast",
+                DisplayName = NotificationStrings.Provider_WindowsToast,
+                Description = NotificationStrings.Provider_WindowsToastDesc,
+                IsEnabled = SettingsManager.Settings.Notification.IsWindowsToastEnabled,
+                IsRunning = SettingsManager.Settings.Notification.IsWindowsToastEnabled,
+                Status = SettingsManager.Settings.Notification.IsWindowsToastEnabled
+                    ? NotificationStrings.Provider_Running
+                    : NotificationStrings.Provider_Disabled
+            });
+
+            ProviderItemsControl.ItemsSource = NotificationProviderRegistry.GetProviders();
+        }
+
+        private void UpdateAnnouncementProviderEnabledState()
+        {
+            NotificationProviderRegistry.RegisterOrUpdate(new NotificationProviderStatus
+            {
+                ProviderId = "announcement",
+                DisplayName = NotificationStrings.Provider_Announcement,
+                Description = NotificationStrings.Provider_AnnouncementDesc,
+                IsEnabled = SettingsManager.Settings.Notification.IsAnnouncementEnabled,
+                IsRunning = false,
+                Status = SettingsManager.Settings.Notification.IsAnnouncementEnabled
+                    ? NotificationStrings.Provider_WaitingRestart
+                    : NotificationStrings.Provider_Disabled
+            });
+            LoadProviders();
+        }
+
+        private void RefreshProvidersButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadProviders();
+        }
+
+        #endregion
+
+        #region Announcement Center
+
+        private void LoadAnnouncements()
+        {
+            var items = AnnouncementService.GetAnnouncementHistory();
+            if (items.Count == 0)
+            {
+                items = NotificationCenterService.GetHistory("announcement")
+                    .Select(x => new AnnouncementCenterItem
+                    {
+                        Id = string.IsNullOrWhiteSpace(x.AnnouncementId) ? x.Id : x.AnnouncementId,
+                        Type = x.Type,
+                        Level = x.Level,
+                        Title = x.Title,
+                        Summary = x.Summary,
+                        Content = x.Content,
+                        ActionUrl = x.ActionUrl,
+                        CreatedAt = x.CreatedAt
+                    })
+                    .ToList();
+            }
+
+            var list = items.OrderByDescending(x => x.CreatedAt).ToList();
+            AnnouncementListBox.ItemsSource = list;
+            AnnouncementCountTextBlock.Text = GetCountText(list.Count);
+            EmptyTextBlock.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            AnnouncementListBox.Visibility = list.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+            AnnouncementListBox.SelectedIndex = list.Count == 0 ? -1 : 0;
+            UpdateDetails(AnnouncementListBox.SelectedItem as AnnouncementCenterItem);
+        }
+
+        private string GetCountText(int count)
+        {
+            var template = AnnouncementStrings.ItemCount;
+            return string.Format(template, count);
+        }
+
+        private void AnnouncementListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateDetails(AnnouncementListBox.SelectedItem as AnnouncementCenterItem);
+        }
+
+        private void UpdateDetails(AnnouncementCenterItem item)
+        {
+            var hasItem = item != null;
+            DetailTitleTextBlock.Text = hasItem ? item.Title : string.Empty;
+            DetailTypeTextBlock.Text = hasItem ? GetTypeText(item.Type) : string.Empty;
+            DetailTimeTextBlock.Text = hasItem ? item.CreatedAt.ToString("yyyy-MM-dd HH:mm") : string.Empty;
+            DetailContentTextBlock.Text = hasItem ? (string.IsNullOrWhiteSpace(item.Content) ? item.Summary : item.Content) : string.Empty;
+
+            if (hasItem)
+            {
+                AnnouncementService.MarkAsRead(SettingsManager.Settings, item.Id);
+                item.IsRead = true;
+                item.IsNew = false;
+                (Window.GetWindow(this) as SettingsWindow)?.UpdateAnnouncementUnreadBadge();
+            }
+        }
+
+        private string GetTypeText(NotificationMessageType type)
+        {
+            return type switch
+            {
+                NotificationMessageType.Update => NotificationStrings.Type_Update,
+                NotificationMessageType.Urgent => NotificationStrings.Type_Urgent,
+                NotificationMessageType.Important => NotificationStrings.Type_Important,
+                NotificationMessageType.Reminder => NotificationStrings.Type_Reminder,
+                NotificationMessageType.Other => NotificationStrings.Type_Other,
+                _ => type.ToString()
+            };
+        }
+
+        private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            AnnouncementService.ClearAnnouncementHistory();
+            NotificationCenterService.ClearHistory("announcement");
+            LoadAnnouncements();
+        }
+
+        private void MarkAllAsReadButton_Click(object sender, RoutedEventArgs e)
+        {
+            AnnouncementService.MarkAllAsRead(SettingsManager.Settings);
+            (Window.GetWindow(this) as SettingsWindow)?.UpdateAnnouncementUnreadBadge();
+            LoadAnnouncements();
+        }
+
+        #endregion
     }
 }

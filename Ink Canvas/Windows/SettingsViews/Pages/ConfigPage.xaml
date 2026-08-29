@@ -1,4 +1,4 @@
-<ui:Page xmlns:props="clr-namespace:Ink_Canvas.Properties" x:Class="Ink_Canvas.Windows.SettingsViews.Pages.BackupPage"
+<ui:Page xmlns:props="clr-namespace:Ink_Canvas.Properties" x:Class="Ink_Canvas.Windows.SettingsViews.Pages.ConfigPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +9,7 @@
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
       mc:Ignorable="d"
-      Title="{x:Static props:StorageStrings.Backup_Title}">
+      Title="{x:Static props:ConfigStrings.Title}">
 
     <ScrollViewer PanningMode="VerticalFirst">
         <Grid Margin="59,0,59,0">
@@ -27,6 +27,30 @@
                 <ikw:SimpleStackPanel MaxWidth="1000"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
+
+                    <!-- Config Profile Section -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:ConfigStrings.Title}" />
+
+                    <TextBlock Text="{x:Static props:ConfigStrings.Desc}"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               TextWrapping="Wrap" Margin="1,0,0,4" />
+
+                    <ui:SettingsCard Header="{x:Static props:ConfigStrings.Label}">
+                        <ComboBox x:Name="ComboBoxConfigProfile"
+                                  SelectionChanged="ComboBoxConfigProfile_SelectionChanged" />
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard ContentAlignment="Left">
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <Button x:Name="BtnDeleteConfigProfile" Content="{x:Static props:ConfigStrings.Delete}" Click="BtnDeleteConfigProfile_Click" />
+                            <Button x:Name="BtnSaveAsConfigProfile" Content="{x:Static props:ConfigStrings.SaveAs}" Click="BtnSaveAsConfigProfile_Click" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <!-- Backup Section -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:StorageStrings.Backup_Title}" />
 
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchIsAutoBackupBeforeUpdate"
                         Header="{x:Static props:StorageStrings.Backup_AutoBeforeUpdate}"

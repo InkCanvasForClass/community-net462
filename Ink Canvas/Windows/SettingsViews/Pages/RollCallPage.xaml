@@ -1,4 +1,4 @@
-<ui:Page xmlns:props="clr-namespace:Ink_Canvas.Properties" x:Class="Ink_Canvas.Windows.SettingsViews.Pages.RandomDrawPage"
+<ui:Page xmlns:props="clr-namespace:Ink_Canvas.Properties" x:Class="Ink_Canvas.Windows.SettingsViews.Pages.RollCallPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -139,70 +139,6 @@
                     <TextBlock Text="{x:Static props:RandomStrings.Random_ML_Hint}"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                TextWrapping="Wrap" Margin="1,0,0,4" />
-
-                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Text="{x:Static props:RandomStrings.Random_Title}" />
-
-                    <ui:SettingsCard Header="{x:Static props:RandomStrings.Random_Title}">
-                        <ComboBox x:Name="ComboBoxTimerUIStyle"
-                                  SelectionChanged="ComboBoxTimerUIStyle_SelectionChanged">
-                            <ComboBoxItem Content="{x:Static props:TimerStrings.Timer_UseLegacyButtons}" Tag="Legacy" />
-                            <ComboBoxItem Content="{x:Static props:TimerStrings.Timer_NewUI}" Tag="NewStyle" />
-                        </ComboBox>
-                    </ui:SettingsCard>
-
-                    <controls:LabeledSettingsCard x:Name="ToggleSwitchEnableOvertimeCountUp"
-                        Header="{x:Static props:TimerStrings.Timer_EnableCountUp}"
-                        IsOn="False"
-                        Toggled="ToggleSwitchEnableOvertimeCountUp_Toggled"/>
-
-                    <controls:LabeledSettingsCard x:Name="ToggleSwitchEnableOvertimeRedText"
-                        Header="{x:Static props:TimerStrings.Timer_OvertimeHighlight}"
-                        IsOn="True"
-                        Toggled="ToggleSwitchEnableOvertimeRedText_Toggled"/>
-
-                    <ui:SettingsCard Header="{x:Static props:TimerStrings.Timer_Volume}">
-                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock x:Name="TimerVolumeText"
-                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
-                            <Slider x:Name="TimerVolumeSlider"
-                                    Minimum="0" Maximum="1" Width="200"
-                                    IsSnapToTickEnabled="True" Value="1" TickFrequency="0.1"
-                                    TickPlacement="None"
-                                    ValueChanged="TimerVolumeSlider_ValueChanged" />
-                        </ikw:SimpleStackPanel>
-                    </ui:SettingsCard>
-
-                    <ui:SettingsCard Header="{x:Static props:TimerStrings.Timer_CustomSoundLabel}">
-                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Name="ButtonSelectCustomTimerSound" Content="{x:Static props:TimerStrings.Timer_ProgressiveSelectFile}" Click="ButtonSelectCustomTimerSound_Click" />
-                            <Button x:Name="ButtonResetTimerSound" Content="{x:Static props:TimerStrings.Timer_Reset}" Click="ButtonResetTimerSound_Click" />
-                        </ikw:SimpleStackPanel>
-                    </ui:SettingsCard>
-
-                    <controls:LabeledSettingsCard x:Name="ToggleSwitchEnableProgressiveReminder"
-                        Header="{x:Static props:TimerStrings.Timer_Progressive}"
-                        IsOn="False"
-                        Toggled="ToggleSwitchEnableProgressiveReminder_Toggled"/>
-
-                    <ui:SettingsCard Header="{x:Static props:TimerStrings.Timer_ProgressiveVolume}">
-                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock x:Name="ProgressiveReminderVolumeText"
-                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
-                            <Slider x:Name="ProgressiveReminderVolumeSlider"
-                                    Minimum="0" Maximum="1" Width="200"
-                                    IsSnapToTickEnabled="True" Value="1" TickFrequency="0.1"
-                                    TickPlacement="None"
-                                    ValueChanged="ProgressiveReminderVolumeSlider_ValueChanged" />
-                        </ikw:SimpleStackPanel>
-                    </ui:SettingsCard>
-
-                    <ui:SettingsCard Header="{x:Static props:TimerStrings.Timer_ProgressiveCustomLabel}">
-                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Name="ButtonSelectCustomProgressiveReminderSound" Content="{x:Static props:TimerStrings.Timer_ProgressiveSelectFile}" Click="ButtonSelectCustomProgressiveReminderSound_Click" />
-                            <Button x:Name="ButtonResetProgressiveReminderSound" Content="{x:Static props:TimerStrings.Timer_Reset}" Click="ButtonResetProgressiveReminderSound_Click" />
-                        </ikw:SimpleStackPanel>
-                    </ui:SettingsCard>
 
                     <Rectangle Height="48" />
 

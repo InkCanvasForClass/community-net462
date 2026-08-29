@@ -176,6 +176,47 @@
                             SwitchName="ToggleSwitchEnableProcessProtection"
                             Toggled="ToggleSwitchEnableProcessProtection_Toggled" />
 
+                    <!-- 文件关联 -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:SecurityStrings.FileAssoc_Title}" />
+
+                    <ui:SettingsExpander Header="{x:Static props:SecurityStrings.FileAssoc_Check}"
+                        Description="{x:Static props:AutomationStrings.FileAssoc_CheckDesc}" IsExpanded="True">
+                        <ui:SettingsExpander.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}"/>
+                        </ui:SettingsExpander.HeaderIcon>
+                        <ui:SettingsExpander.Content>
+                            <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock x:Name="TextBlockFileAssociationStatus"
+                                           Text="{x:Static props:AutomationStrings.FileAssoc_NotChecked}"
+                                           VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <Button x:Name="BtnCheckFileAssociation"
+                                        Content="{x:Static props:SecurityStrings.FileAssoc_Check}"
+                                        Click="BtnCheckFileAssociation_Click"/>
+                            </ikw:SimpleStackPanel>
+                        </ui:SettingsExpander.Content>
+                        <ui:SettingsExpander.Items>
+                            <ui:SettingsCard Header="{x:Static props:AutomationStrings.FileAssoc_RegisterHeader}"
+                                             Description="{x:Static props:AutomationStrings.FileAssoc_RegisterDesc}">
+                                <ui:SettingsCard.HeaderIcon>
+                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Add}"/>
+                                </ui:SettingsCard.HeaderIcon>
+                                <Button x:Name="BtnRegisterFileAssociation"
+                                        Content="{x:Static props:AutomationStrings.FileAssoc_RegisterHeader}"
+                                        Click="BtnRegisterFileAssociation_Click"/>
+                            </ui:SettingsCard>
+                            <ui:SettingsCard Header="{x:Static props:SecurityStrings.FileAssoc_Unregister}"
+                                             Description="{x:Static props:AutomationStrings.FileAssoc_UnregisterDesc}">
+                                <ui:SettingsCard.HeaderIcon>
+                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cancel}"/>
+                                </ui:SettingsCard.HeaderIcon>
+                                <Button x:Name="BtnUnregisterFileAssociation"
+                                        Content="{x:Static props:SecurityStrings.FileAssoc_Unregister}"
+                                        Click="BtnUnregisterFileAssociation_Click"/>
+                            </ui:SettingsCard>
+                        </ui:SettingsExpander.Items>
+                    </ui:SettingsExpander>
+
                     <Rectangle Height="48" />
 
                 </ikw:SimpleStackPanel>

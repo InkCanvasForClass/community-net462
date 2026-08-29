@@ -64,7 +64,7 @@
     <value>快捷键</value>
   </data>
   <data name="Nav_Startup" xml:space="preserve">
-    <value>基本</value>
+    <value>启动</value>
   </data>
   <data name="Nav_Theme_Settings" xml:space="preserve">
     <value>个性化设置</value>
@@ -254,5 +254,113 @@
   </data>
   <data name="Nav_Performance_Tooltip" xml:space="preserve">
     <value>性能监测与设备评估</value>
+  </data>
+  <data name="Nav_Display" xml:space="preserve">
+    <value>显示</value>
+  </data>
+  <data name="Nav_Display_Tooltip" xml:space="preserve">
+    <value>主题、语言、开屏画面等显示设置</value>
+  </data>
+  <data name="Nav_ScreenTouch" xml:space="preserve">
+    <value>屏幕与触控</value>
+  </data>
+  <data name="Nav_ScreenTouch_Tooltip" xml:space="preserve">
+    <value>多屏、触控、手势等屏幕设置</value>
+  </data>
+  <data name="Nav_PrivacyAndSecurity" xml:space="preserve">
+    <value>隐私和安全</value>
+  </data>
+  <data name="Nav_PrivacyAndSecurity_Tooltip" xml:space="preserve">
+    <value>隐私与安全设置</value>
+  </data>
+  <data name="Nav_Personalization" xml:space="preserve">
+    <value>个性化</value>
+  </data>
+  <data name="Nav_Personalization_Tooltip" xml:space="preserve">
+    <value>联动控件、浮动栏、白板等个性化设置</value>
+  </data>
+  <data name="Nav_LinkageControls" xml:space="preserve">
+    <value>联动控件</value>
+  </data>
+  <data name="Nav_LinkageControls_Tooltip" xml:space="preserve">
+    <value>PPT按钮控件设置</value>
+  </data>
+  <data name="Nav_FloatingBar" xml:space="preserve">
+    <value>浮动栏</value>
+  </data>
+  <data name="Nav_FloatingBar_Tooltip" xml:space="preserve">
+    <value>浮动栏外观与菜单设置</value>
+  </data>
+  <data name="Nav_BoardPage" xml:space="preserve">
+    <value>白板</value>
+  </data>
+  <data name="Nav_BoardPage_Tooltip" xml:space="preserve">
+    <value>白板组件、外观与菜单设置</value>
+  </data>
+  <data name="Nav_BoardCanvas" xml:space="preserve">
+    <value>画板</value>
+  </data>
+  <data name="Nav_BoardCanvas_Tooltip" xml:space="preserve">
+    <value>核心画布与墨迹设置</value>
+  </data>
+  <data name="Nav_Booth" xml:space="preserve">
+    <value>展台</value>
+  </data>
+  <data name="Nav_Booth_Tooltip" xml:space="preserve">
+    <value>展台与摄像头设置</value>
+  </data>
+  <data name="Nav_RollCall" xml:space="preserve">
+    <value>点名</value>
+  </data>
+  <data name="Nav_RollCall_Tooltip" xml:space="preserve">
+    <value>随机点名设置</value>
+  </data>
+  <data name="Nav_Timer" xml:space="preserve">
+    <value>计时</value>
+  </data>
+  <data name="Nav_Timer_Tooltip" xml:space="preserve">
+    <value>计时器设置</value>
+  </data>
+  <data name="Nav_Magnifier" xml:space="preserve">
+    <value>放大镜</value>
+  </data>
+  <data name="Nav_Magnifier_Tooltip" xml:space="preserve">
+    <value>放大镜设置</value>
+  </data>
+  <data name="Nav_NotificationCenter" xml:space="preserve">
+    <value>通知中心</value>
+  </data>
+  <data name="Nav_NotificationCenter_Tooltip" xml:space="preserve">
+    <value>通知设置</value>
+  </data>
+  <data name="Nav_AutoFold" xml:space="preserve">
+    <value>自动收纳</value>
+  </data>
+  <data name="Nav_AutoFold_Tooltip" xml:space="preserve">
+    <value>自动收纳与浮动窗口拦截设置</value>
+  </data>
+  <data name="Nav_PPTSync" xml:space="preserve">
+    <value>PPT联动</value>
+  </data>
+  <data name="Nav_PPTSync_Tooltip" xml:space="preserve">
+    <value>PPT放映联动行为设置</value>
+  </data>
+  <data name="Nav_Config" xml:space="preserve">
+    <value>配置文件</value>
+  </data>
+  <data name="Nav_Config_Tooltip" xml:space="preserve">
+    <value>配置切换与备份</value>
+  </data>
+  <data name="Nav_Sync" xml:space="preserve">
+    <value>同步</value>
+  </data>
+  <data name="Nav_Sync_Tooltip" xml:space="preserve">
+    <value>云同步与WebDAV设置</value>
+  </data>
+  <data name="Nav_Storage" xml:space="preserve">
+    <value>储存</value>
+  </data>
+  <data name="Nav_Storage_Tooltip" xml:space="preserve">
+    <value>存储占用概览与清理</value>
   </data>
 </root>

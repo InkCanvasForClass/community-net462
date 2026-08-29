@@ -9,17 +9,17 @@ using System.Windows.Controls;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
-    public partial class CanvasPage : iNKORE.UI.WPF.Modern.Controls.Page
+    public partial class BoardCanvasPage : iNKORE.UI.WPF.Modern.Controls.Page
     {
         private bool _isLoaded = false;
 
-        public CanvasPage()
+        public BoardCanvasPage()
         {
             InitializeComponent();
-            Loaded += CanvasPage_Loaded;
+            Loaded += BoardCanvasPage_Loaded;
         }
 
-        private void CanvasPage_Loaded(object sender, RoutedEventArgs e)
+        private void BoardCanvasPage_Loaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = false;
 

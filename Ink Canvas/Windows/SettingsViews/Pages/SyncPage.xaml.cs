@@ -17,7 +17,7 @@ using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
-    public partial class CloudStoragePage : Page
+    public partial class SyncPage : Page
     {
         private const string AppId = "app_WkjocWqsrVY7T6zQV2CfiA";
         private const string AppSecret = "o7dx5b5ASGUMcM72PCpmRQYAhSijqaOVHoGyBK0IxbA";
@@ -31,14 +31,14 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private bool _isLoadingSettings;
         private bool _hasPromptedDlassRegistration;
 
-        public CloudStoragePage()
+        public SyncPage()
         {
             InitializeComponent();
-            Loaded += CloudStoragePage_Loaded;
-            Unloaded += CloudStoragePage_Unloaded;
+            Loaded += SyncPage_Loaded;
+            Unloaded += SyncPage_Unloaded;
         }
 
-        private async void CloudStoragePage_Loaded(object sender, RoutedEventArgs e)
+        private async void SyncPage_Loaded(object sender, RoutedEventArgs e)
         {
             EnsureSettingsObjects();
             InitializeClassSelectionPlaceholder(CloudStorageStrings.CloudStorage_WaitingForConnection);
@@ -48,7 +48,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             await TestConnectionAsync();
         }
 
-        private void CloudStoragePage_Unloaded(object sender, RoutedEventArgs e)
+        private void SyncPage_Unloaded(object sender, RoutedEventArgs e)
         {
             CancelConnectionTest();
             _apiClient?.Dispose();
@@ -708,13 +708,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
     {
         [JsonProperty("success")]
         public bool Success { get; set; }
-
         [JsonProperty("whiteboards")]
         public List<WhiteboardInfo> Whiteboards { get; set; }
-
         [JsonProperty("count")]
         public int Count { get; set; }
-
         [JsonProperty("user")]
         public UserInfo User { get; set; }
     }
@@ -723,40 +720,26 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
     {
         [JsonProperty("id")]
         public int Id { get; set; }
-
         [JsonProperty("name")]
         public string Name { get; set; }
-
         [JsonProperty("board_id")]
         public string BoardId { get; set; }
-
         [JsonProperty("secret_key")]
         public string SecretKey { get; set; }
-
         [JsonProperty("class_name")]
         public string ClassName { get; set; }
-
         [JsonProperty("class_id")]
         public int ClassId { get; set; }
-
         [JsonProperty("is_online")]
         public bool IsOnline { get; set; }
-
-        [JsonProperty("last_heartbeat")]
-        public string LastHeartbeat { get; set; }
-
-        [JsonProperty("created_at")]
-        public string CreatedAt { get; set; }
     }
 
     public class UserInfo
     {
         [JsonProperty("id")]
         public int Id { get; set; }
-
         [JsonProperty("username")]
         public string Username { get; set; }
-
         [JsonProperty("email")]
         public string Email { get; set; }
     }
@@ -766,10 +749,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         public string DisplayText { get; set; }
         public string ClassName { get; set; }
         public string TeacherName { get; set; }
-
-        public override string ToString()
-        {
-            return DisplayText;
-        }
+        public override string ToString() => DisplayText;
     }
 }

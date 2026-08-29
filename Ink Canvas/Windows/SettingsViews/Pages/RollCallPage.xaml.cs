@@ -10,11 +10,11 @@ using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
-    public partial class RandomDrawPage : Page
+    public partial class RollCallPage : Page
     {
         private bool _isLoaded = false;
 
-        public RandomDrawPage()
+        public RollCallPage()
         {
             InitializeComponent();
             Loaded += Page_Loaded;
@@ -35,8 +35,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             UpdateSliderText(RandWindowOnceMaxStudentsSlider, RandWindowOnceMaxStudentsText, "{0:0}");
             UpdateSliderText(MLAvoidanceHistorySlider, MLAvoidanceHistoryText, "{0:0}");
             UpdateSliderText(MLAvoidanceWeightSlider, MLAvoidanceWeightText, "{0:F1}");
-            UpdateSliderText(TimerVolumeSlider, TimerVolumeText, "{0:F1}");
-            UpdateSliderText(ProgressiveReminderVolumeSlider, ProgressiveReminderVolumeText, "{0:F1}");
         }
 
         private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
@@ -69,19 +67,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             MLAvoidanceHistorySlider.Value = settings.RandSettings.MLAvoidanceHistoryCount;
             MLAvoidanceWeightSlider.Value = settings.RandSettings.MLAvoidanceWeight;
 
-            if (settings.RandSettings.UseLegacyTimerUI)
-                ComboBoxTimerUIStyle.SelectedIndex = 0;
-            else
-                ComboBoxTimerUIStyle.SelectedIndex = 1;
-            ToggleSwitchEnableOvertimeCountUp.IsOn = settings.RandSettings.EnableOvertimeCountUp;
-
-            bool canEnableRedText = settings.RandSettings.EnableOvertimeCountUp && settings.RandSettings.EnableOvertimeRedText;
-            ToggleSwitchEnableOvertimeRedText.IsOn = canEnableRedText;
-
-            TimerVolumeSlider.Value = settings.RandSettings.TimerVolume;
-            ToggleSwitchEnableProgressiveReminder.IsOn = settings.RandSettings.EnableProgressiveReminder;
-            ProgressiveReminderVolumeSlider.Value = settings.RandSettings.ProgressiveReminderVolume;
-
             UpdatePickNameBackgroundsInComboBox();
             if (settings.RandSettings.SelectedBackgroundIndex >= ComboBoxPickNameBackground.Items.Count)
             {
@@ -109,7 +94,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.SaveSettingsToFile();
         }
 
-        private void RandWindowOnceMaxStudentsSlider_ValueChanged(object sender, RoutedEventArgs e)
+        private void RandWindowOnceMaxStudentsSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             UpdateSliderText(RandWindowOnceMaxStudentsSlider, RandWindowOnceMaxStudentsText, "{0:0}");
             if (!_isLoaded) return;
@@ -266,138 +251,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             var slider = MLAvoidanceWeightSlider;
             var val = Math.Round(slider.Value, 2);
-            // 仅当四舍五入纠正了显示值时才回写；那次 set 会重入 ValueChanged 完成保存。
             if (slider.Value != val)
             {
                 slider.Value = val;
                 return;
             }
             SettingsManager.Settings.RandSettings.MLAvoidanceWeight = val;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        #endregion
-
-        #region Timer
-
-        private void ComboBoxTimerUIStyle_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            var selectedItem = ComboBoxTimerUIStyle.SelectedItem as System.Windows.Controls.ComboBoxItem;
-            var tag = selectedItem?.Tag?.ToString() ?? "Default";
-            SettingsManager.Settings.RandSettings.UseLegacyTimerUI = tag == "Legacy";
-            SettingsManager.Settings.RandSettings.UseNewStyleUI = tag == "NewStyle";
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchEnableOvertimeCountUp_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.RandSettings.EnableOvertimeCountUp = ToggleSwitchEnableOvertimeCountUp.IsOn;
-
-            if (!ToggleSwitchEnableOvertimeCountUp.IsOn)
-            {
-                ToggleSwitchEnableOvertimeRedText.IsOn = false;
-                SettingsManager.Settings.RandSettings.EnableOvertimeRedText = false;
-            }
-
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchEnableOvertimeRedText_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-
-            if (ToggleSwitchEnableOvertimeRedText.IsOn && !ToggleSwitchEnableOvertimeCountUp.IsOn)
-            {
-                ToggleSwitchEnableOvertimeCountUp.IsOn = true;
-                SettingsManager.Settings.RandSettings.EnableOvertimeCountUp = true;
-            }
-
-            SettingsManager.Settings.RandSettings.EnableOvertimeRedText = ToggleSwitchEnableOvertimeRedText.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void TimerVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            UpdateSliderText(TimerVolumeSlider, TimerVolumeText, "{0:F1}");
-            if (!_isLoaded) return;
-            var slider = TimerVolumeSlider;
-            var val = Math.Round(slider.Value, 2);
-            if (slider.Value != val)
-            {
-                slider.Value = val;
-                return;
-            }
-            SettingsManager.Settings.RandSettings.TimerVolume = val;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ButtonSelectCustomTimerSound_Click(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Title = RandomStrings.Random_SelectTimerAlarm,
-                Filter = RandomStrings.Random_AudioFilter,
-                DefaultExt = "wav"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                SettingsManager.Settings.RandSettings.CustomTimerSoundPath = openFileDialog.FileName;
-                SettingsManager.SaveSettingsToFile();
-                MessageBox.Show(RandomStrings.Random_CustomAlarmSuccess, RandomStrings.Random_AlarmSetupSuccess, MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-        private void ButtonResetTimerSound_Click(object sender, RoutedEventArgs e)
-        {
-            SettingsManager.Settings.RandSettings.CustomTimerSoundPath = "";
-            SettingsManager.SaveSettingsToFile();
-            MessageBox.Show(RandomStrings.Random_ResetAlarmSuccess, RandomStrings.Random_ResetSuccess, MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void ToggleSwitchEnableProgressiveReminder_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.RandSettings.EnableProgressiveReminder = ToggleSwitchEnableProgressiveReminder.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ProgressiveReminderVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            UpdateSliderText(ProgressiveReminderVolumeSlider, ProgressiveReminderVolumeText, "{0:F1}");
-            if (!_isLoaded) return;
-            var slider = ProgressiveReminderVolumeSlider;
-            var val = Math.Round(slider.Value, 2);
-            if (slider.Value != val)
-            {
-                slider.Value = val;
-                return;
-            }
-            SettingsManager.Settings.RandSettings.ProgressiveReminderVolume = val;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ButtonSelectCustomProgressiveReminderSound_Click(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Title = RandomStrings.Random_SelectProgressiveAlarm,
-                Filter = RandomStrings.Random_AudioFilter,
-                DefaultExt = "wav"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                SettingsManager.Settings.RandSettings.ProgressiveReminderSoundPath = openFileDialog.FileName;
-                SettingsManager.SaveSettingsToFile();
-            }
-        }
-
-        private void ButtonResetProgressiveReminderSound_Click(object sender, RoutedEventArgs e)
-        {
-            SettingsManager.Settings.RandSettings.ProgressiveReminderSoundPath = "";
             SettingsManager.SaveSettingsToFile();
         }
 

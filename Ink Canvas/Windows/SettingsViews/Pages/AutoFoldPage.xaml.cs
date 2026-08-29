@@ -8,31 +8,28 @@ using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
-    public partial class AutomationPage : Page
+    public partial class AutoFoldPage : Page
     {
         private bool _isLoaded = false;
 
-        public AutomationPage()
+        public AutoFoldPage()
         {
             InitializeComponent();
-            Loaded += AutomationPage_Loaded;
-            Unloaded += AutomationPage_Unloaded;
+            Loaded += AutoFoldPage_Loaded;
+            Unloaded += AutoFoldPage_Unloaded;
         }
 
-        private void AutomationPage_Loaded(object sender, RoutedEventArgs e)
+        private void AutoFoldPage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
             _isLoaded = true;
-            UpdateFileAssociationStatus();
             SliderTouchHelper.AddTouchSupportToAllSliders(this);
         }
 
-        private void AutomationPage_Unloaded(object sender, RoutedEventArgs e)
+        private void AutoFoldPage_Unloaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = false;
         }
-
-        private MainWindow GetMainWindow() => Application.Current.MainWindow as MainWindow;
 
         private void LoadSettings()
         {
@@ -72,40 +69,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             CardAutoFoldWhenExitWhiteboard.IsOn = auto.IsAutoFoldWhenExitWhiteboard;
             CardAutoFoldAfterPPTSlideShow.IsOn = auto.IsAutoFoldAfterPPTSlideShow;
             CardKeepFoldAfterSoftwareExit.IsOn = auto.KeepFoldAfterSoftwareExit;
-
-            CardSaveScreenshotsInDateFolders.IsOn = auto.IsSaveScreenshotsInDateFolders;
-            CardAutoSaveStrokesAtScreenshot.IsOn = auto.IsAutoSaveStrokesAtScreenshot;
-            CardAutoSaveStrokesAtClear.IsOn = auto.IsAutoSaveScreenshotAtClear;
-            CardSaveStrokesAsXML.IsOn = auto.IsSaveStrokesAsXML;
-            CardEnableAutoSaveStrokes.IsOn = auto.IsEnableAutoSaveStrokes;
-
-            var interval = auto.AutoSaveStrokesIntervalMinutes;
-            foreach (ComboBoxItem item in ComboBoxAutoSaveStrokesInterval.Items)
-            {
-                if (item.Tag != null && int.TryParse(item.Tag.ToString(), out int tagVal) && tagVal == interval)
-                {
-                    ComboBoxAutoSaveStrokesInterval.SelectedItem = item;
-                    break;
-                }
-            }
-
-            CardAutoDelSavedFiles.IsOn = auto.AutoDelSavedFiles;
-            ComboBoxAutoDelSavedFilesDaysThreshold.SelectedIndex = auto.AutoDelSavedFilesDaysThreshold switch
-            {
-                7 => 0,
-                14 => 1,
-                30 => 2,
-                60 => 3,
-                90 => 4,
-                _ => 2
-            };
-
-            SideControlMinimumAutomationSlider.Value = auto.MinimumAutomationStrokeNumber;
-            CardSaveFullPageStrokes.IsOn = auto.IsSaveFullPageStrokes;
-
-            CardUseCustomSaveFileName.IsOn = auto.IsUseCustomSaveFileName;
-            TextBoxCustomSaveFileNameTemplate.Text = auto.CustomSaveFileNameTemplate;
-            SyncSaveFileNamePresetSelection(auto.CustomSaveFileNameTemplate);
 
             if (auto.FloatingWindowInterceptor.InterceptRules != null)
             {
@@ -395,146 +358,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         #endregion
 
-        #region Storage & Save
-
-        private void ToggleSwitchSaveScreenshotsInDateFolders_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.IsSaveScreenshotsInDateFolders = CardSaveScreenshotsInDateFolders.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchAutoSaveStrokesAtScreenshot_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.IsAutoSaveStrokesAtScreenshot = CardAutoSaveStrokesAtScreenshot.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchAutoSaveStrokesAtClear_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.IsAutoSaveScreenshotAtClear = CardAutoSaveStrokesAtClear.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchSaveStrokesAsXML_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.IsSaveStrokesAsXML = CardSaveStrokesAsXML.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchEnableAutoSaveStrokes_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.IsEnableAutoSaveStrokes = CardEnableAutoSaveStrokes.IsOn;
-            SettingsManager.SaveSettingsToFile();
-            SettingsActionHub.OnAutoSaveStrokesChanged();
-        }
-
-        private void ComboBoxAutoSaveStrokesInterval_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded || ComboBoxAutoSaveStrokesInterval.SelectedItem == null) return;
-            var selectedItem = ComboBoxAutoSaveStrokesInterval.SelectedItem as ComboBoxItem;
-            if (selectedItem?.Tag != null && int.TryParse(selectedItem.Tag.ToString(), out int intervalMinutes))
-            {
-                SettingsManager.Settings.Automation.AutoSaveStrokesIntervalMinutes = intervalMinutes;
-                SettingsManager.SaveSettingsToFile();
-                SettingsActionHub.OnAutoSaveStrokesChanged();
-            }
-        }
-
-        private void ToggleSwitchAutoDelSavedFiles_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.AutoDelSavedFiles = CardAutoDelSavedFiles.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ComboBoxAutoDelSavedFilesDaysThreshold_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.AutoDelSavedFilesDaysThreshold =
-                int.Parse(((ComboBoxItem)ComboBoxAutoDelSavedFilesDaysThreshold.SelectedItem).Content.ToString());
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void SideControlMinimumAutomationSlider_ValueChanged(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.MinimumAutomationStrokeNumber = (int)SideControlMinimumAutomationSlider.Value;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchSaveFullPageStrokes_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.IsSaveFullPageStrokes = CardSaveFullPageStrokes.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchUseCustomSaveFileName_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.IsUseCustomSaveFileName = CardUseCustomSaveFileName.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void TextBoxCustomSaveFileNameTemplate_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Automation.CustomSaveFileNameTemplate = TextBoxCustomSaveFileNameTemplate.Text;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ComboBoxSaveFileNamePreset_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded || ComboBoxSaveFileNamePreset.SelectedItem == null) return;
-            var item = ComboBoxSaveFileNamePreset.SelectedItem as ComboBoxItem;
-            var tag = item?.Tag?.ToString();
-            if (string.IsNullOrEmpty(tag)) return;
-
-            if (tag == "__custom__")
-            {
-                CardCustomSaveFileNameTemplate.Visibility = Visibility.Visible;
-                return;
-            }
-
-            CardCustomSaveFileNameTemplate.Visibility = Visibility.Collapsed;
-            SettingsManager.Settings.Automation.CustomSaveFileNameTemplate = tag;
-            TextBoxCustomSaveFileNameTemplate.Text = tag;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void SyncSaveFileNamePresetSelection(string template)
-        {
-            int matchedIndex = -1;
-            for (int i = 0; i < ComboBoxSaveFileNamePreset.Items.Count; i++)
-            {
-                var item = ComboBoxSaveFileNamePreset.Items[i] as ComboBoxItem;
-                var tag = item?.Tag?.ToString();
-                if (tag == template)
-                {
-                    matchedIndex = i;
-                    break;
-                }
-            }
-
-            if (matchedIndex >= 0)
-            {
-                ComboBoxSaveFileNamePreset.SelectedIndex = matchedIndex;
-                CardCustomSaveFileNameTemplate.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                ComboBoxSaveFileNamePreset.SelectedIndex = ComboBoxSaveFileNamePreset.Items.Count - 1;
-                CardCustomSaveFileNameTemplate.Visibility = Visibility.Visible;
-            }
-        }
-
-        #endregion
-
         #region Floating Window Interceptor
 
         private void UpdateFloatingWindowInterceptorEnabled()
@@ -647,87 +470,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             SettingsActionHub.OnFloatingWindowInterceptorRuleChanged("SeewoDesktopSideBarFloating", ToggleSwitchSeewoDesktopSideBarFloating.IsOn);
             UpdateFloatingWindowInterceptorEnabled();
-        }
-
-        #endregion
-
-        #region File Association
-
-        private void BtnRegisterFileAssociation_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                bool success = FileAssociationManager.RegisterFileAssociation();
-                UpdateFileAssociationStatus();
-                var mw = GetMainWindow();
-                if (mw != null)
-                    mw.ShowNotification(success ? AutomationStrings.FileAssoc_RegisterSuccess : AutomationStrings.FileAssoc_RegisterFailed);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"注册文件关联失败: {ex.Message}", LogHelper.LogType.Error);
-                UpdateFileAssociationStatus();
-            }
-        }
-
-        private void BtnUnregisterFileAssociation_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                bool success = FileAssociationManager.UnregisterFileAssociation();
-                UpdateFileAssociationStatus();
-                var mw = GetMainWindow();
-                if (mw != null)
-                    mw.ShowNotification(success ? AutomationStrings.FileAssoc_UnregisterSuccess : AutomationStrings.FileAssoc_UnregisterFailed);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"取消文件关联失败: {ex.Message}", LogHelper.LogType.Error);
-                UpdateFileAssociationStatus();
-            }
-        }
-
-        private void BtnCheckFileAssociation_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateFileAssociationStatus();
-        }
-
-        private void UpdateFileAssociationStatus()
-        {
-            try
-            {
-                bool isRegistered = FileAssociationManager.IsFileAssociationRegistered();
-                if (isRegistered)
-                {
-                    TextBlockFileAssociationStatus.Text = AutomationStrings.FileAssoc_Registered;
-                    TextBlockFileAssociationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGreen);
-                }
-                else
-                {
-                    TextBlockFileAssociationStatus.Text = AutomationStrings.FileAssoc_NotRegistered;
-                    TextBlockFileAssociationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightCoral);
-                }
-            }
-            catch (Exception ex)
-            {
-                TextBlockFileAssociationStatus.Text = AutomationStrings.FileAssoc_CheckError;
-                TextBlockFileAssociationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightCoral);
-                LogHelper.WriteLogToFile($"检查文件关联状态失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        #endregion
-
-        #region Custom Automation
-
-        private void CardCustomAutomation_Click(object sender, RoutedEventArgs e)
-        {
-            // 导航到自定义自动化页面
-            var settingsWindow = Window.GetWindow(this) as Windows.SettingsViews.SettingsWindow;
-            if (settingsWindow != null)
-            {
-                settingsWindow.NavigateToPage("AutomationWorkflowPage");
-            }
         }
 
         #endregion

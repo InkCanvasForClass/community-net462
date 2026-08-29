@@ -181,5 +181,77 @@ namespace Ink_Canvas.Properties
         public static string Nav_Performance => ResourceManager.GetString(nameof(Nav_Performance), _resourceCulture);
 
         public static string Nav_Performance_Tooltip => ResourceManager.GetString(nameof(Nav_Performance_Tooltip), _resourceCulture);
+
+        public static string Nav_Display => ResourceManager.GetString(nameof(Nav_Display), _resourceCulture);
+
+        public static string Nav_Display_Tooltip => ResourceManager.GetString(nameof(Nav_Display_Tooltip), _resourceCulture);
+
+        public static string Nav_ScreenTouch => ResourceManager.GetString(nameof(Nav_ScreenTouch), _resourceCulture);
+
+        public static string Nav_ScreenTouch_Tooltip => ResourceManager.GetString(nameof(Nav_ScreenTouch_Tooltip), _resourceCulture);
+
+        public static string Nav_PrivacyAndSecurity => ResourceManager.GetString(nameof(Nav_PrivacyAndSecurity), _resourceCulture);
+
+        public static string Nav_PrivacyAndSecurity_Tooltip => ResourceManager.GetString(nameof(Nav_PrivacyAndSecurity_Tooltip), _resourceCulture);
+
+        public static string Nav_Personalization => ResourceManager.GetString(nameof(Nav_Personalization), _resourceCulture);
+
+        public static string Nav_Personalization_Tooltip => ResourceManager.GetString(nameof(Nav_Personalization_Tooltip), _resourceCulture);
+
+        public static string Nav_LinkageControls => ResourceManager.GetString(nameof(Nav_LinkageControls), _resourceCulture);
+
+        public static string Nav_LinkageControls_Tooltip => ResourceManager.GetString(nameof(Nav_LinkageControls_Tooltip), _resourceCulture);
+
+        public static string Nav_FloatingBar => ResourceManager.GetString(nameof(Nav_FloatingBar), _resourceCulture);
+
+        public static string Nav_FloatingBar_Tooltip => ResourceManager.GetString(nameof(Nav_FloatingBar_Tooltip), _resourceCulture);
+
+        public static string Nav_BoardPage => ResourceManager.GetString(nameof(Nav_BoardPage), _resourceCulture);
+
+        public static string Nav_BoardPage_Tooltip => ResourceManager.GetString(nameof(Nav_BoardPage_Tooltip), _resourceCulture);
+
+        public static string Nav_BoardCanvas => ResourceManager.GetString(nameof(Nav_BoardCanvas), _resourceCulture);
+
+        public static string Nav_BoardCanvas_Tooltip => ResourceManager.GetString(nameof(Nav_BoardCanvas_Tooltip), _resourceCulture);
+
+        public static string Nav_Booth => ResourceManager.GetString(nameof(Nav_Booth), _resourceCulture);
+
+        public static string Nav_Booth_Tooltip => ResourceManager.GetString(nameof(Nav_Booth_Tooltip), _resourceCulture);
+
+        public static string Nav_RollCall => ResourceManager.GetString(nameof(Nav_RollCall), _resourceCulture);
+
+        public static string Nav_RollCall_Tooltip => ResourceManager.GetString(nameof(Nav_RollCall_Tooltip), _resourceCulture);
+
+        public static string Nav_Timer => ResourceManager.GetString(nameof(Nav_Timer), _resourceCulture);
+
+        public static string Nav_Timer_Tooltip => ResourceManager.GetString(nameof(Nav_Timer_Tooltip), _resourceCulture);
+
+        public static string Nav_Magnifier => ResourceManager.GetString(nameof(Nav_Magnifier), _resourceCulture);
+
+        public static string Nav_Magnifier_Tooltip => ResourceManager.GetString(nameof(Nav_Magnifier_Tooltip), _resourceCulture);
+
+        public static string Nav_NotificationCenter => ResourceManager.GetString(nameof(Nav_NotificationCenter), _resourceCulture);
+
+        public static string Nav_NotificationCenter_Tooltip => ResourceManager.GetString(nameof(Nav_NotificationCenter_Tooltip), _resourceCulture);
+
+        public static string Nav_AutoFold => ResourceManager.GetString(nameof(Nav_AutoFold), _resourceCulture);
+
+        public static string Nav_AutoFold_Tooltip => ResourceManager.GetString(nameof(Nav_AutoFold_Tooltip), _resourceCulture);
+
+        public static string Nav_PPTSync => ResourceManager.GetString(nameof(Nav_PPTSync), _resourceCulture);
+
+        public static string Nav_PPTSync_Tooltip => ResourceManager.GetString(nameof(Nav_PPTSync_Tooltip), _resourceCulture);
+
+        public static string Nav_Config => ResourceManager.GetString(nameof(Nav_Config), _resourceCulture);
+
+        public static string Nav_Config_Tooltip => ResourceManager.GetString(nameof(Nav_Config_Tooltip), _resourceCulture);
+
+        public static string Nav_Sync => ResourceManager.GetString(nameof(Nav_Sync), _resourceCulture);
+
+        public static string Nav_Sync_Tooltip => ResourceManager.GetString(nameof(Nav_Sync_Tooltip), _resourceCulture);
+
+        public static string Nav_Storage => ResourceManager.GetString(nameof(Nav_Storage), _resourceCulture);
+
+        public static string Nav_Storage_Tooltip => ResourceManager.GetString(nameof(Nav_Storage_Tooltip), _resourceCulture);
     }
 }
