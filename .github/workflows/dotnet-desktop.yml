@@ -2,7 +2,6 @@ name: .NET Build & Package
 
 on:
   push:
-    branches: [net462]
   workflow_dispatch:
 
 concurrency:
