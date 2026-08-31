@@ -18,6 +18,8 @@ namespace Ink_Canvas.Windows.SettingsViews
     {
         private Dictionary<string, Type> _pageTypes;
         private readonly Dictionary<string, object> _pages = new Dictionary<string, object>();
+        private readonly Dictionary<string, RoutedEventHandler> _pageLoadedHandlers = new Dictionary<string, RoutedEventHandler>();
+        private readonly HashSet<string> _injectedPages = new HashSet<string>();
         private readonly Dictionary<string, Ink_Canvas.Plugins.PluginInfo> _pluginPages = new Dictionary<string, Ink_Canvas.Plugins.PluginInfo>();
 
         // 保存窗口原始位置和大小
@@ -71,6 +73,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "DebugPage", typeof(DebugPage) },
                 { "FriendlyLinksPage", typeof(FriendlyLinksPage) },
                 { "AboutPage", typeof(AboutPage) },
+                { "FavouritesPage", typeof(FavouritesPage) },
                 { "Settings", typeof(SettingsPage) },
                 { "PluginPage", typeof(PluginPage) },
                 { "PluginSettingsPage", typeof(PluginSettingsPage) }
@@ -362,6 +365,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     pluginSettingsPage.CurrentPlugin = pluginInfo;
                 }
 
+                HookFavouriteStarsInjection(cachedPage, pageTag);
+
                 rootFrame.NavigationUIVisibility = NavigationUIVisibility.Hidden;
                 rootFrame.RemoveBackEntry();
                 rootFrame.Navigate(cachedPage);
@@ -382,6 +387,30 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 _isNavigating = false;
             }
+        }
+
+        /// <summary>
+        /// 页面成为当前内容且 Loaded 后，注入全量收藏星标（每页仅一次）。
+        /// </summary>
+        private void HookFavouriteStarsInjection(object cachedPage, string pageTag)
+        {
+            if (pageTag == "FavouritesPage") return;
+            if (!(cachedPage is FrameworkElement pageFe)) return;
+
+            if (_pageLoadedHandlers.TryGetValue(pageTag, out var oldHandler))
+            {
+                pageFe.Loaded -= oldHandler;
+            }
+
+            RoutedEventHandler handler = null;
+            handler = (s, e) =>
+            {
+                ((FrameworkElement)s).Loaded -= handler;
+                if (!_injectedPages.Add(pageTag)) return;
+                Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.InjectStarsIntoPage((FrameworkElement)s, pageTag);
+            };
+            _pageLoadedHandlers[pageTag] = handler;
+            pageFe.Loaded += handler;
         }
 
         private void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
@@ -528,6 +557,16 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             public string Text;
             public string PageTag;
+            public string PropertyPath;
+            public WeakReference<FrameworkElement> Target;
+        }
+
+        public sealed class FavouriteEntry
+        {
+            public string PropertyPath;
+            public string Header;
+            public string PageTag;
+            public string PageTitle;
             public WeakReference<FrameworkElement> Target;
         }
 
@@ -554,6 +593,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var tag = kv.Key;
                 if (tag == "Settings") continue;
                 if (kv.Value == typeof(PluginSettingsPage)) continue;
+                if (tag == "FavouritesPage") continue;
 
                 try
                 {
@@ -593,6 +633,13 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void CollectEntriesFromPage(DependencyObject root, string pageTag)
         {
+            // 卡片身份与星标注入使用同一遍历，保证收藏匹配一致
+            var identities = new Dictionary<FrameworkElement, string>();
+            foreach (var pair in Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.EnumerateCardIdentities(root, pageTag))
+            {
+                identities[pair.Key] = pair.Value;
+            }
+
             foreach (var node in EnumerateLogicalDescendants(root))
             {
                 string header = null;
@@ -613,10 +660,14 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 if (!string.IsNullOrWhiteSpace(header) && target != null)
                 {
+                    string propertyPath = null;
+                    identities.TryGetValue(target, out propertyPath);
+
                     _searchIndex.Add(new SearchEntry
                     {
                         Text = header.Trim(),
                         PageTag = pageTag,
+                        PropertyPath = propertyPath,
                         Target = new WeakReference<FrameworkElement>(target)
                     });
                 }
@@ -672,6 +723,46 @@ namespace Ink_Canvas.Windows.SettingsViews
             var entry = _searchIndex.FirstOrDefault(e => e.Text.Equals(query, StringComparison.OrdinalIgnoreCase))
                         ?? _searchIndex.FirstOrDefault(e => e.Text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0);
 
+            NavigateToSearchEntry(entry);
+        }
+
+        /// <summary>
+        /// 获取用户收藏的设置项（供收藏夹页展示）。
+        /// </summary>
+        public List<FavouriteEntry> GetFavouriteEntries()
+        {
+            EnsureSearchIndexBuilt();
+            var result = new List<FavouriteEntry>();
+            foreach (var path in global::Ink_Canvas.Helpers.SettingsTagResolver.GetFavouritePaths())
+            {
+                var entry = _searchIndex.FirstOrDefault(e =>
+                    !string.IsNullOrEmpty(e.PropertyPath) &&
+                    string.Equals(e.PropertyPath, path, StringComparison.OrdinalIgnoreCase));
+                if (entry == null) continue;
+
+                string pageTitle = FindNavigationViewItemByTag(entry.PageTag)?.Content?.ToString() ?? entry.PageTag;
+                result.Add(new FavouriteEntry
+                {
+                    PropertyPath = path,
+                    Header = entry.Text,
+                    PageTag = entry.PageTag,
+                    PageTitle = pageTitle,
+                    Target = entry.Target,
+                });
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 跳转到收藏夹中的某个设置项所在页面并滚动到该卡片。
+        /// </summary>
+        public void NavigateToFavourite(string propertyPath)
+        {
+            if (string.IsNullOrEmpty(propertyPath)) return;
+            EnsureSearchIndexBuilt();
+            var entry = _searchIndex.FirstOrDefault(e =>
+                !string.IsNullOrEmpty(e.PropertyPath) &&
+                string.Equals(e.PropertyPath, propertyPath, StringComparison.OrdinalIgnoreCase));
             NavigateToSearchEntry(entry);
         }
 

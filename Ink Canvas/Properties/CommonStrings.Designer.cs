@@ -65,5 +65,19 @@ namespace Ink_Canvas.Properties
         public static string Common_On => ResourceManager.GetString(nameof(Common_On), _resourceCulture);
 
         public static string Common_Off => ResourceManager.GetString(nameof(Common_Off), _resourceCulture);
+
+        public static string SettingsTag_Warn => ResourceManager.GetString(nameof(SettingsTag_Warn), _resourceCulture);
+
+        public static string SettingsTag_New => ResourceManager.GetString(nameof(SettingsTag_New), _resourceCulture);
+
+        public static string SettingsTag_Experimental => ResourceManager.GetString(nameof(SettingsTag_Experimental), _resourceCulture);
+
+        public static string SettingsTag_Secret => ResourceManager.GetString(nameof(SettingsTag_Secret), _resourceCulture);
+
+        public static string SettingsTag_Favourite => ResourceManager.GetString(nameof(SettingsTag_Favourite), _resourceCulture);
+
+        public static string SettingsTag_FavouriteAdd => ResourceManager.GetString(nameof(SettingsTag_FavouriteAdd), _resourceCulture);
+
+        public static string SettingsTag_FavouriteRemove => ResourceManager.GetString(nameof(SettingsTag_FavouriteRemove), _resourceCulture);
     }
 }

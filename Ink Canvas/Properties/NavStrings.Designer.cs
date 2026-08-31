@@ -257,5 +257,13 @@ namespace Ink_Canvas.Properties
         public static string Nav_Storage => ResourceManager.GetString(nameof(Nav_Storage), _resourceCulture);
 
         public static string Nav_Storage_Tooltip => ResourceManager.GetString(nameof(Nav_Storage_Tooltip), _resourceCulture);
+
+        public static string Nav_Favourites => ResourceManager.GetString(nameof(Nav_Favourites), _resourceCulture);
+
+        public static string Nav_Favourites_Tooltip => ResourceManager.GetString(nameof(Nav_Favourites_Tooltip), _resourceCulture);
+
+        public static string Nav_Favourites_Empty => ResourceManager.GetString(nameof(Nav_Favourites_Empty), _resourceCulture);
+
+        public static string Nav_Favourites_LocatedIn => ResourceManager.GetString(nameof(Nav_Favourites_LocatedIn), _resourceCulture);
     }
 }

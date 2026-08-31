@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Ink_Canvas.Helpers
@@ -7,7 +8,7 @@ namespace Ink_Canvas.Helpers
     /// <summary>
     /// 反馈数据脱敏处理器。
     /// 对上传到 pastebin 的 JSON 数据进行脱敏，移除敏感配置。
-    /// 脱敏规则：
+    /// 脱敏规则由 Settings.cs 中标记了 [SettingsTag(Secret)] 的属性驱动（反射收集 JsonProperty 名）。
     /// - 设备 ID：保留原样
     /// - WebDAV 配置（URL、用户名、密码、根目录）：完全移除
     /// - DlassSettings 的 token 和 API 地址：移除
@@ -17,16 +18,10 @@ namespace Ink_Canvas.Helpers
     {
         /// <summary>
         /// 需要从反馈 JSON 中移除的敏感字段名（不区分大小写匹配）。
+        /// 由 [SettingsTag(Secret)] 特性反射生成，不硬编码。
         /// </summary>
-        private static readonly string[] SensitiveFieldNames = new[]
-        {
-            "webDavUrl", "webDavUsername", "webDavPassword", "webDavRootDirectory",
-            "userToken", "savedTokens", "apiBaseUrl",
-            "passwordEnabled", "passwordSalt", "passwordHash",
-            "requirePasswordOnExit", "requirePasswordOnEnterSettings",
-            "requirePasswordOnResetConfig", "requirePasswordOnModifyOrClearNameList",
-            "hasAcceptedTelemetryPrivacy", "telemetryUploadLevel"
-        };
+        private static readonly HashSet<string> SensitiveFieldNames =
+            SettingsTagResolver.GetSecretJsonPropertyNames();
 
         /// <summary>
         /// 将 Settings 对象序列化为脱敏后的 JSON。

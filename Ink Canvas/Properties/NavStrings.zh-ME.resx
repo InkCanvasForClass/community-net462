@@ -243,4 +243,16 @@
   <data name="Nav_Performance_Tooltip" xml:space="preserve">
     <value>给电脑做体检，看看它行不行</value>
   </data>
+  <data name="Nav_Favourites" xml:space="preserve">
+    <value>收藏夾</value>
+  </data>
+  <data name="Nav_Favourites_Tooltip" xml:space="preserve">
+    <value>我的收藏設定</value>
+  </data>
+  <data name="Nav_Favourites_Empty" xml:space="preserve">
+    <value>暫無收藏設定。點擊設定卡片標題右側的星標即可收藏。</value>
+  </data>
+  <data name="Nav_Favourites_LocatedIn" xml:space="preserve">
+    <value>位於 {0}</value>
+  </data>
 </root>

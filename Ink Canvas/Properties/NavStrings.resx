@@ -369,4 +369,16 @@
   <data name="Nav_Storage_Tooltip" xml:space="preserve">
     <value>存储占用概览与清理</value>
   </data>
+  <data name="Nav_Favourites" xml:space="preserve">
+    <value>收藏夹</value>
+  </data>
+  <data name="Nav_Favourites_Tooltip" xml:space="preserve">
+    <value>我的收藏设置</value>
+  </data>
+  <data name="Nav_Favourites_Empty" xml:space="preserve">
+    <value>暂无收藏设置。点击设置卡片标题右侧的星标即可收藏。</value>
+  </data>
+  <data name="Nav_Favourites_LocatedIn" xml:space="preserve">
+    <value>位于 {0}</value>
+  </data>
 </root>
