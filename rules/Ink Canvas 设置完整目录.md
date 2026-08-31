@@ -183,52 +183,53 @@
 │           │   └── SettingsCard: 暂停延迟 → Slider
 │           └── SettingsExpander: 线段端点吸附 → ToggleSwitch（开则展开）
 │               └── SettingsCard: 吸附距离 → Slider
-├── PPT联动
-│   ├── TextBlock "PPT联动"
-│   │   ├── LabeledSettingsCard: 支持 PowerPoint → ToggleSwitch
-│   │   ├── LabeledSettingsCard: PPT增强 → ToggleSwitch
-│   │   ├── LabeledSettingsCard: 跳过动画 → ToggleSwitch
-│   │   ├── LabeledSettingsCard: 使用 Rot PPT 链接 → ToggleSwitch
-│   │   ├── LabeledSettingsCard: 支持 WPS → ToggleSwitch
-│   │   └── LabeledSettingsCard: 杀死 WPP 进程 → ToggleSwitch
-│   ├── TextBlock "翻页按钮"
-│   │   ├── LabeledSettingsCard: 显示翻页按钮 → ToggleSwitch
-│   │   ├── SettingsExpander: 左侧按钮 → CheckBox（翻页按钮开则展开）
-│   │   │   ├── SettingsCard: 左侧偏移 → Slider
-│   │   │   └── SettingsCard: 左侧透明度 → Slider
-│   │   ├── SettingsExpander: 右侧按钮 → CheckBox（翻页按钮开则展开）
-│   │   │   ├── SettingsCard: 右侧偏移 → Slider
-│   │   │   └── SettingsCard: 右侧透明度 → Slider
-│   │   ├── SettingsExpander: 左下按钮 → CheckBox（翻页按钮开则展开）
-│   │   │   ├── SettingsCard: 左下偏移 → Slider
-│   │   │   └── SettingsCard: 左下透明度 → Slider
-│   │   ├── SettingsExpander: 右下按钮 → CheckBox（翻页按钮开则展开）
-│   │   │   ├── SettingsCard: 右下偏移 → Slider
-│   │   │   └── SettingsCard: 右下透明度 → Slider
-│   │   ├── SettingsCard: 侧边组 → CheckBox × 3
-│   │   ├── SettingsCard: 底部组 → CheckBox × 3
-│   │   ├── LabeledSettingsCard: 页码按钮可点击 → ToggleSwitch
-│   │   ├── LabeledSettingsCard: 增强预览 → ToggleSwitch
-│   │   └── LabeledSettingsCard: 长按翻页 → ToggleSwitch
-│   ├── TextBlock "进入放映时进入批注"
-│   │   └── LabeledSettingsCard: 进入放映时进入批注 → ToggleSwitch
-│   ├── TextBlock "PPT设置"
-│   │   ├── LabeledSettingsCard: 双指手势 → ToggleSwitch
-│   │   ├── LabeledSettingsCard: 手势翻页 → ToggleSwitch
-│   │   ├── LabeledSettingsCard: 时间胶囊 → ToggleSwitch
-│   │   ├── SettingsCard: 时间胶囊位置 → ComboBox
-│   │   ├── SettingsCard: 时间胶囊透明度 → Slider
-│   │   ├── SettingsCard: 时间胶囊缩放 → Slider
-│   │   ├── SettingsCard: 时间胶囊重置位置 → Button
-│   │   └── LabeledSettingsCard: 放映时显示快捷面板 → ToggleSwitch
-│   ├── TextBlock "自动截图"
-│   │   ├── LabeledSettingsCard: 自动截图 → ToggleSwitch
-│   │   └── LabeledSettingsCard: 自动保存墨迹 → ToggleSwitch
-│   └── TextBlock "记住上次页面"
-│       ├── LabeledSettingsCard: 记住上次页面 → ToggleSwitch
-│       ├── LabeledSettingsCard: 重新进入时跳到第一页 → ToggleSwitch
-│       ├── LabeledSettingsCard: 通知隐藏页面 → ToggleSwitch
-│       └── LabeledSettingsCard: 通知自动播放 → ToggleSwitch
+├── 联动
+│   └── PPT联动
+│       ├── TextBlock "PPT联动"
+│       │   ├── LabeledSettingsCard: 支持 PowerPoint → ToggleSwitch
+│       │   ├── LabeledSettingsCard: PPT增强 → ToggleSwitch
+│       │   ├── LabeledSettingsCard: 跳过动画 → ToggleSwitch
+│       │   ├── LabeledSettingsCard: 使用 Rot PPT 链接 → ToggleSwitch
+│       │   ├── LabeledSettingsCard: 支持 WPS → ToggleSwitch
+│       │   └── LabeledSettingsCard: 杀死 WPP 进程 → ToggleSwitch
+│       ├── TextBlock "翻页按钮"
+│       │   ├── LabeledSettingsCard: 显示翻页按钮 → ToggleSwitch
+│       │   ├── SettingsExpander: 左侧按钮 → CheckBox（翻页按钮开则展开）
+│       │   │   ├── SettingsCard: 左侧偏移 → Slider
+│       │   │   └── SettingsCard: 左侧透明度 → Slider
+│       │   ├── SettingsExpander: 右侧按钮 → CheckBox（翻页按钮开则展开）
+│       │   │   ├── SettingsCard: 右侧偏移 → Slider
+│       │   │   └── SettingsCard: 右侧透明度 → Slider
+│       │   ├── SettingsExpander: 左下按钮 → CheckBox（翻页按钮开则展开）
+│       │   │   ├── SettingsCard: 左下偏移 → Slider
+│       │   │   └── SettingsCard: 左下透明度 → Slider
+│       │   ├── SettingsExpander: 右下按钮 → CheckBox（翻页按钮开则展开）
+│       │   │   ├── SettingsCard: 右下偏移 → Slider
+│       │   │   └── SettingsCard: 右下透明度 → Slider
+│       │   ├── SettingsCard: 侧边组 → CheckBox × 3
+│       │   ├── SettingsCard: 底部组 → CheckBox × 3
+│       │   ├── LabeledSettingsCard: 页码按钮可点击 → ToggleSwitch
+│       │   ├── LabeledSettingsCard: 增强预览 → ToggleSwitch
+│       │   └── LabeledSettingsCard: 长按翻页 → ToggleSwitch
+│       ├── TextBlock "进入放映时进入批注"
+│       │   └── LabeledSettingsCard: 进入放映时进入批注 → ToggleSwitch
+│       ├── TextBlock "PPT设置"
+│       │   ├── LabeledSettingsCard: 双指手势 → ToggleSwitch
+│       │   ├── LabeledSettingsCard: 手势翻页 → ToggleSwitch
+│       │   ├── LabeledSettingsCard: 时间胶囊 → ToggleSwitch
+│       │   ├── SettingsCard: 时间胶囊位置 → ComboBox
+│       │   ├── SettingsCard: 时间胶囊透明度 → Slider
+│       │   ├── SettingsCard: 时间胶囊缩放 → Slider
+│       │   ├── SettingsCard: 时间胶囊重置位置 → Button
+│       │   └── LabeledSettingsCard: 放映时显示快捷面板 → ToggleSwitch
+│       ├── TextBlock "自动截图"
+│       │   ├── LabeledSettingsCard: 自动截图 → ToggleSwitch
+│       │   └── LabeledSettingsCard: 自动保存墨迹 → ToggleSwitch
+│       └── TextBlock "记住上次页面"
+│           ├── LabeledSettingsCard: 记住上次页面 → ToggleSwitch
+│           ├── LabeledSettingsCard: 重新进入时跳到第一页 → ToggleSwitch
+│           ├── LabeledSettingsCard: 通知隐藏页面 → ToggleSwitch
+│           └── LabeledSettingsCard: 通知自动播放 → ToggleSwitch
 ├── 更新
 │   ├── 状态横幅（当前版本/更新状态）
 │   └── TabControl

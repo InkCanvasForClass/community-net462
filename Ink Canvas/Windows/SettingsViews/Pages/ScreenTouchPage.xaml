@@ -1,0 +1,342 @@
+<ui:Page xmlns:props="clr-namespace:Ink_Canvas.Properties" x:Class="Ink_Canvas.Windows.SettingsViews.Pages.ScreenTouchPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews.Pages"
+      xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+      xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
+      xmlns:c="clr-namespace:Ink_Canvas.Converter"
+      xmlns:helpers="clr-namespace:Ink_Canvas.Windows.SettingsViews.Helpers"
+      mc:Ignorable="d"
+      Title="Screen &amp; Touch">
+
+    <ScrollViewer PanningMode="VerticalFirst">
+        <Grid Margin="59,0,59,0">
+            <FrameworkElement.Resources>
+                <sys:Double x:Key="SettingsCardSpacing">4</sys:Double>
+                <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+                <Style x:Key="SettingsSectionHeaderTextBlockStyle"
+                    BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+                    TargetType="TextBlock">
+                    <Style.Setters>
+                        <Setter Property="Margin" Value="1,30,0,6" />
+                    </Style.Setters>
+                </Style>
+            </FrameworkElement.Resources>
+            <Grid>
+                <ikw:SimpleStackPanel MaxWidth="1000"
+                    HorizontalAlignment="Stretch"
+                    Spacing="{StaticResource SettingsCardSpacing}">
+
+                    <!-- ==================== Screen Settings ==================== -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:WindowStrings.WindowSettings}" />
+
+                    <controls:LabeledSettingsCard x:Name="CardMultiScreenSupport"
+                            Header="{x:Static props:WindowStrings.MultiScreenSupport}"
+                            Description="{x:Static props:WindowStrings.MultiScreenSupportHint}"
+                            SwitchName="ToggleSwitchMultiScreenSupport"
+                            Toggled="ToggleSwitchMultiScreenSupport_Toggled">
+                        <controls:LabeledSettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Desktop_24_Regular}" />
+                        </controls:LabeledSettingsCard.HeaderIcon>
+                    </controls:LabeledSettingsCard>
+
+                    <controls:LabeledSettingsCard x:Name="CardFollowMouseScreen"
+                            Header="{x:Static props:WindowStrings.FollowMouseScreen}"
+                            Description="{x:Static props:WindowStrings.FollowMouseScreenHint}"
+                            Visibility="{Binding IsOn, ElementName=CardMultiScreenSupport, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            SwitchName="ToggleSwitchFollowMouseScreen"
+                            Toggled="ToggleSwitchFollowMouseScreen_Toggled">
+                        <controls:LabeledSettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Desktop_24_Regular}" />
+                        </controls:LabeledSettingsCard.HeaderIcon>
+                    </controls:LabeledSettingsCard>
+
+                    <controls:LabeledSettingsCard x:Name="CardAvoidFullScreen"
+                            Header="{x:Static props:AdvancedStrings.AvoidFullScreenHelper}"
+                            Description="{x:Static props:AdvancedStrings.AvoidFullScreenHelperHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.Cancel}"
+                            SwitchName="ToggleSwitchAvoidFullScreen"
+                            Toggled="ToggleSwitchAvoidFullScreen_Toggled" />
+
+                    <controls:LabeledSettingsCard x:Name="CardIsSpecialScreen"
+                            Header="{x:Static props:AdvancedStrings.SpecialScreenMode}"
+                            Icon="{x:Static ui:SegoeFluentIcons.Settings}"
+                            IsOn="True"
+                            Toggled="ToggleSwitchIsSpecialScreen_OnToggled"/>
+
+                    <!-- ==================== Touch Multiplier ==================== -->
+                    <ui:SettingsExpander x:Name="CardTouchMultiplier"
+                                         Header="{x:Static props:AdvancedStrings.TouchMultiplier}"
+                                         Description="{x:Static props:AdvancedStrings.TouchMultiplierHint}"
+                                         IsExpanded="True">
+                        <ui:SettingsExpander.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Touch}" />
+                        </ui:SettingsExpander.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="TouchMultiplierText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="TouchMultiplierSlider"
+                                    Minimum="0" Maximum="2"
+                                    Width="200"
+                                    IsSnapToTickEnabled="True"
+                                    TickFrequency="0.01" TickPlacement="None"
+                                    ValueChanged="TouchMultiplierSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                        <ui:SettingsExpander.Items>
+                            <ui:SettingsCard Header="{x:Static props:AdvancedStrings.TouchMultiplierCalibrateHint}"
+                                             ContentAlignment="Left">
+                                <ikw:SimpleStackPanel Spacing="8" Margin="0,4,0,4">
+                                    <TextBlock Text="{x:Static props:AdvancedStrings.TouchMultiplierValueHint}"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               TextWrapping="Wrap" MaxWidth="420" />
+                                    <Border Margin="0,0,20,0" CornerRadius="4" Height="48" Background="Transparent"
+                                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="2"
+                                            TouchDown="BorderCalculateMultiplier_TouchDown" />
+                                    <TextBlock x:Name="TextBlockShowCalculatedMultiplier" FontSize="14" />
+                                    <TextBlock x:Name="TextBlockShowRawValue" FontSize="14"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                </ikw:SimpleStackPanel>
+                            </ui:SettingsCard>
+                        </ui:SettingsExpander.Items>
+                    </ui:SettingsExpander>
+
+                    <controls:LabeledSettingsCard x:Name="ToggleSwitchEraserBindTouchMultiplier"
+                        Header="{x:Static props:AdvancedStrings.EraserBindTouchMultiplier}"
+                        Description="{x:Static props:AdvancedStrings.EraserBindTouchHint}"
+                        Icon="{x:Static ui:SegoeFluentIcons.EraseTool}"
+                        IsOn="True"
+                        Toggled="ToggleSwitchEraserBindTouchMultiplier_Toggled"/>
+
+                    <!-- ==================== Bounds Width ==================== -->
+                    <ui:SettingsCard Header="{x:Static props:AdvancedStrings.NibModeBoundsWidthHeader}">
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="NibModeBoundsWidthText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="NibModeBoundsWidthSlider"
+                                    Minimum="1" Maximum="50" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="1" Value="5"
+                                    TickPlacement="None"
+                                    ValueChanged="NibModeBoundsWidthSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="{x:Static props:AdvancedStrings.FingerModeBoundsWidthHeader}">
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="FingerModeBoundsWidthText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="FingerModeBoundsWidthSlider"
+                                    Minimum="1" Maximum="50" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="1" Value="20"
+                                    TickPlacement="None"
+                                    ValueChanged="FingerModeBoundsWidthSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="笔尖模式边界阈值">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="NibModeThresholdText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="NibModeThresholdSlider"
+                                    Minimum="0.5" Maximum="5" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="2.5"
+                                    TickPlacement="None"
+                                    ValueChanged="NibModeThresholdSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="手指模式边界阈值">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="FingerModeThresholdText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="FingerModeThresholdSlider"
+                                    Minimum="0.5" Maximum="5" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="2.5"
+                                    TickPlacement="None"
+                                    ValueChanged="FingerModeThresholdSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="笔尖模式橡皮擦尺寸">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="NibModeEraserSizeText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="NibModeEraserSizeSlider"
+                                    Minimum="0.2" Maximum="2" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="0.8"
+                                    TickPlacement="None"
+                                    ValueChanged="NibModeEraserSizeSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="手指模式橡皮擦尺寸">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="FingerModeEraserSizeText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="FingerModeEraserSizeSlider"
+                                    Minimum="0.2" Maximum="2" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="0.8"
+                                    TickPlacement="None"
+                                    ValueChanged="FingerModeEraserSizeSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <controls:LabeledSettingsCard x:Name="ToggleSwitchIsQuadIR"
+                        Header="{x:Static props:AdvancedStrings.QuadIRMode}"
+                        Icon="{x:Static ui:SegoeFluentIcons.FullScreen}"
+                        IsOn="True"
+                        Toggled="ToggleSwitchIsQuadIR_Toggled"/>
+
+                    <!-- ==================== Auto Calibrate ==================== -->
+                    <ui:SettingsExpander x:Name="CardAutoCalibrate"
+                                         Header="自动校准触摸参数"
+                                         Description="通过三次触摸自动计算合适的笔尖/手指阈值和触摸倍率"
+                                         IsExpanded="False">
+                        <ui:SettingsExpander.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EaseOfAccess}" />
+                        </ui:SettingsExpander.HeaderIcon>
+                        <ui:SettingsExpander.Items>
+                            <ui:SettingsCard Header="校准步骤" ContentAlignment="Left">
+                                <ikw:SimpleStackPanel Spacing="8" Margin="0,4,0,4">
+                                    <TextBlock Text="点击&quot;开始校准&quot;按钮，然后依次在下方区域用："
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               TextWrapping="Wrap" MaxWidth="420" />
+                                    <ikw:SimpleStackPanel Orientation="Vertical" Spacing="4" Margin="8,0,0,0">
+                                        <TextBlock Text="1. 笔尖（触控笔）" />
+                                        <TextBlock Text="2. 手指" />
+                                        <TextBlock Text="3. 手掌（模拟误触）" />
+                                    </ikw:SimpleStackPanel>
+                                    <Button x:Name="BtnStartCalibrate" Content="开始校准" Click="BtnStartCalibrate_Click" MinWidth="120" />
+                                    <Border x:Name="BorderCalibrate" Margin="0,0,20,0" CornerRadius="4" Height="64" 
+                                            Background="Transparent"
+                                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="2"
+                                            TouchDown="BorderCalibrate_TouchDown" IsEnabled="False">
+                                        <TextBlock x:Name="TextCalibrateHint" 
+                                                   Text="点击上面的按钮开始" 
+                                                   HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                    </Border>
+                                    <ikw:SimpleStackPanel Orientation="Vertical" Spacing="4" Margin="8,0,0,0">
+                                        <TextBlock x:Name="TextNibCalibrated" Text="笔尖值: 未校准" Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                        <TextBlock x:Name="TextFingerCalibrated" Text="手指值: 未校准" Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                        <TextBlock x:Name="TextPalmCalibrated" Text="手掌值: 未校准" Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                        <TextBlock x:Name="TextCalibrateResult" Text="" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" />
+                                    </ikw:SimpleStackPanel>
+                                </ikw:SimpleStackPanel>
+                            </ui:SettingsCard>
+                        </ui:SettingsExpander.Items>
+                    </ui:SettingsExpander>
+
+                    <!-- ==================== Pressure & Eraser ==================== -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:CanvasStrings.Canvas_GroupTitle}" />
+
+                    <controls:LabeledSettingsCard x:Name="CardEnablePressureTouchMode"
+                            Header="{x:Static props:CanvasStrings.Canvas_EnablePressureTouch}"
+                            Description="{x:Static props:CanvasStrings.Canvas_EnablePressureTouchHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.Touch}"
+                            SwitchName="ToggleSwitchEnablePressureTouchMode"
+                            Toggled="ToggleSwitchEnablePressureTouchMode_Toggled" />
+
+                    <controls:LabeledSettingsCard x:Name="CardDisablePressure"
+                            Header="{x:Static props:CanvasStrings.Canvas_IgnorePressure}"
+                            Description="{x:Static props:CanvasStrings.Canvas_DisablePressureHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+                            SwitchName="ToggleSwitchDisablePressure"
+                            Toggled="ToggleSwitchDisablePressure_Toggled" />
+
+                    <ui:SettingsExpander x:Name="ExpanderEnablePalmEraser"
+                            Header="{x:Static props:GestureStrings.Gesture_EnablePalmEraser}"
+                            Description="{x:Static props:GestureStrings.Gesture_PalmHint}"
+                            IsExpanded="{Binding IsOn, ElementName=ToggleSwitchEnablePalmEraser, Mode=OneWay}"
+                            d:Visibility="Visible" d:IsExpanded="True">
+                        <ui:SettingsExpander.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                        </ui:SettingsExpander.HeaderIcon>
+                        <ui:ToggleSwitch x:Name="ToggleSwitchEnablePalmEraser"
+                                helpers:SettingsBinder.PropertyPath="Canvas.EnablePalmEraser" />
+                        <ui:SettingsExpander.Items>
+                            <ui:SettingsCard Header="{x:Static props:GestureStrings.Gesture_PalmSensitivity}">
+                                <ComboBox helpers:SettingsBinder.PropertyPath="Canvas.PalmEraserSensitivity">
+                                    <ComboBoxItem Content="{x:Static props:GestureStrings.Gesture_PalmSensitivityLow}" />
+                                    <ComboBoxItem Content="{x:Static props:GestureStrings.Gesture_PalmSensitivityMedium}" />
+                                    <ComboBoxItem Content="{x:Static props:GestureStrings.Gesture_PalmSensitivityHigh}" />
+                                </ComboBox>
+                            </ui:SettingsCard>
+                        </ui:SettingsExpander.Items>
+                    </ui:SettingsExpander>
+
+                    <!-- ==================== Gesture ==================== -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:GestureStrings.Gesture_Title}" />
+
+                    <controls:LabeledSettingsCard
+                            Header="{x:Static props:GestureStrings.Gesture_AllowRotateScale}"
+                            Description="{x:Static props:GestureStrings.Gesture_AllowRotateScaleHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.Rotate}"
+                            SwitchName="ToggleSwitchEnableTwoFingerRotationOnSelection"
+                            helpers:SettingsBinder.PropertyPath="Gesture.IsEnableTwoFingerRotationOnSelection" />
+
+                    <!-- ==================== Experimental ==================== -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:AdvancedStrings.Experimental}" />
+
+                    <controls:LabeledSettingsCard x:Name="CardForceFullScreen"
+                            Header="{x:Static props:AdvancedStrings.ForceFullScreen}"
+                            Description="{x:Static props:AdvancedStrings.ForceFullScreenHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.Video}"
+                            SwitchName="ToggleSwitchForceFullScreen"
+                            Toggled="ToggleSwitchForceFullScreen_Toggled" />
+
+                    <controls:LabeledSettingsCard x:Name="CardDPIChangeDetection"
+                            Header="{x:Static props:AdvancedStrings.DPIChangeDetection}"
+                            Description="{x:Static props:AdvancedStrings.DPIChangeDetectionHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.View}"
+                            SwitchName="ToggleSwitchDPIChangeDetection"
+                            Toggled="ToggleSwitchDPIChangeDetection_Toggled" />
+
+                    <controls:LabeledSettingsCard x:Name="CardResolutionChangeDetection"
+                            Header="{x:Static props:AdvancedStrings.ResolutionChangeDetection}"
+                            Description="{x:Static props:AdvancedStrings.ResolutionChangeDetectionHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.Accept}"
+                            SwitchName="ToggleSwitchResolutionChangeDetection"
+                            Toggled="ToggleSwitchResolutionChangeDetection_Toggled" />
+
+                    <controls:LabeledSettingsCard x:Name="CardFullScreenHelper"
+                            Header="{x:Static props:AdvancedStrings.FullScreenHelper}"
+                            Description="{x:Static props:AdvancedStrings.FullScreenHelperHint}"
+                            Icon="{x:Static ui:SegoeFluentIcons.FullScreen}"
+                            SwitchName="ToggleSwitchFullScreenHelper"
+                            Toggled="ToggleSwitchFullScreenHelper_Toggled" />
+
+                    <controls:LabeledSettingsCard x:Name="CardEdgeGestureUtil"
+                            Header="{x:Static props:AdvancedStrings.EdgeGestureUtil}"
+                            Description="{x:Static props:AdvancedStrings.EdgeGestureUtilHint_Part1}"
+                            Icon="{x:Static ui:SegoeFluentIcons.AlignLeft}"
+                            SwitchName="ToggleSwitchEdgeGestureUtil"
+                            Toggled="ToggleSwitchEdgeGestureUtil_Toggled" />
+
+                    <Rectangle Height="48" />
+
+                </ikw:SimpleStackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</ui:Page>

@@ -238,8 +238,9 @@
                         </TreeViewItem>
                     </TreeViewItem>
                 </TreeViewItem>
-                <TreeViewItem Header="PPT联动" IsExpanded="True">
-                    <TreeViewItem Header='TextBlock "PPT联动"'>
+                <TreeViewItem Header="联动" IsExpanded="True">
+                    <TreeViewItem Header="PPT联动" IsExpanded="True">
+                        <TreeViewItem Header='TextBlock "PPT联动"'>
                         <TreeViewItem Header="LabeledSettingsCard: 支持 PowerPoint → ToggleSwitch" />
                         <TreeViewItem Header="LabeledSettingsCard: PPT增强 → ToggleSwitch" />
                         <TreeViewItem Header="LabeledSettingsCard: 跳过动画 → ToggleSwitch" />
@@ -294,6 +295,7 @@
                         <TreeViewItem Header="LabeledSettingsCard: 通知隐藏页面 → ToggleSwitch" />
                         <TreeViewItem Header="LabeledSettingsCard: 通知自动播放 → ToggleSwitch" />
                     </TreeViewItem>
+                </TreeViewItem>
                 </TreeViewItem>
                 <TreeViewItem Header="更新">
                     <TreeViewItem Header="状态横幅（当前版本/更新状态）" />
