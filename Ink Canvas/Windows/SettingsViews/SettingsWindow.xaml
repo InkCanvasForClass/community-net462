@@ -124,6 +124,15 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Home}"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+                <ui:NavigationViewItem
+                    x:Name="FavouritesItem"
+                    Content="{x:Static props:NavStrings.Nav_Favourites}"
+                    Tag="FavouritesPage"
+                    ToolTipService.ToolTip="{x:Static props:NavStrings.Nav_Favourites_Tooltip}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FavoriteStar}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
                 <ui:NavigationViewItemHeader Content="{x:Static props:NavStrings.Nav_ICCSettings}"/>
 
                 <!-- 基本 -->

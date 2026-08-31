@@ -7,6 +7,7 @@
 ```
 应用设置
 ├── 首页
+├── 收藏夹 (FavouritesPage)
 ├── ── ICC CE 设置 ──（分隔符）
 ├── 通用
 │   ├── 基本 (StartupPage)
@@ -170,6 +171,73 @@ private static readonly Dictionary<string, Type> _pageDict = new()
     { "Settings", typeof(SettingsPage) },
 };
 ```
+
+## 设置项 tag 标签规范
+
+设置项支持 tag 标签（彩色小徽章 chip），显示在卡片标题右侧，并可参与收藏夹、反馈脱敏等机制。
+
+### 支持的 tag
+
+| tag | 含义 | 声明方式 |
+|-----|------|---------|
+| `Favourite` | 用户收藏的设置项 | 用户点击卡片标题右侧星标动态增删，**不由特性声明** |
+| `Warn` | 打开这些设置项可能导致程序行为异常 | `[SettingsTag(SettingsTag.Warn)]` |
+| `New` | 更新中的新增功能 | `[SettingsTag(SettingsTag.New)]` |
+| `Experimental` | 实验性设置项 | `[SettingsTag(SettingsTag.Experimental)]` |
+| `Secret` | 在反馈时应该屏蔽的设置项 | `[SettingsTag(SettingsTag.Secret)]` |
+
+### 如何给设置项打 tag
+
+tag 由**设置项自己声明**，不硬编码。分两步：
+
+1. **在 `Resources/Settings.cs` 的属性上声明特性**：
+
+```csharp
+[JsonProperty("isEnableForceFullScreen")]
+[SettingsTag(SettingsTag.Experimental)]
+public bool IsEnableForceFullScreen { get; set; }
+```
+
+2. **在对应页面的卡片上声明属性路径**（声明该卡片映射到哪个设置属性）：
+
+```xml
+<controls:LabeledSettingsCard x:Name="CardForceFullScreen"
+    Header="{x:Static props:AdvancedStrings.ForceFullScreen}"
+    helpers:SettingsTags.PropertyPath="Advanced.IsEnableForceFullScreen" ... />
+```
+
+声明了 `PropertyPath` 的卡片会自动显示对应 tag 的彩色 chip（警告/新/实验性/私密）。
+
+### 收藏星标（全量自动注入）
+
+**所有** `SettingsCard` / `LabeledSettingsCard` 都会自动获得收藏星标（无需声明 `PropertyPath`），由页面级扫描注入（`SettingsTags.InjectStarsIntoPage`，挂 `SettingsWindow.NavigateToPage` 的页 Loaded，每页一次）。
+
+卡片身份（收藏存储的标识）优先级：
+1. 显式 `PropertyPath`（真属性路径，即带 tag 的卡片）
+2. 卡片 `x:Name` → `"{pageTag}:{xName}"`
+3. 兜底 → `"{pageTag}:card{序号}"`（序号 = 页面逻辑树遍历序）
+
+⚠️ **注意**：无 `x:Name` / 无 `PropertyPath` 的卡片用序号兜底，XAML 中重排卡片会导致旧收藏指向错位。若要固化身份，给卡片补 `x:Name`（或显式 `PropertyPath`）。
+
+身份推导与搜索索引共用同一遍历（`SettingsTags.EnumerateCardIdentities`），收藏匹配与跳转对所有卡片生效。
+
+### 新增 tag 类型
+
+在 `Resources/SettingsTags.cs` 的 `SettingsTag` 枚举中追加一个位，然后在 `SettingsTagBehavior.cs` 的 `BuildChips` 中补充颜色与文案映射即可。系统自动扩展，无需改动其他逻辑。
+
+### `new` tag 用法
+
+新版本新增的功能设置项，在发布当版本时打上 `[SettingsTag(SettingsTag.New)]`，进入下一个版本时移除该 tag。
+
+### `secret` 与反馈脱敏
+
+标记 `[SettingsTag(SettingsTag.Secret)]` 的属性，会在反馈（pastebin 上传 / GitHub issue 模板）时从 JSON 中自动移除。脱敏由 `FeedbackSanitizer` 反射收集实现，**不要**在 `FeedbackSanitizer` 中硬编码字段名。
+
+### 收藏夹
+
+- 用户收藏的设置项会出现在顶级导航「收藏夹」（`FavouritesPage`）中。
+- 收藏夹中的设置项显示为快捷卡片，点击跳转到原页面并滚动到该卡片。
+- 收藏状态存储在 `Settings.FavouriteSettings`（卡片身份字符串列表）。
 
 ## 设置添加与删除
 

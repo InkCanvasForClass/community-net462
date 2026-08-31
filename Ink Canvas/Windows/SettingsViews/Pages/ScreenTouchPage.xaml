@@ -302,6 +302,7 @@
                             Header="{x:Static props:AdvancedStrings.ForceFullScreen}"
                             Description="{x:Static props:AdvancedStrings.ForceFullScreenHint}"
                             Icon="{x:Static ui:SegoeFluentIcons.Video}"
+                            helpers:SettingsTags.PropertyPath="Advanced.IsEnableForceFullScreen"
                             SwitchName="ToggleSwitchForceFullScreen"
                             Toggled="ToggleSwitchForceFullScreen_Toggled" />
 
@@ -309,6 +310,7 @@
                             Header="{x:Static props:AdvancedStrings.DPIChangeDetection}"
                             Description="{x:Static props:AdvancedStrings.DPIChangeDetectionHint}"
                             Icon="{x:Static ui:SegoeFluentIcons.View}"
+                            helpers:SettingsTags.PropertyPath="Advanced.IsEnableDPIChangeDetection"
                             SwitchName="ToggleSwitchDPIChangeDetection"
                             Toggled="ToggleSwitchDPIChangeDetection_Toggled" />
 
@@ -316,6 +318,7 @@
                             Header="{x:Static props:AdvancedStrings.ResolutionChangeDetection}"
                             Description="{x:Static props:AdvancedStrings.ResolutionChangeDetectionHint}"
                             Icon="{x:Static ui:SegoeFluentIcons.Accept}"
+                            helpers:SettingsTags.PropertyPath="Advanced.IsEnableResolutionChangeDetection"
                             SwitchName="ToggleSwitchResolutionChangeDetection"
                             Toggled="ToggleSwitchResolutionChangeDetection_Toggled" />
 
@@ -323,6 +326,7 @@
                             Header="{x:Static props:AdvancedStrings.FullScreenHelper}"
                             Description="{x:Static props:AdvancedStrings.FullScreenHelperHint}"
                             Icon="{x:Static ui:SegoeFluentIcons.FullScreen}"
+                            helpers:SettingsTags.PropertyPath="Advanced.IsEnableFullScreenHelper"
                             SwitchName="ToggleSwitchFullScreenHelper"
                             Toggled="ToggleSwitchFullScreenHelper_Toggled" />
 
@@ -330,6 +334,7 @@
                             Header="{x:Static props:AdvancedStrings.EdgeGestureUtil}"
                             Description="{x:Static props:AdvancedStrings.EdgeGestureUtilHint_Part1}"
                             Icon="{x:Static ui:SegoeFluentIcons.AlignLeft}"
+                            helpers:SettingsTags.PropertyPath="Advanced.IsEnableEdgeGestureUtil"
                             SwitchName="ToggleSwitchEdgeGestureUtil"
                             Toggled="ToggleSwitchEdgeGestureUtil_Toggled" />
 
