@@ -137,6 +137,66 @@
                         </ikw:SimpleStackPanel>
                     </ui:SettingsCard>
 
+                    <ui:SettingsCard Header="笔尖模式边界阈值">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="NibModeThresholdText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="NibModeThresholdSlider"
+                                    Minimum="0.5" Maximum="5" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="2.5"
+                                    TickPlacement="None"
+                                    ValueChanged="NibModeThresholdSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="手指模式边界阈值">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="FingerModeThresholdText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="FingerModeThresholdSlider"
+                                    Minimum="0.5" Maximum="5" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="2.5"
+                                    TickPlacement="None"
+                                    ValueChanged="FingerModeThresholdSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="笔尖模式橡皮擦尺寸">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="NibModeEraserSizeText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="NibModeEraserSizeSlider"
+                                    Minimum="0.2" Maximum="2" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="0.8"
+                                    TickPlacement="None"
+                                    ValueChanged="NibModeEraserSizeSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="手指模式橡皮擦尺寸">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="FingerModeEraserSizeText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <Slider x:Name="FingerModeEraserSizeSlider"
+                                    Minimum="0.2" Maximum="2" Width="200"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" Value="0.8"
+                                    TickPlacement="None"
+                                    ValueChanged="FingerModeEraserSizeSlider_ValueChanged" />
+                        </ikw:SimpleStackPanel>
+                    </ui:SettingsCard>
+
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchIsQuadIR"
                         Header="{x:Static props:AdvancedStrings.QuadIRMode}"
                         Icon="{x:Static ui:SegoeFluentIcons.FullScreen}"

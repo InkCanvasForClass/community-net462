@@ -542,6 +542,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
             CardEnableTimeDisplayInWhiteboardMode.IsOn = settings.Appearance.EnableTimeDisplayInWhiteboardMode;
             CardEnableChickenSoupInWhiteboardMode.IsOn = settings.Appearance.EnableChickenSoupInWhiteboardMode;
+            ComboBoxTimeFormat.SelectedIndex = settings.Appearance.Use24HourTimeFormat ? 1 : 0;
 
             SelectComboBoxItemByTag(ComboBoxChickenSoupPosition, settings.Appearance.ChickenSoupPosition);
 
@@ -576,6 +577,13 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.Settings.Appearance.EnableTimeDisplayInWhiteboardMode = CardEnableTimeDisplayInWhiteboardMode.IsOn;
             SettingsManager.SaveSettingsToFile();
             SettingsActionHub.OnTimeDisplayInWhiteboardChanged(CardEnableTimeDisplayInWhiteboardMode.IsOn);
+        }
+
+        private void ComboBoxTimeFormat_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Appearance.Use24HourTimeFormat = ComboBoxTimeFormat.SelectedIndex == 1;
+            SettingsManager.SaveSettingsToFile();
         }
 
         private void ToggleSwitchEnableChickenSoupInWhiteboardMode_Toggled(object sender, RoutedEventArgs e)
@@ -1014,4 +1022,156 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
         }
     }
+
+    #region Board converters (moved from deleted BoardToolbarPage/BoardMenuPage)
+
+    public class BoardIdToDisplayNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = BoardToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                return item?.DisplayName ?? id;
+            }
+            return value ?? "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoardIdToIconKeyConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = BoardToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                return item?.IconKey;
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoardIdToIconVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var items = BoardToolbarRegistry.Discover();
+                var item = items.FirstOrDefault(i => i.Id == id);
+                var mode = parameter?.ToString();
+                if (mode == "fontIcon")
+                    return item?.IconKey != null ? Visibility.Visible : Visibility.Collapsed;
+                return !string.IsNullOrEmpty(item?.IconGeometry) ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoardAreaNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value?.ToString()?.ToLower() switch
+            {
+                "left" => FloatingBarStrings.BoardToolbarPage_LeftArea,
+                "center" => FloatingBarStrings.BoardToolbarPage_CenterArea,
+                "right" => FloatingBarStrings.BoardToolbarPage_RightArea,
+                _ => value?.ToString()
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoardGroupNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value?.ToString()?.ToLower() switch
+            {
+                "navigation" => FloatingBarStrings.BoardToolbarPage_GroupNavigation,
+                "videobooth" => FloatingBarStrings.BoardToolbarPage_GroupVideoBooth,
+                "gesture" => FloatingBarStrings.BoardToolbarPage_GroupGesture,
+                "tools" => FloatingBarStrings.BoardToolbarPage_GroupTools,
+                "system" => FloatingBarStrings.BoardToolbarPage_GroupSystem,
+                "addpage" => FloatingBarStrings.BoardToolbarPage_GroupAddPage,
+                _ => value?.ToString()
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class BoardPositionNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value?.ToString()?.ToLower() switch
+            {
+                "first" => "[首]",
+                "last" => "[末]",
+                "single" => "[独立]",
+                _ => ""
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// 将白板工具栏组件 Id 转换为可直接用于 Path 的 Geometry 对象。
+    /// </summary>
+    public class BoardIdToPathDataConverter : IdToPathDataConverterBase
+    {
+        protected override string ConvertIdToGeometryString(string id)
+        {
+            var items = BoardToolbarRegistry.Discover();
+            var item = items.FirstOrDefault(i => i.Id == id);
+            return item?.IconGeometry;
+        }
+    }
+
+    public class BoardMenuItemIdToNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string id)
+            {
+                var item = ToolsMenuRegistry.FindItem(id);
+                return item?.DisplayName ?? id;
+            }
+            return value ?? "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class BoardMenuItemIdToPathDataConverter : IdToPathDataConverterBase
+    {
+        protected override string ConvertIdToGeometryString(string id)
+        {
+            var item = ToolsMenuRegistry.FindItem(id);
+            return item?.IconGeometry;
+        }
+    }
+
+    #endregion
 }

@@ -60,8 +60,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 ToggleSwitchEraserBindTouchMultiplier.IsOn = settings.Advanced.EraserBindTouchMultiplier;
 
                 // Bounds width
-                NibModeBoundsWidthSlider.Value = settings.Advanced.NibModeBoundsWidth;
-                FingerModeBoundsWidthSlider.Value = settings.Advanced.FingerModeBoundsWidth;
+            NibModeBoundsWidthSlider.Value = settings.Advanced.NibModeBoundsWidth;
+            FingerModeBoundsWidthSlider.Value = settings.Advanced.FingerModeBoundsWidth;
+            NibModeThresholdSlider.Value = settings.Advanced.NibModeBoundsWidthThresholdValue;
+            FingerModeThresholdSlider.Value = settings.Advanced.FingerModeBoundsWidthThresholdValue;
+            NibModeEraserSizeSlider.Value = settings.Advanced.NibModeBoundsWidthEraserSize;
+            FingerModeEraserSizeSlider.Value = settings.Advanced.FingerModeBoundsWidthEraserSize;
                 ToggleSwitchIsQuadIR.IsOn = settings.Advanced.IsQuadIR;
 
                 // Auto-calibrate defaults
@@ -94,6 +98,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             UpdateSliderText(TouchMultiplierSlider, TouchMultiplierText, "{0:F2}");
             UpdateSliderText(NibModeBoundsWidthSlider, NibModeBoundsWidthText, "{0:0}");
             UpdateSliderText(FingerModeBoundsWidthSlider, FingerModeBoundsWidthText, "{0:0}");
+            UpdateSliderText(NibModeThresholdSlider, NibModeThresholdText, "{0:F1}");
+            UpdateSliderText(FingerModeThresholdSlider, FingerModeThresholdText, "{0:F1}");
+            UpdateSliderText(NibModeEraserSizeSlider, NibModeEraserSizeText, "{0:F1}");
+            UpdateSliderText(FingerModeEraserSizeSlider, FingerModeEraserSizeText, "{0:F1}");
         }
 
         private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
@@ -220,6 +228,38 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             SettingsManager.Settings.Advanced.FingerModeBoundsWidth = (int)e.NewValue;
             SettingsActionHub.OnFingerModeBoundsWidthChanged();
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void NibModeThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateSliderText(NibModeThresholdSlider, NibModeThresholdText, "{0:F1}");
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Advanced.NibModeBoundsWidthThresholdValue = e.NewValue;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void FingerModeThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateSliderText(FingerModeThresholdSlider, FingerModeThresholdText, "{0:F1}");
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Advanced.FingerModeBoundsWidthThresholdValue = e.NewValue;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void NibModeEraserSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateSliderText(NibModeEraserSizeSlider, NibModeEraserSizeText, "{0:F1}");
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Advanced.NibModeBoundsWidthEraserSize = e.NewValue;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void FingerModeEraserSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateSliderText(FingerModeEraserSizeSlider, FingerModeEraserSizeText, "{0:F1}");
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Advanced.FingerModeBoundsWidthEraserSize = e.NewValue;
             SettingsManager.SaveSettingsToFile();
         }
 

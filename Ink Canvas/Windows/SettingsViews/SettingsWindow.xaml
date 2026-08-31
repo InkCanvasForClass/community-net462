@@ -253,6 +253,15 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
+                            x:Name="MiniWhiteboardPageItem"
+                            Content="{x:Static props:FloatingBarStrings.FloatingBar_MiniWhiteboard}"
+                            Tag="MiniWhiteboardPage"
+                            ToolTipService.ToolTip="{x:Static props:FloatingBarStrings.MiniWhiteboard_Settings_Enable}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
                             x:Name="BoardPageItem"
                             Content="{x:Static props:NavStrings.Nav_BoardPage}"
                             Tag="BoardPage"
@@ -366,15 +375,26 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
-                <!-- PPT联动 -->
+                <!-- 联动 -->
                 <ui:NavigationViewItem
-                    x:Name="PPTSyncPageItem"
-                    Content="{x:Static props:NavStrings.Nav_PPTSync}"
-                    Tag="PPTSyncPage"
-                    ToolTipService.ToolTip="{x:Static props:NavStrings.Nav_PPTSync_Tooltip}">
+                    x:Name="LinkageItem"
+                    Content="{x:Static props:NavStrings.Nav_Linkage}"
+                    SelectsOnInvoked="False"
+                    ToolTipService.ToolTip="{x:Static props:NavStrings.Nav_Linkage_Tooltip}">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}"/>
                     </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            x:Name="PPTSyncPageItem"
+                            Content="{x:Static props:NavStrings.Nav_PPTSync}"
+                            Tag="PPTSyncPage"
+                            ToolTipService.ToolTip="{x:Static props:NavStrings.Nav_PPTSync_Tooltip}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
                 <!-- 性能 -->

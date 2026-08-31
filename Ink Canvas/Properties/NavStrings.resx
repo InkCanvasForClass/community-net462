@@ -285,6 +285,12 @@
   <data name="Nav_LinkageControls_Tooltip" xml:space="preserve">
     <value>PPT按钮控件设置</value>
   </data>
+  <data name="Nav_Linkage" xml:space="preserve">
+    <value>联动</value>
+  </data>
+  <data name="Nav_Linkage_Tooltip" xml:space="preserve">
+    <value>PPT联动设置</value>
+  </data>
   <data name="Nav_FloatingBar" xml:space="preserve">
     <value>浮动栏</value>
   </data>

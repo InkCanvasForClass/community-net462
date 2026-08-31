@@ -16,40 +16,6 @@ namespace Ink_Canvas.Windows.SettingsViews
 {
     public partial class SettingsWindow : Window
     {
-        private static readonly Dictionary<string, Type> _staticPageTypes = new Dictionary<string, Type>
-        {
-            { "HomePage", typeof(HomePage) },
-            { "StartupPage", typeof(StartupPage) },
-            { "UpdatePage", typeof(UpdatePage) },
-            { "HotkeyPage", typeof(HotkeyPage) },
-            { "DisplayPage", typeof(DisplayPage) },
-            { "ScreenTouchPage", typeof(ScreenTouchPage) },
-            { "PrivacyPage", typeof(PrivacyPage) },
-            { "SecurityPage", typeof(SecurityPage) },
-            { "LinkageControlsPage", typeof(LinkageControlsPage) },
-            { "FloatingBarPage", typeof(FloatingBarPage) },
-            { "BoardPage", typeof(BoardPage) },
-            { "BoardCanvasPage", typeof(BoardCanvasPage) },
-            { "InkRecognitionPage", typeof(InkRecognitionPage) },
-            { "BoothPage", typeof(BoothPage) },
-            { "RollCallPage", typeof(RollCallPage) },
-            { "TimerPage", typeof(TimerPage) },
-            { "MagnifierPage", typeof(MagnifierPage) },
-            { "NotificationCenterPage", typeof(NotificationCenterPage) },
-            { "AutoFoldPage", typeof(AutoFoldPage) },
-            { "AutomationWorkflowPage", typeof(AutomationWorkflowPage) },
-            { "PPTSyncPage", typeof(PPTSyncPage) },
-            { "PerformancePage", typeof(PerformancePage) },
-            { "ConfigPage", typeof(ConfigPage) },
-            { "SyncPage", typeof(SyncPage) },
-            { "StoragePage", typeof(StoragePage) },
-            { "DebugPage", typeof(DebugPage) },
-            { "FriendlyLinksPage", typeof(FriendlyLinksPage) },
-            { "AboutPage", typeof(AboutPage) },
-            { "Settings", typeof(SettingsPage) },
-            { "PluginPage", typeof(PluginPage) },
-            { "PluginSettingsPage", typeof(PluginSettingsPage) }
-        };
         private Dictionary<string, Type> _pageTypes;
         private readonly Dictionary<string, object> _pages = new Dictionary<string, object>();
         private readonly Dictionary<string, Ink_Canvas.Plugins.PluginInfo> _pluginPages = new Dictionary<string, Ink_Canvas.Plugins.PluginInfo>();
@@ -86,6 +52,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "SecurityPage", typeof(SecurityPage) },
                 { "LinkageControlsPage", typeof(LinkageControlsPage) },
                 { "FloatingBarPage", typeof(FloatingBarPage) },
+                { "MiniWhiteboardPage", typeof(MiniWhiteboardPage) },
                 { "BoardPage", typeof(BoardPage) },
                 { "BoardCanvasPage", typeof(BoardCanvasPage) },
                 { "InkRecognitionPage", typeof(InkRecognitionPage) },

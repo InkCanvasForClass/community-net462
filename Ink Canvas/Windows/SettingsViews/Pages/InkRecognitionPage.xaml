@@ -148,6 +148,15 @@
                                             ValueChanged="LineStraightenSensitivitySlider_ValueChanged" />
                                 </ikw:SimpleStackPanel>
                             </ui:SettingsCard>
+                            <ui:SettingsCard Header="直线归一化阈值">
+                                <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock x:Name="LineNormalizationThresholdText"
+                                               VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                                    <Slider x:Name="LineNormalizationThresholdSlider" Width="200" Minimum="0" Maximum="1"
+                                            Value="0.5" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                                            ValueChanged="LineNormalizationThresholdSlider_ValueChanged" />
+                                </ikw:SimpleStackPanel>
+                            </ui:SettingsCard>
                             <ui:SettingsCard Header="{x:Static props:CanvasStrings.InkRecog_HighPrecisionStraighten}"
                                     Description="{x:Static props:CanvasStrings.InkRecog_HighPrecisionHint}">
                                 <ui:ToggleSwitch x:Name="ToggleSwitchHighPrecisionLineStraighten"

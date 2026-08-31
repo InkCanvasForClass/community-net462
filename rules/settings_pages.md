@@ -22,7 +22,8 @@
 ├── 画板设置
 │   ├── 画布 (CanvasPage)
 │   └── 墨迹识别 (InkRecognitionPage)
-├── PPT联动 (PowerPointPage)
+├── 联动
+│   └── PPT联动 (PowerPointPage)
 ├── 更新 (UpdatePage)
 ├── 通知
 │   ├── 通知设置 (NotificationPage)

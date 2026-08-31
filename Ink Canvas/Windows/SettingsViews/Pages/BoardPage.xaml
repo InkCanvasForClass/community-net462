@@ -439,6 +439,18 @@
                         SwitchName="ToggleSwitchEnableTimeDisplayInWhiteboardMode"
                         Toggled="ToggleSwitchEnableTimeDisplayInWhiteboardMode_Toggled" />
 
+                <ui:SettingsCard Header="{x:Static props:ThemeStrings.AppearancePanel_24HourTimeFormat}">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Glyph="&#xE917;" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <ComboBox x:Name="ComboBoxTimeFormat"
+                              SelectedIndex="0"
+                              SelectionChanged="ComboBoxTimeFormat_SelectionChanged">
+                        <ComboBoxItem Content="12h" />
+                        <ComboBoxItem Content="24h" />
+                    </ComboBox>
+                </ui:SettingsCard>
+
                 <controls:LabeledSettingsCard x:Name="CardEnableChickenSoupInWhiteboardMode"
                         Header="{x:Static props:ThemeStrings.Theme_ShowQuoteInWhiteboard}"
                         Icon="{x:Static ui:SegoeFluentIcons.Message}"

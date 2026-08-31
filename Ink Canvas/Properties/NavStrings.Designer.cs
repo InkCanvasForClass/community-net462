@@ -202,6 +202,10 @@ namespace Ink_Canvas.Properties
 
         public static string Nav_LinkageControls_Tooltip => ResourceManager.GetString(nameof(Nav_LinkageControls_Tooltip), _resourceCulture);
 
+        public static string Nav_Linkage => ResourceManager.GetString(nameof(Nav_Linkage), _resourceCulture);
+
+        public static string Nav_Linkage_Tooltip => ResourceManager.GetString(nameof(Nav_Linkage_Tooltip), _resourceCulture);
+
         public static string Nav_FloatingBar => ResourceManager.GetString(nameof(Nav_FloatingBar), _resourceCulture);
 
         public static string Nav_FloatingBar_Tooltip => ResourceManager.GetString(nameof(Nav_FloatingBar_Tooltip), _resourceCulture);

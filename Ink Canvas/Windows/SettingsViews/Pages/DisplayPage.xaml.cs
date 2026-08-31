@@ -7,9 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
@@ -62,26 +59,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             UpdateSliderText(QuickPanelBottomOffsetSlider, QuickPanelBottomOffsetText, "{0:F0}");
             UpdateSliderText(QuickPanelOpacitySlider, QuickPanelOpacityText, "{0:P0}");
             UpdateSliderText(AutoCollapseDelaySlider, AutoCollapseDelayText, "{0:F1}s");
-            UpdateMiniWhiteboardSizeText();
-            UpdateMiniWhiteboardOpacityText();
         }
 
         private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
         {
             if (slider == null || textBlock == null) return;
             textBlock.Text = string.Format(format, slider.Value);
-        }
-
-        private void UpdateMiniWhiteboardSizeText()
-        {
-            if (MiniWhiteboardSizeText == null || MiniWhiteboardWidthSlider == null || MiniWhiteboardHeightSlider == null) return;
-            MiniWhiteboardSizeText.Text = $"{(int)MiniWhiteboardWidthSlider.Value} \u00D7 {(int)MiniWhiteboardHeightSlider.Value}";
-        }
-
-        private void UpdateMiniWhiteboardOpacityText()
-        {
-            if (MiniWhiteboardOpacityText == null || MiniWhiteboardOpacitySlider == null) return;
-            MiniWhiteboardOpacityText.Text = $"{Math.Round(MiniWhiteboardOpacitySlider.Value * 100):0}%";
         }
 
         private void LoadSettings()
@@ -108,9 +91,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 _isApplyingLanguageFromSettings = false;
             }
 
-            // Clock
-            ComboBoxTimeFormat.SelectedIndex = settings.Appearance.Use24HourTimeFormat ? 1 : 0;
-
             // Quick Panel
             CardEnableQuickPanel.IsOn = settings.Appearance.IsShowQuickPanel;
             QuickPanelBottomOffsetSlider.Value = settings.Appearance.QuickPanelBottomOffset;
@@ -119,33 +99,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             QuickPanelOpacitySlider.Value = settings.Appearance.QuickPanelOpacity;
             CardAutoCollapseQuickPanel.IsOn = settings.Appearance.IsAutoCollapseQuickPanel;
             AutoCollapseDelaySlider.Value = settings.Appearance.AutoCollapseQuickPanelDelay;
-
-            // Splash Screen
-            ToggleSwitchEnableSplashScreen.IsOn = settings.Appearance.EnableSplashScreen;
-            ComboBoxSplashScreenStyle.SelectedIndex = settings.Appearance.SplashScreenStyle;
-            UpdateCustomSplashImageVisibility();
-
-            if (!string.IsNullOrEmpty(settings.Appearance.CustomSplashImagePath) &&
-                System.IO.File.Exists(settings.Appearance.CustomSplashImagePath))
-            {
-                TextBlockCustomSplashPath.Text = System.IO.Path.GetFileName(settings.Appearance.CustomSplashImagePath);
-                TextBlockCustomSplashPath.ToolTip = settings.Appearance.CustomSplashImagePath;
-            }
-            else
-            {
-                TextBlockCustomSplashPath.Text = ThemeStrings.Theme_CustomSplash_NotSelected;
-                TextBlockCustomSplashPath.ToolTip = null;
-            }
-
-            UpdateTextAlignButtonAppearance(settings.Appearance.CustomSplashTextPosition);
-
-            // Mini Whiteboard
-            settings.MiniWhiteboard ??= new MiniWhiteboardSettings();
-            ToggleSwitchMiniWhiteboardEnabled.IsOn = settings.MiniWhiteboard.IsEnabled;
-            ToggleSwitchMiniWhiteboardSyncPPT.IsOn = settings.MiniWhiteboard.SyncWithPPTPages;
-            MiniWhiteboardWidthSlider.Value = settings.MiniWhiteboard.DefaultWidth;
-            MiniWhiteboardHeightSlider.Value = settings.MiniWhiteboard.DefaultHeight;
-            MiniWhiteboardOpacitySlider.Value = settings.MiniWhiteboard.DefaultOpacity;
         }
 
         private static void SelectComboBoxItemByTag(ComboBox comboBox, string tag)
@@ -218,17 +171,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         #endregion
 
-        #region Clock
-
-        private void ComboBoxTimeFormat_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Appearance.Use24HourTimeFormat = ComboBoxTimeFormat.SelectedIndex == 1;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        #endregion
-
         #region Quick Panel
 
         private void ToggleSwitchEnableQuickPanel_Toggled(object sender, RoutedEventArgs e)
@@ -291,160 +233,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.Settings.Appearance.UnFoldButtonImageType = ComboBoxUnFoldBtnImg.SelectedIndex;
             SettingsManager.SaveSettingsToFile();
             SettingsActionHub.OnUnFoldButtonImageTypeChanged(ComboBoxUnFoldBtnImg.SelectedIndex);
-        }
-
-        #endregion
-
-        #region Splash Screen
-
-        private void ToggleSwitchEnableSplashScreen_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Appearance.EnableSplashScreen = ToggleSwitchEnableSplashScreen.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ComboBoxSplashScreenStyle_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.Appearance.SplashScreenStyle = ComboBoxSplashScreenStyle.SelectedIndex;
-            SettingsManager.SaveSettingsToFile();
-            UpdateCustomSplashImageVisibility();
-        }
-
-        private void UpdateCustomSplashImageVisibility()
-        {
-            bool isCustomSelected = ComboBoxSplashScreenStyle.SelectedIndex == 7;
-            CardCustomSplashImage.Visibility = isCustomSelected ? Visibility.Visible : Visibility.Collapsed;
-            CardCustomSplashTextPosition.Visibility = isCustomSelected ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void BorderTextAlign_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (!_isLoaded) return;
-
-            if (sender is Border border && border.Tag != null)
-            {
-                int selectedIndex = int.Parse(border.Tag.ToString());
-                SettingsManager.Settings.Appearance.CustomSplashTextPosition = selectedIndex;
-                SettingsManager.SaveSettingsToFile();
-                UpdateTextAlignButtonAppearance(selectedIndex);
-            }
-        }
-
-        private void UpdateTextAlignButtonAppearance(int selectedIndex)
-        {
-            AnimateIndicatorToPosition(selectedIndex);
-        }
-
-        private void AnimateIndicatorToPosition(int position)
-        {
-            double targetX = position * 36;
-
-            var animation = new DoubleAnimation
-            {
-                To = targetX,
-                Duration = TimeSpan.FromMilliseconds(200),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-            };
-
-            IndicatorTranslateTransform.BeginAnimation(TranslateTransform.XProperty, animation);
-
-            var isDarkTheme = SettingsManager.Settings.Appearance.Theme == 1;
-
-            if (isDarkTheme)
-            {
-                SelectionIndicator.Background = new SolidColorBrush(Color.FromArgb(40, 0, 120, 215));
-                SelectionIndicator.BorderBrush = new SolidColorBrush(Color.FromArgb(150, 0, 120, 215));
-            }
-            else
-            {
-                SelectionIndicator.Background = new SolidColorBrush(Color.FromArgb(25, 0, 120, 215));
-                SelectionIndicator.BorderBrush = new SolidColorBrush(Color.FromArgb(120, 0, 120, 215));
-            }
-        }
-
-        private void ButtonBrowseCustomSplash_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var openFileDialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp|All Files|*.*",
-                    Title = ThemeStrings.Theme_SelectCustomSplashImage
-                };
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    string selectedPath = openFileDialog.FileName;
-                    if (!string.IsNullOrEmpty(selectedPath))
-                    {
-                        SettingsManager.Settings.Appearance.CustomSplashImagePath = selectedPath;
-                        SettingsManager.SaveSettingsToFile();
-                        TextBlockCustomSplashPath.Text = System.IO.Path.GetFileName(selectedPath);
-                        TextBlockCustomSplashPath.ToolTip = selectedPath;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"browse custom splash error: {ex.Message}");
-            }
-        }
-
-        private void ButtonClearCustomSplash_Click(object sender, RoutedEventArgs e)
-        {
-            SettingsManager.Settings.Appearance.CustomSplashImagePath = string.Empty;
-            SettingsManager.SaveSettingsToFile();
-            TextBlockCustomSplashPath.Text = ThemeStrings.Theme_CustomSplash_NotSelected;
-            TextBlockCustomSplashPath.ToolTip = null;
-        }
-
-        #endregion
-
-        #region Mini Whiteboard
-
-        private void ToggleSwitchMiniWhiteboardEnabled_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.MiniWhiteboard ??= new MiniWhiteboardSettings();
-            SettingsManager.Settings.MiniWhiteboard.IsEnabled = ToggleSwitchMiniWhiteboardEnabled.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void ToggleSwitchMiniWhiteboardSyncPPT_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            SettingsManager.Settings.MiniWhiteboard ??= new MiniWhiteboardSettings();
-            SettingsManager.Settings.MiniWhiteboard.SyncWithPPTPages = ToggleSwitchMiniWhiteboardSyncPPT.IsOn;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void MiniWhiteboardWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            UpdateMiniWhiteboardSizeText();
-            if (!_isLoaded) return;
-            SettingsManager.Settings.MiniWhiteboard ??= new MiniWhiteboardSettings();
-            SettingsManager.Settings.MiniWhiteboard.DefaultWidth = MiniWhiteboardWidthSlider.Value;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void MiniWhiteboardHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            UpdateMiniWhiteboardSizeText();
-            if (!_isLoaded) return;
-            SettingsManager.Settings.MiniWhiteboard ??= new MiniWhiteboardSettings();
-            SettingsManager.Settings.MiniWhiteboard.DefaultHeight = MiniWhiteboardHeightSlider.Value;
-            SettingsManager.SaveSettingsToFile();
-        }
-
-        private void MiniWhiteboardOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            UpdateMiniWhiteboardOpacityText();
-            if (!_isLoaded) return;
-            SettingsManager.Settings.MiniWhiteboard ??= new MiniWhiteboardSettings();
-            SettingsManager.Settings.MiniWhiteboard.DefaultOpacity = MiniWhiteboardOpacitySlider.Value;
-            SettingsManager.SaveSettingsToFile();
         }
 
         #endregion
