@@ -39,6 +39,9 @@ namespace Ink_Canvas
 
         private static Windows.SettingsViews.SettingsWindow _settingsWindow = null;
 
+        private string _pendingSettingsPageTag = null;
+        private string _pendingSettingsEntryPath = null;
+
         #region "手勢"按鈕
 
         /// <summary>
@@ -4403,6 +4406,7 @@ namespace Ink_Canvas
                     _settingsWindow.WindowState = System.Windows.WindowState.Normal;
                 _settingsWindow.Activate();
                 _settingsWindow.Focus();
+                FlushPendingSettingsDeepLink();
                 return;
             }
 
@@ -4411,12 +4415,13 @@ namespace Ink_Canvas
                 if (Ink_Canvas.Helpers.SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
                 {
                     bool ok = await Ink_Canvas.Helpers.SecurityManager.PromptAndVerifyPasswordOrTotpAsync(Settings, this, Properties.MainWindowStrings.Main_EnterSettings, Properties.MainWindowStrings.Main_EnterSettings_Message);
-                    if (!ok) return;
+                    if (!ok) { ClearPendingSettingsDeepLink(); return; }
                 }
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
+                ClearPendingSettingsDeepLink();
                 return;
             }
 
@@ -4429,6 +4434,33 @@ namespace Ink_Canvas
             _settingsWindow.Topmost = this.Topmost;
             _settingsWindow.Closed += (s, args) => _settingsWindow = null;
             _settingsWindow.Show();
+            // 等窗口完成默认导航后再定位深链目标
+            _ = Dispatcher.InvokeAsync(new Action(FlushPendingSettingsDeepLink), DispatcherPriority.ApplicationIdle);
+        }
+
+        /// <summary>
+        /// 通过 icc: 深链打开设置窗口并定位到指定设置项。
+        /// </summary>
+        private void OpenSettingsAtEntry(string pageTag, string propertyPath)
+        {
+            _pendingSettingsPageTag = pageTag;
+            _pendingSettingsEntryPath = propertyPath;
+            BtnSettings_Click(null, null);
+        }
+
+        private void FlushPendingSettingsDeepLink()
+        {
+            if (_settingsWindow == null || string.IsNullOrEmpty(_pendingSettingsEntryPath)) return;
+            string pageTag = _pendingSettingsPageTag;
+            string path = _pendingSettingsEntryPath;
+            ClearPendingSettingsDeepLink();
+            _settingsWindow.NavigateToEntry(pageTag, path);
+        }
+
+        private void ClearPendingSettingsDeepLink()
+        {
+            _pendingSettingsPageTag = null;
+            _pendingSettingsEntryPath = null;
         }
         private bool forceEraser;
 

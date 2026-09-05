@@ -96,10 +96,19 @@
   <data name="SettingsTag_Favourite" xml:space="preserve">
     <value>收藏</value>
   </data>
-  <data name="SettingsTag_FavouriteAdd" xml:space="preserve">
-    <value>收藏此设置</value>
+  <data name="SettingsItemMore" xml:space="preserve">
+    <value>更多操作</value>
   </data>
-  <data name="SettingsTag_FavouriteRemove" xml:space="preserve">
+  <data name="SettingsItemCopyKey" xml:space="preserve">
+    <value>复制设置键名</value>
+  </data>
+  <data name="SettingsItemCopyUrl" xml:space="preserve">
+    <value>复制URL</value>
+  </data>
+  <data name="SettingsItemAddFavourite" xml:space="preserve">
+    <value>设置为收藏</value>
+  </data>
+  <data name="SettingsItemRemoveFavourite" xml:space="preserve">
     <value>取消收藏</value>
   </data>
 </root>

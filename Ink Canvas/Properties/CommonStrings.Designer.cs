@@ -76,8 +76,14 @@ namespace Ink_Canvas.Properties
 
         public static string SettingsTag_Favourite => ResourceManager.GetString(nameof(SettingsTag_Favourite), _resourceCulture);
 
-        public static string SettingsTag_FavouriteAdd => ResourceManager.GetString(nameof(SettingsTag_FavouriteAdd), _resourceCulture);
+        public static string SettingsItemMore => ResourceManager.GetString(nameof(SettingsItemMore), _resourceCulture);
 
-        public static string SettingsTag_FavouriteRemove => ResourceManager.GetString(nameof(SettingsTag_FavouriteRemove), _resourceCulture);
+        public static string SettingsItemCopyKey => ResourceManager.GetString(nameof(SettingsItemCopyKey), _resourceCulture);
+
+        public static string SettingsItemCopyUrl => ResourceManager.GetString(nameof(SettingsItemCopyUrl), _resourceCulture);
+
+        public static string SettingsItemAddFavourite => ResourceManager.GetString(nameof(SettingsItemAddFavourite), _resourceCulture);
+
+        public static string SettingsItemRemoveFavourite => ResourceManager.GetString(nameof(SettingsItemRemoveFavourite), _resourceCulture);
     }
 }
