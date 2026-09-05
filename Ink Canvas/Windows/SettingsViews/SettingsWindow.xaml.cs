@@ -635,9 +635,9 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             // 卡片身份与星标注入使用同一遍历，保证收藏匹配一致
             var identities = new Dictionary<FrameworkElement, string>();
-            foreach (var pair in Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.EnumerateCardIdentities(root, pageTag))
+            foreach (var entry in Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.EnumerateCardIdentities(root, pageTag))
             {
-                identities[pair.Key] = pair.Value;
+                identities[entry.Element] = entry.Identity;
             }
 
             foreach (var node in EnumerateLogicalDescendants(root))
@@ -764,6 +764,44 @@ namespace Ink_Canvas.Windows.SettingsViews
                 !string.IsNullOrEmpty(e.PropertyPath) &&
                 string.Equals(e.PropertyPath, propertyPath, StringComparison.OrdinalIgnoreCase));
             NavigateToSearchEntry(entry);
+        }
+
+        /// <summary>
+        /// 深链跳转：定位到指定页面内某个设置项（PropertyPath 身份）并滚动到该卡片。
+        /// </summary>
+        public void NavigateToEntry(string pageTag, string propertyPath)
+        {
+            if (string.IsNullOrEmpty(propertyPath)) return;
+            EnsureSearchIndexBuilt();
+            var entry = _searchIndex.FirstOrDefault(e =>
+                !string.IsNullOrEmpty(e.PageTag) &&
+                !string.IsNullOrEmpty(e.PropertyPath) &&
+                string.Equals(e.PageTag, pageTag, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(e.PropertyPath, propertyPath, StringComparison.OrdinalIgnoreCase));
+            if (entry == null)
+            {
+                entry = _searchIndex.FirstOrDefault(e =>
+                    !string.IsNullOrEmpty(e.PropertyPath) &&
+                    string.Equals(e.PropertyPath, propertyPath, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (entry != null)
+            {
+                NavigateToSearchEntry(entry);
+                return;
+            }
+
+            // 索引未命中时兜底：至少打开目标页面
+            if (!string.IsNullOrEmpty(pageTag) && _pageTypes.ContainsKey(pageTag))
+            {
+                NavigateToPage(pageTag);
+                var navItem = FindNavigationViewItemByTag(pageTag);
+                if (navItem != null && NavigationViewControl.SelectedItem != navItem)
+                {
+                    NavigationViewControl.SelectedItem = navItem;
+                    NavigationViewControl.Header = navItem.Content;
+                }
+            }
         }
 
         private void OnControlsSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

@@ -35,16 +35,23 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         public static void SetPropertyPath(DependencyObject obj, string value) =>
             obj.SetValue(PropertyPathProperty, value);
 
+        public struct CardEntry
+        {
+            public FrameworkElement Element;
+            public string Identity;
+            public bool HasRealKey;
+        }
+
         /// <summary>
-        /// 页内所有可收藏卡片及其身份。身份优先级：
-        /// 1. 显式附加属性 PropertyPath（真属性路径，带 tag / chip）
+        /// 页内所有卡片及其身份。身份优先级：
+        /// 1. 解析出的真实设置键（卡片 SettingsTags.PropertyPath，或卡片/卡内控件的 SettingsBinder.PropertyPath）
         /// 2. 卡片 x:Name → "{pageTag}:{xName}"
-        /// 3. 兜底 → "{pageTag}:card{序号}"（序号 = 页面逻辑树遍历序，注意卡片重排会导致收藏错位）
+        /// 3. 兜底 → "{pageTag}:card{序号}"（序号 = 页面逻辑树遍历序）
         /// 遍历顺序与 SettingsWindow.CollectEntriesFromPage 完全一致，保证两侧序号一致。
         /// </summary>
-        public static List<KeyValuePair<FrameworkElement, string>> EnumerateCardIdentities(DependencyObject root, string pageTag)
+        public static List<CardEntry> EnumerateCardIdentities(DependencyObject root, string pageTag)
         {
-            var result = new List<KeyValuePair<FrameworkElement, string>>();
+            var result = new List<CardEntry>();
             if (root == null) return result;
 
             int ordinal = 0;
@@ -64,35 +71,87 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                     continue;
                 }
 
-                string identity = GetIdentity(element, pageTag, ordinal);
-                result.Add(new KeyValuePair<FrameworkElement, string>(element, identity));
+                bool hasRealKey = ResolveSettingKey(element, out string key);
+                string identity = hasRealKey ? key
+                    : !string.IsNullOrEmpty(element.Name) ? pageTag + ":" + element.Name
+                    : pageTag + ":card" + ordinal;
+                result.Add(new CardEntry { Element = element, Identity = identity, HasRealKey = hasRealKey });
                 ordinal++;
             }
             return result;
         }
 
         /// <summary>
-        /// 为页面全部卡片注入星标（chip 仅当身份解析出真实 tag 时显示）。
+        /// 为页面全部卡片注入更多按钮 + 标签 chip。仅"真设置项"卡片注入，纯展示卡 / 折叠分组 header 不注入。
         /// </summary>
         public static void InjectStarsIntoPage(FrameworkElement pageRoot, string pageTag)
         {
             if (pageRoot == null) return;
-            foreach (var pair in EnumerateCardIdentities(pageRoot, pageTag))
+            foreach (var entry in EnumerateCardIdentities(pageRoot, pageTag))
             {
-                Inject(pair.Key, pair.Value);
+                Inject(entry.Element, entry.Identity, pageTag, entry.HasRealKey);
             }
         }
 
-        private static string GetIdentity(FrameworkElement element, string pageTag, int ordinal)
+        /// <summary>
+        /// 解析卡片的真实设置键（用于收藏/深链身份）。
+        /// 优先级：卡片 SettingsTags.PropertyPath → 卡片或卡内控件 SettingsBinder.PropertyPath。
+        /// </summary>
+        private static bool ResolveSettingKey(FrameworkElement element, out string key)
         {
-            string explicitPath = GetPropertyPath(element);
-            if (!string.IsNullOrWhiteSpace(explicitPath)) return explicitPath.Trim();
-            if (!string.IsNullOrEmpty(element.Name)) return pageTag + ":" + element.Name;
-            return pageTag + ":card" + ordinal;
+            foreach (var node in EnumerateLogicalDescendants(element))
+            {
+                if (!(node is FrameworkElement fe)) continue;
+                string p = SettingsTags.GetPropertyPath(fe);
+                if (string.IsNullOrWhiteSpace(p)) p = SettingsBinder.GetPropertyPath(fe);
+                if (!string.IsNullOrWhiteSpace(p))
+                {
+                    key = p.Trim();
+                    return true;
+                }
+            }
+            key = null;
+            return false;
         }
 
-        private static void Inject(FrameworkElement element, string identity)
+        /// <summary>
+        /// 是否真设置项：LabeledSettingsCard（本身即开关）恒真；普通 SettingsCard 需内容子树含设置控件，
+        /// 且不是折叠分组 header。
+        /// </summary>
+        private static bool IsTrueSettingItem(FrameworkElement element)
         {
+            if (element is LabeledSettingsCard) return true;
+            if (IsSettingsExpanderGroupHeaderCard(element)) return false;
+            foreach (var node in EnumerateLogicalDescendants(element))
+            {
+                if (node is iNKORE.UI.WPF.Modern.Controls.ToggleSwitch
+                    || node is iNKORE.UI.WPF.Modern.Controls.NumberBox
+                    || node is ComboBox || node is Slider || node is TextBox
+                    || node is CheckBox || node is RadioButton || node is PasswordBox)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// SettingsExpander 模板内的分组 header 卡（视觉祖先经过名为 ExpanderHeader 的折叠按钮）。
+        /// 分组 header 视为"其他显示内容"，不注入。
+        /// </summary>
+        private static bool IsSettingsExpanderGroupHeaderCard(FrameworkElement card)
+        {
+            DependencyObject cur = card;
+            while (cur != null)
+            {
+                cur = VisualTreeHelper.GetParent(cur);
+                if (cur is ToggleButton tb && tb.Name == "ExpanderHeader") return true;
+            }
+            return false;
+        }
+
+        private static void Inject(FrameworkElement element, string identity, string pageTag, bool hasRealKey)
+        {
+            if (!IsTrueSettingItem(element)) return;
+
             // 定位内层 SettingsCard（LabeledSettingsCard 包裹了一个 SettingsCard）
             var card = element as SettingsCard ?? FindVisualChild<SettingsCard>(element);
             if (card == null) return;
@@ -125,10 +184,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 headerRow.Children.Add(chips);
             }
 
-            var star = BuildStarButton(identity, isFavourite, favouriteChip);
-            if (star != null)
+            var more = BuildMoreButton(identity, pageTag, hasRealKey, isFavourite, favouriteChip);
+            if (more != null)
             {
-                headerRow.Children.Add(star);
+                headerRow.Children.Add(more);
             }
 
             headerPanel.Children.Insert(0, headerRow);
@@ -182,17 +241,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             };
         }
 
-        private static ToggleButton BuildStarButton(string identity, bool isFavourite, Border favouriteChip)
+        private static Button BuildMoreButton(string identity, string pageTag,
+            bool hasRealKey, bool isFavourite, Border favouriteChip)
         {
             var icon = new iNKORE.UI.WPF.Modern.Controls.FontIcon
             {
-                Icon = isFavourite ? SegoeFluentIcons.FavoriteStarFill : SegoeFluentIcons.FavoriteStar,
+                Icon = SegoeFluentIcons.More,
                 FontSize = 16,
             };
 
-            var button = new ToggleButton
+            var button = new Button
             {
-                IsChecked = isFavourite,
                 Content = icon,
                 Width = 28,
                 Height = 28,
@@ -201,20 +260,53 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 VerticalAlignment = VerticalAlignment.Center,
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
-                ToolTip = isFavourite ? CommonStrings.SettingsTag_FavouriteRemove : CommonStrings.SettingsTag_FavouriteAdd,
+                ToolTip = CommonStrings.SettingsItemMore,
             };
 
-            button.Checked += (s, e) =>
+            var menu = new ContextMenu();
+            var itemCopyKey = new MenuItem
             {
-                icon.Icon = SegoeFluentIcons.FavoriteStarFill;
-                button.ToolTip = CommonStrings.SettingsTag_FavouriteRemove;
-                ToggleFavourite(identity, true, favouriteChip);
+                Header = CommonStrings.SettingsItemCopyKey,
+                Visibility = hasRealKey ? Visibility.Visible : Visibility.Collapsed,
             };
-            button.Unchecked += (s, e) =>
+            var itemCopyUrl = new MenuItem { Header = CommonStrings.SettingsItemCopyUrl };
+            var itemFavourite = new MenuItem
             {
-                icon.Icon = SegoeFluentIcons.FavoriteStar;
-                button.ToolTip = CommonStrings.SettingsTag_FavouriteAdd;
-                ToggleFavourite(identity, false, favouriteChip);
+                Header = isFavourite ? CommonStrings.SettingsItemRemoveFavourite : CommonStrings.SettingsItemAddFavourite,
+            };
+            menu.Items.Add(itemCopyKey);
+            menu.Items.Add(itemCopyUrl);
+            menu.Items.Add(itemFavourite);
+            button.ContextMenu = menu;
+
+            itemCopyKey.Click += (s, e) =>
+            {
+                e.Handled = true;
+                Clipboard.SetText(identity);
+            };
+            itemCopyUrl.Click += (s, e) =>
+            {
+                e.Handled = true;
+                string url = "icc://settings/entry?page=" + Uri.EscapeDataString(pageTag)
+                    + "&path=" + Uri.EscapeDataString(identity);
+                Clipboard.SetText(url);
+            };
+            itemFavourite.Click += (s, e) =>
+            {
+                e.Handled = true;
+                bool add = !SettingsTagResolver.IsFavourite(identity);
+                ToggleFavourite(identity, add, favouriteChip);
+                itemFavourite.Header = add
+                    ? CommonStrings.SettingsItemRemoveFavourite
+                    : CommonStrings.SettingsItemAddFavourite;
+            };
+
+            // 单击按钮即弹出菜单，且不触发卡片整卡 Click
+            button.Click += (s, e) =>
+            {
+                e.Handled = true;
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.IsOpen = true;
             };
 
             return button;
