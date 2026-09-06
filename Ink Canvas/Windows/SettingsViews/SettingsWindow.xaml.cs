@@ -634,12 +634,14 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void CollectEntriesFromPage(DependencyObject root, string pageTag)
         {
             // 卡片身份与星标注入使用同一遍历，保证收藏匹配一致
+            var entries = Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.EnumerateCardIdentities(root, pageTag);
             var identities = new Dictionary<FrameworkElement, string>();
-            foreach (var entry in Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.EnumerateCardIdentities(root, pageTag))
+            foreach (var entry in entries)
             {
                 identities[entry.Element] = entry.Identity;
             }
 
+            var covered = new HashSet<FrameworkElement>();
             foreach (var node in EnumerateLogicalDescendants(root))
             {
                 string header = null;
@@ -660,6 +662,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 if (!string.IsNullOrWhiteSpace(header) && target != null)
                 {
+                    covered.Add(target);
                     string propertyPath = null;
                     identities.TryGetValue(target, out propertyPath);
 
@@ -671,6 +674,36 @@ namespace Ink_Canvas.Windows.SettingsViews
                         Target = new WeakReference<FrameworkElement>(target)
                     });
                 }
+            }
+
+            // 枚举中含、但不在逻辑树中的卡（组顶行模板卡、折叠组内子项）也要进索引，
+            // 否则收藏/深链定位不到这些行。
+            foreach (var entry in entries)
+            {
+                if (covered.Contains(entry.Element)) continue;
+                string header = null;
+                if (entry.Element is Ink_Canvas.Controls.LabeledSettingsCard lsc2)
+                {
+                    header = lsc2.Header;
+                }
+                else if (entry.Element is iNKORE.UI.WPF.Modern.Controls.SettingsCard sc2)
+                {
+                    header = sc2.Header?.ToString();
+                }
+                else if (entry.Element is iNKORE.UI.WPF.Modern.Controls.SettingsExpander se2)
+                {
+                    header = se2.Header?.ToString();
+                }
+                if (string.IsNullOrWhiteSpace(header)) continue;
+
+                covered.Add(entry.Element);
+                _searchIndex.Add(new SearchEntry
+                {
+                    Text = header.Trim(),
+                    PageTag = pageTag,
+                    PropertyPath = entry.Identity,
+                    Target = new WeakReference<FrameworkElement>(entry.Element)
+                });
             }
         }
 
@@ -733,12 +766,18 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             EnsureSearchIndexBuilt();
             var result = new List<FavouriteEntry>();
+            var stale = new System.Collections.Generic.List<string>();
             foreach (var path in global::Ink_Canvas.Helpers.SettingsTagResolver.GetFavouritePaths())
             {
                 var entry = _searchIndex.FirstOrDefault(e =>
                     !string.IsNullOrEmpty(e.PropertyPath) &&
                     string.Equals(e.PropertyPath, path, StringComparison.OrdinalIgnoreCase));
-                if (entry == null) continue;
+                if (entry == null)
+                {
+                    // 身份规则演进后旧收藏可能已失配，静默清理，避免永久残留脏数据
+                    stale.Add(path);
+                    continue;
+                }
 
                 string pageTitle = FindNavigationViewItemByTag(entry.PageTag)?.Content?.ToString() ?? entry.PageTag;
                 result.Add(new FavouriteEntry
@@ -749,6 +788,16 @@ namespace Ink_Canvas.Windows.SettingsViews
                     PageTitle = pageTitle,
                     Target = entry.Target,
                 });
+            }
+
+            if (stale.Count > 0)
+            {
+                var favs = Helpers.SettingsManager.Settings?.FavouriteSettings;
+                if (favs != null)
+                {
+                    foreach (var p in stale) favs.RemoveAll(x => string.Equals(x, p, StringComparison.OrdinalIgnoreCase));
+                    Helpers.SettingsManager.SaveSettingsToFile();
+                }
             }
             return result;
         }

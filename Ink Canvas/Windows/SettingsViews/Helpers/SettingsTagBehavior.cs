@@ -60,13 +60,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             var seen = new HashSet<FrameworkElement>();
             int ordinal = 0;
 
-            void AppendCard(FrameworkElement element, bool isGroupHeader = false)
+            void AppendCard(FrameworkElement element, string identity, bool hasRealKey, bool isGroupHeader)
             {
                 if (!seen.Add(element)) return;
-                bool hasRealKey = ResolveSettingKey(element, out string key);
-                string identity = hasRealKey ? key
-                    : !string.IsNullOrEmpty(element.Name) ? pageTag + ":" + element.Name
-                    : pageTag + ":card" + ordinal;
                 result.Add(new CardEntry
                 {
                     Element = element,
@@ -77,19 +73,35 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 ordinal++;
             }
 
+            void AppendOrdinaryCard(FrameworkElement element)
+            {
+                bool hasRealKey = ResolveSettingKey(element, out string key);
+                string identity = hasRealKey ? key
+                    : !string.IsNullOrEmpty(element.Name) ? pageTag + ":" + element.Name
+                    : pageTag + ":card" + ordinal;
+                AppendCard(element, identity, hasRealKey, isGroupHeader: false);
+            }
+
             foreach (var node in EnumerateLogicalDescendants(root))
             {
                 // SettingsExpander 折叠时内部卡片尚未物化，不在逻辑树中；直接从 Items 集合补齐。
-                // 组顶行（如"启用启动动画"顶行开关）同样需要身份，从模板内 Header 卡补齐。
+                // 组顶行（如"启用启动动画"顶行开关）：身份锚定在 expander 逻辑节点而非模板内 Header 卡，
+                // 使"收藏时（模板已物化）"与"索引构建时（页面可能未物化）"解析出完全一致的序号。
                 if (node is SettingsExpander expander)
                 {
-                    var groupHeader = FindExpanderGroupHeaderCard(expander);
-                    if (groupHeader != null) AppendCard(groupHeader, isGroupHeader: true);
+                    var headerCard = FindExpanderGroupHeaderCard(expander);
+                    bool hasRealKey = ResolveContentSettingKey(expander, out string key);
+                    string identity = hasRealKey ? key
+                        : !string.IsNullOrEmpty(expander.Name) ? pageTag + ":" + expander.Name
+                        : pageTag + ":card" + ordinal;
+                    // 模板物化时拿到组顶行 SettingsCard；未物化时退回 expander 本身，索引/深链仍可定位
+                    var groupElement = headerCard as FrameworkElement ?? expander;
+                    AppendCard(groupElement, identity, hasRealKey, isGroupHeader: true);
 
                     foreach (var item in expander.Items)
                     {
-                        if (item is LabeledSettingsCard lscItem) AppendCard(lscItem);
-                        else if (item is SettingsCard scItem && !HasAncestor<LabeledSettingsCard>(scItem)) AppendCard(scItem);
+                        if (item is LabeledSettingsCard lscItem) AppendOrdinaryCard(lscItem);
+                        else if (item is SettingsCard scItem && !HasAncestor<LabeledSettingsCard>(scItem)) AppendOrdinaryCard(scItem);
                     }
                     continue;
                 }
@@ -108,8 +120,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                     continue;
                 }
 
-                // 兜底：若组顶行卡经由逻辑树到达（非物化补位路径），同样标记为组顶行
-                AppendCard(element, element is SettingsCard groupCard && IsSettingsExpanderGroupHeaderCard(groupCard));
+                AppendOrdinaryCard(element);
             }
             return result;
         }
@@ -143,6 +154,20 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                     key = p.Trim();
                     return true;
                 }
+            }
+            key = null;
+            return false;
+        }
+
+        /// <summary>
+        /// 组顶行身份用键：只扫描 SettingsExpander 的 Content（即组顶行承载的开关等），
+        /// 不扫 Items，避免把折叠组内子项的真实键误当作组顶行的键。
+        /// </summary>
+        private static bool ResolveContentSettingKey(SettingsExpander expander, out string key)
+        {
+            if (expander?.Content is FrameworkElement content)
+            {
+                return ResolveSettingKey(content, out key);
             }
             key = null;
             return false;

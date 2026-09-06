@@ -212,14 +212,25 @@ public bool IsEnableForceFullScreen { get; set; }
 
 **所有** `SettingsCard` / `LabeledSettingsCard` 都会自动获得收藏星标（无需声明 `PropertyPath`），由页面级扫描注入（`SettingsTags.InjectStarsIntoPage`，挂 `SettingsWindow.NavigateToPage` 的页 Loaded，每页一次）。
 
+注入范围与"更多按钮"规则一致：
+- 常规设置卡（内容含开关 / 下拉 / 滑杆等设置控件）恒注入。
+- `SettingsExpander` **组顶行**若本身就是开关组（内容含真开关，如「启用启动动画」「系统托盘」顶行），同样注入；纯分组 / 展示行不注入。
+- 显式声明 `helpers:SettingsTags.PropertyPath` 的卡片按真设置项处理（即使内容无开关 / 输入控件，也可收藏、可深链），身份即该 PropertyPath。
+
+卡片呈现：
+- 标题右侧：标签 chip（如 警告 / 新 / 实验性）。
+- 卡片**最右缘**（内容控件右侧动作列）：`⋯` 更多按钮（菜单：复制设置键 / 复制深链 / 收藏）。
+
 卡片身份（收藏存储的标识）优先级：
 1. 显式 `PropertyPath`（真属性路径，即带 tag 的卡片）
 2. 卡片 `x:Name` → `"{pageTag}:{xName}"`
-3. 兜底 → `"{pageTag}:card{序号}"`（序号 = 页面逻辑树遍历序）
+3. 兜底 → `"{pageTag}:card{序号}"（序号 = 页面遍历序）
 
-⚠️ **注意**：无 `x:Name` / 无 `PropertyPath` 的卡片用序号兜底，XAML 中重排卡片会导致旧收藏指向错位。若要固化身份，给卡片补 `x:Name`（或显式 `PropertyPath`）。
+`SettingsExpander` **组顶行**的身份锚定在 expander 逻辑节点（内容开关键 → expander `x:Name` → 序号），**不依赖模板是否物化**，保证收藏时与索引构建时身份一致。
 
-身份推导与搜索索引共用同一遍历（`SettingsTags.EnumerateCardIdentities`），收藏匹配与跳转对所有卡片生效。
+⚠️ **注意**：无 `x:Name` / 无 `PropertyPath` 的卡片用序号兜底，XAML 中重排卡片会导致旧收藏指向错位。若要固化身份，给卡片补 `x:Name`（或显式 `PropertyPath`）。失配的旧收藏会在打开收藏夹时被静默清理。
+
+身份推导与搜索索引共用同一遍历（`SettingsTags.EnumerateCardIdentities`）。索引会额外收录枚举含但不在页面逻辑树中的行（组顶行模板卡、折叠组内子项），收藏匹配与跳转对所有卡片生效。
 
 ### 新增 tag 类型
 
