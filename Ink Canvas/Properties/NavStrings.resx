@@ -340,7 +340,7 @@
     <value>通知设置</value>
   </data>
   <data name="Nav_AutoFold" xml:space="preserve">
-    <value>自动收纳</value>
+    <value>自动收纳/查杀</value>
   </data>
   <data name="Nav_AutoFold_Tooltip" xml:space="preserve">
     <value>自动收纳与浮动窗口拦截设置</value>

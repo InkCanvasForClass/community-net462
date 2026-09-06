@@ -6,7 +6,9 @@ using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -40,6 +42,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             public FrameworkElement Element;
             public string Identity;
             public bool HasRealKey;
+            public bool IsGroupHeader;
         }
 
         /// <summary>
@@ -54,9 +57,43 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             var result = new List<CardEntry>();
             if (root == null) return result;
 
+            var seen = new HashSet<FrameworkElement>();
             int ordinal = 0;
+
+            void AppendCard(FrameworkElement element, bool isGroupHeader = false)
+            {
+                if (!seen.Add(element)) return;
+                bool hasRealKey = ResolveSettingKey(element, out string key);
+                string identity = hasRealKey ? key
+                    : !string.IsNullOrEmpty(element.Name) ? pageTag + ":" + element.Name
+                    : pageTag + ":card" + ordinal;
+                result.Add(new CardEntry
+                {
+                    Element = element,
+                    Identity = identity,
+                    HasRealKey = hasRealKey,
+                    IsGroupHeader = isGroupHeader,
+                });
+                ordinal++;
+            }
+
             foreach (var node in EnumerateLogicalDescendants(root))
             {
+                // SettingsExpander 折叠时内部卡片尚未物化，不在逻辑树中；直接从 Items 集合补齐。
+                // 组顶行（如"启用启动动画"顶行开关）同样需要身份，从模板内 Header 卡补齐。
+                if (node is SettingsExpander expander)
+                {
+                    var groupHeader = FindExpanderGroupHeaderCard(expander);
+                    if (groupHeader != null) AppendCard(groupHeader, isGroupHeader: true);
+
+                    foreach (var item in expander.Items)
+                    {
+                        if (item is LabeledSettingsCard lscItem) AppendCard(lscItem);
+                        else if (item is SettingsCard scItem && !HasAncestor<LabeledSettingsCard>(scItem)) AppendCard(scItem);
+                    }
+                    continue;
+                }
+
                 FrameworkElement element;
                 if (node is LabeledSettingsCard lsc)
                 {
@@ -71,25 +108,22 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                     continue;
                 }
 
-                bool hasRealKey = ResolveSettingKey(element, out string key);
-                string identity = hasRealKey ? key
-                    : !string.IsNullOrEmpty(element.Name) ? pageTag + ":" + element.Name
-                    : pageTag + ":card" + ordinal;
-                result.Add(new CardEntry { Element = element, Identity = identity, HasRealKey = hasRealKey });
-                ordinal++;
+                // 兜底：若组顶行卡经由逻辑树到达（非物化补位路径），同样标记为组顶行
+                AppendCard(element, element is SettingsCard groupCard && IsSettingsExpanderGroupHeaderCard(groupCard));
             }
             return result;
         }
 
         /// <summary>
-        /// 为页面全部卡片注入更多按钮 + 标签 chip。仅"真设置项"卡片注入，纯展示卡 / 折叠分组 header 不注入。
+        /// 为页面全部卡片注入更多按钮 + 标签 chip。仅"真设置项"卡片注入：
+        /// 常规设置卡、声明了 PropertyPath 的卡、以及内容含真开关的 SettingsExpander 组顶行。
         /// </summary>
         public static void InjectStarsIntoPage(FrameworkElement pageRoot, string pageTag)
         {
             if (pageRoot == null) return;
             foreach (var entry in EnumerateCardIdentities(pageRoot, pageTag))
             {
-                Inject(entry.Element, entry.Identity, pageTag, entry.HasRealKey);
+                Inject(entry.Element, entry.Identity, pageTag, entry.HasRealKey, entry.IsGroupHeader);
             }
         }
 
@@ -116,12 +150,22 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
 
         /// <summary>
         /// 是否真设置项：LabeledSettingsCard（本身即开关）恒真；普通 SettingsCard 需内容子树含设置控件，
-        /// 且不是折叠分组 header。
+        /// 且不是折叠分组 header。组顶行卡（expander header 内含真开关，如"启用启动动画"）经显式补位后放行。
         /// </summary>
-        private static bool IsTrueSettingItem(FrameworkElement element)
+        private static bool IsTrueSettingItem(FrameworkElement element, bool allowGroupHeader = false)
         {
             if (element is LabeledSettingsCard) return true;
-            if (IsSettingsExpanderGroupHeaderCard(element)) return false;
+            // 显式声明了 PropertyPath 的卡片视为真设置项（作者声明该行可收藏 / 可深链）
+            if (ResolveSettingKey(element, out _)) return true;
+            if (!allowGroupHeader && IsSettingsExpanderGroupHeaderCard(element)) return false;
+            return ContainsSettingControl(element);
+        }
+
+        /// <summary>
+        /// 内容子树是否含"设置控件"。决定卡片是否算可操作设置行。
+        /// </summary>
+        private static bool ContainsSettingControl(FrameworkElement element)
+        {
             foreach (var node in EnumerateLogicalDescendants(element))
             {
                 if (node is iNKORE.UI.WPF.Modern.Controls.ToggleSwitch
@@ -148,9 +192,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             return false;
         }
 
-        private static void Inject(FrameworkElement element, string identity, string pageTag, bool hasRealKey)
+        private static void Inject(FrameworkElement element, string identity, string pageTag, bool hasRealKey, bool isGroupHeader = false)
         {
-            if (!IsTrueSettingItem(element)) return;
+            if (!IsTrueSettingItem(element, isGroupHeader)) return;
 
             // 定位内层 SettingsCard（LabeledSettingsCard 包裹了一个 SettingsCard）
             var card = element as SettingsCard ?? FindVisualChild<SettingsCard>(element);
@@ -184,13 +228,44 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 headerRow.Children.Add(chips);
             }
 
+            headerPanel.Children.Insert(0, headerRow);
+
+            // 更多按钮放到卡片模板最右侧动作列（col3），跨两行垂直居中
             var more = BuildMoreButton(identity, pageTag, hasRealKey, isFavourite, favouriteChip);
             if (more != null)
             {
-                headerRow.Children.Add(more);
+                PlaceMoreButton(card, more);
             }
+        }
 
-            headerPanel.Children.Insert(0, headerRow);
+        /// <summary>
+        /// 将更多按钮放入 SettingsCard 模板根 Grid 的最右列（Grid.Column=3，PART_ActionIconPresenterHolder 同列）。
+        /// 不占用库代码托管 ActionIcon 子级，避免其 OnActionIconChanged 回调把可见性改回 Collapsed。
+        /// </summary>
+        private static void PlaceMoreButton(SettingsCard card, Button more)
+        {
+            try
+            {
+                if (!(card.Template?.FindName("PART_RootGrid", card) is Grid rootGrid)) return;
+
+                // 沿用动作列宿主边距（模板内为 SettingsCardActionIconMargin，默认 14,0,0,0）
+                Thickness margin = new Thickness(0);
+                if (card.Template.FindName("PART_ActionIconPresenterHolder", card) is FrameworkElement holder)
+                {
+                    margin = holder.Margin;
+                }
+
+                more.Margin = margin;
+                more.VerticalAlignment = VerticalAlignment.Center;
+                more.HorizontalAlignment = HorizontalAlignment.Center;
+                Grid.SetColumn(more, 3);
+                Grid.SetRowSpan(more, 2);
+                rootGrid.Children.Add(more);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"放置设置项更多按钮出错: {ex.Message}");
+            }
         }
 
         private static StackPanel BuildChips(SettingsTag tags, string identity, out Border favouriteChip)
@@ -282,14 +357,14 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             itemCopyKey.Click += (s, e) =>
             {
                 e.Handled = true;
-                Clipboard.SetText(identity);
+                SafeCopyText(identity);
             };
             itemCopyUrl.Click += (s, e) =>
             {
                 e.Handled = true;
                 string url = "icc://settings/entry?page=" + Uri.EscapeDataString(pageTag)
                     + "&path=" + Uri.EscapeDataString(identity);
-                Clipboard.SetText(url);
+                SafeCopyText(url);
             };
             itemFavourite.Click += (s, e) =>
             {
@@ -310,6 +385,33 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             };
 
             return button;
+        }
+
+        /// <summary>
+        /// 复制文本。WPF 的 OLE flush 会被剪贴板上一持有者阻塞数秒，导致 UI 冻结，
+        /// 故放到后台 STA 线程执行；被其它进程占用时可能抛 CLIPBRD_E_CANT_OPEN，重试后静默忽略，
+        /// 避免异常冒泡触发全局崩溃窗口。
+        /// </summary>
+        private static void SafeCopyText(string text)
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    try
+                    {
+                        Clipboard.SetText(text);
+                        return;
+                    }
+                    catch (COMException)
+                    {
+                        System.Threading.Thread.Sleep(50);
+                    }
+                }
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         private static void ToggleFavourite(string identity, bool add, Border favouriteChip)
@@ -374,6 +476,32 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 if (child is T typed) return typed;
                 var result = FindVisualChild<T>(child);
                 if (result != null) return result;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 取 SettingsExpander 模板内"组顶行"SettingsCard（ExpanderHeader 折叠按钮内容中的那张卡，
+        /// 其上承载组开关/内容，如"启用启动动画"顶行）。Header 行始终显示，展开器物化后即可取到。
+        /// </summary>
+        private static SettingsCard FindExpanderGroupHeaderCard(SettingsExpander expander)
+        {
+            if (expander == null) return null;
+            try { expander.ApplyTemplate(); } catch { }
+            var headerToggle = FindVisualDescendantByName<ToggleButton>(expander, "ExpanderHeader");
+            if (headerToggle == null) return null;
+            return FindVisualChild<SettingsCard>(headerToggle);
+        }
+
+        private static T FindVisualDescendantByName<T>(DependencyObject parent, string name) where T : FrameworkElement
+        {
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typed && typed.Name == name) return typed;
+                var nested = FindVisualDescendantByName<T>(child, name);
+                if (nested != null) return nested;
             }
             return null;
         }
