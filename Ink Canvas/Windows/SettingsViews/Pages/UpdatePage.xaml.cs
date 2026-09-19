@@ -53,6 +53,15 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             InitializeComponent();
             Loaded += UpdatePage_Loaded;
             ExpanderSilentUpdateTime.Loaded += ExpanderSilentUpdateTime_Loaded;
+
+            // iNKORE.UI.WPF.Modern 0.10.2.1：内层 Expander 在 Load 时若无模板会走动画并空引用。
+            // 提前应用模板，让库的 GetToAnimateControl 能取到 ExpanderContent。
+            ExpanderSilentUpdateTime.ApplyTemplate();
+            if (VisualTreeHelper.GetChildrenCount(ExpanderSilentUpdateTime) > 0 &&
+                VisualTreeHelper.GetChild(ExpanderSilentUpdateTime, 0) is Expander innerExpander)
+            {
+                innerExpander.ApplyTemplate();
+            }
         }
 
         private int _silentExpanderRetryCount;

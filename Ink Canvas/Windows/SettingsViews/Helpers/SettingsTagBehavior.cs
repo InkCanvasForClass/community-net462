@@ -37,6 +37,13 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         public static void SetPropertyPath(DependencyObject obj, string value) =>
             obj.SetValue(PropertyPathProperty, value);
 
+        private static readonly DependencyProperty MoreInjectedProperty =
+            DependencyProperty.RegisterAttached(
+                "MoreInjected",
+                typeof(bool),
+                typeof(SettingsTags),
+                new PropertyMetadata(false));
+
         public struct CardEntry
         {
             public FrameworkElement Element;
@@ -134,8 +141,47 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             if (pageRoot == null) return;
             foreach (var entry in EnumerateCardIdentities(pageRoot, pageTag))
             {
-                Inject(entry.Element, entry.Identity, pageTag, entry.HasRealKey, entry.IsGroupHeader);
+                InjectWhenReady(entry, pageTag);
             }
+        }
+
+        /// <summary>
+        /// 卡片模板已就绪则立即注入，否则挂 Loaded 等其进入可视树后再注入。
+        /// 未选中的 TabItem / 折叠的 SettingsExpander 内卡片在页面 Loaded 时尚未实化，
+        /// 此时 FindVisualChild 取不到内层 SettingsCard，必须延迟到真正可见时补注入。
+        /// </summary>
+        private static void InjectWhenReady(CardEntry entry, string pageTag)
+        {
+            var element = entry.Element;
+            if (element == null) return;
+            if ((bool)element.GetValue(MoreInjectedProperty)) return;
+            if (!IsTrueSettingItem(element, entry.IsGroupHeader)) return;
+
+            // 定位内层 SettingsCard（LabeledSettingsCard 包裹了一个 SettingsCard）
+            var card = element as SettingsCard ?? FindVisualChild<SettingsCard>(element);
+            if (card == null || !IsCardTemplateReady(card))
+            {
+                if (!element.IsLoaded)
+                {
+                    RoutedEventHandler once = null;
+                    once = (s, e) =>
+                    {
+                        element.Loaded -= once;
+                        InjectWhenReady(entry, pageTag);
+                    };
+                    element.Loaded += once;
+                }
+                return;
+            }
+
+            element.SetValue(MoreInjectedProperty, true);
+            Inject(card, entry.Identity, pageTag, entry.HasRealKey);
+        }
+
+        private static bool IsCardTemplateReady(SettingsCard card)
+        {
+            try { card.ApplyTemplate(); } catch { }
+            return card.Template?.FindName("PART_HeaderPresenter", card) is FrameworkElement;
         }
 
         /// <summary>
@@ -217,17 +263,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             return false;
         }
 
-        private static void Inject(FrameworkElement element, string identity, string pageTag, bool hasRealKey, bool isGroupHeader = false)
+        private static void Inject(SettingsCard card, string identity, string pageTag, bool hasRealKey)
         {
-            if (!IsTrueSettingItem(element, isGroupHeader)) return;
-
-            // 定位内层 SettingsCard（LabeledSettingsCard 包裹了一个 SettingsCard）
-            var card = element as SettingsCard ?? FindVisualChild<SettingsCard>(element);
-            if (card == null) return;
-
-            // 强制应用模板，覆盖折叠展开器内尚未实化的卡片
-            try { card.ApplyTemplate(); } catch { }
-
             SettingsTag tags = SettingsTagResolver.GetTags(identity);
             bool isFavourite = SettingsTagResolver.IsFavourite(identity);
 
@@ -273,14 +310,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             {
                 if (!(card.Template?.FindName("PART_RootGrid", card) is Grid rootGrid)) return;
 
-                // 沿用动作列宿主边距（模板内为 SettingsCardActionIconMargin，默认 14,0,0,0）
-                Thickness margin = new Thickness(0);
-                if (card.Template.FindName("PART_ActionIconPresenterHolder", card) is FrameworkElement holder)
-                {
-                    margin = holder.Margin;
-                }
-
-                more.Margin = margin;
+                // 左间距收窄：默认动作列 SettingsCardActionIconMargin 左边距 14 太宽
+                more.Margin = new Thickness(4, 0, 0, 0);
                 more.VerticalAlignment = VerticalAlignment.Center;
                 more.HorizontalAlignment = HorizontalAlignment.Center;
                 Grid.SetColumn(more, 3);
@@ -346,7 +377,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         {
             var icon = new iNKORE.UI.WPF.Modern.Controls.FontIcon
             {
-                Icon = SegoeFluentIcons.More,
+                Icon = FluentSystemIcons.MoreVertical_20_Regular,
                 FontSize = 16,
             };
 
