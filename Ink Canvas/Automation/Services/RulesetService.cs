@@ -44,11 +44,27 @@ namespace Ink_Canvas.WorkflowAutomation.Services
                 _monitor.InternalStateChanged += OnStatusMayHaveChanged;
             }
 
-            // 兜底轮询（5s），防止事件遗漏
+            // 兜底轮询（5s），防止事件遗漏。默认不启动，由 AutomationService 按
+            // 是否存在工作流调用 SetFallbackEnabled 启停，避免无工作流时空转。
             _fallbackTimer = new Timer(5000);
             _fallbackTimer.Elapsed += OnFallbackTimerElapsed;
             _fallbackTimer.AutoReset = true;
-            _fallbackTimer.Start();
+        }
+
+        /// <summary>
+        /// 按需启停 5s 兜底轮询。无工作流时无需轮询。
+        /// </summary>
+        public void SetFallbackEnabled(bool enabled)
+        {
+            if (_fallbackTimer == null) return;
+            if (enabled)
+            {
+                if (!_fallbackTimer.Enabled) _fallbackTimer.Start();
+            }
+            else
+            {
+                _fallbackTimer.Stop();
+            }
         }
 
         private void OnStatusMayHaveChanged(object sender, EventArgs e)

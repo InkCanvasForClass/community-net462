@@ -144,6 +144,9 @@ namespace Ink_Canvas.WorkflowAutomation.Services
                 LoadWorkflow(workflow);
             }
             Workflows.CollectionChanged += WorkflowsOnCollectionChanged;
+
+            // 有工作流才需要 5s 兜底轮询
+            RulesetService.SetFallbackEnabled(Workflows.Count > 0);
         }
 
         /// <summary>
@@ -176,6 +179,9 @@ namespace Ink_Canvas.WorkflowAutomation.Services
                     break;
             }
             SaveConfig("CollectionChanged");
+
+            // 工作流增删后同步兜底轮询启停
+            RulesetService.SetFallbackEnabled(Workflows.Count > 0);
         }
 
         private void LoadWorkflow(Workflow workflow)

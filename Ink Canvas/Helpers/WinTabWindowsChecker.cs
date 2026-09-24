@@ -1,9 +1,20 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Windows.Automation;
 
 namespace Ink_Canvas.Helpers
 {
     internal class WinTabWindowsChecker
     {
+        // A2：UI Automation 跨进程枚举开销大，缓存查询结果，TTL 1.5s。
+        // 调用方（自动收纳 500ms 轮询）可接受 ≤1.5s 的状态滞后。
+        private const long CacheTtlMs = 1500;
+        private static readonly ConcurrentDictionary<string, (bool result, long ticks)> Cache
+            = new ConcurrentDictionary<string, (bool, long)>();
+
+        // 单调毫秒时钟（net462 无 Environment.TickCount64）
+        private static long MonotonicMs() => (long)(Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency * 1000.0);
+
         /*
         public static bool IsWindowMinimized(string windowName, bool matchFullName = true) {
             // 获取Win+Tab预览中的窗口
@@ -43,6 +54,20 @@ namespace Ink_Canvas.Helpers
         */
 
         public static bool IsWindowExisted(string windowName, bool matchFullName = true)
+        {
+            var key = windowName + "|" + matchFullName;
+            long now = MonotonicMs();
+            if (Cache.TryGetValue(key, out var cached) && now - cached.ticks < CacheTtlMs)
+            {
+                return cached.result;
+            }
+
+            var result = QueryWindowExisted(windowName, matchFullName);
+            Cache[key] = (result, now);
+            return result;
+        }
+
+        private static bool QueryWindowExisted(string windowName, bool matchFullName)
         {
             try
             {
