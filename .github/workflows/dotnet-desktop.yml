@@ -2,7 +2,9 @@ name: .NET Build & Package
 
 on:
   push:
-    branches: [net462]
+    branches: [net462, 17194-ep]
+  pull_request:
+    branches: [net462, 17194-ep]
   workflow_dispatch:
 
 concurrency:

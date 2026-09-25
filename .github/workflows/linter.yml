@@ -3,9 +3,9 @@ name: Lint
 
 on:
   push:
-    branches: [net462]
+    branches: [net462, 17194-ep]
   pull_request:
-    branches: [net462]
+    branches: [net462, 17194-ep]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.head_ref || github.sha }}
