@@ -2682,6 +2682,8 @@ namespace Ink_Canvas
             try
             {
                 _windowOverviewModel = new WindowOverviewModel();
+                // F：按自动收纳开关决定是否保活周期扫描
+                _windowOverviewModel.SetScanEnabled(Settings.Automation.IsEnableAutoFold);
                 LogHelper.WriteLogToFile("窗口概览模型已初始化", LogHelper.LogType.Event);
             }
             catch (Exception ex)

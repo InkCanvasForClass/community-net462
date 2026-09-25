@@ -81,4 +81,25 @@
   <data name="Common_Off" xml:space="preserve">
     <value>闭</value>
   </data>
+  <data name="SettingsTag_Warn" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="SettingsTag_New" xml:space="preserve">
+    <value>新</value>
+  </data>
+  <data name="SettingsTag_Experimental" xml:space="preserve">
+    <value>實驗性</value>
+  </data>
+  <data name="SettingsTag_Secret" xml:space="preserve">
+    <value>私密</value>
+  </data>
+  <data name="SettingsTag_Favourite" xml:space="preserve">
+    <value>收藏</value>
+  </data>
+  <data name="SettingsTag_FavouriteAdd" xml:space="preserve">
+    <value>收藏此設定</value>
+  </data>
+  <data name="SettingsTag_FavouriteRemove" xml:space="preserve">
+    <value>取消收藏</value>
+  </data>
 </root>

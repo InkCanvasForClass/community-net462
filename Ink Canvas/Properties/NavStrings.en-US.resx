@@ -243,4 +243,16 @@
   <data name="Nav_Performance_Tooltip" xml:space="preserve">
     <value>Performance monitoring and device evaluation</value>
   </data>
+  <data name="Nav_Favourites" xml:space="preserve">
+    <value>Favourites</value>
+  </data>
+  <data name="Nav_Favourites_Tooltip" xml:space="preserve">
+    <value>My favourite settings</value>
+  </data>
+  <data name="Nav_Favourites_Empty" xml:space="preserve">
+    <value>No favourites yet. Click the star to the right of a setting title to favourite it.</value>
+  </data>
+  <data name="Nav_Favourites_LocatedIn" xml:space="preserve">
+    <value>In {0}</value>
+  </data>
 </root>

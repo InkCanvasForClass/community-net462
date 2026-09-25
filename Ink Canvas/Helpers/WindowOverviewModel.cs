@@ -181,8 +181,16 @@ namespace Ink_Canvas.Helpers
             // 立即执行一次更新
             UpdateWindows();
 
-            // 启动定时器，定期更新窗口列表
-            _updateTimer = new Timer(OnUpdateTimer, null, _updateInterval, _updateInterval);
+            // F：默认不启动周期扫描，由自动收纳开关按需开启。
+            _updateTimer = new Timer(OnUpdateTimer, null, Timeout.Infinite, Timeout.Infinite);
+        }
+
+        // F：由自动收纳是否启用驱动周期扫描，未启用时停表，避免空转 EnumWindows。
+        public void SetScanEnabled(bool enabled)
+        {
+            var timer = _updateTimer;
+            if (timer == null) return;
+            timer.Change(enabled ? 0 : Timeout.Infinite, enabled ? _updateInterval : Timeout.Infinite);
         }
 
         /// <summary>

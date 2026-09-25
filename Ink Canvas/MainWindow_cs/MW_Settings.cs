@@ -413,7 +413,7 @@ namespace Ink_Canvas
         {
             var page = Application.Current.Windows.OfType<Window>()
                 .SelectMany(w => FindVisualChildren<iNKORE.UI.WPF.Modern.Controls.NavigationView>(w))
-                .SelectMany(nv => FindVisualChildren<Windows.SettingsViews.Pages.ToolbarAppearancePage>(nv))
+                .SelectMany(nv => FindVisualChildren<Windows.SettingsViews.Pages.FloatingBarPage>(nv))
                 .FirstOrDefault();
             if (page == null) return;
 
@@ -721,6 +721,10 @@ namespace Ink_Canvas
                 _unifiedMainWindowTimer?.Start();
             else
                 _unifiedMainWindowTimer?.Stop();
+
+            // F：窗口概览扫描仅自动收纳真正启用时才需要保活（模型尚未创建时留待延迟初始化处理）
+            try { _windowOverviewModel?.SetScanEnabled(Settings.Automation.IsEnableAutoFold); }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
 

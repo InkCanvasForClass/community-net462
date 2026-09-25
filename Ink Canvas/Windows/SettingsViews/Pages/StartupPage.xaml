@@ -7,6 +7,7 @@
       xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
       xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      xmlns:helpers="clr-namespace:Ink_Canvas.Windows.SettingsViews.Helpers"
       mc:Ignorable="d"
 
       Title="{x:Static props:NavStrings.Nav_Startup}">
@@ -141,6 +142,7 @@
                                 </ComboBox>
                             </ui:SettingsCard>
                             <ui:SettingsCard x:Name="CardCustomSplashImage"
+                                             helpers:SettingsTags.PropertyPath="Appearance.CustomSplashImagePath"
                                              Header="{x:Static props:ThemeStrings.Theme_CustomSplashImage}"
                                              Description="{x:Static props:ThemeStrings.Theme_CustomSplashImage_Desc}"
                                              Visibility="Collapsed">
@@ -162,6 +164,7 @@
                                 </ikw:SimpleStackPanel>
                             </ui:SettingsCard>
                             <ui:SettingsCard x:Name="CardCustomSplashTextPosition"
+                                             helpers:SettingsTags.PropertyPath="Appearance.CustomSplashTextPosition"
                                              Header="{x:Static props:ThemeStrings.Theme_CustomSplashTextPosition}"
                                              Description="{x:Static props:ThemeStrings.Theme_CustomSplashTextPosition_Desc}"
                                              Visibility="Collapsed">

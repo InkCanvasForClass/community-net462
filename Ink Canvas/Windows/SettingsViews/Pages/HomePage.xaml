@@ -70,7 +70,7 @@
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Clock}" Description="{x:Static props:HomeStrings.Home_ClockSettings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ClockPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Stopwatch}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -91,7 +91,7 @@
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Advanced}" Description="{x:Static props:NavStrings.Nav_Advanced_Settings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AdvancedPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ConfigPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -107,14 +107,14 @@
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:HomeStrings.Home_MainUI}" />
                     <ui:SettingsCard Header="{x:Static props:HomeStrings.Home_Window}" Description="{x:Static props:HomeStrings.Home_WindowSettings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="WindowPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ScreenTouchPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_GroupTitle}" Description="{x:Static props:NavStrings.Nav_Theme_Settings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AppearancePage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="DisplayPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -127,22 +127,29 @@
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
+                    <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Magnifier}" Description="{x:Static props:NavStrings.Nav_Magnifier}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="MagnifierPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Zoom}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ToolbarComponents}" Description="{x:Static props:NavStrings.Nav_ToolbarComponents_Tooltip}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ToolbarPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="FloatingBarPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Rename}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ToolbarAppearance}" Description="{x:Static props:NavStrings.Nav_ToolbarAppearance_Tooltip}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ToolbarAppearancePage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="FloatingBarPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ToolbarMenu}" Description="{x:Static props:NavStrings.Nav_ToolbarMenu_Tooltip}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ToolbarMenuPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="FloatingBarPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BulletedList}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -151,7 +158,7 @@
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:CanvasStrings.Canvas_GroupTitle}" />
                     <ui:SettingsCard Header="{x:Static props:CanvasStrings.Canvas_GroupTitle}" Description="{x:Static props:HomeStrings.Home_CanvasSettings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="CanvasPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardCanvasPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -164,12 +171,33 @@
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
+                    <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ScreenTouch}" Description="{x:Static props:NavStrings.Nav_ScreenTouch}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ScreenTouchPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="{x:Static props:BoothStrings.Title}" Description="{x:Static props:BoothStrings.Title}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoothPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Camera}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:PPTStrings.GroupTitle}" />
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.GroupTitle}" Description="{x:Static props:HomeStrings.Home_PPTSettings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="PowerPointPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="PPTSyncPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_LinkageControls}" Description="{x:Static props:NavStrings.Nav_LinkageControls}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="LinkageControlsPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -185,14 +213,14 @@
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:NotificationStrings.DefaultTitle}" />
                     <ui:SettingsCard Header="{x:Static props:NotificationStrings.DefaultTitle}" Description="{x:Static props:NotificationStrings.NavTooltip}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="NotificationPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="NotificationCenterPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Message}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:AnnouncementStrings.CenterTitle}" Description="{x:Static props:AnnouncementStrings.CenterHint}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AnnouncementCenterPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="NotificationCenterPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BulletedList}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -201,7 +229,7 @@
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:NotificationStrings.Type_Other}" />
                     <ui:SettingsCard Header="{x:Static props:AdvancedStrings.Experimental}" Description="{x:Static props:AdvancedStrings.Experimental}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ExperimentalPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ScreenTouchPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -215,14 +243,14 @@
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:StorageStrings.Backup_Title}" Description="{x:Static props:HomeStrings.Home_BackupSettings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BackupPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ConfigPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:CloudStorageStrings.CloudStorage_Manage}" Description="{x:Static props:HomeStrings.Home_CloudStorageSettings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="CloudStoragePage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="SyncPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cloud}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -231,41 +259,55 @@
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:NavStrings.Nav_Board}" />
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_BoardComponents}" Description="{x:Static props:NavStrings.Nav_BoardComponents_Tooltip}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardToolbarPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Rename}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_BoardAppearance}" Description="{x:Static props:NavStrings.Nav_BoardAppearance_Tooltip}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardAppearancePage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_BoardMenu}" Description="{x:Static props:NavStrings.Nav_BoardMenu_Tooltip}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardMenuPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BulletedList}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:AutomationStrings.Automation_Title}" Description="{x:Static props:NavStrings.Nav_Automation_Settings}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AutomationPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AutomationWorkflowPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="{x:Static props:AutomationStrings.Automation_AutoFoldTitle}" Description="{x:Static props:AutomationStrings.Automation_AutoFoldTitle}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AutoFoldPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:RandomStrings.Random_Title}" Description="{x:Static props:HomeStrings.Home_RandomAndTimer}"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="RandomDrawPage">
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="RollCallPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.People}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="Debug" Description="Debug"
+                    <ui:SettingsCard Header="{x:Static props:RandomStrings.Random_SelectTimerAlarm}" Description="{x:Static props:RandomStrings.Random_SelectTimerAlarm}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="TimerPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Stopwatch}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="调试" Description="调试"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="DebugPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}" />

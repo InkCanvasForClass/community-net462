@@ -1,9 +1,11 @@
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
@@ -11,6 +13,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
     public partial class StoragePage : Page
     {
+        private bool _isLoaded = false;
         // 已知子目录定义。其余顶层文件归入“核心文件”或“其他”。
         private static readonly string[] LogDirs = { "Logs", "Crashes" };
         private static readonly string[] InkDirs = { "Saves" };
@@ -35,11 +38,68 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             InitializeComponent();
             Loaded += StoragePage_Loaded;
+            Unloaded += StoragePage_Unloaded;
         }
 
         private async void StoragePage_Loaded(object sender, RoutedEventArgs e)
         {
+            LoadSettings();
             await RefreshAsync();
+            _isLoaded = true;
+            SliderTouchHelper.AddTouchSupportToAllSliders(this);
+        }
+
+        private void StoragePage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _isLoaded = false;
+        }
+
+        private void LoadSettings()
+        {
+            _isLoaded = false;
+            try
+            {
+                var auto = SettingsManager.Settings.Automation;
+
+                CardSaveScreenshotsInDateFolders.IsOn = auto.IsSaveScreenshotsInDateFolders;
+                CardAutoSaveStrokesAtScreenshot.IsOn = auto.IsAutoSaveStrokesAtScreenshot;
+                CardAutoSaveStrokesAtClear.IsOn = auto.IsAutoSaveScreenshotAtClear;
+                CardSaveStrokesAsXML.IsOn = auto.IsSaveStrokesAsXML;
+                CardEnableAutoSaveStrokes.IsOn = auto.IsEnableAutoSaveStrokes;
+
+                var interval = auto.AutoSaveStrokesIntervalMinutes;
+                foreach (ComboBoxItem item in ComboBoxAutoSaveStrokesInterval.Items)
+                {
+                    if (item.Tag != null && int.TryParse(item.Tag.ToString(), out int tagVal) && tagVal == interval)
+                    {
+                        ComboBoxAutoSaveStrokesInterval.SelectedItem = item;
+                        break;
+                    }
+                }
+
+                CardAutoDelSavedFiles.IsOn = auto.AutoDelSavedFiles;
+                ComboBoxAutoDelSavedFilesDaysThreshold.SelectedIndex = auto.AutoDelSavedFilesDaysThreshold switch
+                {
+                    7 => 0,
+                    14 => 1,
+                    30 => 2,
+                    60 => 3,
+                    90 => 4,
+                    _ => 2
+                };
+
+                SideControlMinimumAutomationSlider.Value = auto.MinimumAutomationStrokeNumber;
+                CardSaveFullPageStrokes.IsOn = auto.IsSaveFullPageStrokes;
+
+                CardUseCustomSaveFileName.IsOn = auto.IsUseCustomSaveFileName;
+                TextBoxCustomSaveFileNameTemplate.Text = auto.CustomSaveFileNameTemplate;
+                SyncSaveFileNamePresetSelection(auto.CustomSaveFileNameTemplate);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"加载存储设置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+            _isLoaded = true;
         }
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
@@ -324,6 +384,100 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 u++;
             }
             return u == 0 ? $"{(long)size} {units[u]}" : $"{size:0.##} {units[u]}";
+        }
+
+        #endregion
+
+        #region 自动保存
+
+        private void ToggleSwitchSaveScreenshotsInDateFolders_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.IsSaveScreenshotsInDateFolders = CardSaveScreenshotsInDateFolders.IsOn; SettingsManager.SaveSettingsToFile(); }
+
+        private void ToggleSwitchAutoSaveStrokesAtScreenshot_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.IsAutoSaveStrokesAtScreenshot = CardAutoSaveStrokesAtScreenshot.IsOn; SettingsManager.SaveSettingsToFile(); }
+
+        private void ToggleSwitchAutoSaveStrokesAtClear_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.IsAutoSaveScreenshotAtClear = CardAutoSaveStrokesAtClear.IsOn; SettingsManager.SaveSettingsToFile(); }
+
+        private void ToggleSwitchSaveStrokesAsXML_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.IsSaveStrokesAsXML = CardSaveStrokesAsXML.IsOn; SettingsManager.SaveSettingsToFile(); }
+
+        private void ToggleSwitchEnableAutoSaveStrokes_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.IsEnableAutoSaveStrokes = CardEnableAutoSaveStrokes.IsOn; SettingsManager.SaveSettingsToFile(); SettingsActionHub.OnAutoSaveStrokesChanged(); }
+
+        private void ComboBoxAutoSaveStrokesInterval_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded || ComboBoxAutoSaveStrokesInterval.SelectedItem == null) return;
+            var selectedItem = ComboBoxAutoSaveStrokesInterval.SelectedItem as ComboBoxItem;
+            if (selectedItem?.Tag != null && int.TryParse(selectedItem.Tag.ToString(), out int intervalMinutes))
+            {
+                SettingsManager.Settings.Automation.AutoSaveStrokesIntervalMinutes = intervalMinutes;
+                SettingsManager.SaveSettingsToFile();
+            }
+        }
+
+        private void ToggleSwitchAutoDelSavedFiles_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.AutoDelSavedFiles = CardAutoDelSavedFiles.IsOn; SettingsManager.SaveSettingsToFile(); }
+
+        private void ComboBoxAutoDelSavedFilesDaysThreshold_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Automation.AutoDelSavedFilesDaysThreshold =
+                int.Parse(((ComboBoxItem)ComboBoxAutoDelSavedFilesDaysThreshold.SelectedItem).Content.ToString());
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void SideControlMinimumAutomationSlider_ValueChanged(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.MinimumAutomationStrokeNumber = (int)SideControlMinimumAutomationSlider.Value; SettingsManager.SaveSettingsToFile(); }
+
+        private void ToggleSwitchSaveFullPageStrokes_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.IsSaveFullPageStrokes = CardSaveFullPageStrokes.IsOn; SettingsManager.SaveSettingsToFile(); }
+
+        private void ToggleSwitchUseCustomSaveFileName_Toggled(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.IsUseCustomSaveFileName = CardUseCustomSaveFileName.IsOn; SettingsManager.SaveSettingsToFile(); }
+
+        private void TextBoxCustomSaveFileNameTemplate_LostFocus(object sender, RoutedEventArgs e)
+        { if (!_isLoaded) return; SettingsManager.Settings.Automation.CustomSaveFileNameTemplate = TextBoxCustomSaveFileNameTemplate.Text; SettingsManager.SaveSettingsToFile(); }
+
+        private void ComboBoxSaveFileNamePreset_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded || ComboBoxSaveFileNamePreset.SelectedItem == null) return;
+            var item = ComboBoxSaveFileNamePreset.SelectedItem as ComboBoxItem;
+            var tag = item?.Tag?.ToString();
+            if (string.IsNullOrEmpty(tag)) return;
+
+            if (tag == "__custom__")
+            {
+                CardCustomSaveFileNameTemplate.Visibility = Visibility.Visible;
+                return;
+            }
+
+            CardCustomSaveFileNameTemplate.Visibility = Visibility.Collapsed;
+            SettingsManager.Settings.Automation.CustomSaveFileNameTemplate = tag;
+            TextBoxCustomSaveFileNameTemplate.Text = tag;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void SyncSaveFileNamePresetSelection(string template)
+        {
+            int matchedIndex = -1;
+            for (int i = 0; i < ComboBoxSaveFileNamePreset.Items.Count; i++)
+            {
+                var item = ComboBoxSaveFileNamePreset.Items[i] as ComboBoxItem;
+                var tag = item?.Tag?.ToString();
+                if (tag == template) { matchedIndex = i; break; }
+            }
+
+            if (matchedIndex >= 0)
+            {
+                ComboBoxSaveFileNamePreset.SelectedIndex = matchedIndex;
+                CardCustomSaveFileNameTemplate.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ComboBoxSaveFileNamePreset.SelectedIndex = ComboBoxSaveFileNamePreset.Items.Count - 1;
+                CardCustomSaveFileNameTemplate.Visibility = Visibility.Visible;
+            }
         }
 
         #endregion

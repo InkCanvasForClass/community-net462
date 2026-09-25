@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 
@@ -51,6 +52,53 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             InitializeComponent();
             Loaded += UpdatePage_Loaded;
+            ExpanderSilentUpdateTime.Loaded += ExpanderSilentUpdateTime_Loaded;
+
+            // iNKORE.UI.WPF.Modern 0.10.2.1：内层 Expander 在 Load 时若无模板会走动画并空引用。
+            // 提前应用模板，让库的 GetToAnimateControl 能取到 ExpanderContent。
+            ExpanderSilentUpdateTime.ApplyTemplate();
+            if (VisualTreeHelper.GetChildrenCount(ExpanderSilentUpdateTime) > 0 &&
+                VisualTreeHelper.GetChild(ExpanderSilentUpdateTime, 0) is Expander innerExpander)
+            {
+                innerExpander.ApplyTemplate();
+            }
+        }
+
+        private int _silentExpanderRetryCount;
+        private const int MaxSilentExpanderRetries = 60;
+
+        private void ExpanderSilentUpdateTime_Loaded(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(SetSilentUpdateTimeExpanderState), DispatcherPriority.Background);
+        }
+
+        private void SetSilentUpdateTimeExpanderState()
+        {
+            Expander innerExpander = null;
+            if (ExpanderSilentUpdateTime.Template != null &&
+                VisualTreeHelper.GetChildrenCount(ExpanderSilentUpdateTime) > 0 &&
+                VisualTreeHelper.GetChild(ExpanderSilentUpdateTime, 0) is Expander inner)
+            {
+                innerExpander = inner;
+                innerExpander.ApplyTemplate();
+            }
+
+            bool partReady = innerExpander?.Template?.FindName(
+                "ExpanderContent", innerExpander) is FrameworkElement;
+
+            if (!partReady)
+            {
+                // 库在首次加载时可能还没生成可动画化的模板部件；
+                // 此时展开会触发库内部 NullReferenceException，推迟到部件就绪后再展开。
+                if (_silentExpanderRetryCount++ < MaxSilentExpanderRetries)
+                {
+                    Dispatcher.BeginInvoke(new Action(SetSilentUpdateTimeExpanderState), DispatcherPriority.ApplicationIdle);
+                }
+                return;
+            }
+
+            _silentExpanderRetryCount = 0;
+            ExpanderSilentUpdateTime.IsExpanded = CardSilentUpdate.IsOn;
         }
 
         private async void UpdatePage_Loaded(object sender, RoutedEventArgs e)
@@ -190,6 +238,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             {
                 SettingsManager.Settings.Startup.IsAutoUpdateWithSilence = CardSilentUpdate.IsOn;
                 SettingsManager.SaveSettingsToFile();
+                SetSilentUpdateTimeExpanderState();
             }
             catch (Exception ex)
             {

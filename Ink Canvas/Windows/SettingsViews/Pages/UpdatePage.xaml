@@ -190,11 +190,10 @@
                                                           SwitchName="ToggleSwitchIsSmartUpdate"
                                                           Toggled="ToggleSwitchIsSmartUpdate_Toggled" />
 
-                            <ui:SettingsExpander x:Name="ExpanderSilentUpdateTime"
-                                                 Header="{x:Static props:StartupStrings.SilentUpdate_TimeRange}"
-                                                 Visibility="{Binding IsOn, ElementName=CardSilentUpdate, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                 IsExpanded="{Binding IsOn, ElementName=CardSilentUpdate, Mode=OneWay}"
-                                                 d:Visibility="Visible" d:IsExpanded="True">
+            <ui:SettingsExpander x:Name="ExpanderSilentUpdateTime"
+                                 Header="{x:Static props:StartupStrings.SilentUpdate_TimeRange}"
+                                 Visibility="{Binding IsOn, ElementName=CardSilentUpdate, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                 d:Visibility="Visible" d:IsExpanded="True">
                                 <ui:SettingsExpander.HeaderIcon>
                                     <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
                                 </ui:SettingsExpander.HeaderIcon>

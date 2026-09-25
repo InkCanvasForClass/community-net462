@@ -75,6 +75,12 @@ namespace Ink_Canvas.Helpers
         private const int ConnectionCheckIntervalTicks = 3;
         private const int SlideShowCheckIntervalTicks = 2;
         private const int WpsCheckIntervalTicks = 6;
+
+        // D：COM ROT 查询开销大。未连接且无 PPT/WPS 进程时跳过探测；
+        // 进程存在性用 2s TTL 缓存，避免每 tick 枚举进程。
+        private long _lastPptProcessProbeTimestamp;
+        private bool _pptProcessPresent;
+        private const long PptProcessProbeTtlMs = 2000;
         #endregion
 
         #region Constructor & Initialization
@@ -125,7 +131,11 @@ namespace Ink_Canvas.Helpers
                 // 降低连接检查频率：默认每 3 个 tick（约 3 秒）才检查一次
                 if (tick % ConnectionCheckIntervalTicks == 0)
                 {
-                    CheckAndConnectToPPT();
+                    // 已连接时始终探测（需检测断开）；未连接时仅在存在 PPT/WPS 进程时探测
+                    if (IsConnected || IsPptProcessPresentCached())
+                    {
+                        CheckAndConnectToPPT();
+                    }
                 }
 
                 RunPPTComDebugProbeIfEnabled("TimerTick", tick);
@@ -152,6 +162,29 @@ namespace Ink_Canvas.Helpers
             {
                 _unifiedPPTTimerRunning = false;
             }
+        }
+
+        /// <summary>
+        /// 是否存在 PowerPoint / WPS 演示进程（2s TTL 缓存）。
+        /// 查询失败时返回 true，保持原有探测行为不被阻断。
+        /// </summary>
+        private bool IsPptProcessPresentCached()
+        {
+            long now = Stopwatch.GetTimestamp();
+            if (now - _lastPptProcessProbeTimestamp < PptProcessProbeTtlMs * Stopwatch.Frequency / 1000)
+                return _pptProcessPresent;
+
+            _lastPptProcessProbeTimestamp = now;
+            try
+            {
+                _pptProcessPresent = Process.GetProcessesByName("POWERPNT").Length > 0
+                    || Process.GetProcessesByName("wpp").Length > 0;
+            }
+            catch
+            {
+                _pptProcessPresent = true;
+            }
+            return _pptProcessPresent;
         }
 
         private void CheckAndConnectToPPT()

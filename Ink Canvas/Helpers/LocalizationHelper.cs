@@ -86,6 +86,10 @@ namespace Ink_Canvas.Helpers
 
                 var current = (ResourceManager)resourceManField.GetValue(null);
 
+                // iNKORE Strings 尚未惰性初始化时为 null，此时装补丁会留下空回退，
+                // 触发 TextContextMenu 等查未知键时 NRE，故直接跳过
+                if (current == null) return;
+
                 if (!_modernStringsPatched)
                 {
                     _originalModernStringsRM = current;
@@ -122,22 +126,22 @@ namespace Ink_Canvas.Helpers
 
             public override string GetString(string name)
             {
-                if (_overrides.TryGetValue(name, out var value))
+                if (_overrides != null && _overrides.TryGetValue(name, out var value))
                     return value;
-                return _fallback.GetString(name);
+                return _fallback?.GetString(name) ?? name;
             }
 
             public override string GetString(string name, CultureInfo culture)
             {
-                if (_overrides.TryGetValue(name, out var value))
+                if (_overrides != null && _overrides.TryGetValue(name, out var value))
                     return value;
-                return _fallback.GetString(name, culture);
+                return _fallback?.GetString(name, culture) ?? name;
             }
 
-            public override object GetObject(string name) => _fallback.GetObject(name);
-            public override object GetObject(string name, CultureInfo culture) => _fallback.GetObject(name, culture);
+            public override object GetObject(string name) => _fallback?.GetObject(name);
+            public override object GetObject(string name, CultureInfo culture) => _fallback?.GetObject(name, culture);
             public override ResourceSet GetResourceSet(CultureInfo culture, bool createIfNotExists, bool tryParents)
-                => _fallback.GetResourceSet(culture, createIfNotExists, tryParents);
+                => _fallback?.GetResourceSet(culture, createIfNotExists, tryParents);
         }
 
         /// <summary>

@@ -264,6 +264,19 @@ namespace Ink_Canvas
                     return;
                 }
 
+                if (pathLower == "settings/entry")
+                {
+                    string pageTag = GetUriQueryValue(uri, "page");
+                    string entryPath = GetUriQueryValue(uri, "path");
+                    if (string.IsNullOrEmpty(entryPath))
+                    {
+                        LogHelper.WriteLogToFile("URI 打开设置项缺少参数 path", LogHelper.LogType.Warning);
+                        return;
+                    }
+                    OpenSettingsAtEntry(pageTag, entryPath);
+                    return;
+                }
+
                 LogHelper.WriteLogToFile($"未知的 URI 命令: {command}", LogHelper.LogType.Warning);
             }
             catch (Exception ex)

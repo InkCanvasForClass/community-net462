@@ -62,6 +62,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                     ToggleCheckboxEnableInkToShapeRectangle.IsChecked = settings.InkToShape.IsInkToShapeRectangle;
                     ToggleCheckboxEnableInkToShapeRounded.IsChecked = settings.InkToShape.IsInkToShapeRounded;
                     LineStraightenSensitivitySlider.Value = settings.InkToShape.LineStraightenSensitivity;
+                    LineNormalizationThresholdSlider.Value = settings.InkToShape.LineNormalizationThreshold;
                 }
 
                 if (settings.Canvas != null)
@@ -196,6 +197,16 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var val = Math.Round(LineStraightenSensitivitySlider.Value, 2);
             LineStraightenSensitivitySlider.Value = val;
             SettingsManager.Settings.InkToShape.LineStraightenSensitivity = val;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void LineNormalizationThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateSliderText(LineNormalizationThresholdSlider, LineNormalizationThresholdText, "{0:F2}");
+            if (!_isLoaded) return;
+            var val = Math.Round(LineNormalizationThresholdSlider.Value, 2);
+            LineNormalizationThresholdSlider.Value = val;
+            SettingsManager.Settings.InkToShape.LineNormalizationThreshold = val;
             SettingsManager.SaveSettingsToFile();
         }
 

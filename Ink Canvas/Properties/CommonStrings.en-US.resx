@@ -81,4 +81,25 @@
   <data name="Common_Off" xml:space="preserve">
     <value>Off</value>
   </data>
+  <data name="SettingsTag_Warn" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="SettingsTag_New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="SettingsTag_Experimental" xml:space="preserve">
+    <value>Experimental</value>
+  </data>
+  <data name="SettingsTag_Secret" xml:space="preserve">
+    <value>Private</value>
+  </data>
+  <data name="SettingsTag_Favourite" xml:space="preserve">
+    <value>Favourite</value>
+  </data>
+  <data name="SettingsTag_FavouriteAdd" xml:space="preserve">
+    <value>Add to favourites</value>
+  </data>
+  <data name="SettingsTag_FavouriteRemove" xml:space="preserve">
+    <value>Remove from favourites</value>
+  </data>
 </root>

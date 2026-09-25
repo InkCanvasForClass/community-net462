@@ -4,6 +4,7 @@ using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
@@ -345,5 +346,59 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 MessageBox.Show(SecurityStrings.Security_UsbPromptSelectDrive, SecurityStrings.Security_InfoBarTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+        #region 文件关联
+
+        private void BtnRegisterFileAssociation_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                bool success = FileAssociationManager.RegisterFileAssociation();
+                UpdateFileAssociationStatus();
+                var mw = Application.Current.MainWindow as MainWindow;
+                if (mw != null) mw.ShowNotification(success ? AutomationStrings.FileAssoc_RegisterSuccess : AutomationStrings.FileAssoc_RegisterFailed);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"注册文件关联失败: {ex.Message}", LogHelper.LogType.Error);
+                UpdateFileAssociationStatus();
+            }
+        }
+
+        private void BtnUnregisterFileAssociation_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                bool success = FileAssociationManager.UnregisterFileAssociation();
+                UpdateFileAssociationStatus();
+                var mw = Application.Current.MainWindow as MainWindow;
+                if (mw != null) mw.ShowNotification(success ? AutomationStrings.FileAssoc_UnregisterSuccess : AutomationStrings.FileAssoc_UnregisterFailed);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"取消文件关联失败: {ex.Message}", LogHelper.LogType.Error);
+                UpdateFileAssociationStatus();
+            }
+        }
+
+        private void BtnCheckFileAssociation_Click(object sender, RoutedEventArgs e) => UpdateFileAssociationStatus();
+
+        private void UpdateFileAssociationStatus()
+        {
+            try
+            {
+                bool isRegistered = FileAssociationManager.IsFileAssociationRegistered();
+                TextBlockFileAssociationStatus.Text = isRegistered ? AutomationStrings.FileAssoc_Registered : AutomationStrings.FileAssoc_NotRegistered;
+                TextBlockFileAssociationStatus.Foreground = isRegistered ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.LightCoral);
+            }
+            catch (Exception ex)
+            {
+                TextBlockFileAssociationStatus.Text = AutomationStrings.FileAssoc_CheckError;
+                TextBlockFileAssociationStatus.Foreground = new SolidColorBrush(Colors.LightCoral);
+                LogHelper.WriteLogToFile($"检查文件关联状态失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        #endregion
     }
 }

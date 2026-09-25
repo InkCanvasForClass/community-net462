@@ -16,45 +16,10 @@ namespace Ink_Canvas.Windows.SettingsViews
 {
     public partial class SettingsWindow : Window
     {
-        private static readonly Dictionary<string, Type> _staticPageTypes = new Dictionary<string, Type>
-        {
-            { "HomePage", typeof(HomePage) },
-            { "StartupPage", typeof(StartupPage) },
-            { "ClockPage", typeof(ClockPage) },
-            { "PrivacyPage", typeof(PrivacyPage) },
-            { "SecurityPage", typeof(SecurityPage) },
-            { "WindowPage", typeof(WindowPage) },
-            { "AppearancePage", typeof(AppearancePage) },
-            { "HotkeyPage", typeof(HotkeyPage) },
-            { "ToolbarPage", typeof(ToolbarPage) },
-            { "ToolbarAppearancePage", typeof(ToolbarAppearancePage) },
-            { "ToolbarMenuPage", typeof(ToolbarMenuPage) },
-            { "BoardToolbarPage", typeof(BoardToolbarPage) },
-            { "BoardAppearancePage", typeof(BoardAppearancePage) },
-            { "BoardMenuPage", typeof(BoardMenuPage) },
-            { "UpdatePage", typeof(UpdatePage) },
-            { "NotificationPage", typeof(NotificationPage) },
-            { "AnnouncementCenterPage", typeof(AnnouncementCenterPage) },
-            { "ExperimentalPage", typeof(ExperimentalPage) },
-            { "AdvancedPage", typeof(AdvancedPage) },
-            { "StoragePage", typeof(StoragePage) },
-            { "BackupPage", typeof(BackupPage) },
-            { "CloudStoragePage", typeof(CloudStoragePage) },
-            { "AutomationWorkflowPage", typeof(AutomationWorkflowPage) },
-            { "PowerPointPage", typeof(PowerPointPage) },
-            { "RandomDrawPage", typeof(RandomDrawPage) },
-            { "CanvasPage", typeof(CanvasPage) },
-            { "InkRecognitionPage", typeof(InkRecognitionPage) },
-            { "PerformancePage", typeof(PerformancePage) },
-            { "DebugPage", typeof(DebugPage) },
-            { "FriendlyLinksPage", typeof(FriendlyLinksPage) },
-            { "AboutPage", typeof(AboutPage) },
-            { "Settings", typeof(SettingsPage) },
-            { "PluginPage", typeof(PluginPage) },
-            { "PluginSettingsPage", typeof(PluginSettingsPage) }
-        };
         private Dictionary<string, Type> _pageTypes;
         private readonly Dictionary<string, object> _pages = new Dictionary<string, object>();
+        private readonly Dictionary<string, RoutedEventHandler> _pageLoadedHandlers = new Dictionary<string, RoutedEventHandler>();
+        private readonly HashSet<string> _injectedPages = new HashSet<string>();
         private readonly Dictionary<string, Ink_Canvas.Plugins.PluginInfo> _pluginPages = new Dictionary<string, Ink_Canvas.Plugins.PluginInfo>();
 
         // 保存窗口原始位置和大小
@@ -81,35 +46,34 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 { "HomePage", typeof(HomePage) },
                 { "StartupPage", typeof(StartupPage) },
-                { "ClockPage", typeof(ClockPage) },
+                { "UpdatePage", typeof(UpdatePage) },
+                { "HotkeyPage", typeof(HotkeyPage) },
+                { "DisplayPage", typeof(DisplayPage) },
+                { "ScreenTouchPage", typeof(ScreenTouchPage) },
                 { "PrivacyPage", typeof(PrivacyPage) },
                 { "SecurityPage", typeof(SecurityPage) },
-                { "WindowPage", typeof(WindowPage) },
-                { "AppearancePage", typeof(AppearancePage) },
-                { "HotkeyPage", typeof(HotkeyPage) },
-                { "ToolbarPage", typeof(ToolbarPage) },
-                { "ToolbarAppearancePage", typeof(ToolbarAppearancePage) },
-                { "ToolbarMenuPage", typeof(ToolbarMenuPage) },
-                { "BoardToolbarPage", typeof(BoardToolbarPage) },
-                { "BoardAppearancePage", typeof(BoardAppearancePage) },
-                { "BoardMenuPage", typeof(BoardMenuPage) },
-                { "UpdatePage", typeof(UpdatePage) },
-                { "NotificationPage", typeof(NotificationPage) },
-                { "AnnouncementCenterPage", typeof(AnnouncementCenterPage) },
-                { "ExperimentalPage", typeof(ExperimentalPage) },
-                { "AdvancedPage", typeof(AdvancedPage) },
-                { "StoragePage", typeof(StoragePage) },
-                { "BackupPage", typeof(BackupPage) },
-                { "CloudStoragePage", typeof(CloudStoragePage) },
-                { "AutomationWorkflowPage", typeof(AutomationWorkflowPage) },
-                { "PowerPointPage", typeof(PowerPointPage) },
-                { "RandomDrawPage", typeof(RandomDrawPage) },
-                { "CanvasPage", typeof(CanvasPage) },
+                { "LinkageControlsPage", typeof(LinkageControlsPage) },
+                { "FloatingBarPage", typeof(FloatingBarPage) },
+                { "MiniWhiteboardPage", typeof(MiniWhiteboardPage) },
+                { "BoardPage", typeof(BoardPage) },
+                { "BoardCanvasPage", typeof(BoardCanvasPage) },
                 { "InkRecognitionPage", typeof(InkRecognitionPage) },
+                { "BoothPage", typeof(BoothPage) },
+                { "RollCallPage", typeof(RollCallPage) },
+                { "TimerPage", typeof(TimerPage) },
+                { "MagnifierPage", typeof(MagnifierPage) },
+                { "NotificationCenterPage", typeof(NotificationCenterPage) },
+                { "AutoFoldPage", typeof(AutoFoldPage) },
+                { "AutomationWorkflowPage", typeof(AutomationWorkflowPage) },
+                { "PPTSyncPage", typeof(PPTSyncPage) },
                 { "PerformancePage", typeof(PerformancePage) },
+                { "ConfigPage", typeof(ConfigPage) },
+                { "SyncPage", typeof(SyncPage) },
+                { "StoragePage", typeof(StoragePage) },
                 { "DebugPage", typeof(DebugPage) },
                 { "FriendlyLinksPage", typeof(FriendlyLinksPage) },
                 { "AboutPage", typeof(AboutPage) },
+                { "FavouritesPage", typeof(FavouritesPage) },
                 { "Settings", typeof(SettingsPage) },
                 { "PluginPage", typeof(PluginPage) },
                 { "PluginSettingsPage", typeof(PluginSettingsPage) }
@@ -401,6 +365,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     pluginSettingsPage.CurrentPlugin = pluginInfo;
                 }
 
+                HookFavouriteStarsInjection(cachedPage, pageTag);
+
                 rootFrame.NavigationUIVisibility = NavigationUIVisibility.Hidden;
                 rootFrame.RemoveBackEntry();
                 rootFrame.Navigate(cachedPage);
@@ -421,6 +387,30 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 _isNavigating = false;
             }
+        }
+
+        /// <summary>
+        /// 页面成为当前内容且 Loaded 后，注入全量收藏星标（每页仅一次）。
+        /// </summary>
+        private void HookFavouriteStarsInjection(object cachedPage, string pageTag)
+        {
+            if (pageTag == "FavouritesPage") return;
+            if (!(cachedPage is FrameworkElement pageFe)) return;
+
+            if (_pageLoadedHandlers.TryGetValue(pageTag, out var oldHandler))
+            {
+                pageFe.Loaded -= oldHandler;
+            }
+
+            RoutedEventHandler handler = null;
+            handler = (s, e) =>
+            {
+                ((FrameworkElement)s).Loaded -= handler;
+                if (!_injectedPages.Add(pageTag)) return;
+                Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.InjectStarsIntoPage((FrameworkElement)s, pageTag);
+            };
+            _pageLoadedHandlers[pageTag] = handler;
+            pageFe.Loaded += handler;
         }
 
         private void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
@@ -567,6 +557,16 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             public string Text;
             public string PageTag;
+            public string PropertyPath;
+            public WeakReference<FrameworkElement> Target;
+        }
+
+        public sealed class FavouriteEntry
+        {
+            public string PropertyPath;
+            public string Header;
+            public string PageTag;
+            public string PageTitle;
             public WeakReference<FrameworkElement> Target;
         }
 
@@ -593,6 +593,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var tag = kv.Key;
                 if (tag == "Settings") continue;
                 if (kv.Value == typeof(PluginSettingsPage)) continue;
+                if (tag == "FavouritesPage") continue;
 
                 try
                 {
@@ -632,6 +633,15 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void CollectEntriesFromPage(DependencyObject root, string pageTag)
         {
+            // 卡片身份与星标注入使用同一遍历，保证收藏匹配一致
+            var entries = Ink_Canvas.Windows.SettingsViews.Helpers.SettingsTags.EnumerateCardIdentities(root, pageTag);
+            var identities = new Dictionary<FrameworkElement, string>();
+            foreach (var entry in entries)
+            {
+                identities[entry.Element] = entry.Identity;
+            }
+
+            var covered = new HashSet<FrameworkElement>();
             foreach (var node in EnumerateLogicalDescendants(root))
             {
                 string header = null;
@@ -652,13 +662,48 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 if (!string.IsNullOrWhiteSpace(header) && target != null)
                 {
+                    covered.Add(target);
+                    string propertyPath = null;
+                    identities.TryGetValue(target, out propertyPath);
+
                     _searchIndex.Add(new SearchEntry
                     {
                         Text = header.Trim(),
                         PageTag = pageTag,
+                        PropertyPath = propertyPath,
                         Target = new WeakReference<FrameworkElement>(target)
                     });
                 }
+            }
+
+            // 枚举中含、但不在逻辑树中的卡（组顶行模板卡、折叠组内子项）也要进索引，
+            // 否则收藏/深链定位不到这些行。
+            foreach (var entry in entries)
+            {
+                if (covered.Contains(entry.Element)) continue;
+                string header = null;
+                if (entry.Element is Ink_Canvas.Controls.LabeledSettingsCard lsc2)
+                {
+                    header = lsc2.Header;
+                }
+                else if (entry.Element is iNKORE.UI.WPF.Modern.Controls.SettingsCard sc2)
+                {
+                    header = sc2.Header?.ToString();
+                }
+                else if (entry.Element is iNKORE.UI.WPF.Modern.Controls.SettingsExpander se2)
+                {
+                    header = se2.Header?.ToString();
+                }
+                if (string.IsNullOrWhiteSpace(header)) continue;
+
+                covered.Add(entry.Element);
+                _searchIndex.Add(new SearchEntry
+                {
+                    Text = header.Trim(),
+                    PageTag = pageTag,
+                    PropertyPath = entry.Identity,
+                    Target = new WeakReference<FrameworkElement>(entry.Element)
+                });
             }
         }
 
@@ -712,6 +757,100 @@ namespace Ink_Canvas.Windows.SettingsViews
                         ?? _searchIndex.FirstOrDefault(e => e.Text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0);
 
             NavigateToSearchEntry(entry);
+        }
+
+        /// <summary>
+        /// 获取用户收藏的设置项（供收藏夹页展示）。
+        /// </summary>
+        public List<FavouriteEntry> GetFavouriteEntries()
+        {
+            EnsureSearchIndexBuilt();
+            var result = new List<FavouriteEntry>();
+            var stale = new System.Collections.Generic.List<string>();
+            foreach (var path in global::Ink_Canvas.Helpers.SettingsTagResolver.GetFavouritePaths())
+            {
+                var entry = _searchIndex.FirstOrDefault(e =>
+                    !string.IsNullOrEmpty(e.PropertyPath) &&
+                    string.Equals(e.PropertyPath, path, StringComparison.OrdinalIgnoreCase));
+                if (entry == null)
+                {
+                    // 身份规则演进后旧收藏可能已失配，静默清理，避免永久残留脏数据
+                    stale.Add(path);
+                    continue;
+                }
+
+                string pageTitle = FindNavigationViewItemByTag(entry.PageTag)?.Content?.ToString() ?? entry.PageTag;
+                result.Add(new FavouriteEntry
+                {
+                    PropertyPath = path,
+                    Header = entry.Text,
+                    PageTag = entry.PageTag,
+                    PageTitle = pageTitle,
+                    Target = entry.Target,
+                });
+            }
+
+            if (stale.Count > 0)
+            {
+                var favs = Helpers.SettingsManager.Settings?.FavouriteSettings;
+                if (favs != null)
+                {
+                    foreach (var p in stale) favs.RemoveAll(x => string.Equals(x, p, StringComparison.OrdinalIgnoreCase));
+                    Helpers.SettingsManager.SaveSettingsToFile();
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 跳转到收藏夹中的某个设置项所在页面并滚动到该卡片。
+        /// </summary>
+        public void NavigateToFavourite(string propertyPath)
+        {
+            if (string.IsNullOrEmpty(propertyPath)) return;
+            EnsureSearchIndexBuilt();
+            var entry = _searchIndex.FirstOrDefault(e =>
+                !string.IsNullOrEmpty(e.PropertyPath) &&
+                string.Equals(e.PropertyPath, propertyPath, StringComparison.OrdinalIgnoreCase));
+            NavigateToSearchEntry(entry);
+        }
+
+        /// <summary>
+        /// 深链跳转：定位到指定页面内某个设置项（PropertyPath 身份）并滚动到该卡片。
+        /// </summary>
+        public void NavigateToEntry(string pageTag, string propertyPath)
+        {
+            if (string.IsNullOrEmpty(propertyPath)) return;
+            EnsureSearchIndexBuilt();
+            var entry = _searchIndex.FirstOrDefault(e =>
+                !string.IsNullOrEmpty(e.PageTag) &&
+                !string.IsNullOrEmpty(e.PropertyPath) &&
+                string.Equals(e.PageTag, pageTag, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(e.PropertyPath, propertyPath, StringComparison.OrdinalIgnoreCase));
+            if (entry == null)
+            {
+                entry = _searchIndex.FirstOrDefault(e =>
+                    !string.IsNullOrEmpty(e.PropertyPath) &&
+                    string.Equals(e.PropertyPath, propertyPath, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (entry != null)
+            {
+                NavigateToSearchEntry(entry);
+                return;
+            }
+
+            // 索引未命中时兜底：至少打开目标页面
+            if (!string.IsNullOrEmpty(pageTag) && _pageTypes.ContainsKey(pageTag))
+            {
+                NavigateToPage(pageTag);
+                var navItem = FindNavigationViewItemByTag(pageTag);
+                if (navItem != null && NavigationViewControl.SelectedItem != navItem)
+                {
+                    NavigationViewControl.SelectedItem = navItem;
+                    NavigationViewControl.Header = navItem.Content;
+                }
+            }
         }
 
         private void OnControlsSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

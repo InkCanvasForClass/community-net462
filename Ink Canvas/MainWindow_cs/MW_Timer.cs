@@ -1,5 +1,7 @@
 using Ink_Canvas.Helpers;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -500,13 +502,13 @@ namespace Ink_Canvas
         private DispatcherTimer _dispatcherTimerForTime;
 
         /// <summary>
-        /// 初始化高精度时间显示定时器
+        /// 初始化时间显示定时器（1000ms；Tick 内按秒字符串去重，仅变化时刷新 UI）
         /// </summary>
         private void InitHighPrecisionTimeDisplay()
         {
             _dispatcherTimerForTime = new DispatcherTimer(DispatcherPriority.Normal)
             {
-                Interval = TimeSpan.FromMilliseconds(200)
+                Interval = TimeSpan.FromMilliseconds(1000)
             };
             _dispatcherTimerForTime.Tick += DispatcherTimerForTime_Tick;
             _dispatcherTimerForTime.Start();
@@ -756,7 +758,7 @@ namespace Ink_Canvas
 
             try
             {
-                var fullScreenWindows = _windowOverviewModel.GetFullScreenWindows();
+                var fullScreenWindows = GetFullScreenWindowsCached();
                 if (fullScreenWindows == null || fullScreenWindows.Count == 0) return false;
 
                 var foregroundHandle = ForegroundWindowInfo.GetForegroundWindowHandle();
@@ -771,9 +773,7 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
-                                string version = versionInfo.FileVersion;
-                                string prodName = versionInfo.ProductName;
+                                var (version, prodName) = GetFileVersionInfoCached(window.ProcessPath);
 
                                 if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote &&
                                     window.Handle == foregroundHandle)
@@ -850,9 +850,7 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
-                                var version = versionInfo.FileVersion;
-                                var prodName = versionInfo.ProductName;
+                                var (version, prodName) = GetFileVersionInfoCached(window.ProcessPath);
                                 if (version.StartsWith("6.") && prodName == "WhiteBoard")
                                 {
                                     return true;
@@ -894,7 +892,7 @@ namespace Ink_Canvas
 
             try
             {
-                var fullScreenWindows = _windowOverviewModel.GetFullScreenWindows();
+                var fullScreenWindows = GetFullScreenWindowsCached();
                 if (fullScreenWindows == null || fullScreenWindows.Count == 0) return false;
 
                 foreach (var window in fullScreenWindows)
@@ -907,9 +905,7 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
-                                string version = versionInfo.FileVersion;
-                                string prodName = versionInfo.ProductName;
+                                var (version, prodName) = GetFileVersionInfoCached(window.ProcessPath);
 
                                 if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
                                     return true;
@@ -953,9 +949,7 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
-                                var version = versionInfo.FileVersion;
-                                var prodName = versionInfo.ProductName;
+                                var (version, prodName) = GetFileVersionInfoCached(window.ProcessPath);
                                 if (version.StartsWith("6.") && prodName == "WhiteBoard")
                                     return true;
                             }
@@ -991,18 +985,16 @@ namespace Ink_Canvas
         {
             try
             {
-                var windowProcessName = ForegroundWindowInfo.ProcessName();
+                var (windowProcessName, foregroundProcessPath) = GetForegroundProcessCached();
 
                 if (windowProcessName == "EasiNote")
                 {
-                    var processPath = ForegroundWindowInfo.ProcessPath();
+                    var processPath = foregroundProcessPath;
                     if (!string.IsNullOrEmpty(processPath) && processPath != "Unknown")
                     {
                         try
                         {
-                            var versionInfo = FileVersionInfo.GetVersionInfo(processPath);
-                            string version = versionInfo.FileVersion;
-                            string prodName = versionInfo.ProductName;
+                            var (version, prodName) = GetFileVersionInfoCached(processPath);
 
                             if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
                                 return true;
@@ -1081,9 +1073,7 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            var versionInfo = FileVersionInfo.GetVersionInfo(foregroundWindow.ProcessPath);
-                            string version = versionInfo.FileVersion;
-                            string prodName = versionInfo.ProductName;
+                            var (version, prodName) = GetFileVersionInfoCached(foregroundWindow.ProcessPath);
 
                             if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote &&
                                 foregroundWindow.IsFullScreen)
@@ -1181,9 +1171,7 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            var versionInfo = FileVersionInfo.GetVersionInfo(foregroundWindow.ProcessPath);
-                            var version = versionInfo.FileVersion;
-                            var prodName = versionInfo.ProductName;
+                            var (version, prodName) = GetFileVersionInfoCached(foregroundWindow.ProcessPath);
                             if (version.StartsWith("6.") && prodName == "WhiteBoard")
                             {
                                 return true;
@@ -1199,6 +1187,75 @@ namespace Ink_Canvas
             }
 
             return false;
+        }
+
+        // ===== A2：自动收纳轮询降开销缓存 =====
+
+        // FileVersionInfo 按路径缓存，TTL 5 分钟（读盘成本高，进程版本极少变化）
+        private readonly ConcurrentDictionary<string, (string version, string prodName, long ticks)> _fileVersionCache
+            = new ConcurrentDictionary<string, (string, string, long)>();
+        private const long FileVersionCacheTtlMs = 5 * 60 * 1000;
+
+        // 单调毫秒时钟（net462 无 Environment.TickCount64）
+        private static long MonotonicMs() => (long)(Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency * 1000.0);
+
+        private (string version, string prodName) GetFileVersionInfoCached(string path)
+        {
+            if (string.IsNullOrEmpty(path) || path == "Unknown") return ("", "");
+
+            long now = MonotonicMs();
+            if (_fileVersionCache.TryGetValue(path, out var cached) && now - cached.ticks < FileVersionCacheTtlMs)
+                return (cached.version, cached.prodName);
+
+            try
+            {
+                var vi = FileVersionInfo.GetVersionInfo(path);
+                var value = (vi.FileVersion ?? "", vi.ProductName ?? "", now);
+                _fileVersionCache[path] = value;
+                return (value.Item1, value.Item2);
+            }
+            catch
+            {
+                return ("", "");
+            }
+        }
+
+        // 前台进程名/路径快照缓存，TTL 500ms（Process.GetProcessById + MainModule 开销大）
+        private IntPtr _fgSnapshotHandle = IntPtr.Zero;
+        private string _fgSnapshotProcessName;
+        private string _fgSnapshotProcessPath;
+        private long _fgSnapshotAtTicks;
+        private const long FgSnapshotTtlMs = 500;
+
+        private (string processName, string processPath) GetForegroundProcessCached()
+        {
+            IntPtr handle = ForegroundWindowInfo.GetForegroundWindowHandle();
+            long now = MonotonicMs();
+            if (handle == _fgSnapshotHandle && _fgSnapshotProcessName != null && now - _fgSnapshotAtTicks < FgSnapshotTtlMs)
+                return (_fgSnapshotProcessName, _fgSnapshotProcessPath);
+
+            _fgSnapshotHandle = handle;
+            _fgSnapshotProcessName = ForegroundWindowInfo.ProcessName();
+            _fgSnapshotProcessPath = ForegroundWindowInfo.ProcessPath();
+            _fgSnapshotAtTicks = now;
+            return (_fgSnapshotProcessName, _fgSnapshotProcessPath);
+        }
+
+        // 同一 tick 内全屏窗口枚举结果缓存（两个方法各枚举一次 -> 合并为一次）
+        private List<WindowInfo> _fullScreenWindowsCache;
+        private long _fullScreenWindowsCacheAt;
+        private const long FullScreenWindowsCacheTtlMs = 400;
+
+        private List<WindowInfo> GetFullScreenWindowsCached()
+        {
+            if (_windowOverviewModel == null) return null;
+            long now = MonotonicMs();
+            if (_fullScreenWindowsCache == null || now - _fullScreenWindowsCacheAt > FullScreenWindowsCacheTtlMs)
+            {
+                _fullScreenWindowsCache = _windowOverviewModel.GetFullScreenWindows();
+                _fullScreenWindowsCacheAt = now;
+            }
+            return _fullScreenWindowsCache;
         }
 
         /// <summary>
@@ -1218,6 +1275,8 @@ namespace Ink_Canvas
         {
             if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
             if (isFloatingBarChangingHideMode) return;
+            // A2：功能未启用时直接早退，避免无谓的窗口/版本/进程查询
+            if (!Settings.Automation.IsEnableAutoFold) return;
             try
             {
                 bool hasFullScreen = HasFullScreenWindowOfAutoFoldApps();

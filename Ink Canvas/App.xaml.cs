@@ -639,6 +639,17 @@ namespace Ink_Canvas
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
+        /// <summary>
+        /// 立即进行一次有效的 CPU 采样（连续采样两次，间隔 100ms 以产生增量）。
+        /// 仅在需要读取 CPU% 的故障路径（写崩溃日志）调用，避免每秒常驻采样。
+        /// </summary>
+        private static void SampleCpuUsageNow()
+        {
+            UpdateCpuUsageSnapshot();
+            try { Thread.Sleep(100); } catch { }
+            UpdateCpuUsageSnapshot();
+        }
+
         private static ulong ToUInt64(FILETIME fileTime)
         {
             return ((ulong)fileTime.dwHighDateTime << 32) | fileTime.dwLowDateTime;
@@ -760,7 +771,7 @@ namespace Ink_Canvas
         {
             try
             {
-                UpdateCpuUsageSnapshot();
+                SampleCpuUsageNow();
 
                 // 确保目录存在
                 if (!Directory.Exists(crashLogFile))
@@ -1587,8 +1598,6 @@ namespace Ink_Canvas
         /// </remarks>
         private void StartHeartbeatMonitor()
         {
-            UpdateCpuUsageSnapshot();
-
             heartbeatTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -1596,7 +1605,6 @@ namespace Ink_Canvas
             heartbeatTimer.Tick += (_, __) =>
             {
                 lastHeartbeat = DateTime.Now;
-                UpdateCpuUsageSnapshot();
             };
             heartbeatTimer.Start();
 

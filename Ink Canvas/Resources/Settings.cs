@@ -68,6 +68,9 @@ namespace Ink_Canvas
 
         [JsonProperty("miniWhiteboard")]
         public MiniWhiteboardSettings MiniWhiteboard { get; set; } = new MiniWhiteboardSettings();
+
+        [JsonProperty("favouriteSettings")]
+        public List<string> FavouriteSettings { get; set; } = new List<string>();
     }
 
     public class PerformanceSettings
@@ -204,24 +207,32 @@ namespace Ink_Canvas
     public class Security
     {
         [JsonProperty("passwordEnabled")]
+        [SettingsTag(SettingsTag.Secret)]
         public bool PasswordEnabled { get; set; } = false;
         [JsonProperty("passwordSalt")]
+        [SettingsTag(SettingsTag.Secret)]
         public string PasswordSalt { get; set; } = "";
         [JsonProperty("passwordHash")]
+        [SettingsTag(SettingsTag.Secret)]
         public string PasswordHash { get; set; } = "";
         [JsonProperty("totpEnabled")]
         public bool TotpEnabled { get; set; } = false;
         [JsonProperty("totpSecret")]
+        [SettingsTag(SettingsTag.Secret)]
         public string TotpSecret { get; set; } = "";
         [JsonProperty("totpOnlyMode")]
         public bool TotpOnlyMode { get; set; } = false;
         [JsonProperty("requirePasswordOnExit")]
+        [SettingsTag(SettingsTag.Secret)]
         public bool RequirePasswordOnExit { get; set; } = false;
         [JsonProperty("requirePasswordOnEnterSettings")]
+        [SettingsTag(SettingsTag.Secret)]
         public bool RequirePasswordOnEnterSettings { get; set; } = false;
         [JsonProperty("requirePasswordOnResetConfig")]
+        [SettingsTag(SettingsTag.Secret)]
         public bool RequirePasswordOnResetConfig { get; set; } = false;
         [JsonProperty("requirePasswordOnModifyOrClearNameList")]
+        [SettingsTag(SettingsTag.Secret)]
         public bool RequirePasswordOnModifyOrClearNameList { get; set; } = false;
         [JsonProperty("enableProcessProtection")]
         public bool EnableProcessProtection { get; set; } = true;
@@ -229,6 +240,7 @@ namespace Ink_Canvas
         [JsonProperty("usbVerificationEnabled")]
         public bool UsbVerificationEnabled { get; set; } = false;
         [JsonProperty("usbAuthorizedSns")]
+        [SettingsTag(SettingsTag.Secret)]
         public string UsbAuthorizedSns { get; set; } = "";
     }
 
@@ -458,8 +470,10 @@ namespace Ink_Canvas
         [JsonProperty("crashAction")]
         public int CrashAction { get; set; } = 2;
         [JsonProperty("telemetryUploadLevel")]
+        [SettingsTag(SettingsTag.Secret)]
         public TelemetryUploadLevel TelemetryUploadLevel { get; set; } = TelemetryUploadLevel.None;
         [JsonProperty("hasAcceptedTelemetryPrivacy")]
+        [SettingsTag(SettingsTag.Secret)]
         public bool HasAcceptedTelemetryPrivacy { get; set; } = false;
         [JsonProperty("hasShownOobe")]
         public bool HasShownOobe { get; set; } = false;
@@ -1025,21 +1039,26 @@ namespace Ink_Canvas
         public bool IsPPTComDebugProbeEnabled { get; set; } = false;
 
         [JsonProperty("isEnableFullScreenHelper")]
+        [SettingsTag(SettingsTag.Experimental)]
         public bool IsEnableFullScreenHelper { get; set; }
 
         [JsonProperty("isEnableEdgeGestureUtil")]
+        [SettingsTag(SettingsTag.Experimental)]
         public bool IsEnableEdgeGestureUtil { get; set; }
 
         [JsonProperty("edgeGestureUtilOnlyAffectBlackboardMode")]
         public bool EdgeGestureUtilOnlyAffectBlackboardMode { get; set; }
 
         [JsonProperty("isEnableForceFullScreen")]
+        [SettingsTag(SettingsTag.Experimental)]
         public bool IsEnableForceFullScreen { get; set; }
 
         [JsonProperty("isEnableResolutionChangeDetection")]
+        [SettingsTag(SettingsTag.Experimental)]
         public bool IsEnableResolutionChangeDetection { get; set; }
 
         [JsonProperty("isEnableDPIChangeDetection")]
+        [SettingsTag(SettingsTag.Experimental)]
         public bool IsEnableDPIChangeDetection { get; set; }
 
         [JsonProperty("isSecondConfirmWhenShutdownApp")]
@@ -1219,15 +1238,18 @@ namespace Ink_Canvas
     public class DlassSettings
     {
         [JsonProperty("userToken")]
+        [SettingsTag(SettingsTag.Secret)]
         public string UserToken { get; set; } = string.Empty;
 
         [JsonProperty("savedTokens")]
+        [SettingsTag(SettingsTag.Secret)]
         public List<string> SavedTokens { get; set; } = new List<string>();
 
         [JsonProperty("selectedClassName")]
         public string SelectedClassName { get; set; } = string.Empty;
 
         [JsonProperty("apiBaseUrl")]
+        [SettingsTag(SettingsTag.Secret)]
         public string ApiBaseUrl { get; set; } = "https://dlass.tech";
 
         [JsonProperty("isAutoUploadNotes")]
@@ -1242,15 +1264,19 @@ namespace Ink_Canvas
         }
 
         [JsonProperty("webDavUrl")]
+        [SettingsTag(SettingsTag.Secret)]
         public string WebDavUrl { get; set; } = string.Empty;
 
         [JsonProperty("webDavUsername")]
+        [SettingsTag(SettingsTag.Secret)]
         public string WebDavUsername { get; set; } = string.Empty;
 
         [JsonProperty("webDavPassword")]
+        [SettingsTag(SettingsTag.Secret)]
         public string WebDavPassword { get; set; } = string.Empty;
 
         [JsonProperty("webDavRootDirectory")]
+        [SettingsTag(SettingsTag.Secret)]
         public string WebDavRootDirectory { get; set; } = string.Empty;
     }
 
