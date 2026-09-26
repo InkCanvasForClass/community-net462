@@ -45,6 +45,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             _pageTypes = new Dictionary<string, Type>
             {
                 { "HomePage", typeof(HomePage) },
+                { "HomeDashboardPage", typeof(HomeDashboardPage) },
                 { "StartupPage", typeof(StartupPage) },
                 { "UpdatePage", typeof(UpdatePage) },
                 { "HotkeyPage", typeof(HotkeyPage) },
@@ -82,7 +83,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             // 默认选中首页
             if (NavigationViewControl.MenuItems.Count > 0)
             {
-                NavigateToPage("HomePage");
+                NavigateToPage("HomeDashboardPage");
                 NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
                 NavigationViewControl.Header = NavStrings.Nav_Home;
             }
@@ -96,7 +97,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    NavigateToPage("HomePage");
+                    NavigateToPage("HomeDashboardPage");
                     NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
                     NavigationViewControl.Header = NavStrings.Nav_Home;
 

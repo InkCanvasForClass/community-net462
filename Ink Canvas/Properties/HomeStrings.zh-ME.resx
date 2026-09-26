@@ -120,4 +120,16 @@
   <data name="Splash_Starting" xml:space="preserve">
     <value>正在加载 Ink Canvas，稍等一下下...</value>
   </data>
+  <data name="Home_QuickAccess" xml:space="preserve">
+    <value>快速访问</value>
+  </data>
+  <data name="Home_ViewAll" xml:space="preserve">
+    <value>查看全部</value>
+  </data>
+  <data name="Home_TryNewUI" xml:space="preserve">
+    <value>体验新版</value>
+  </data>
+  <data name="Home_BackToOldUI" xml:space="preserve">
+    <value>返回旧版</value>
+  </data>
 </root>

@@ -120,4 +120,16 @@
   <data name="Splash_Starting" xml:space="preserve">
     <value>Starting Ink Canvas...</value>
   </data>
+  <data name="Home_QuickAccess" xml:space="preserve">
+    <value>Quick access</value>
+  </data>
+  <data name="Home_ViewAll" xml:space="preserve">
+    <value>View all</value>
+  </data>
+  <data name="Home_TryNewUI" xml:space="preserve">
+    <value>Try new UI</value>
+  </data>
+  <data name="Home_BackToOldUI" xml:space="preserve">
+    <value>Back to old UI</value>
+  </data>
 </root>

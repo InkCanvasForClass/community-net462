@@ -8,6 +8,7 @@
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
     xmlns:c="clr-namespace:Ink_Canvas.Converter"
+    xmlns:helpers="clr-namespace:Ink_Canvas.Windows.SettingsViews.Helpers"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     mc:Ignorable="d"
     Title="{x:Static props:NavStrings.Nav_LinkageControls}">
@@ -39,7 +40,7 @@
 
                     <ui:SettingsExpander Header="{x:Static props:PPTStrings.Position_Left}" d:Visibility="Visible" d:IsExpanded="True"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            IsExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
+                            helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidLeft}"/>
                         </ui:SettingsExpander.HeaderIcon>
@@ -66,7 +67,7 @@
 
                     <ui:SettingsExpander Header="{x:Static props:PPTStrings.Position_Right}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            IsExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
+                            helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidRight}"/>
                         </ui:SettingsExpander.HeaderIcon>
@@ -93,7 +94,7 @@
 
                     <ui:SettingsExpander Header="{x:Static props:PPTStrings.Position_LeftBottom}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            IsExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
+                            helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidDown}"/>
                         </ui:SettingsExpander.HeaderIcon>
@@ -120,7 +121,7 @@
 
                     <ui:SettingsExpander Header="{x:Static props:PPTStrings.Position_RightBottom}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            IsExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
+                            helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidDown}"/>
                         </ui:SettingsExpander.HeaderIcon>

@@ -9,6 +9,7 @@
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
       xmlns:c="clr-namespace:Ink_Canvas.Converter"
+      xmlns:helpers="clr-namespace:Ink_Canvas.Windows.SettingsViews.Helpers"
       mc:Ignorable="d"
       Title="{x:Static props:CanvasStrings.InkRecog_Title}">
     <ScrollViewer PanningMode="VerticalFirst">
@@ -93,7 +94,7 @@
 
                     <ui:SettingsExpander Header="{x:Static props:CanvasStrings.InkRecog_ShapeCorrection}"
                             Visibility="{Binding IsOn, ElementName=CardEnableInkToShape, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            IsExpanded="{Binding IsOn, ElementName=CardEnableInkToShape, Mode=OneWay}"
+                            helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardEnableInkToShape, Mode=OneWay}"
                             d:Visibility="Visible" d:IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />

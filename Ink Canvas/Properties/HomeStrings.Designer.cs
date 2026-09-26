@@ -92,6 +92,14 @@ namespace Ink_Canvas.Properties
 
         public static string Home_FriendlyLinks => ResourceManager.GetString(nameof(Home_FriendlyLinks), _resourceCulture);
 
+        public static string Home_QuickAccess => ResourceManager.GetString(nameof(Home_QuickAccess), _resourceCulture);
+
+        public static string Home_ViewAll => ResourceManager.GetString(nameof(Home_ViewAll), _resourceCulture);
+
+        public static string Home_TryNewUI => ResourceManager.GetString(nameof(Home_TryNewUI), _resourceCulture);
+
+        public static string Home_BackToOldUI => ResourceManager.GetString(nameof(Home_BackToOldUI), _resourceCulture);
+
         public static string Splash_Starting => ResourceManager.GetString(nameof(Splash_Starting), _resourceCulture);
     }
 }
