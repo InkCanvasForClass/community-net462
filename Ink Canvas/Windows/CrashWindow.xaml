@@ -91,7 +91,7 @@
                         VerticalAlignment="Top"
                         CornerRadius="10"
                         Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Warning}"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Warning_20_Regular}"
                                  FontSize="24"
                                  HorizontalAlignment="Center"
                                  VerticalAlignment="Center" />
@@ -145,7 +145,7 @@
                         Margin="0,0,8,0"
                         Click="ButtonCopy_Click">
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Copy}" FontSize="12" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Copy_20_Regular}" FontSize="12" />
                         <TextBlock Text="{x:Static props:CrashStrings.CrashWindowCopy}" />
                     </ikw:SimpleStackPanel>
                 </Button>
@@ -157,7 +157,7 @@
                         Style="{DynamicResource AccentButtonStyle}"
                         Click="ButtonClose_Click">
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Accept}" FontSize="12" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Checkmark_20_Regular}" FontSize="12" />
                         <TextBlock Text="{x:Static props:CrashStrings.CrashWindowClose}" />
                     </ikw:SimpleStackPanel>
                 </Button>

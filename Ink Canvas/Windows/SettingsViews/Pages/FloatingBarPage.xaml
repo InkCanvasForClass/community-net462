@@ -36,19 +36,19 @@
 
                     <controls:LabeledSettingsCard x:Name="CardUseLegacyFloatingBarUI"
                             Header="{x:Static props:ThemeStrings.Theme_UseLegacyFloatingBarUI}"
-                            Icon="{x:Static ui:SegoeFluentIcons.History}"
+                            Icon="{x:Static ui:FluentSystemIcons.History_20_Regular}"
                             SwitchName="ToggleSwitchUseLegacyFloatingBarUI"
                             Toggled="ToggleSwitchUseLegacyFloatingBarUI_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardShowPenColorOnFloatingBarIcon"
                             Header="{x:Static props:ThemeStrings.Theme_ShowPenColorOnFloatingBarIcon}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Draw}"
+                            Icon="{x:Static ui:FluentSystemIcons.DrawShape_20_Regular}"
                             SwitchName="ToggleSwitchShowPenColorOnFloatingBarIcon"
                             Toggled="ToggleSwitchShowPenColorOnFloatingBarIcon_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardIsColorfulViewboxFloatingBar"
                             Header="彩色浮动栏"
-                            Icon="{x:Static ui:SegoeFluentIcons.Color}"
+                            Icon="{x:Static ui:FluentSystemIcons.Color_20_Regular}"
                             SwitchName="ToggleSwitchIsColorfulViewboxFloatingBar"
                             Toggled="ToggleSwitchIsColorfulViewboxFloatingBar_Toggled" />
 
@@ -57,7 +57,7 @@
                             Description="{x:Static props:ThemeStrings.Theme_CompactFloatingBarHint}"
                             IsExpanded="False">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FitPage}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PageFit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchCompactFloatingBar"
                                 Toggled="ToggleSwitchCompactFloatingBar_Toggled" />
@@ -77,7 +77,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarIcon}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Photo}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Image_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxFloatingBarImg"
                                   SelectedIndex="0"
@@ -136,7 +136,7 @@
                             IsExpanded="{Binding IsOn, ElementName=ToggleSwitchAutoFlipWhenSpaceInsufficient, Mode=OneWay}"
                             Description="拖动工具栏到屏幕边缘空间不足时自动翻转方向，更改后建议重启应用">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Switch}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSwap_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchAutoFlipWhenSpaceInsufficient"
                                 Toggled="AutoFlipWhenSpaceInsufficientToggleSwitch_Toggled" />
@@ -156,7 +156,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarScale}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="ViewboxFloatingBarActualScaleText"
@@ -177,7 +177,7 @@
                     <ui:SettingsExpander Header="{x:Static props:ThemeStrings.Theme_FloatingBarOpacity}"
                                          IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EaseOfAccess}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Accessibility_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarOpacity}">
@@ -194,7 +194,7 @@
                             <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarOpacityInPPT}"
                                     Description="{x:Static props:ThemeStrings.Theme_FloatingBarOpacityInPPTHint}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                                 <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock x:Name="ViewboxFloatingBarOpacityInPPTText"
@@ -212,7 +212,7 @@
                     <ui:SettingsExpander Header="{x:Static props:ThemeStrings.Theme_FloatingBarMenuOpacity}"
                                          IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.PreviewLink}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PreviewLink_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarMenuOpacity}">
@@ -228,7 +228,7 @@
                             </ui:SettingsCard>
                             <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_FloatingBarMenuOpacityInPPT}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                                 <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock x:Name="FloatingBarMenuOpacityInPPTText"

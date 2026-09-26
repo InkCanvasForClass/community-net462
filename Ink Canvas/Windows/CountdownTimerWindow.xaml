@@ -116,7 +116,7 @@
                                     <DropShadowEffect Direction="0" ShadowDepth="0" Opacity="0.1" BlurRadius="3"/>
                                 </Border.Effect>
                                 <Viewbox Margin="5.5">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Save}" Foreground="White"/>
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}" Foreground="White"/>
                                 </Viewbox>
                             </Border>
                         </Grid>
@@ -181,7 +181,7 @@
                         <Grid>
                             <Border x:Name="BtnStart" MouseUp="BtnStart_MouseUp" Background="{DynamicResource TimerWindowPrimaryButtonBackground}" Height="20" Width="20" CornerRadius="100">
                                 <Viewbox Margin="5">
-                                    <ui:FontIcon Name="FontIconStart" Icon="{x:Static ui:SegoeFluentIcons.Play}" Foreground="White"/>
+                                    <ui:FontIcon Name="FontIconStart" Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}" Foreground="White"/>
                                 </Viewbox>
                             </Border>
                             <Border x:Name="BtnStartCover" Visibility="Collapsed" Background="#BFBFBF" Height="20" Width="20" CornerRadius="100">
@@ -196,12 +196,12 @@
                                     <DropShadowEffect Direction="0" ShadowDepth="0" Opacity="0.15" BlurRadius="3"/>
                                 </Border.Effect>
                                 <Viewbox Margin="5.5">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Refresh}" Foreground="{DynamicResource TimerWindowButtonForeground}"/>
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowClockwise_20_Regular}" Foreground="{DynamicResource TimerWindowButtonForeground}"/>
                                 </Viewbox>
                             </Border>
                             <Border x:Name="BtnResetCover" Background="#F3F5F9" Height="20" Width="20" CornerRadius="100">
                                 <Viewbox Margin="5.5">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Refresh}" Foreground="#9D9D9E"/>
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowClockwise_20_Regular}" Foreground="#9D9D9E"/>
                                 </Viewbox>
                             </Border>
                         </Grid>
@@ -217,7 +217,7 @@
                             <DropShadowEffect Direction="0" ShadowDepth="0" Opacity="0.1" BlurRadius="3"/>
                         </Border.Effect>
                         <Viewbox Margin="5.5">
-                            <ui:FontIcon Name="FontIconMinimal" Icon="{x:Static ui:SegoeFluentIcons.HideBcc}" Foreground="{DynamicResource TimerWindowButtonForeground}"/>
+                            <ui:FontIcon Name="FontIconMinimal" Icon="{x:Static ui:FluentSystemIcons.ChevronDown_20_Regular}" Foreground="{DynamicResource TimerWindowButtonForeground}"/>
                         </Viewbox>
                     </Border>
                     <Border x:Name="BtnFullscreen" MouseUp="BtnFullscreen_MouseUp" HorizontalAlignment="Right" VerticalAlignment="Bottom"
@@ -227,7 +227,7 @@
                             <DropShadowEffect Direction="0" ShadowDepth="0" Opacity="0.1" BlurRadius="3"/>
                         </Border.Effect>
                         <Viewbox Margin="5.5">
-                            <ui:FontIcon Name="FontIconFullscreen" Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" Foreground="{DynamicResource TimerWindowButtonForeground}"/>
+                            <ui:FontIcon Name="FontIconFullscreen" Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}" Foreground="{DynamicResource TimerWindowButtonForeground}"/>
                         </Viewbox>
                     </Border>
                     <Border x:Name="BtnClose" MouseUp="BtnClose_MouseUp" HorizontalAlignment="Right" VerticalAlignment="Bottom"
@@ -237,7 +237,7 @@
                             <DropShadowEffect Direction="0" ShadowDepth="0" Opacity="0.1" BlurRadius="3"/>
                         </Border.Effect>
                         <Viewbox Margin="5.5">
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Clear}"  Foreground="White"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}"  Foreground="White"/>
                         </Viewbox>
                     </Border>
                 </ikw:SimpleStackPanel>

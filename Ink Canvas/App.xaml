@@ -8,6 +8,10 @@
 >
     <Application.Resources>
         <ResourceDictionary>
+            <!--  FluentSystemIcons 字形内边距比 Segoe 大，直接放大 FontSize 会让字形溢出图标槽被裁；
+                  用 RenderTransform 以中心缩放可在不改变布局、不裁切的前提下放大图标  -->
+            <ScaleTransform x:Key="NavIconScale" ScaleX="1.25" ScaleY="1.25"/>
+            <ScaleTransform x:Key="HeaderIconScale" ScaleX="1.3" ScaleY="1.3"/>
             <ContextMenu Opened="SysTrayMenu_Opened" Closed="SysTrayMenu_Closed" x:Shared="false" x:Key="SysTrayMenu" Padding="6" ui:ThemeManager.RequestedTheme="Light">
                 <MenuItem IsCheckable="True" IsChecked="False" Checked="HideICCMainWindowTrayIconMenuItem_Checked" Unchecked="HideICCMainWindowTrayIconMenuItem_UnChecked" Name="HideICCMainWindowTrayIconMenuItem">
                     <MenuItem.Header>

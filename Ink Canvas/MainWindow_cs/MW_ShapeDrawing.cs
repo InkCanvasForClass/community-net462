@@ -162,9 +162,9 @@ namespace Ink_Canvas
             ToggleSwitchDrawShapeBorderAutoHide.IsOn = !ToggleSwitchDrawShapeBorderAutoHide.IsOn;
 
             if (ToggleSwitchDrawShapeBorderAutoHide.IsOn)
-                ((FontIcon)sender).Icon = SegoeFluentIcons.Pin;
+                ((FontIcon)sender).Icon = FluentSystemIcons.Pin_20_Regular;
             else
-                ((FontIcon)sender).Icon = SegoeFluentIcons.Unpin;
+                ((FontIcon)sender).Icon = FluentSystemIcons.PinOff_20_Regular;
         }
 
         /// <summary>

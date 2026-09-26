@@ -33,7 +33,7 @@
                 <ui:SettingsCard Header="{x:Static props:CloudStorageStrings.CloudStorage_UploadDelay}"
                                  Description="{x:Static props:CloudStorageStrings.CloudStorage_UploadDelayDesc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.QuietHours}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WeatherMoon_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <TextBox x:Name="TxtUniversalUploadDelayMinutes"
@@ -49,7 +49,7 @@
                                      Description="{x:Static props:CloudStorageStrings.CloudStorage_UploadProvidersDesc}"
                                      IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cloud}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Cloud_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsExpander.HeaderIcon>
                     <TextBlock Text="" />
                     <ui:SettingsExpander.Items>
@@ -84,7 +84,7 @@
                                      Description="{x:Static props:CloudStorageStrings.CloudStorage_UserTokenDesc}"
                                      IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.People}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsExpander.HeaderIcon>
                     <TextBlock x:Name="TxtTokenStatus"
                                Text="{x:Static props:CloudStorageStrings.CloudStorage_TokenNotSet}"
@@ -124,7 +124,7 @@
                 <ui:SettingsCard Header="{x:Static props:CloudStorageStrings.CloudStorage_ConnectionStatus}"
                                  Description="{x:Static props:CloudStorageStrings.CloudStorage_ConnectionStatusDesc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock x:Name="TxtConnectionStatus"
@@ -140,7 +140,7 @@
                 <ui:SettingsCard Header="{x:Static props:CloudStorageStrings.CloudStorage_ClassSelection}"
                                  Description="{x:Static props:CloudStorageStrings.CloudStorage_ClassSelectionDesc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.People}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ComboBox x:Name="CmbClassSelection"
                               IsEditable="False"
@@ -151,7 +151,7 @@
                 <controls:LabeledSettingsCard x:Name="ToggleSwitchAutoUploadNotes"
                         Header="{x:Static props:CloudStorageStrings.CloudStorage_AutoUploadNotes}"
                         Description="{x:Static props:CloudStorageStrings.CloudStorage_AutoUploadNotesDesc}"
-                        Icon="{x:Static ui:SegoeFluentIcons.Upload}"
+                        Icon="{x:Static ui:FluentSystemIcons.ArrowUpload_20_Regular}"
                         Toggled="ToggleSwitchAutoUploadNotes_Toggled" />
 
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
@@ -161,7 +161,7 @@
                                      Description="{x:Static props:CloudStorageStrings.CloudStorage_WebDavSettingsDesc}"
                                      IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Folder}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Folder_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsExpander.HeaderIcon>
                     <Border Background="#07aef0dc" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
                         <TextBlock Text="Beta" FontSize="10" FontWeight="SemiBold" Foreground="White" />

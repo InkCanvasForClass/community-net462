@@ -66,20 +66,20 @@ namespace Ink_Canvas.Controls
 
         private FontIconData GetIcon(NotificationMessage message)
         {
-            if (message?.Level >= NotificationMessageLevel.High) return SegoeFluentIcons.Warning;
+            if (message?.Level >= NotificationMessageLevel.High) return FluentSystemIcons.Warning_20_Regular;
 
             switch (message?.Type)
             {
                 case NotificationMessageType.Urgent:
-                    return SegoeFluentIcons.Warning;
+                    return FluentSystemIcons.Warning_20_Regular;
                 case NotificationMessageType.Important:
-                    return SegoeFluentIcons.Important;
+                    return FluentSystemIcons.Important_20_Regular;
                 case NotificationMessageType.Update:
-                    return SegoeFluentIcons.Sync;
+                    return FluentSystemIcons.ArrowSync_20_Regular;
                 case NotificationMessageType.Reminder:
-                    return SegoeFluentIcons.Stopwatch;
+                    return FluentSystemIcons.Timer_20_Regular;
                 default:
-                    return SegoeFluentIcons.Info;
+                    return FluentSystemIcons.Info_20_Regular;
             }
         }
 

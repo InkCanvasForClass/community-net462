@@ -77,7 +77,7 @@
                 <Border x:Name="PenBtn" Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="PenBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.Board_Pen}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 
@@ -93,7 +93,7 @@
                 <Border x:Name="EraserBtn" Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="EraserBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.Board_Eraser}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Eraser_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 
@@ -104,7 +104,7 @@
                 <Border x:Name="UndoBtn" Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="UndoBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.Board_Undo}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Undo}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowUndo_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 
@@ -112,7 +112,7 @@
                 <Border x:Name="ClearBtn" Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="ClearBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.MiniWhiteboard_Clear}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Delete}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Delete_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 
@@ -123,7 +123,7 @@
                 <Border Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="PrevPageBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.Board_PreviousPage}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ChevronLeft_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 
@@ -137,7 +137,7 @@
                 <Border Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="NextPageBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.Board_NextPage}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ChevronRight_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 
@@ -145,7 +145,7 @@
                 <Border Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="AddPageBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.Board_NewPage}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Add}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 
@@ -156,7 +156,7 @@
                 <Border Style="{StaticResource MiniToolBtn}"
                         MouseLeftButtonUp="FoldBtn_Click"
                         ToolTip="{x:Static fb:FloatingBarStrings.FloatingBar_Hide}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronDown}" FontSize="14"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ChevronDown_20_Regular}" FontSize="14"
                                  Foreground="{DynamicResource IconForeground}"/>
                 </Border>
 

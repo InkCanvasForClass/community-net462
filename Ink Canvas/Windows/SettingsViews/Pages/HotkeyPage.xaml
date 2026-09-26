@@ -43,7 +43,7 @@
                     <controls:LabeledSettingsCard x:Name="CardEnableHotkeysInMouseMode"
                             Header="{x:Static props:HotkeyStrings.Hotkey_EnableHotkeysInMouseMode}"
                             Description="{x:Static props:HotkeyStrings.Hotkey_EnableHotkeysInMouseModeHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.KeyboardStandard}"
+                            Icon="{x:Static ui:FluentSystemIcons.Keyboard_20_Regular}"
                             SwitchName="ToggleSwitchEnableHotkeysInMouseMode"
                             Toggled="ToggleSwitchEnableHotkeysInMouseMode_Toggled" />
 

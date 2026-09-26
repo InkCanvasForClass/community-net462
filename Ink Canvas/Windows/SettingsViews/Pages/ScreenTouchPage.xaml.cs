@@ -60,12 +60,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 ToggleSwitchEraserBindTouchMultiplier.IsOn = settings.Advanced.EraserBindTouchMultiplier;
 
                 // Bounds width
-            NibModeBoundsWidthSlider.Value = settings.Advanced.NibModeBoundsWidth;
-            FingerModeBoundsWidthSlider.Value = settings.Advanced.FingerModeBoundsWidth;
-            NibModeThresholdSlider.Value = settings.Advanced.NibModeBoundsWidthThresholdValue;
-            FingerModeThresholdSlider.Value = settings.Advanced.FingerModeBoundsWidthThresholdValue;
-            NibModeEraserSizeSlider.Value = settings.Advanced.NibModeBoundsWidthEraserSize;
-            FingerModeEraserSizeSlider.Value = settings.Advanced.FingerModeBoundsWidthEraserSize;
+                NibModeBoundsWidthSlider.Value = settings.Advanced.NibModeBoundsWidth;
+                FingerModeBoundsWidthSlider.Value = settings.Advanced.FingerModeBoundsWidth;
+                NibModeThresholdSlider.Value = settings.Advanced.NibModeBoundsWidthThresholdValue;
+                FingerModeThresholdSlider.Value = settings.Advanced.FingerModeBoundsWidthThresholdValue;
+                NibModeEraserSizeSlider.Value = settings.Advanced.NibModeBoundsWidthEraserSize;
+                FingerModeEraserSizeSlider.Value = settings.Advanced.FingerModeBoundsWidthEraserSize;
                 ToggleSwitchIsQuadIR.IsOn = settings.Advanced.IsQuadIR;
 
                 // Auto-calibrate defaults

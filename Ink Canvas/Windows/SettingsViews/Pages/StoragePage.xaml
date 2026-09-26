@@ -146,7 +146,7 @@
                                      Description="{x:Static props:StorageStrings.Storage_Core_Desc}"
                                      IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsExpander.HeaderIcon>
                     <TextBlock x:Name="CoreSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <ui:SettingsExpander.Items>
@@ -159,7 +159,7 @@
                                  Header="{x:Static props:StorageStrings.Storage_Logs_Header}"
                                  Description="{x:Static props:StorageStrings.Storage_Logs_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.OpenFile}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DocumentArrowUp_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock x:Name="LogsSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -172,7 +172,7 @@
                                  Header="{x:Static props:StorageStrings.Storage_Legend_Ink}"
                                  Description="{x:Static props:StorageStrings.Storage_Ink_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock x:Name="InkSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -185,7 +185,7 @@
                                  Header="{x:Static props:StorageStrings.Storage_Legend_Backups}"
                                  Description="{x:Static props:StorageStrings.Storage_Backups_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cloud}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Cloud_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock x:Name="BackupsSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -199,7 +199,7 @@
                                      Description="{x:Static props:StorageStrings.Storage_Custom_Desc}"
                                      IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Photo}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Image_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsExpander.HeaderIcon>
                     <TextBlock x:Name="CustomSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <ui:SettingsExpander.Items>
@@ -213,7 +213,7 @@
                                      Description="{x:Static props:StorageStrings.Storage_Plugins_Desc}"
                                      IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Puzzle}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PuzzlePiece_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsExpander.HeaderIcon>
                     <TextBlock x:Name="PluginsSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <ui:SettingsExpander.Items>
@@ -226,7 +226,7 @@
                                  Header="{x:Static props:StorageStrings.Storage_Legend_Update}"
                                  Description="{x:Static props:StorageStrings.Storage_Update_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock x:Name="UpdateSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -239,7 +239,7 @@
                                  Header="{x:Static props:StorageStrings.Storage_Legend_Other}"
                                  Description="{x:Static props:StorageStrings.Storage_Other_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.More}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.MoreHorizontal_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <TextBlock x:Name="OtherSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </ui:SettingsCard>
@@ -249,32 +249,32 @@
 
                 <controls:LabeledSettingsCard x:Name="CardSaveScreenshotsInDateFolders"
                     Header="{x:Static props:StorageStrings.Storage_ScreenshotsByDateFolder}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Folder}"
+                    Icon="{x:Static ui:FluentSystemIcons.Folder_20_Regular}"
                     Toggled="ToggleSwitchSaveScreenshotsInDateFolders_Toggled"/>
 
                 <controls:LabeledSettingsCard x:Name="CardAutoSaveStrokesAtScreenshot"
                     Header="{x:Static props:StorageStrings.Storage_AutoSaveInkOnScreenshot}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                     Toggled="ToggleSwitchAutoSaveStrokesAtScreenshot_Toggled"/>
 
                 <controls:LabeledSettingsCard x:Name="CardAutoSaveStrokesAtClear"
                     Header="{x:Static props:StorageStrings.Storage_AutoScreenshotOnClear}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                     Toggled="ToggleSwitchAutoSaveStrokesAtClear_Toggled"/>
 
                 <controls:LabeledSettingsCard x:Name="CardSaveStrokesAsXML"
                     Header="{x:Static props:StorageStrings.Storage_SaveAsXml}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                     Toggled="ToggleSwitchSaveStrokesAsXML_Toggled"/>
 
                 <controls:LabeledSettingsCard x:Name="CardEnableAutoSaveStrokes"
                     Header="{x:Static props:StorageStrings.Storage_AutoSaveInk}"
                     Description="{x:Static props:CanvasStrings.CanvasAndInkPanel_Hint_9}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                     Toggled="ToggleSwitchEnableAutoSaveStrokes_Toggled"/>
 
                 <ui:SettingsCard Header="{x:Static props:StorageStrings.Storage_AutoSaveInterval}">
-                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.QuietHours}"/></ui:SettingsCard.HeaderIcon>
+                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WeatherMoon_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/></ui:SettingsCard.HeaderIcon>
                     <ComboBox x:Name="ComboBoxAutoSaveStrokesInterval" SelectionChanged="ComboBoxAutoSaveStrokesInterval_SelectionChanged">
                         <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_AutoSaveInterval_1Min}" Tag="1"/>
                         <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_AutoSaveInterval_3Min}" Tag="3"/>
@@ -286,34 +286,34 @@
 
                 <controls:LabeledSettingsCard x:Name="CardAutoDelSavedFiles"
                     Header="{x:Static props:StorageStrings.Storage_AutoDeleteTitle}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Delete}"
+                    Icon="{x:Static ui:FluentSystemIcons.Delete_20_Regular}"
                     Toggled="ToggleSwitchAutoDelSavedFiles_Toggled"/>
 
                 <ui:SettingsCard Header="{x:Static props:AutomationStrings.Storage_AutoDeleteDaysThreshold}">
-                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Calendar}"/></ui:SettingsCard.HeaderIcon>
+                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.CalendarLtr_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/></ui:SettingsCard.HeaderIcon>
                     <ComboBox x:Name="ComboBoxAutoDelSavedFilesDaysThreshold" SelectionChanged="ComboBoxAutoDelSavedFilesDaysThreshold_SelectionChanged">
                         <ComboBoxItem Content="7"/><ComboBoxItem Content="14"/><ComboBoxItem Content="30"/><ComboBoxItem Content="60"/><ComboBoxItem Content="90"/>
                     </ComboBox>
                 </ui:SettingsCard>
 
                 <ui:SettingsCard Header="{x:Static props:AutomationStrings.Storage_MinAutomationStrokes}">
-                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Calculator}"/></ui:SettingsCard.HeaderIcon>
+                    <ui:SettingsCard.HeaderIcon><ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Calculator_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/></ui:SettingsCard.HeaderIcon>
                     <Slider x:Name="SideControlMinimumAutomationSlider" Minimum="1" Maximum="50" Width="200" ValueChanged="SideControlMinimumAutomationSlider_ValueChanged"/>
                 </ui:SettingsCard>
 
                 <controls:LabeledSettingsCard x:Name="CardSaveFullPageStrokes"
                     Header="{x:Static props:StorageStrings.Storage_SaveFullPageStrokes}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                    Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                     Toggled="ToggleSwitchSaveFullPageStrokes_Toggled"/>
 
                 <controls:LabeledSettingsCard x:Name="CardUseCustomSaveFileName"
                     Header="{x:Static props:AutomationStrings.Automation_UseCustomSaveFileName_Header}"
                     Description="{x:Static props:AutomationStrings.Automation_UseCustomSaveFileName_Desc}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                    Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}"
                     Toggled="ToggleSwitchUseCustomSaveFileName_Toggled"/>
 
                 <ui:SettingsExpander x:Name="CardSaveFileNamePreset" Header="{x:Static props:AutomationStrings.Automation_SaveFileNameFormat}" IsExpanded="True">
-                    <ui:SettingsExpander.HeaderIcon><ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/></ui:SettingsExpander.HeaderIcon>
+                    <ui:SettingsExpander.HeaderIcon><ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/></ui:SettingsExpander.HeaderIcon>
                     <ComboBox x:Name="ComboBoxSaveFileNamePreset" SelectionChanged="ComboBoxSaveFileNamePreset_SelectionChanged">
                         <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_Timestamp}" Tag="{}{datetime}"/>
                         <ComboBoxItem Content="{x:Static props:AutomationStrings.Automation_SaveFileName_Date}" Tag="{}{date}"/>

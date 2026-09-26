@@ -40,21 +40,21 @@
                         <ui:SettingsCard Header="{x:Static props:BtnStrings.Restart}" Description="{x:Static props:HomeStrings.Home_RestartApp}"
                         IsClickEnabled="True" Click="BtnRestart_Click" Grid.Column="0" Margin="0,0,4,0">
                             <ui:SettingsCard.HeaderIcon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Refresh}" />
+                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowClockwise_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                             </ui:SettingsCard.HeaderIcon>
                         </ui:SettingsCard>
 
                         <ui:SettingsCard Header="{x:Static props:HomeStrings.Home_Reset}" Description="{x:Static props:HomeStrings.Home_ResetSettings}"
                         IsClickEnabled="True" Click="BtnResetToSuggestion_Click" Grid.Column="1" Margin="0,0,4,0">
                             <ui:SettingsCard.HeaderIcon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Clear}" />
+                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                             </ui:SettingsCard.HeaderIcon>
                         </ui:SettingsCard>
 
                         <ui:SettingsCard Header="{x:Static props:FloatingBarStrings.OldUI_Exit}" Description="{x:Static props:HomeStrings.Home_ExitApp}"
                         IsClickEnabled="True" Click="BtnExit_Click" Grid.Column="2">
                             <ui:SettingsCard.HeaderIcon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cancel}" />
+                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                             </ui:SettingsCard.HeaderIcon>
                         </ui:SettingsCard>
                     </Grid>
@@ -65,42 +65,42 @@
                     <ui:SettingsCard Header="{x:Static props:StartupStrings.Start}" Description="{x:Static props:NavStrings.Nav_Startup_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="StartupPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Clock}" Description="{x:Static props:HomeStrings.Home_ClockSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Stopwatch}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Timer_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:HomeStrings.Home_Privacy}" Description="{x:Static props:HomeStrings.Home_PrivacySettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="PrivacyPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Shield_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Settings_Nav_Security}" Description="{x:Static props:NavStrings.Settings_Nav_Security_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="SecurityPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Permissions}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Key_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Advanced}" Description="{x:Static props:NavStrings.Nav_Advanced_Settings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ConfigPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Performance}" Description="{x:Static props:HomeStrings.Home_PerformanceSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="PerformancePage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TopSpeed_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
                     
@@ -109,49 +109,49 @@
                     <ui:SettingsCard Header="{x:Static props:HomeStrings.Home_Window}" Description="{x:Static props:HomeStrings.Home_WindowSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ScreenTouchPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_GroupTitle}" Description="{x:Static props:NavStrings.Nav_Theme_Settings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="DisplayPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PaintBrush_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Shortcuts}" Description="{x:Static props:NavStrings.Settings_Nav_Hotkey_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="HotkeyPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.KeyboardStandard}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Keyboard_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Magnifier}" Description="{x:Static props:NavStrings.Nav_Magnifier}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="MagnifierPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Zoom}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Search_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ToolbarComponents}" Description="{x:Static props:NavStrings.Nav_ToolbarComponents_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="FloatingBarPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Rename}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Rename_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ToolbarAppearance}" Description="{x:Static props:NavStrings.Nav_ToolbarAppearance_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="FloatingBarPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PaintBrush_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ToolbarMenu}" Description="{x:Static props:NavStrings.Nav_ToolbarMenu_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="FloatingBarPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BulletedList}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextBulletListLtr_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
                     
@@ -160,28 +160,28 @@
                     <ui:SettingsCard Header="{x:Static props:CanvasStrings.Canvas_GroupTitle}" Description="{x:Static props:HomeStrings.Home_CanvasSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardCanvasPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:CanvasStrings.InkRecog_Title}" Description="{x:Static props:HomeStrings.Home_InkRecognitionSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="InkRecognitionPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Draw}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DrawShape_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_ScreenTouch}" Description="{x:Static props:NavStrings.Nav_ScreenTouch}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ScreenTouchPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:BoothStrings.Title}" Description="{x:Static props:BoothStrings.Title}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoothPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Camera}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Camera_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -190,14 +190,14 @@
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.GroupTitle}" Description="{x:Static props:HomeStrings.Home_PPTSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="PPTSyncPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ProjectionScreen_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_LinkageControls}" Description="{x:Static props:NavStrings.Nav_LinkageControls}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="LinkageControlsPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -206,7 +206,7 @@
                     <ui:SettingsCard Header="{x:Static props:NotificationStrings.Type_Update}" Description="{x:Static props:HomeStrings.Home_UpdateSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="UpdatePage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -215,14 +215,14 @@
                     <ui:SettingsCard Header="{x:Static props:NotificationStrings.DefaultTitle}" Description="{x:Static props:NotificationStrings.NavTooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="NotificationCenterPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Message}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Chat_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:AnnouncementStrings.CenterTitle}" Description="{x:Static props:AnnouncementStrings.CenterHint}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="NotificationCenterPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BulletedList}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextBulletListLtr_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -231,28 +231,28 @@
                     <ui:SettingsCard Header="{x:Static props:AdvancedStrings.Experimental}" Description="{x:Static props:AdvancedStrings.Experimental}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ScreenTouchPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WrenchScrewdriver_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:StorageStrings.Storage_Title}" Description="{x:Static props:StorageStrings.Storage_NavTooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="StoragePage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.HardDrive_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:StorageStrings.Backup_Title}" Description="{x:Static props:HomeStrings.Home_BackupSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="ConfigPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:CloudStorageStrings.CloudStorage_Manage}" Description="{x:Static props:HomeStrings.Home_CloudStorageSettings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="SyncPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cloud}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Cloud_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -261,56 +261,56 @@
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_BoardComponents}" Description="{x:Static props:NavStrings.Nav_BoardComponents_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Rename}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Rename_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_BoardAppearance}" Description="{x:Static props:NavStrings.Nav_BoardAppearance_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PaintBrush_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_BoardMenu}" Description="{x:Static props:NavStrings.Nav_BoardMenu_Tooltip}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="BoardPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BulletedList}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextBulletListLtr_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:AutomationStrings.Automation_Title}" Description="{x:Static props:NavStrings.Nav_Automation_Settings}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AutomationWorkflowPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:AutomationStrings.Automation_AutoFoldTitle}" Description="{x:Static props:AutomationStrings.Automation_AutoFoldTitle}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AutoFoldPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:RandomStrings.Random_Title}" Description="{x:Static props:HomeStrings.Home_RandomAndTimer}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="RollCallPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.People}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:RandomStrings.Random_SelectTimerAlarm}" Description="{x:Static props:RandomStrings.Random_SelectTimerAlarm}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="TimerPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Stopwatch}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Timer_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="调试" Description="调试"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="DebugPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WrenchScrewdriver_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -319,7 +319,7 @@
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Plugins}" Description="{x:Static props:NavStrings.Settings_Plugins}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="PluginPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Puzzle}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PuzzlePiece_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
@@ -328,14 +328,14 @@
                     <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_FriendlyLinks}" Description="{x:Static props:HomeStrings.Home_FriendlyLinks}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="FriendlyLinksPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
                     <ui:SettingsCard Header="{x:Static props:AboutStrings.Title}" Description="{x:Static props:HomeStrings.Home_AboutApp}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="AboutPage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Info}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Info_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 

@@ -147,9 +147,28 @@ new Thickness(4, 2)
 new Thickness(4, 2, 4, 2)
 ```
 
-### SegoeFluentIcons 图标键不存在
+### FluentSystemIcons 图标键不存在
 
-并非所有 SegoeFluentIcons 枚举值都可用，使用前需确认图标键存在。例如 `SegoeFluentIcons.Whiteboard` 不存在，应改用 `SegoeFluentIcons.Edit`。
+并非所有 FluentSystemIcons 枚举值都可用，键名由「名称_尺寸_变体」构成，使用前需确认该组合存在。例如 `FluentSystemIcons.Whiteboard_12_Regular` 不存在，应改用存在的尺寸如 `FluentSystemIcons.Whiteboard_20_Regular`。
+
+### 图标 FontSize 与容器槽尺寸
+
+FluentSystemIcons 字形的内边距比 Segoe 大，相同字号下图标视觉上更小。**不要靠加大 FontSize 来放大图标**——字形在 em 框内左右不对称，字号一大墨迹就右移并溢出图标槽被裁切（表现为遮挡）。
+
+放大图标的正确做法是用 `RenderTransform`（以中心缩放，不改变布局、不裁切）。App.xaml 已定义共享资源：
+
+- `NavIconScale`（1.25）：`NavigationViewItem.Icon`，槽为 16（`NavigationViewItemOnLeftIconBoxHeight`），FontSize 保持 16。
+- `HeaderIconScale`（1.3）：`SettingsCard` / `SettingsExpander` / `LabeledSettingsCard` 的 `HeaderIcon`，槽为 Viewbox（上限 `SettingsCardHeaderIconMaxSize`，库默认 20），字形用 `_20_` 变体、FontSize 20。
+
+```xml
+<ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Home_20_Regular}" FontSize="16"
+             RenderTransformOrigin="0.5,0.5"
+             RenderTransform="{StaticResource NavIconScale}"/>
+```
+
+- `SettingsCard.ActionIcon`：槽为 16（`SettingsCardActionIconMaxSize`），设 `FontSize="16"`。
+- `LabeledSettingsCard` 的 `Icon` 属性为 `FontIconData?`，内部按 20px 渲染。
+- 代码里动态创建的 `FontIcon` 需手动设 `RenderTransformOrigin` + `ScaleTransform`（见 `LabeledSettingsCard.xaml.cs`）。
 
 ### 设置页面导航失败无报错
 
