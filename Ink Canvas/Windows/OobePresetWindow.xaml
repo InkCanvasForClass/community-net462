@@ -88,7 +88,7 @@
                         Margin="0,0,14,0"
                         CornerRadius="10"
                         Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Repair}"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Wrench_20_Regular}"
                                  FontSize="22"
                                  HorizontalAlignment="Center"
                                  VerticalAlignment="Center" />
@@ -136,7 +136,7 @@
                                 CornerRadius="8"
                                 Margin="0,0,14,0"
                                 Background="{DynamicResource SystemControlBackgroundAccentBrush}">
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}"
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ProjectionScreen_20_Regular}"
                                          FontSize="20"
                                          Foreground="White"
                                          HorizontalAlignment="Center"
@@ -169,7 +169,7 @@
                         </ikw:SimpleStackPanel>
                         <ui:FontIcon x:Name="IconStandard"
                                      Grid.Column="2"
-                                     Icon="{x:Static ui:SegoeFluentIcons.RadioBullet}"
+                                     Icon="{x:Static ui:FluentSystemIcons.RadioButton_20_Filled}"
                                      FontSize="20"
                                      Margin="12,0,0,0"
                                      Opacity="0"
@@ -202,7 +202,7 @@
                                 CornerRadius="8"
                                 Margin="0,0,14,0"
                                 Background="#FF6366F1">
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}"
                                          FontSize="20"
                                          Foreground="White"
                                          HorizontalAlignment="Center"
@@ -235,7 +235,7 @@
                         </ikw:SimpleStackPanel>
                         <ui:FontIcon x:Name="IconLite"
                                      Grid.Column="2"
-                                     Icon="{x:Static ui:SegoeFluentIcons.RadioBullet}"
+                                     Icon="{x:Static ui:FluentSystemIcons.RadioButton_20_Filled}"
                                      FontSize="20"
                                      Margin="12,0,0,0"
                                      Opacity="0"
@@ -273,7 +273,7 @@
                         Margin="0,0,8,0"
                         Click="BtnCancel_Click">
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Back}" FontSize="12" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowLeft_20_Regular}" FontSize="12" />
                         <TextBlock Text="{x:Static props:OobeStrings.Oobe_PresetBack}" />
                     </ikw:SimpleStackPanel>
                 </Button>
@@ -286,7 +286,7 @@
                         Style="{DynamicResource AccentButtonStyle}"
                         Click="BtnApply_Click">
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Accept}" FontSize="12" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Checkmark_20_Regular}" FontSize="12" />
                         <TextBlock Text="{x:Static props:OobeStrings.Oobe_PresetApply}" />
                     </ikw:SimpleStackPanel>
                 </Button>

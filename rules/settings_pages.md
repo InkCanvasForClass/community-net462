@@ -273,7 +273,7 @@ public class Canvas
 ```xml
 <controls:LabeledSettingsCard x:Name="CardEnableInkFade"
     Header="{i18n:I18n Key=Canvas_EnableInkFade}"
-    Icon="{x:Static ui:SegoeFluentIcons.Delay}"
+    Icon="{x:Static ui:FluentSystemIcons.Timer_20_Regular}"
     SwitchName="ToggleSwitchEnableInkFade"
     Toggled="CardEnableInkFade_Toggled" />
 ```

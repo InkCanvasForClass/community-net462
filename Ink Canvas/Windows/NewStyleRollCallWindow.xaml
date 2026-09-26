@@ -226,7 +226,7 @@
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Center">
                                         <Button x:Name="CountMinusBtn" Style="{StaticResource ModernRollCallIconButtonStyle}" Click="CountMinus_Click" ToolTipService.ToolTip="{x:Static props:RandomStrings.Random_RollCall_DecreaseCount}">
-                                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Remove}" FontSize="12" />
+                                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Subtract_20_Regular}" FontSize="12" />
                                         </Button>
                                         <Border Width="64"
                                                 Height="36"
@@ -244,7 +244,7 @@
                                                        Foreground="{DynamicResource NewRollCallWindowDigitForeground}" />
                                         </Border>
                                         <Button x:Name="CountPlusBtn" Style="{StaticResource ModernRollCallIconButtonStyle}" Click="CountPlus_Click" ToolTipService.ToolTip="{x:Static props:RandomStrings.Random_RollCall_IncreaseCount}">
-                                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Add}" FontSize="12" />
+                                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12" />
                                         </Button>
                                     </StackPanel>
                                 </Grid>
@@ -302,19 +302,19 @@
                                     <UniformGrid Columns="3">
                                         <Button x:Name="ImportListBtn" Style="{StaticResource ModernRollCallSmallButtonStyle}" Margin="0,0,8,0" Click="ImportList_Click">
                                             <StackPanel Orientation="Horizontal">
-                                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.OpenFile}" FontSize="13" Margin="0,0,6,0" />
+                                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DocumentArrowUp_20_Regular}" FontSize="13" Margin="0,0,6,0" />
                                                 <TextBlock Text="{x:Static props:RandomStrings.Random_RollCall_Import}" />
                                             </StackPanel>
                                         </Button>
                                         <Button x:Name="ClearListBtn" Style="{StaticResource ModernRollCallSmallButtonStyle}" Margin="0,0,8,0" Click="ClearList_Click">
                                             <StackPanel Orientation="Horizontal">
-                                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Delete}" FontSize="13" Margin="0,0,6,0" />
+                                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Delete_20_Regular}" FontSize="13" Margin="0,0,6,0" />
                                                 <TextBlock Text="{x:Static props:FloatingBarStrings.FloatingBar_Clear}" />
                                             </StackPanel>
                                         </Button>
                                         <Button x:Name="ViewHistoryBtn" Style="{StaticResource ModernRollCallSmallButtonStyle}" Click="ViewHistory_Click">
                                             <StackPanel Orientation="Horizontal">
-                                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.History}" FontSize="13" Margin="0,0,6,0" />
+                                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.History_20_Regular}" FontSize="13" Margin="0,0,6,0" />
                                                 <TextBlock Text="{x:Static props:RandomStrings.Random_RollCall_History}" />
                                             </StackPanel>
                                         </Button>
@@ -357,7 +357,7 @@
                                     Margin="0,0,14,0"
                                     Visibility="Collapsed">
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cancel}" FontSize="14" Margin="0,0,8,0" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}" FontSize="14" Margin="0,0,8,0" />
                                     <TextBlock Text="{x:Static props:RandomStrings.Random_RollCall_Stop}" FontSize="16" FontWeight="Medium" />
                                 </StackPanel>
                             </Button>
@@ -368,7 +368,7 @@
                                     Padding="16,0"
                                     Click="Reset_Click">
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Refresh}" FontSize="14" Margin="0,0,8,0" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowClockwise_20_Regular}" FontSize="14" Margin="0,0,8,0" />
                                     <TextBlock Text="{x:Static props:TimerStrings.Timer_Reset}" FontSize="16" FontWeight="Medium" />
                                 </StackPanel>
                             </Button>

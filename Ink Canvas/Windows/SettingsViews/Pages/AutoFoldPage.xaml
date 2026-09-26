@@ -16,7 +16,6 @@
         <Grid Margin="59,0,59,0">
             <FrameworkElement.Resources>
                 <sys:Double x:Key="SettingsCardSpacing">4</sys:Double>
-                <sys:Double x:Key="SettingsCardHeaderIconMaxSize">24</sys:Double>
                 <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
                 <Style x:Key="SettingsSectionHeaderTextBlockStyle"
                     BasedOn="{StaticResource BodyStrongTextBlockStyle}"
@@ -36,7 +35,7 @@
                     <ui:SettingsExpander Header="{x:Static props:AutomationStrings.AutoFold_Group_Seewo}"
                             IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="{x:Static props:AutomationStrings.AutoFold_App_SeewoBoard5}">
@@ -81,7 +80,7 @@
                     <ui:SettingsExpander Header="{x:Static props:AutomationStrings.AutoFold_Group_Hite}"
                             IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="{x:Static props:AutomationStrings.AutoFold_App_HiteBoard}">
@@ -108,7 +107,7 @@
                     <ui:SettingsExpander Header="{x:Static props:AutomationStrings.AutoFold_Group_Other}"
                             IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="{x:Static props:AutomationStrings.AutoFold_App_WenXiangBoard}">
@@ -173,7 +172,7 @@
                     <controls:LabeledSettingsCard x:Name="CardAutoFoldWhenExitWhiteboard"
                             Header="{x:Static props:AutomationStrings.FoldMode_AutoFoldAfterWhiteboard}"
                             Description="{x:Static props:AutomationStrings.FoldMode_AutoFoldAfterWhiteboardHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Back}"
+                            Icon="{x:Static ui:FluentSystemIcons.ArrowLeft_20_Regular}"
                             Toggled="ToggleSwitchAutoFoldWhenExitWhiteboard_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardAutoFoldAfterPPTSlideShow"
@@ -185,7 +184,7 @@
                     <controls:LabeledSettingsCard x:Name="CardKeepFoldAfterSoftwareExit"
                             Header="{x:Static props:AutomationStrings.Automation_KeepFoldAfterExit}"
                             Description="{x:Static props:AutomationStrings.Automation_KeepFoldAfterExitHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Pin}"
+                            Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}"
                             Toggled="ToggleSwitchKeepFoldAfterSoftwareExit_Toggled"/>
 
                     <TextBlock Text="{x:Static props:AutomationStrings.AutoKill_Title}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"/>
@@ -237,7 +236,7 @@
                     <controls:LabeledSettingsCard x:Name="CardAutoEnterAnnotationModeWhenExitFoldMode"
                             Header="{x:Static props:AutomationStrings.FoldMode_ExitToAnnotation}"
                             Description="{x:Static props:AutomationStrings.FoldMode_ExitToAnnotationHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                            Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}"
                             Toggled="ToggleSwitchAutoEnterAnnotationModeWhenExitFoldMode_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardAutoEnterAnnotationAfterKillHite"
@@ -250,7 +249,7 @@
                     <ui:SettingsExpander Header="{x:Static props:AutomationStrings.FloatingInterceptor_Group_Seewo}"
                             IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="{x:Static props:AutomationStrings.AutoFold_App_SeewoBoard3}">
@@ -307,7 +306,7 @@
                     <ui:SettingsExpander Header="{x:Static props:NotificationStrings.Type_Other}"
                             IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="AiClass">

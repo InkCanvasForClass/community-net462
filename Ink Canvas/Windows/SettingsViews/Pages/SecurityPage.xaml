@@ -42,7 +42,7 @@
                     <controls:LabeledSettingsCard x:Name="CardPasswordEnabled"
                             Header="{x:Static props:SecurityStrings.Security_EnablePassword}"
                             Description="{x:Static props:SecurityStrings.SecurityPanel_Hint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Permissions}"
+                            Icon="{x:Static ui:FluentSystemIcons.Key_20_Regular}"
                             SwitchName="ToggleSwitchPasswordEnabled"
                             Toggled="ToggleSwitchPasswordEnabled_Toggled" />
 
@@ -50,7 +50,7 @@
                                      Header="{x:Static props:SecurityStrings.Security_PasswordManagement}"
                                      Description="{x:Static props:SecurityStrings.SecurityPanel_Hint_1}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Lock}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.LockClosed_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <Button x:Name="BtnSetOrChangePassword"
                                 Content="{x:Static props:SecurityStrings.Security_SetOrChangePassword}"
@@ -61,7 +61,7 @@
                     <controls:LabeledSettingsCard x:Name="CardTotpEnabled"
                             Header="{x:Static props:SecurityStrings.Security_EnableTotp}"
                             Description="{x:Static props:SecurityStrings.Security_EnableTotpHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Permissions}"
+                            Icon="{x:Static ui:FluentSystemIcons.Key_20_Regular}"
                             SwitchName="ToggleSwitchTotpEnabled"
                             Toggled="ToggleSwitchTotpEnabled_Toggled" />
 
@@ -69,7 +69,7 @@
                                      Header="{x:Static props:SecurityStrings.Security_TotpSecretKey}"
                                      Description="{x:Static props:SecurityStrings.Security_TotpSecretKeyHint}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Lock}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.LockClosed_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBox x:Name="TextBoxTotpSecret"
@@ -85,28 +85,28 @@
                     <controls:LabeledSettingsCard x:Name="CardRequirePasswordOnExit"
                             Header="{x:Static props:SecurityStrings.Security_RequirePasswordOnExit}"
                             Description="{x:Static props:SecurityStrings.SecurityPanel__InkCanvasForClass_Hint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.SignOut}"
+                            Icon="{x:Static ui:FluentSystemIcons.SignOut_20_Regular}"
                             SwitchName="ToggleSwitchRequirePasswordOnExit"
                             Toggled="ToggleSwitchRequirePasswordOnExit_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardRequirePasswordOnEnterSettings"
                             Header="{x:Static props:SecurityStrings.Security_RequirePasswordOnEnterSettings}"
                             Description="{x:Static props:SecurityStrings.SecurityPanel_Hint_2}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Settings}"
+                            Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}"
                             SwitchName="ToggleSwitchRequirePasswordOnEnterSettings"
                             Toggled="ToggleSwitchRequirePasswordOnEnterSettings_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardRequirePasswordOnResetConfig"
                             Header="{x:Static props:SecurityStrings.Security_RequirePasswordOnResetConfig}"
                             Description="{x:Static props:SecurityStrings.SecurityPanel__Settingsjson_Hint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Refresh}"
+                            Icon="{x:Static ui:FluentSystemIcons.ArrowClockwise_20_Regular}"
                             SwitchName="ToggleSwitchRequirePasswordOnResetConfig"
                             Toggled="ToggleSwitchRequirePasswordOnResetConfig_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardRequirePasswordOnModifyOrClearNameList"
                             Header="{x:Static props:SecurityStrings.Security_RequirePasswordOnModifyOrClearNameList}"
                             Description="{x:Static props:SecurityStrings.Security_RequirePasswordOnModifyOrClearNameList_Hint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.People}"
+                            Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}"
                             SwitchName="ToggleSwitchRequirePasswordOnModifyOrClearNameList"
                             Toggled="ToggleSwitchRequirePasswordOnModifyOrClearNameList_Toggled" />
 
@@ -123,7 +123,7 @@
                     <controls:LabeledSettingsCard x:Name="CardUsbVerificationEnabled"
                             Header="{x:Static props:SecurityStrings.Security_EnableUsbVerification}"
                             Description="{x:Static props:SecurityStrings.Security_EnableUsbVerification_Hint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Permissions}"
+                            Icon="{x:Static ui:FluentSystemIcons.Key_20_Regular}"
                             SwitchName="ToggleSwitchUsbVerificationEnabled"
                             Toggled="ToggleSwitchUsbVerificationEnabled_Toggled" />
 
@@ -131,7 +131,7 @@
                                      Header="{x:Static props:SecurityStrings.Security_UsbAuthorizedSns}"
                                      Description="{x:Static props:SecurityStrings.Security_UsbAuthorizedSns_Hint}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Lock}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.LockClosed_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <TextBox x:Name="TextBoxUsbAuthorizedSns"
                                  Width="320"
@@ -142,7 +142,7 @@
                                      Header="{x:Static props:SecurityStrings.Security_UsbDetectAndAuthorize}"
                                      Description="{x:Static props:SecurityStrings.Security_UsbDetectAndAuthorize_Hint}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Permissions}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Key_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <ComboBox x:Name="ComboBoxUsbDrives"
@@ -172,7 +172,7 @@
                     <controls:LabeledSettingsCard x:Name="CardEnableProcessProtection"
                             Header="{x:Static props:SecurityStrings.Security_ProcessProtection}"
                             Description="{x:Static props:SecurityStrings.SecurityPanel_Hint_4}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Shield}"
+                            Icon="{x:Static ui:FluentSystemIcons.Shield_20_Regular}"
                             SwitchName="ToggleSwitchEnableProcessProtection"
                             Toggled="ToggleSwitchEnableProcessProtection_Toggled" />
 
@@ -183,7 +183,7 @@
                     <ui:SettingsExpander Header="{x:Static props:SecurityStrings.FileAssoc_Check}"
                         Description="{x:Static props:AutomationStrings.FileAssoc_CheckDesc}" IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Content>
                             <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -199,7 +199,7 @@
                             <ui:SettingsCard Header="{x:Static props:AutomationStrings.FileAssoc_RegisterHeader}"
                                              Description="{x:Static props:AutomationStrings.FileAssoc_RegisterDesc}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Add}"/>
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                                 </ui:SettingsCard.HeaderIcon>
                                 <Button x:Name="BtnRegisterFileAssociation"
                                         Content="{x:Static props:AutomationStrings.FileAssoc_RegisterHeader}"
@@ -208,7 +208,7 @@
                             <ui:SettingsCard Header="{x:Static props:SecurityStrings.FileAssoc_Unregister}"
                                              Description="{x:Static props:AutomationStrings.FileAssoc_UnregisterDesc}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cancel}"/>
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                                 </ui:SettingsCard.HeaderIcon>
                                 <Button x:Name="BtnUnregisterFileAssociation"
                                         Content="{x:Static props:SecurityStrings.FileAssoc_Unregister}"

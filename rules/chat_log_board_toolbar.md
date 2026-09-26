@@ -122,7 +122,7 @@
 更新了以下规则文件：
 - `toolbar.md` — 添加白板工具栏完整规范
 - `settings_pages.md` — 添加 BoardToolbarPage 导航项、双字典注册规则
-- `general.md` — 添加 WPF 常见陷阱（Geometry 冻结、AfterBuild 未初始化、Page 命名空间冲突、Thickness 构造函数、SegoeFluentIcons 不存在、导航失败无报错）
+- `general.md` — 添加 WPF 常见陷阱（Geometry 冻结、AfterBuild 未初始化、Page 命名空间冲突、Thickness 构造函数、FluentSystemIcons 不存在、导航失败无报错）
 
 ---
 

@@ -435,13 +435,13 @@
 
                 <controls:LabeledSettingsCard x:Name="CardEnableTimeDisplayInWhiteboardMode"
                         Header="{x:Static props:ThemeStrings.Theme_ShowTimeInWhiteboard}"
-                        Icon="{x:Static ui:SegoeFluentIcons.Pinned}"
+                        Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}"
                         SwitchName="ToggleSwitchEnableTimeDisplayInWhiteboardMode"
                         Toggled="ToggleSwitchEnableTimeDisplayInWhiteboardMode_Toggled" />
 
                 <ui:SettingsCard Header="{x:Static props:ThemeStrings.AppearancePanel_24HourTimeFormat}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Glyph="&#xE917;" />
+                        <ui:FontIcon Glyph="&#xE917;" FontSize="20" />
                     </ui:SettingsCard.HeaderIcon>
                     <ComboBox x:Name="ComboBoxTimeFormat"
                               SelectedIndex="0"
@@ -453,13 +453,13 @@
 
                 <controls:LabeledSettingsCard x:Name="CardEnableChickenSoupInWhiteboardMode"
                         Header="{x:Static props:ThemeStrings.Theme_ShowQuoteInWhiteboard}"
-                        Icon="{x:Static ui:SegoeFluentIcons.Message}"
+                        Icon="{x:Static ui:FluentSystemIcons.Chat_20_Regular}"
                         SwitchName="ToggleSwitchEnableChickenSoupInWhiteboardMode"
                         Toggled="ToggleSwitchEnableChickenSoupInWhiteboardMode_Toggled" />
 
                 <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_QuoteSource}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Heart}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Heart_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                         <ComboBox x:Name="ComboBoxChickenSoupSource"
@@ -479,7 +479,7 @@
 
                 <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_QuotePosition}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.POI}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Location_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ComboBox x:Name="ComboBoxChickenSoupPosition"
                               MinWidth="180"
@@ -502,7 +502,7 @@
 
                 <ui:SettingsExpander Header="{x:Static props:ThemeStrings.Theme_BoardToolbarOpacity}" IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EaseOfAccess}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Accessibility_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsExpander.HeaderIcon>
                     <ui:SettingsExpander.Items>
                         <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_BoardToolbarOpacityLeft}">
@@ -543,7 +543,7 @@
 
                 <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_BoardMenuOpacity}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.PreviewLink}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PreviewLink_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock x:Name="BoardMenuOpacityText"
@@ -567,7 +567,7 @@
 
                 <ui:SettingsExpander Header="{x:Static props:ThemeStrings.Theme_BlackboardScale80}" IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BackToWindow}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowMinimize_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsExpander.HeaderIcon>
                     <ui:SettingsExpander.Items>
                         <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_BoardScaleLeft}">

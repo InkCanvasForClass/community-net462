@@ -10,7 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using SegoeFluentIcons = iNKORE.UI.WPF.Modern.Common.IconKeys.SegoeFluentIcons;
+using FluentSystemIcons = iNKORE.UI.WPF.Modern.Common.IconKeys.FluentSystemIcons;
 
 namespace Ink_Canvas
 {
@@ -553,7 +553,7 @@ namespace Ink_Canvas
 
             var fontIconFactory = new FrameworkElementFactory(typeof(iNKORE.UI.WPF.Modern.Controls.FontIcon));
             fontIconFactory.SetValue(iNKORE.UI.WPF.Modern.Controls.FontIcon.IconProperty,
-                SegoeFluentIcons.Delete);
+                FluentSystemIcons.Delete_20_Regular);
             deleteBtnFactory.AppendChild(fontIconFactory);
 
             gridFactory.AppendChild(viewboxFactory);

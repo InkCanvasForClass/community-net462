@@ -87,7 +87,12 @@ namespace Ink_Canvas.Controls
             }
             else if (Icon.HasValue)
             {
-                SettingsCard.HeaderIcon = new iNKORE.UI.WPF.Modern.Controls.FontIcon(Icon.Value);
+                SettingsCard.HeaderIcon = new iNKORE.UI.WPF.Modern.Controls.FontIcon(Icon.Value)
+                {
+                    FontSize = 20,
+                    RenderTransformOrigin = new Point(0.5, 0.5),
+                    RenderTransform = new ScaleTransform(1.3, 1.3),
+                };
             }
             else if (HeaderIcon != null)
             {

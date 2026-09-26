@@ -93,54 +93,54 @@
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem x:Name="NavItemWelcome" Content="{x:Static props:OobeStrings.Oobe_NavWelcome}" Tag="welcome">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Home}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Home_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItemSeparator />
                 <ui:NavigationViewItem x:Name="NavItemTelemetry" Content="{x:Static props:OobeStrings.Oobe_NavTelemetry}" Tag="step0">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Shield_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem x:Name="NavItemCanvas" Content="{x:Static props:OobeStrings.Oobe_NavCanvas}" Tag="step1">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem x:Name="NavItemGestures" Content="{x:Static props:OobeStrings.Oobe_NavGestures}" Tag="step2">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem x:Name="NavItemAppearance" Content="{x:Static props:ThemeStrings.Theme_GroupTitle}" Tag="step3">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PaintBrush_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem x:Name="NavItemPPT" Content="{x:Static props:OobeStrings.Oobe_NavPPT}" Tag="step4">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Slideshow}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ProjectionScreen_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem x:Name="NavItemAutomation" Content="{x:Static props:OobeStrings.Oobe_NavAutomation}" Tag="step5">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem x:Name="NavItemLuckyRandom" Content="{x:Static props:RandomStrings.Random_Title}" Tag="step6">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.People}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem x:Name="NavItemAdvanced" Content="{x:Static props:OobeStrings.Oobe_NavAdvanced}" Tag="step7">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItemSeparator />
                 <ui:NavigationViewItem x:Name="NavItemFinish" Content="{x:Static props:OobeStrings.Oobe_NavFinish}" Tag="finish">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Accept}" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Checkmark_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
@@ -197,7 +197,7 @@
                                     Click="BtnStartWelcome_Click">
                                 <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="{x:Static props:OobeStrings.Oobe_StartStepByStep}" />
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" FontSize="12" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ChevronRight_20_Regular}" FontSize="12" />
                                 </ikw:SimpleStackPanel>
                             </Button>
 
@@ -207,7 +207,7 @@
                                     Height="36"
                                     Click="BtnUsePreset_Click">
                                 <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Repair}" FontSize="12" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Wrench_20_Regular}" FontSize="12" />
                                     <TextBlock Text="{x:Static props:OobeStrings.Oobe_UsePreset}" />
                                 </ikw:SimpleStackPanel>
                             </Button>
@@ -256,7 +256,7 @@
                                                          Description="{x:Static props:OobeStrings.Oobe_PrivacyDesc}"
                                                          IsExpanded="True">
                                         <ui:SettingsExpander.HeaderIcon>
-                                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}" />
+                                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Shield_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                         </ui:SettingsExpander.HeaderIcon>
                                         <ui:SettingsExpander.Items>
                                             <ui:SettingsCard ContentAlignment="Left">
@@ -290,19 +290,19 @@
                                     <controls:LabeledSettingsCard x:Name="CardFoldAtStartup"
                                                                   Header="{x:Static props:OobeStrings.Oobe_FoldAtStartup}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_FoldAtStartupDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.ChevronLeft_20_Regular}"
                                                                   SwitchName="ToggleSwitchFoldAtStartup" />
 
                                     <controls:LabeledSettingsCard x:Name="CardAutoUpdate"
                                                                   Header="{x:Static props:UpdateStrings.Header_AutoUpdate}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_AutoUpdate}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Sync}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}"
                                                                   SwitchName="ToggleSwitchAutoUpdate" />
 
                                     <ui:SettingsCard Header="{x:Static props:OobeStrings.Oobe_CrashAction}"
                                                      Description="{x:Static props:OobeStrings.Oobe_CrashActionDesc}">
                                         <ui:SettingsCard.HeaderIcon>
-                                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Warning}" />
+                                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Warning_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                         </ui:SettingsCard.HeaderIcon>
                                         <ComboBox x:Name="ComboBoxCrashAction">
                                             <ComboBoxItem Content="{x:Static props:OobeStrings.Oobe_CrashSilentRestart}" />
@@ -322,19 +322,19 @@
                                     <controls:LabeledSettingsCard x:Name="CardShowCursor"
                                                                   Header="{x:Static props:CanvasStrings.Canvas_ShowPenCursor}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_ShowPenCursorDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}"
                                                                   SwitchName="ToggleSwitchShowCursor" />
 
                                     <controls:LabeledSettingsCard x:Name="CardDisablePressure"
                                                                   Header="{x:Static props:CanvasStrings.Canvas_IgnorePressure}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_IgnorePressureDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}"
                                                                   SwitchName="ToggleSwitchDisablePressure" />
 
                                     <controls:LabeledSettingsCard x:Name="CardHideStrokeWhenSelecting"
                                                                   Header="{x:Static props:OobeStrings.Oobe_HideInkOnExit}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_HideInkOnExitDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Hide}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.EyeOff_20_Regular}"
                                                                   SwitchName="ToggleSwitchHideStrokeWhenSelecting" />
 
                                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
@@ -344,7 +344,7 @@
                                     <controls:LabeledSettingsCard x:Name="CardInkToShapeEnabled"
                                                                   Header="{x:Static props:CanvasStrings.InkRecog_EnableInkRecognition}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_InkRecogDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Draw}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.DrawShape_20_Regular}"
                                                                   SwitchName="ToggleSwitchInkToShapeEnabled" />
                                 </ikw:SimpleStackPanel>
 
@@ -357,18 +357,18 @@
 
                                     <controls:LabeledSettingsCard x:Name="CardTwoFingerZoom"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnableTwoFingerZoom}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.View}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Eye_20_Regular}"
                                                                   SwitchName="ToggleSwitchTwoFingerZoom" />
 
                                     <controls:LabeledSettingsCard x:Name="CardTwoFingerTranslate"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnableTwoFingerPan}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Touch}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.HandPoint_24_Regular}"
                                                                   SwitchName="ToggleSwitchTwoFingerTranslate" />
 
                                     <controls:LabeledSettingsCard x:Name="CardEnablePalmEraser"
                                                                   Header="{x:Static props:GestureStrings.Gesture_EnablePalmEraser}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_PalmEraserDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.EraseTool}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Eraser_20_Regular}"
                                                                   SwitchName="ToggleSwitchEnablePalmEraser" />
                                 </ikw:SimpleStackPanel>
 
@@ -382,7 +382,7 @@
                                     <ui:SettingsCard Header="{x:Static props:OobeStrings.Oobe_AppTheme}"
                                                      Description="{x:Static props:OobeStrings.Oobe_AppThemeDesc}">
                                         <ui:SettingsCard.HeaderIcon>
-                                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
+                                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PaintBrush_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                         </ui:SettingsCard.HeaderIcon>
                                         <ComboBox x:Name="ComboBoxTheme">
                                             <ComboBoxItem Content="{x:Static props:OobeStrings.Oobe_ThemeLight}" />
@@ -394,7 +394,7 @@
                                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_WindowBackdrop}"
                                                      Description="{x:Static props:ThemeStrings.Theme_WindowBackdrop_Description}">
                                         <ui:SettingsCard.HeaderIcon>
-                                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
+                                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                         </ui:SettingsCard.HeaderIcon>
                                         <ComboBox x:Name="ComboBoxWindowBackdrop"
                                                   SelectionChanged="ComboBoxWindowBackdrop_SelectionChanged">
@@ -411,7 +411,7 @@
                                     <controls:LabeledSettingsCard x:Name="CardEnableSplashScreen"
                                                                   Header="{x:Static props:ThemeStrings.Theme_EnableSplash}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_ShowSplashScreenDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Photo}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Image_20_Regular}"
                                                                   SwitchName="ToggleSwitchEnableSplashScreen" />
 
                                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
@@ -421,13 +421,13 @@
                                     <controls:LabeledSettingsCard x:Name="CardEnableTrayIcon"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnableTrayIcon}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_EnableTrayIconDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Pin}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}"
                                                                   SwitchName="ToggleSwitchEnableTrayIcon" />
 
                                     <controls:LabeledSettingsCard x:Name="CardShowQuickPanel"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnableQuickPanel}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_EnableQuickPanelDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.ViewAll}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Grid_20_Regular}"
                                                                   SwitchName="ToggleSwitchShowQuickPanel" />
 
                                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
@@ -437,7 +437,7 @@
                                     <controls:LabeledSettingsCard x:Name="CardEnableHotkeysInMouseMode"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnableGlobalHotkeys}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_EnableGlobalHotkeysDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.PenWorkspace}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Pen_20_Regular}"
                                                                   SwitchName="ToggleSwitchEnableHotkeysInMouseMode" />
                                 </ikw:SimpleStackPanel>
 
@@ -451,25 +451,25 @@
                                     <controls:LabeledSettingsCard x:Name="CardPPTSupport"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnablePPTLink}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_EnablePPTLinkDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Slideshow}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.ProjectionScreen_20_Regular}"
                                                                   SwitchName="ToggleSwitchPPTSupport" />
 
                                     <controls:LabeledSettingsCard x:Name="CardPPTAutoSaveStrokes"
                                                                   Header="{x:Static props:OobeStrings.Oobe_AutoSaveStrokes}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_AutoSaveStrokesDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                                                                   SwitchName="ToggleSwitchPPTAutoSaveStrokes" />
 
                                     <controls:LabeledSettingsCard x:Name="CardPPTAutoSaveScreenshots"
                                                                   Header="{x:Static props:OobeStrings.Oobe_AutoScreenshot}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_AutoScreenshotDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Camera}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Camera_20_Regular}"
                                                                   SwitchName="ToggleSwitchPPTAutoSaveScreenshots" />
 
                                     <controls:LabeledSettingsCard x:Name="CardPPTTimeCapsule"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnableTimeCapsule}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_EnableTimeCapsuleDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.QuietHours}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.WeatherMoon_20_Regular}"
                                                                   SwitchName="ToggleSwitchPPTTimeCapsule" />
                                 </ikw:SimpleStackPanel>
 
@@ -482,19 +482,19 @@
 
                                     <controls:LabeledSettingsCard x:Name="CardAutoFoldInPPTSlideShow"
                                                                   Header="{x:Static props:OobeStrings.Oobe_AutoFoldInPPT}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.ChevronLeft_20_Regular}"
                                                                   SwitchName="ToggleSwitchAutoFoldInPPTSlideShow" />
 
                                     <controls:LabeledSettingsCard x:Name="CardEnableAutoSaveStrokes"
                                                                   Header="{x:Static props:OobeStrings.Oobe_AutoSaveInk}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_AutoSaveInkDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                                                                   SwitchName="ToggleSwitchEnableAutoSaveStrokes" />
 
                                     <controls:LabeledSettingsCard x:Name="CardFloatingWindowInterceptor"
                                                                   Header="{x:Static props:AutomationStrings.FloatingInterceptor_Enable}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_FloatingInterceptorDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Cancel}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}"
                                                                   SwitchName="ToggleSwitchFloatingWindowInterceptor" />
 
                                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
@@ -503,12 +503,12 @@
 
                                     <controls:LabeledSettingsCard x:Name="CardAutoSaveStrokesAtClear"
                                                                   Header="{x:Static props:OobeStrings.Oobe_AutoSaveScreenshot}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Camera}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Camera_20_Regular}"
                                                                   SwitchName="ToggleSwitchAutoSaveStrokesAtClear" />
 
                                     <controls:LabeledSettingsCard x:Name="CardSaveScreenshotsInDateFolders"
                                                                   Header="{x:Static props:OobeStrings.Oobe_SaveByDate}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Folder}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Folder_20_Regular}"
                                                                   SwitchName="ToggleSwitchSaveScreenshotsInDateFolders" />
                                 </ikw:SimpleStackPanel>
 
@@ -521,7 +521,7 @@
 
                                     <controls:LabeledSettingsCard x:Name="CardShowRandomAndSingleDraw"
                                                                   Header="{x:Static props:OobeStrings.Oobe_ShowRollCallButtons}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.People}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}"
                                                                   SwitchName="ToggleSwitchShowRandomAndSingleDraw" />
                                 </ikw:SimpleStackPanel>
 
@@ -535,7 +535,7 @@
                                     <controls:LabeledSettingsCard x:Name="CardIsLogEnabled"
                                                                   Header="{x:Static props:OobeStrings.Oobe_EnableLog}"
                                                                   Description="{x:Static props:OobeStrings.Oobe_EnableLogDesc}"
-                                                                  Icon="{x:Static ui:SegoeFluentIcons.Document}"
+                                                                  Icon="{x:Static ui:FluentSystemIcons.Document_20_Regular}"
                                                                   SwitchName="ToggleSwitchIsLogEnabled" />
                                 </ikw:SimpleStackPanel>
 
@@ -561,7 +561,7 @@
                                                  Foreground="White"
                                                  HorizontalAlignment="Center"
                                                  VerticalAlignment="Center"
-                                                 Icon="{x:Static ui:SegoeFluentIcons.Accept}" />
+                                                 Icon="{x:Static ui:FluentSystemIcons.Checkmark_20_Regular}" />
                                 </Border>
 
                                 <TextBlock Text="{x:Static props:OobeStrings.Oobe_FinishTitle}"
@@ -629,7 +629,7 @@
                                 Margin="0,0,8,0"
                                 Click="BtnPreviousStep_Click">
                             <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Back}" FontSize="12" />
+                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowLeft_20_Regular}" FontSize="12" />
                                 <TextBlock Text="{x:Static props:OobeStrings.Oobe_Previous}" />
                             </ikw:SimpleStackPanel>
                         </Button>
@@ -642,7 +642,7 @@
                                 Click="BtnConfirm_Click">
                             <ikw:SimpleStackPanel x:Name="BtnConfirmContent" Orientation="Horizontal" Spacing="6">
                                 <TextBlock x:Name="BtnConfirmText" Text="{x:Static props:OobeStrings.Oobe_Next}" />
-                                <ui:FontIcon x:Name="BtnConfirmIcon" Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" FontSize="12" />
+                                <ui:FontIcon x:Name="BtnConfirmIcon" Icon="{x:Static ui:FluentSystemIcons.ChevronRight_20_Regular}" FontSize="12" />
                             </ikw:SimpleStackPanel>
                         </Button>
                     </Grid>

@@ -41,7 +41,7 @@
                             SwitchName="ToggleSwitchMultiScreenSupport"
                             Toggled="ToggleSwitchMultiScreenSupport_Toggled">
                         <controls:LabeledSettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Desktop_24_Regular}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Desktop_24_Regular}" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </controls:LabeledSettingsCard.HeaderIcon>
                     </controls:LabeledSettingsCard>
 
@@ -52,20 +52,20 @@
                             SwitchName="ToggleSwitchFollowMouseScreen"
                             Toggled="ToggleSwitchFollowMouseScreen_Toggled">
                         <controls:LabeledSettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Desktop_24_Regular}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Desktop_24_Regular}" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </controls:LabeledSettingsCard.HeaderIcon>
                     </controls:LabeledSettingsCard>
 
                     <controls:LabeledSettingsCard x:Name="CardAvoidFullScreen"
                             Header="{x:Static props:AdvancedStrings.AvoidFullScreenHelper}"
                             Description="{x:Static props:AdvancedStrings.AvoidFullScreenHelperHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Cancel}"
+                            Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}"
                             SwitchName="ToggleSwitchAvoidFullScreen"
                             Toggled="ToggleSwitchAvoidFullScreen_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardIsSpecialScreen"
                             Header="{x:Static props:AdvancedStrings.SpecialScreenMode}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Settings}"
+                            Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}"
                             IsOn="True"
                             Toggled="ToggleSwitchIsSpecialScreen_OnToggled"/>
 
@@ -75,7 +75,7 @@
                                          Description="{x:Static props:AdvancedStrings.TouchMultiplierHint}"
                                          IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Touch}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.HandPoint_24_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="TouchMultiplierText"
@@ -108,7 +108,7 @@
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchEraserBindTouchMultiplier"
                         Header="{x:Static props:AdvancedStrings.EraserBindTouchMultiplier}"
                         Description="{x:Static props:AdvancedStrings.EraserBindTouchHint}"
-                        Icon="{x:Static ui:SegoeFluentIcons.EraseTool}"
+                        Icon="{x:Static ui:FluentSystemIcons.Eraser_20_Regular}"
                         IsOn="True"
                         Toggled="ToggleSwitchEraserBindTouchMultiplier_Toggled"/>
 
@@ -139,7 +139,7 @@
 
                     <ui:SettingsCard Header="笔尖模式边界阈值">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TopSpeed_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="NibModeThresholdText"
@@ -154,7 +154,7 @@
 
                     <ui:SettingsCard Header="手指模式边界阈值">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TopSpeed_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="FingerModeThresholdText"
@@ -169,7 +169,7 @@
 
                     <ui:SettingsCard Header="笔尖模式橡皮擦尺寸">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Eraser_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="NibModeEraserSizeText"
@@ -184,7 +184,7 @@
 
                     <ui:SettingsCard Header="手指模式橡皮擦尺寸">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Eraser_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="FingerModeEraserSizeText"
@@ -199,7 +199,7 @@
 
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchIsQuadIR"
                         Header="{x:Static props:AdvancedStrings.QuadIRMode}"
-                        Icon="{x:Static ui:SegoeFluentIcons.FullScreen}"
+                        Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}"
                         IsOn="True"
                         Toggled="ToggleSwitchIsQuadIR_Toggled"/>
 
@@ -209,7 +209,7 @@
                                          Description="通过三次触摸自动计算合适的笔尖/手指阈值和触摸倍率"
                                          IsExpanded="False">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EaseOfAccess}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Accessibility_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard Header="校准步骤" ContentAlignment="Left">
@@ -251,14 +251,14 @@
                     <controls:LabeledSettingsCard x:Name="CardEnablePressureTouchMode"
                             Header="{x:Static props:CanvasStrings.Canvas_EnablePressureTouch}"
                             Description="{x:Static props:CanvasStrings.Canvas_EnablePressureTouchHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Touch}"
+                            Icon="{x:Static ui:FluentSystemIcons.HandPoint_24_Regular}"
                             SwitchName="ToggleSwitchEnablePressureTouchMode"
                             Toggled="ToggleSwitchEnablePressureTouchMode_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="CardDisablePressure"
                             Header="{x:Static props:CanvasStrings.Canvas_IgnorePressure}"
                             Description="{x:Static props:CanvasStrings.Canvas_DisablePressureHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+                            Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}"
                             SwitchName="ToggleSwitchDisablePressure"
                             Toggled="ToggleSwitchDisablePressure_Toggled" />
 
@@ -268,7 +268,7 @@
                             IsExpanded="{Binding IsOn, ElementName=ToggleSwitchEnablePalmEraser, Mode=OneWay}"
                             d:Visibility="Visible" d:IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EraseTool}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Eraser_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchEnablePalmEraser"
                                 helpers:SettingsBinder.PropertyPath="Canvas.EnablePalmEraser" />
@@ -290,7 +290,7 @@
                     <controls:LabeledSettingsCard
                             Header="{x:Static props:GestureStrings.Gesture_AllowRotateScale}"
                             Description="{x:Static props:GestureStrings.Gesture_AllowRotateScaleHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Rotate}"
+                            Icon="{x:Static ui:FluentSystemIcons.ArrowRotateClockwise_20_Regular}"
                             SwitchName="ToggleSwitchEnableTwoFingerRotationOnSelection"
                             helpers:SettingsBinder.PropertyPath="Gesture.IsEnableTwoFingerRotationOnSelection" />
 
@@ -301,7 +301,7 @@
                     <controls:LabeledSettingsCard x:Name="CardForceFullScreen"
                             Header="{x:Static props:AdvancedStrings.ForceFullScreen}"
                             Description="{x:Static props:AdvancedStrings.ForceFullScreenHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Video}"
+                            Icon="{x:Static ui:FluentSystemIcons.Video_20_Regular}"
                             helpers:SettingsTags.PropertyPath="Advanced.IsEnableForceFullScreen"
                             SwitchName="ToggleSwitchForceFullScreen"
                             Toggled="ToggleSwitchForceFullScreen_Toggled" />
@@ -309,7 +309,7 @@
                     <controls:LabeledSettingsCard x:Name="CardDPIChangeDetection"
                             Header="{x:Static props:AdvancedStrings.DPIChangeDetection}"
                             Description="{x:Static props:AdvancedStrings.DPIChangeDetectionHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.View}"
+                            Icon="{x:Static ui:FluentSystemIcons.Eye_20_Regular}"
                             helpers:SettingsTags.PropertyPath="Advanced.IsEnableDPIChangeDetection"
                             SwitchName="ToggleSwitchDPIChangeDetection"
                             Toggled="ToggleSwitchDPIChangeDetection_Toggled" />
@@ -317,7 +317,7 @@
                     <controls:LabeledSettingsCard x:Name="CardResolutionChangeDetection"
                             Header="{x:Static props:AdvancedStrings.ResolutionChangeDetection}"
                             Description="{x:Static props:AdvancedStrings.ResolutionChangeDetectionHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Accept}"
+                            Icon="{x:Static ui:FluentSystemIcons.Checkmark_20_Regular}"
                             helpers:SettingsTags.PropertyPath="Advanced.IsEnableResolutionChangeDetection"
                             SwitchName="ToggleSwitchResolutionChangeDetection"
                             Toggled="ToggleSwitchResolutionChangeDetection_Toggled" />
@@ -325,7 +325,7 @@
                     <controls:LabeledSettingsCard x:Name="CardFullScreenHelper"
                             Header="{x:Static props:AdvancedStrings.FullScreenHelper}"
                             Description="{x:Static props:AdvancedStrings.FullScreenHelperHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.FullScreen}"
+                            Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}"
                             helpers:SettingsTags.PropertyPath="Advanced.IsEnableFullScreenHelper"
                             SwitchName="ToggleSwitchFullScreenHelper"
                             Toggled="ToggleSwitchFullScreenHelper_Toggled" />
@@ -333,7 +333,7 @@
                     <controls:LabeledSettingsCard x:Name="CardEdgeGestureUtil"
                             Header="{x:Static props:AdvancedStrings.EdgeGestureUtil}"
                             Description="{x:Static props:AdvancedStrings.EdgeGestureUtilHint_Part1}"
-                            Icon="{x:Static ui:SegoeFluentIcons.AlignLeft}"
+                            Icon="{x:Static ui:FluentSystemIcons.TextAlignLeft_20_Regular}"
                             helpers:SettingsTags.PropertyPath="Advanced.IsEnableEdgeGestureUtil"
                             SwitchName="ToggleSwitchEdgeGestureUtil"
                             Toggled="ToggleSwitchEdgeGestureUtil_Toggled" />

@@ -34,13 +34,13 @@
 
                     <controls:LabeledSettingsCard x:Name="CardSupportPowerPoint"
                             Header="{x:Static props:PPTStrings.SupportPowerPoint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Slideshow}"
+                            Icon="{x:Static ui:FluentSystemIcons.ProjectionScreen_20_Regular}"
                             Toggled="ToggleSwitchSupportPowerPoint_Toggled"/>
 
                     <ui:SettingsCard x:Name="CardPPTArchitecture"
                             Header="{x:Static props:PPTStrings.PPTArchitecture}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxPPTArchitecture"
                                   SelectionChanged="ComboBoxPPTArchitecture_SelectionChanged">
@@ -52,60 +52,60 @@
 
                     <controls:LabeledSettingsCard x:Name="CardPowerPointEnhancement"
                             Header="{x:Static props:PPTStrings.Enhancement}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Puzzle}"
+                            Icon="{x:Static ui:FluentSystemIcons.PuzzlePiece_20_Regular}"
                             Toggled="ToggleSwitchPowerPointEnhancement_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardSkipAnimationsWhenGoNext"
                             Header="{x:Static props:PPTStrings.SkipAnimations}"
-                            Icon="{x:Static ui:SegoeFluentIcons.FastForward}"
+                            Icon="{x:Static ui:FluentSystemIcons.FastForward_20_Regular}"
                             Toggled="ToggleSwitchSkipAnimationsWhenGoNext_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardEnableSmartMode"
                             Header="{x:Static props:PPTStrings.SmartMode}"
                             Description="{x:Static props:PPTStrings.SmartModeHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+                            Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}"
                             Toggled="ToggleSwitchEnableSmartMode_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardSupportWPS"
                             Header="{x:Static props:PPTStrings.SupportWPS}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Document}"
+                            Icon="{x:Static ui:FluentSystemIcons.Document_20_Regular}"
                             Toggled="ToggleSwitchSupportWPS_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardEnableWppProcessKill"
                             Header="{x:Static props:PPTStrings.KillWppProcess}"
                             Description="{x:Static props:PPTStrings.KillWppHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Cancel}"
+                            Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}"
                             Toggled="ToggleSwitchEnableWppProcessKill_Toggled"/>
 
                     <TextBlock Text="{x:Static props:PPTStrings.EnterAnnotationOnShow}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"/>
 
                     <controls:LabeledSettingsCard x:Name="CardShowCanvasAtNewSlideShow"
                             Header="{x:Static props:PPTStrings.EnterAnnotationOnShow}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                            Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}"
                             Toggled="ToggleSwitchShowCanvasAtNewSlideShow_Toggled"/>
 
                     <TextBlock Text="{x:Static props:NavStrings.Nav_PPT_Settings}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"/>
 
                     <controls:LabeledSettingsCard x:Name="CardEnableTwoFingerGestureInPresentationMode"
                             Header="{x:Static props:PPTStrings.TwoFingerGesture}"
-                            Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+                            Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}"
                             Toggled="ToggleSwitchEnableTwoFingerGestureInPresentationMode_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardEnableFingerGestureSlideShowControl"
                             Header="{x:Static props:PPTStrings.FingerGestureSlide}"
                             Description="{x:Static props:PPTStrings.FingerGestureSlideHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Handwriting}"
+                            Icon="{x:Static ui:FluentSystemIcons.Pen_20_Regular}"
                             Toggled="ToggleSwitchEnableFingerGestureSlideShowControl_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardEnablePPTTimeCapsule"
                             Header="{x:Static props:PPTStrings.TimeCapsule}"
                             Description="{x:Static props:PPTStrings.TimeCapsuleHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.QuietHours}"
+                            Icon="{x:Static ui:FluentSystemIcons.WeatherMoon_20_Regular}"
                             Toggled="ToggleSwitchEnablePPTTimeCapsule_Toggled"/>
 
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.TimeCapsulePosition}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Location}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Location_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxPPTTimeCapsulePosition"
                                   SelectionChanged="ComboBoxPPTTimeCapsulePosition_SelectionChanged">
@@ -117,7 +117,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.TimeCapsuleOpacity}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EaseOfAccess}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Accessibility_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="{Binding ElementName=SliderPPTTimeCapsuleOpacity, Path=Value, StringFormat={}{0:F2}}"
@@ -132,7 +132,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.TimeCapsuleScale}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Zoom}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Search_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="{Binding ElementName=SliderPPTTimeCapsuleScale, Path=Value, StringFormat={}{0:F1}}"
@@ -148,7 +148,7 @@
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.TimeCapsuleResetPosition}"
                                      Description="{x:Static props:PPTStrings.TimeCapsuleResetPositionHint}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Redo}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowRedo_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <Button Content="{x:Static props:PPTStrings.TimeCapsuleResetPosition}"
                                 Click="ButtonResetPPTTimeCapsulePosition_Click"/>
@@ -157,13 +157,13 @@
                     <controls:LabeledSettingsCard x:Name="CardShowPPTSidebarByDefault"
                             Header="{x:Static props:PPTStrings.ShowQuickPanelInShow}"
                             Description="{x:Static props:PPTStrings.ShowQuickPanelInShowHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.OpenPane}"
+                            Icon="{x:Static ui:FluentSystemIcons.PanelRightExpand_20_Regular}"
                             Toggled="ToggleSwitchShowPPTSidebarByDefault_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardShowPPTModePrompt"
                             Header="{x:Static props:PPTStrings.PPT_ModePrompt_Setting}"
                             Description="{x:Static props:PPTStrings.PPT_ModePrompt_SettingHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Info}"
+                            Icon="{x:Static ui:FluentSystemIcons.Info_20_Regular}"
                             Toggled="ToggleSwitchShowPPTModePrompt_Toggled"/>
 
                     <TextBlock Text="{x:Static props:PPTStrings.AutoScreenshot}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"/>
@@ -171,13 +171,13 @@
                     <controls:LabeledSettingsCard x:Name="CardAutoSaveScreenShotInPowerPoint"
                             Header="{x:Static props:PPTStrings.AutoScreenshot}"
                             Description="{x:Static props:PPTStrings.AutoScreenshotHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Camera}"
+                            Icon="{x:Static ui:FluentSystemIcons.Camera_20_Regular}"
                             Toggled="ToggleSwitchAutoSaveScreenShotInPowerPoint_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardAutoSaveStrokesInPowerPoint"
                             Header="{x:Static props:PPTStrings.AutoSaveStrokes}"
                             Description="{x:Static props:PPTStrings.AutoSaveStrokesHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Save}"
+                            Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                             Toggled="ToggleSwitchAutoSaveStrokesInPowerPoint_Toggled"/>
 
                     <TextBlock Text="{x:Static props:PPTStrings.RememberLastPage}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"/>
@@ -185,22 +185,22 @@
                     <controls:LabeledSettingsCard x:Name="CardNotifyPreviousPage"
                             Header="{x:Static props:PPTStrings.RememberLastPage}"
                             Description="{x:Static props:PPTStrings.RememberLastPageHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.History}"
+                            Icon="{x:Static ui:FluentSystemIcons.History_20_Regular}"
                             Toggled="ToggleSwitchNotifyPreviousPage_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardAlwaysGoToFirstPageOnReenter"
                             Header="{x:Static props:PPTStrings.GoToFirstPageOnReenter}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Rewind}"
+                            Icon="{x:Static ui:FluentSystemIcons.Rewind_20_Regular}"
                             Toggled="ToggleSwitchAlwaysGoToFirstPageOnReenter_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardNotifyHiddenPage"
                             Header="{x:Static props:PPTStrings.NotifyHiddenPage}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Hide}"
+                            Icon="{x:Static ui:FluentSystemIcons.EyeOff_20_Regular}"
                             Toggled="ToggleSwitchNotifyHiddenPage_Toggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardNotifyAutoPlayPresentation"
                             Header="{x:Static props:PPTStrings.NotifyAutoPlay}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Play}"
+                            Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}"
                             Toggled="ToggleSwitchNotifyAutoPlayPresentation_Toggled"/>
 
                     <Rectangle Height="48" />

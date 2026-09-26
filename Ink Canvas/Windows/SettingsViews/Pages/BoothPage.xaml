@@ -34,7 +34,7 @@
                     <controls:LabeledSettingsCard
                         Header="{x:Static props:CanvasStrings.Canvas_LaunchSeewoVideoShowcaseForWhiteboardBooth}"
                         Description="{x:Static props:CanvasStrings.Canvas_LaunchSeewoVideoShowcaseForWhiteboardBoothHint}"
-                        Icon="{x:Static ui:SegoeFluentIcons.Video}"
+                        Icon="{x:Static ui:FluentSystemIcons.Video_20_Regular}"
                         SwitchName="ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth"
                         helpers:SettingsBinder.PropertyPath="Canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth" />
 
@@ -43,7 +43,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:BoothStrings.CameraDevices}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Video}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Video_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxCamera"
                                   MinWidth="200"
@@ -52,7 +52,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:BoothStrings.Rotate}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Rotate}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowRotateClockwise_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxRotation"
                                   MinWidth="200"
@@ -66,7 +66,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:BoothStrings.Resolution_Tooltip}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxResolution"
                                   MinWidth="200"

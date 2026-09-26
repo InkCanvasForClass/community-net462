@@ -137,7 +137,7 @@ namespace Ink_Canvas
             if (RandMaxPeopleOneTime != -1 && TotalCount >= RandMaxPeopleOneTime) return;
             TotalCount++;
             LabelNumberCount.Text = TotalCount.ToString();
-            FontIconStart.Icon = SegoeFluentIcons.People;
+            FontIconStart.Icon = FluentSystemIcons.People_20_Regular;
             BorderBtnAdd.Opacity = 1;
             BorderBtnMinus.Opacity = 1;
         }
@@ -149,7 +149,7 @@ namespace Ink_Canvas
             LabelNumberCount.Text = TotalCount.ToString();
             if (TotalCount == 1)
             {
-                FontIconStart.Icon = SegoeFluentIcons.Contact;
+                FontIconStart.Icon = FluentSystemIcons.Person_20_Regular;
             }
         }
 

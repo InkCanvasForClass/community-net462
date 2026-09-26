@@ -33,13 +33,13 @@
 
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchMiniWhiteboardEnabled"
                         Header="{x:Static props:FloatingBarStrings.MiniWhiteboard_Settings_Enable}"
-                        Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                        Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}"
                         IsOn="True"
                         Toggled="ToggleSwitchMiniWhiteboardEnabled_Toggled" />
 
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchMiniWhiteboardSyncPPT"
                         Header="{x:Static props:FloatingBarStrings.MiniWhiteboard_Settings_SyncPPT}"
-                        Icon="{x:Static ui:SegoeFluentIcons.Slideshow}"
+                        Icon="{x:Static ui:FluentSystemIcons.ProjectionScreen_20_Regular}"
                         IsOn="True"
                         Toggled="ToggleSwitchMiniWhiteboardSyncPPT_Toggled" />
 

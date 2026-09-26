@@ -83,13 +83,13 @@
                             <ui:SettingsCard Header="{x:Static props:StorageStrings.Backup_Manual}"
                                              IsClickEnabled="True" Click="BtnManualBackup_Click">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                             </ui:SettingsCard>
                             <ui:SettingsCard Header="{x:Static props:StorageStrings.Backup_Restore}"
                                              IsClickEnabled="True" Click="BtnRestoreBackup_Click">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.History}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.History_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                             </ui:SettingsCard>
                         </ui:SettingsExpander.Items>

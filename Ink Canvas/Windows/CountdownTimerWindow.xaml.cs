@@ -76,7 +76,7 @@ namespace Ink_Canvas
                         TextBlockSecond.Text = "00";
                         timer.Stop();
                         isTimerRunning = false;
-                        FontIconStart.Icon = SegoeFluentIcons.Play;
+                        FontIconStart.Icon = FluentSystemIcons.Play_20_Regular;
                         BtnStartCover.Visibility = Visibility.Visible;
                         var textForeground = Application.Current.FindResource("TimerWindowTextForeground") as SolidColorBrush;
                         if (textForeground != null)
@@ -265,12 +265,12 @@ namespace Ink_Canvas
             if (WindowState == WindowState.Normal)
             {
                 WindowState = WindowState.Maximized;
-                FontIconFullscreen.Icon = SegoeFluentIcons.BackToWindow;
+                FontIconFullscreen.Icon = FluentSystemIcons.ArrowMinimize_20_Regular;
             }
             else
             {
                 WindowState = WindowState.Normal;
-                FontIconFullscreen.Icon = SegoeFluentIcons.FullScreen;
+                FontIconFullscreen.Icon = FluentSystemIcons.ArrowMaximize_20_Regular;
             }
         }
 
@@ -306,7 +306,7 @@ namespace Ink_Canvas
                     TextBlockHour.Foreground = textForeground3;
                 else
                     TextBlockHour.Foreground = new SolidColorBrush(StringToColor("#FF5B5D5F"));
-                FontIconStart.Icon = SegoeFluentIcons.Play;
+                FontIconStart.Icon = FluentSystemIcons.Play_20_Regular;
                 isTimerRunning = false;
                 timer.Stop();
                 isPaused = false;
@@ -363,7 +363,7 @@ namespace Ink_Canvas
                     TextBlockHour.Foreground = textForeground1;
                 else
                     TextBlockHour.Foreground = Brushes.Black;
-                FontIconStart.Icon = SegoeFluentIcons.Pause;
+                FontIconStart.Icon = FluentSystemIcons.Pause_20_Regular;
                 isPaused = false;
                 timer.Start();
                 UpdateStopTime();
@@ -379,7 +379,7 @@ namespace Ink_Canvas
                     TextBlockHour.Foreground = textForeground3;
                 else
                     TextBlockHour.Foreground = new SolidColorBrush(StringToColor("#FF5B5D5F"));
-                FontIconStart.Icon = SegoeFluentIcons.Play;
+                FontIconStart.Icon = FluentSystemIcons.Play_20_Regular;
                 BorderStopTime.Visibility = Visibility.Collapsed;
                 isPaused = true;
                 timer.Stop();
@@ -395,7 +395,7 @@ namespace Ink_Canvas
                     TextBlockHour.Foreground = textForeground2;
                 else
                     TextBlockHour.Foreground = Brushes.Black;
-                FontIconStart.Icon = SegoeFluentIcons.Pause;
+                FontIconStart.Icon = FluentSystemIcons.Pause_20_Regular;
                 BtnResetCover.Visibility = Visibility.Collapsed;
 
                 if (totalSeconds <= 10)
