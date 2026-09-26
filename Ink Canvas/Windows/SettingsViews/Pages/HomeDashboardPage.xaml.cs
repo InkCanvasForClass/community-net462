@@ -42,7 +42,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
                 if (version != null)
                 {
-                    AppVersionText.Text = "v" + version.Major + "." + version.Minor + "." + version.Build;
+                    AppVersionText.Text = version.Major + "." + version.Minor + "." + version.Build + "." + version.Revision;
+                    var informationalVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                    if (informationalVersion != null)
+                    {
+                        string infoVersion = informationalVersion.InformationalVersion;
+                        int lastDotIndex = infoVersion.LastIndexOf('.');
+                        if (lastDotIndex >= 0 && lastDotIndex < infoVersion.Length - 7)
+                        {
+                            AppVersionText.Text += " (" + infoVersion.Substring(lastDotIndex + 1) + ")";
+                        }
+                    }
                 }
             }
             catch { }

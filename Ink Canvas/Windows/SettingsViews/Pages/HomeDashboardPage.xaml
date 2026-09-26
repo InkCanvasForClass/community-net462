@@ -112,7 +112,7 @@
                                     <Image Source="\Resources\icc.ico" Width="32" Height="32"
                                            RenderOptions.BitmapScalingMode="HighQuality" />
                                     <ikw:SimpleStackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                        <TextBlock Text="Ink Canvas" FontSize="14" FontWeight="SemiBold" />
+                                        <TextBlock Text="ICC-CE" FontSize="14" FontWeight="SemiBold" />
                                         <TextBlock x:Name="AppVersionText" Text=""
                                                    FontSize="12"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />

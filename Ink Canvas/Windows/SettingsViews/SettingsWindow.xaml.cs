@@ -38,6 +38,8 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             InitializeComponent();
 
+            System.Windows.Shell.WindowChrome.SetIsHitTestVisibleInChrome(controlsSearchBox, true);
+
             ApplyCurrentTheme();
             global::Ink_Canvas.Helpers.WindowBackdropHelper.Apply(this, Helpers.SettingsManager.Settings);
 
