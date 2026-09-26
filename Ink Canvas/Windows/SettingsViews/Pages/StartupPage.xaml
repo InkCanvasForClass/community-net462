@@ -35,7 +35,7 @@
         <ui:SettingsCard Header="{x:Static props:StartupStrings.RunAtStartup}"
                          Description="{x:Static props:StartupStrings.RunAtStartupHint}">
             <ui:SettingsCard.HeaderIcon>
-                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
+                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
             </ui:SettingsCard.HeaderIcon>
             <ui:ToggleSwitch x:Name="ToggleSwitchRunAtStartup"
                              Toggled="ToggleSwitchRunAtStartup_Toggled" />
@@ -44,7 +44,7 @@
         <ui:SettingsCard Header="{x:Static props:StartupStrings.FoldAtStartup}"
                          Description="{x:Static props:StartupStrings.FoldAtStartupHint}">
             <ui:SettingsCard.HeaderIcon>
-                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}" />
+                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ChevronLeft_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
             </ui:SettingsCard.HeaderIcon>
             <ui:ToggleSwitch x:Name="ToggleSwitchFoldAtStartup"
                              Toggled="ToggleSwitchFoldAtStartup_Toggled" />
@@ -53,7 +53,7 @@
                     <ui:SettingsCard Header="{x:Static props:StartupStrings.ExternalProtocol}"
                             Description="{x:Static props:StartupStrings.ExternalProtocolHint}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchExternalProtocol"
                                         Toggled="ToggleSwitchExternalProtocol_Toggled" />
@@ -63,7 +63,7 @@
                             Description="{x:Static props:WindowStrings.Tray_EnableTrayIcon}"
                             IsExpanded="{Binding IsOn, ElementName=ToggleSwitchEnableTrayIcon, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pin}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchEnableTrayIcon"
                                         Toggled="ToggleSwitchEnableTrayIcon_Toggled" />
@@ -108,7 +108,7 @@
                     <ui:SettingsCard Header="{x:Static props:CrashStrings.Crash_Title}"
                             Description="{x:Static props:CrashStrings.Crash_Desc}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Warning}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Warning_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxCrashAction"
                                   SelectionChanged="ComboBoxCrashAction_SelectionChanged">
@@ -122,7 +122,7 @@
                             Description="{x:Static props:ThemeStrings.Theme_EnableSplash}"
                             IsExpanded="{Binding IsOn, ElementName=ToggleSwitchEnableSplashScreen, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Photo}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Image_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchEnableSplashScreen"
                                         Toggled="ToggleSwitchEnableSplashScreen_Toggled" />
@@ -198,7 +198,7 @@
                                                     Cursor="Hand"
                                                     Panel.ZIndex="2">
                                                 <Canvas>
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AlignLeft}" FontSize="14"
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextAlignLeft_20_Regular}" FontSize="14"
                                                                  Canvas.Left="11" Canvas.Top="8"
                                                                  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                                 </Canvas>
@@ -210,7 +210,7 @@
                                                     Cursor="Hand"
                                                     Panel.ZIndex="2">
                                                 <Canvas>
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AlignCenter}" FontSize="14"
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextAlignCenter_20_Regular}" FontSize="14"
                                                                  Canvas.Left="11" Canvas.Top="8"
                                                                  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                                 </Canvas>
@@ -222,7 +222,7 @@
                                                     Cursor="Hand"
                                                     Panel.ZIndex="2">
                                                 <Canvas>
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AlignRight}" FontSize="14"
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextAlignRight_20_Regular}" FontSize="14"
                                                                  Canvas.Left="11" Canvas.Top="8"
                                                                  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                                 </Canvas>

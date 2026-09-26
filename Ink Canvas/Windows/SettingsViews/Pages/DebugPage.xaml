@@ -34,14 +34,14 @@ mc:Ignorable="d"
                 <controls:LabeledSettingsCard x:Name="ToggleSwitchDebugConsole"
                     Header="{x:Static props:AdvancedStrings.Debug_ShowConsole_Header}"
                     Description="{x:Static props:AdvancedStrings.Debug_ShowConsole_Desc}"
-                    Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}"
+                    Icon="{x:Static ui:FluentSystemIcons.WrenchScrewdriver_20_Regular}"
                     IsOn="False"
                     Toggled="ToggleSwitchDebugConsole_Toggled"/>
 
                 <controls:LabeledSettingsCard x:Name="ToggleSwitchPPTComDebugProbe"
                     Header="{x:Static props:AdvancedStrings.Debug_PPTComProbe_Header}"
                     Description="{x:Static props:AdvancedStrings.Debug_PPTComProbe_Desc}"
-                    Icon="{x:Static ui:SegoeFluentIcons.Bug}"
+                    Icon="{x:Static ui:FluentSystemIcons.Bug_20_Regular}"
                     IsOn="False"
                     Toggled="ToggleSwitchPPTComDebugProbe_Toggled"/>
 
@@ -51,7 +51,7 @@ mc:Ignorable="d"
                 <ui:SettingsCard Header="{x:Static props:AdvancedStrings.Debug_SimulateCrash_Header}"
                     Description="{x:Static props:AdvancedStrings.Debug_SimulateCrash_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Error}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ErrorCircle_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <Button Content="{x:Static props:AdvancedStrings.Debug_SimulateCrash_Button}" Click="BtnTestCrash_Click"
                         Style="{DynamicResource AccentButtonStyle}"
@@ -61,7 +61,7 @@ mc:Ignorable="d"
                 <ui:SettingsCard Header="{x:Static props:AdvancedStrings.Debug_SimulateHeartbeatTimeout_Header}"
                     Description="{x:Static props:AdvancedStrings.Debug_SimulateHeartbeatTimeout_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Stopwatch}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Timer_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <Button Content="{x:Static props:AdvancedStrings.Debug_SimulateHeartbeatTimeout_Button}" Click="BtnTestHeartbeatTimeout_Click"
                         Padding="14,6"/>
@@ -70,7 +70,7 @@ mc:Ignorable="d"
                 <ui:SettingsCard Header="{x:Static props:AdvancedStrings.Debug_ResetStartupCount_Header}"
                     Description="{x:Static props:AdvancedStrings.Debug_ResetStartupCount_Desc}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <Button Content="{x:Static props:AdvancedStrings.Debug_ResetStartupCount_Button}" Click="BtnResetStartupCount_Click"
                         Padding="14,6"/>
@@ -84,7 +84,7 @@ mc:Ignorable="d"
                     d:Visibility="Visible" d:IsExpanded="True">
 
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Glyph="&#xE91B;"/>
+                        <ui:FontIcon Glyph="&#xE91B;" FontSize="20"/>
                     </ui:SettingsExpander.HeaderIcon>
 
                     <controls:CopyButton Text="You can override the Left indention of a SettingsCard by overriding the SettingsCardLeftIndention"/>

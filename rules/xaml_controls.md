@@ -14,7 +14,7 @@
 |------|------|------|
 | `Header` | string | 设置项标题 |
 | `Description` | string | 设置项描述（可选） |
-| `Icon` | FontIconData? | 标题图标，使用 `SegoeFluentIcons` 枚举值（可选） |
+| `Icon` | FontIconData? | 标题图标，使用 `FluentSystemIcons` 枚举值（可选） |
 | `IconSource` | ImageSource | 自定义图片图标（可选，优先级高于 Icon） |
 | `HeaderIcon` | object | 自定义 HeaderIcon 内容（可选，优先级最高） |
 | `IsOn` | bool | 开关状态，默认 false |
@@ -29,14 +29,14 @@
 <controls:LabeledSettingsCard x:Name="CardShowCursor"
     Header="显示画笔光标"
     Description="绘制时显示光标位置。"
-    Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+    Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}"
     SwitchName="ToggleSwitchShowCursor" />
 
 <!-- 绑定开关状态 + 事件 -->
 <controls:LabeledSettingsCard x:Name="CardAutoUpdate"
     Header="自动检查更新"
     Description="允许后台检查更新并下载新版本。"
-    Icon="{x:Static ui:SegoeFluentIcons.Sync}"
+    Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}"
     IsOn="True"
     SwitchName="ToggleSwitchAutoUpdate"
     Toggled="CardAutoUpdate_Toggled" />
@@ -58,7 +58,7 @@
 <ui:SettingsCard Header="{i18n:I18n Key=Theme_WindowBackdrop}"
                  Description="{i18n:I18n Key=Theme_WindowBackdrop_Description}">
     <ui:SettingsCard.HeaderIcon>
-        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
+        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}" FontSize="20" />
     </ui:SettingsCard.HeaderIcon>
     <ComboBox x:Name="ComboBoxWindowBackdrop"
               SelectionChanged="ComboBoxWindowBackdrop_SelectionChanged">
@@ -83,7 +83,7 @@
                  IsClickEnabled="True"
                  Click="CardFloatingBarButtons_Click">
     <ui:SettingsCard.HeaderIcon>
-        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ViewAll}" />
+        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Grid_20_Regular}" FontSize="20" />
     </ui:SettingsCard.HeaderIcon>
 </ui:SettingsCard>
 ```
@@ -150,7 +150,7 @@ private void SomeFloatSlider_ValueChanged(object sender, RoutedPropertyChangedEv
                      Description="组描述（可选）"
                      IsExpanded="True">
     <ui:SettingsExpander.HeaderIcon>
-        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SomeIcon}" />
+        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" />
     </ui:SettingsExpander.HeaderIcon>
 
     <!-- 右侧内容区域（展开前可见），可放 ToggleSwitch 等 -->
@@ -240,7 +240,7 @@ private void SomeFloatSlider_ValueChanged(object sender, RoutedPropertyChangedEv
 <!-- ✅ 正确：互斥选项使用 ComboBox -->
 <ui:SettingsCard Header="应用主题">
     <ui:SettingsCard.HeaderIcon>
-        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
+        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PaintBrush_20_Regular}" />
     </ui:SettingsCard.HeaderIcon>
     <ComboBox x:Name="ComboBoxTheme"
               SelectionChanged="ComboBoxTheme_SelectionChanged">

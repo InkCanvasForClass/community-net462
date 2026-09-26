@@ -55,35 +55,35 @@ namespace InkCanvas.IACoreHelper
                             var writer = new BinaryWriter(server, System.Text.Encoding.UTF8);
                             byte cmd = reader.ReadByte();
 
-                                if (cmd == IpcConstants.CmdShutdown)
-                                    return;
+                            if (cmd == IpcConstants.CmdShutdown)
+                                return;
 
-                                if (cmd == IpcConstants.CmdRecognize)
+                            if (cmd == IpcConstants.CmdRecognize)
+                            {
+                                var request = RecognizeRequest.ReadFrom(reader);
+                                var response = HandleRecognize(request);
+                                response.WriteTo(writer);
+                                writer.Flush();
+                            }
+                            else if (cmd == IpcConstants.CmdRecognizeSharedMemory)
+                            {
+                                int requestLength = reader.ReadInt32();
+                                int capacity = reader.ReadInt32();
+                                int generation = reader.ReadInt32();
+                                string currentSharedMemoryName = sharedMemoryNamePrefix + generation;
+
+                                if (sharedMemory == null || currentSharedMemoryName != openedSharedMemoryName)
                                 {
-                                    var request = RecognizeRequest.ReadFrom(reader);
-                                    var response = HandleRecognize(request);
-                                    response.WriteTo(writer);
-                                    writer.Flush();
+                                    sharedMemory?.Dispose();
+                                    sharedMemory = MemoryMappedFile.OpenExisting(currentSharedMemoryName);
+                                    openedSharedMemoryName = currentSharedMemoryName;
                                 }
-                                else if (cmd == IpcConstants.CmdRecognizeSharedMemory)
-                                {
-                                    int requestLength = reader.ReadInt32();
-                                    int capacity = reader.ReadInt32();
-                                    int generation = reader.ReadInt32();
-                                    string currentSharedMemoryName = sharedMemoryNamePrefix + generation;
 
-                                    if (sharedMemory == null || currentSharedMemoryName != openedSharedMemoryName)
-                                    {
-                                        sharedMemory?.Dispose();
-                                        sharedMemory = MemoryMappedFile.OpenExisting(currentSharedMemoryName);
-                                        openedSharedMemoryName = currentSharedMemoryName;
-                                    }
-
-                                    int status = HandleSharedMemoryRecognize(sharedMemory, requestLength, capacity, out int responseLength);
-                                    writer.Write(status);
-                                    writer.Write(responseLength);
-                                    writer.Flush();
-                                }
+                                int status = HandleSharedMemoryRecognize(sharedMemory, requestLength, capacity, out int responseLength);
+                                writer.Write(status);
+                                writer.Write(responseLength);
+                                writer.Flush();
+                            }
                         }
                         catch (FileNotFoundException)
                         {

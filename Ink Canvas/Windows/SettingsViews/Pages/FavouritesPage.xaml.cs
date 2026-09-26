@@ -2,6 +2,7 @@ using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Ink_Canvas.Windows.SettingsViews.Pages
 {
@@ -57,7 +58,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 };
                 card.HeaderIcon = new iNKORE.UI.WPF.Modern.Controls.FontIcon
                 {
-                    Icon = iNKORE.UI.WPF.Modern.Common.IconKeys.SegoeFluentIcons.FavoriteStar,
+                    Icon = iNKORE.UI.WPF.Modern.Common.IconKeys.FluentSystemIcons.Star_20_Regular,
+                    FontSize = 20,
+                    RenderTransformOrigin = new Point(0.5, 0.5),
+                    RenderTransform = new ScaleTransform(1.3, 1.3),
                 };
                 string path = entry.PropertyPath;
                 card.Click += (s, args) =>

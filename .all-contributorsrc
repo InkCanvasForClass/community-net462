@@ -2,10 +2,7 @@
   "$schema": "https://www.schemastore.org/all-contributors.json",
   "projectName": "community",
   "projectOwner": "InkCanvasForClass",
-  "files": [
-    "README.md",
-    "README-en.md"
-  ],
+  "files": ["README.md", "README-en.md"],
   "commitType": "docs",
   "commitConvention": "angular",
   "contributorsPerLine": 5,

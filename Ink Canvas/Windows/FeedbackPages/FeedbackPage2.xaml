@@ -18,7 +18,7 @@
             <ui:SettingsCard Header="{x:Static props:FeedbackStrings.Page2_SoftwareInfo}"
                              Description="{x:Static props:FeedbackStrings.Page2_SoftwareInfoDesc}">
                 <ui:SettingsCard.HeaderIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AppIconDefault}"/>
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Apps_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                 </ui:SettingsCard.HeaderIcon>
                 <ikw:SimpleStackPanel Spacing="8">
                     <TextBlock x:Name="TextAppVersionInfo" Text="" FontSize="14" TextWrapping="Wrap"/>
@@ -28,7 +28,7 @@
             <ui:SettingsCard Header="{x:Static props:FeedbackStrings.Page2_SystemInfo}"
                              Description="{x:Static props:FeedbackStrings.Page2_SystemInfoDesc}">
                 <ui:SettingsCard.HeaderIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.PC1}"/>
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Desktop_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                 </ui:SettingsCard.HeaderIcon>
                 <ikw:SimpleStackPanel Spacing="8">
                     <TextBlock x:Name="TextSystemInfo" Text="" FontSize="14" TextWrapping="Wrap"/>
@@ -38,7 +38,7 @@
             <ui:SettingsCard Header="{x:Static props:FeedbackStrings.Page2_DeviceInfo}"
                              Description="{x:Static props:FeedbackStrings.Page2_DeviceInfoDesc}">
                 <ui:SettingsCard.HeaderIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Devices2}"/>
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PhoneLaptop_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                 </ui:SettingsCard.HeaderIcon>
                 <ikw:SimpleStackPanel Spacing="8">
                     <TextBlock x:Name="TextDeviceInfo" Text="" FontSize="14" TextWrapping="Wrap"/>
@@ -49,7 +49,7 @@
                              Header="{x:Static props:FeedbackStrings.Page2_Config}"
                              Description="{x:Static props:FeedbackStrings.Page2_ConfigDesc}">
                 <ui:SettingsCard.HeaderIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}"/>
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                 </ui:SettingsCard.HeaderIcon>
                 <ikw:SimpleStackPanel Spacing="8">
                     <TextBlock x:Name="TextConfigurationInfo" Text="" FontSize="14" TextWrapping="Wrap"/>

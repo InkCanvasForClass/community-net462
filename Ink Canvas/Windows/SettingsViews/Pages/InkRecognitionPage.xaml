@@ -34,7 +34,7 @@
 
                     <controls:LabeledSettingsCard x:Name="CardEnableInkToShape"
                             Header="{x:Static props:CanvasStrings.InkRecog_EnableInkRecognition}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Draw}"
+                            Icon="{x:Static ui:FluentSystemIcons.DrawShape_20_Regular}"
                             SwitchName="ToggleSwitchEnableInkToShape"
                             Toggled="ToggleSwitchEnableInkToShape_Toggled" />
 
@@ -51,7 +51,7 @@
                     <controls:LabeledSettingsCard x:Name="CardEnableWinRtHandwritingStrokeBeautify"
                             Header="{x:Static props:CanvasStrings.InkRecog_HandwritingBeautify}"
                             Description="{x:Static props:CanvasStrings.InkRecog_HandwritingBeautifyHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.PenWorkspace}"
+                            Icon="{x:Static ui:FluentSystemIcons.Pen_20_Regular}"
                             SwitchName="ToggleSwitchEnableWinRtHandwritingStrokeBeautify"
                             Toggled="ToggleSwitchEnableWinRtHandwritingStrokeBeautify_Toggled" />
 
@@ -80,7 +80,7 @@
                             Header="{x:Static props:CanvasStrings.InkRecog_BlockRectFakePressure}"
                             ShowWhen="{Binding IsOn, ElementName=CardEnableInkToShape}"
                             d:Visibility="Visible"
-                            Icon="{x:Static ui:SegoeFluentIcons.RectangularClipping}"
+                            Icon="{x:Static ui:FluentSystemIcons.Crop_20_Regular}"
                             SwitchName="ToggleSwitchEnableInkToShapeNoFakePressureRectangle"
                             Toggled="ToggleSwitchEnableInkToShapeNoFakePressureRectangle_Toggled" />
 
@@ -88,7 +88,7 @@
                             Header="{x:Static props:CanvasStrings.InkRecog_BlockTriFakePressure}"
                             ShowWhen="{Binding IsOn, ElementName=CardEnableInkToShape}"
                             d:Visibility="Visible"
-                            Icon="{x:Static ui:SegoeFluentIcons.IncidentTriangle}"
+                            Icon="{x:Static ui:FluentSystemIcons.Warning_20_Filled}"
                             SwitchName="ToggleSwitchEnableInkToShapeNoFakePressureTriangle"
                             Toggled="ToggleSwitchEnableInkToShapeNoFakePressureTriangle_Toggled" />
 
@@ -97,7 +97,7 @@
                             helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardEnableInkToShape, Mode=OneWay}"
                             d:Visibility="Visible" d:IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Items>
                             <ui:SettingsCard ContentAlignment="Left">
@@ -126,7 +126,7 @@
                             IsExpanded="{Binding IsOn, ElementName=ToggleSwitchAutoStraightenLine, Mode=OneWay}"
                             d:Visibility="Visible" d:IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.LineDisplay}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Table_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchAutoStraightenLine"
                                 Toggled="ToggleSwitchAutoStraightenLine_Toggled" />
@@ -185,7 +185,7 @@
                             IsExpanded="{Binding IsOn, ElementName=ToggleSwitchLineEndpointSnapping, Mode=OneWay}"
                             d:Visibility="Visible" d:IsExpanded="True">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:ToggleSwitch x:Name="ToggleSwitchLineEndpointSnapping"
                                 Toggled="ToggleSwitchLineEndpointSnapping_Toggled" />

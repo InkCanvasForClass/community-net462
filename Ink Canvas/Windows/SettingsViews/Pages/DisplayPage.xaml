@@ -34,7 +34,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_Label}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxTheme"
                                   SelectedIndex="0"
@@ -47,7 +47,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_WindowBackdrop}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxWindowBackdrop"
                                   SelectionChanged="ComboBoxWindowBackdrop_SelectionChanged">
@@ -64,7 +64,7 @@
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_LanguageLabel}"
                             Description="{x:Static props:ThemeStrings.Theme_Language_RestartHint}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Globe}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Globe_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxLanguage"
                                   SelectedIndex="0"
@@ -82,13 +82,13 @@
 
                     <controls:LabeledSettingsCard x:Name="CardEnableQuickPanel"
                             Header="{x:Static props:ThemeStrings.Theme_EnableQuickPanel}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Pinned}"
+                            Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}"
                             SwitchName="ToggleSwitchEnableQuickPanel"
                             Toggled="ToggleSwitchEnableQuickPanel_Toggled" />
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_QuickPanelBottomOffset}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronDown}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ChevronDown_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="QuickPanelBottomOffsetText"
@@ -103,7 +103,7 @@
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_UnfoldButtonIcon}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ChevronRight_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ComboBox x:Name="ComboBoxUnFoldBtnImg"
                                   SelectedIndex="0"
@@ -116,13 +116,13 @@
 
                     <controls:LabeledSettingsCard x:Name="CardAllowDragSidePanel"
                             Header="{x:Static props:ThemeStrings.Theme_AllowDragSidePanel}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Touch}"
+                            Icon="{x:Static ui:FluentSystemIcons.HandPoint_24_Regular}"
                             SwitchName="ToggleSwitchAllowDragSidePanel"
                             Toggled="ToggleSwitchAllowDragSidePanel_Toggled" />
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_QuickPanelOpacity}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.View}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Eye_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="QuickPanelOpacityText"
@@ -137,14 +137,14 @@
 
                     <controls:LabeledSettingsCard x:Name="CardAutoCollapseQuickPanel"
                             Header="{x:Static props:ThemeStrings.Theme_AutoCollapseQuickPanel}"
-                            Icon="{x:Static ui:SegoeFluentIcons.ChevronDown}"
+                            Icon="{x:Static ui:FluentSystemIcons.ChevronDown_20_Regular}"
                             SwitchName="ToggleSwitchAutoCollapseQuickPanel"
                             Toggled="ToggleSwitchAutoCollapseQuickPanel_Toggled" />
 
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_AutoCollapseQuickPanelDelay}"
                             IsEnabled="{Binding ElementName=ToggleSwitchAutoCollapseQuickPanel, Path=IsOn}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.History}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.History_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="AutoCollapseDelayText"

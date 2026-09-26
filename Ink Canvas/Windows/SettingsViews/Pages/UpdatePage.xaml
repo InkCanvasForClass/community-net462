@@ -90,7 +90,7 @@
                                         Style="{DynamicResource AccentButtonStyle}"
                                         Click="CheckUpdateButton_Click">
                                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Refresh}" FontSize="14" />
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowClockwise_20_Regular}" FontSize="14" />
                                         <TextBlock Text="{x:Static props:UpdateStrings.Btn_CheckUpdate}" />
                                     </ikw:SimpleStackPanel>
                                 </Button>
@@ -99,7 +99,7 @@
                                         Style="{DynamicResource AccentButtonStyle}"
                                         Click="UpdateNowButton_Click">
                                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Download}" FontSize="14" />
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowDownload_20_Regular}" FontSize="14" />
                                         <TextBlock Text="{x:Static props:UpdateStrings.Btn_DownloadAndInstall}" />
                                     </ikw:SimpleStackPanel>
                                 </Button>
@@ -107,7 +107,7 @@
                                         Visibility="Collapsed"
                                         Click="UpdateLaterButton_Click">
                                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.QuietHours}" FontSize="14" />
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WeatherMoon_20_Regular}" FontSize="14" />
                                         <TextBlock Text="{x:Static props:UpdateStrings.Btn_InstallOnExit}" />
                                     </ikw:SimpleStackPanel>
                                 </Button>
@@ -115,7 +115,7 @@
                                         Visibility="Collapsed"
                                         Click="SkipVersionButton_Click">
                                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cancel}" FontSize="14" />
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}" FontSize="14" />
                                         <TextBlock Text="{x:Static props:UpdateStrings.Btn_SkipVersion}" />
                                     </ikw:SimpleStackPanel>
                                 </Button>
@@ -123,7 +123,7 @@
                                         Visibility="Collapsed"
                                         Click="CancelDownloadButton_Click">
                                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cancel}" FontSize="14" />
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}" FontSize="14" />
                                         <TextBlock Text="{x:Static props:CommonStrings.Common_Cancel}" />
                                     </ikw:SimpleStackPanel>
                                 </Button>
@@ -170,14 +170,14 @@
                             <controls:LabeledSettingsCard x:Name="CardAutoUpdate"
                                                           Header="{x:Static props:UpdateStrings.Header_AutoUpdate}"
                                                           Description="{x:Static props:StartupStrings.AutoUpdateHint}"
-                                                          Icon="{x:Static ui:SegoeFluentIcons.Sync}"
+                                                          Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}"
                                                           SwitchName="ToggleSwitchIsAutoUpdate"
                                                           Toggled="ToggleSwitchIsAutoUpdate_Toggled" />
 
                             <controls:LabeledSettingsCard x:Name="CardSilentUpdate"
                                                           Header="{x:Static props:UpdateStrings.Header_SilentUpdate}"
                                                           Description="{x:Static props:StartupStrings.SilentUpdateHint}"
-                                                          Icon="{x:Static ui:SegoeFluentIcons.QuietHours}"
+                                                          Icon="{x:Static ui:FluentSystemIcons.WeatherMoon_20_Regular}"
                                                           SwitchName="ToggleSwitchIsAutoUpdateWithSilence"
                                                           ShowWhen="{Binding IsOn, ElementName=CardAutoUpdate}"
                                                           d:Visibility="Visible"
@@ -186,7 +186,7 @@
                             <controls:LabeledSettingsCard x:Name="CardSmartUpdate"
                                                           Header="{x:Static props:StartupStrings.SmartUpdate}"
                                                           Description="{x:Static props:StartupStrings.SmartUpdateHint}"
-                                                          Icon="{x:Static ui:SegoeFluentIcons.CloudDownload}"
+                                                          Icon="{x:Static ui:FluentSystemIcons.CloudArrowDown_20_Regular}"
                                                           SwitchName="ToggleSwitchIsSmartUpdate"
                                                           Toggled="ToggleSwitchIsSmartUpdate_Toggled" />
 
@@ -195,7 +195,7 @@
                                  Visibility="{Binding IsOn, ElementName=CardSilentUpdate, Converter={StaticResource BooleanToVisibilityConverter}}"
                                  d:Visibility="Visible" d:IsExpanded="True">
                                 <ui:SettingsExpander.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsExpander.HeaderIcon>
                                 <ui:SettingsExpander.Items>
                                     <ui:SettingsCard Header="{x:Static props:UpdateStrings.SilentUpdate_TimeRangeSettings}"
@@ -227,7 +227,7 @@
                             <ui:SettingsCard Header="{x:Static props:UpdateStrings.Update_Channel}"
                                              Description="{x:Static props:StartupStrings.UpdateChannelHint}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SyncFolder}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.FolderSync_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                                 <ComboBox x:Name="UpdateChannelSelector"
                                           SelectionChanged="UpdateChannelSelector_SelectionChanged">
@@ -240,7 +240,7 @@
                             <ui:SettingsCard Header="{x:Static props:StartupStrings.UpdatePackageArchitecture}"
                                              Description="{x:Static props:StartupStrings.UpdatePackageArchitectureHint}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WrenchScrewdriver_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                                 <ComboBox x:Name="UpdatePackageArchitectureSelector"
                                           SelectionChanged="UpdatePackageArchitectureSelector_SelectionChanged">
@@ -255,7 +255,7 @@
                             <ui:SettingsCard Header="{x:Static props:BtnStrings.VersionFix}"
                                              Description="{x:Static props:StartupStrings.FixVersionHint}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Repair}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Wrench_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                                 <Button x:Name="FixVersionButton" Content="{x:Static props:BtnStrings.VersionFix}"
                                         Click="FixVersionButton_Click" />
@@ -269,7 +269,7 @@
                             <ui:SettingsCard Header="{x:Static props:UpdateStrings.History_SelectVersion}"
                                              Description="{x:Static props:UpdateStrings.History_SelectVersionDesc}">
                                 <ui:SettingsCard.HeaderIcon>
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.History}" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.History_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                                 </ui:SettingsCard.HeaderIcon>
                                 <ComboBox x:Name="VersionComboBox"
                                           DisplayMemberPath="Version"
@@ -297,7 +297,7 @@
                                     Style="{DynamicResource AccentButtonStyle}"
                                     Click="RollbackButton_Click">
                                 <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Undo}" FontSize="14" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowUndo_20_Regular}" FontSize="14" />
                                     <TextBlock Text="{x:Static props:UpdateStrings.Btn_RollbackToVersion}" />
                                 </ikw:SimpleStackPanel>
                             </Button>

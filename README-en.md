@@ -118,7 +118,6 @@ If it still doesn't run, please [install `Microsoft Office`](https://www.coolhub
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-
 ## 🤝 Acknowledgments
 
 Thanks to [yuwenhui2020](https://github.com/yuwenhui2020) for their contributions to the `Ink Canvas User Guide`!  

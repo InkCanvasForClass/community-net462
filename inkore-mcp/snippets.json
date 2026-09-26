@@ -326,7 +326,7 @@
       "snippets": [
         {
           "title": "基本 NavigationView",
-          "code": "<ui:NavigationView x:Name=\"NavigationView_Root\" IsPaneOpen=\"False\"\n    SelectionChanged=\"NavigationView_SelectionChanged\">\n    <ui:NavigationView.MenuItems>\n        <ui:NavigationViewItem x:Name=\"NavigationViewItem_Home\" Content=\"Home\">\n            <ui:NavigationViewItem.Icon>\n                <ui:FontIcon Icon=\"{x:Static ui:SegoeFluentIcons.Home}\"/>\n            </ui:NavigationViewItem.Icon>\n        </ui:NavigationViewItem>\n        <ui:NavigationViewItem x:Name=\"NavigationViewItem_Apps\" Content=\"Apps\">\n            <ui:NavigationViewItem.Icon>\n                <ui:FontIcon Icon=\"{x:Static ui:SegoeFluentIcons.OEM}\"/>\n            </ui:NavigationViewItem.Icon>\n        </ui:NavigationViewItem>\n        <ui:NavigationViewItem x:Name=\"NavigationViewItem_Games\" Content=\"Games\">\n            <ui:NavigationViewItem.Icon>\n                <ui:FontIcon Icon=\"{x:Static ui:SegoeFluentIcons.Game}\"/>\n            </ui:NavigationViewItem.Icon>\n        </ui:NavigationViewItem>\n    </ui:NavigationView.MenuItems>\n    <ui:Frame x:Name=\"Frame_Main\"/>\n</ui:NavigationView>",
+          "code": "<ui:NavigationView x:Name=\"NavigationView_Root\" IsPaneOpen=\"False\"\n    SelectionChanged=\"NavigationView_SelectionChanged\">\n    <ui:NavigationView.MenuItems>\n        <ui:NavigationViewItem x:Name=\"NavigationViewItem_Home\" Content=\"Home\">\n            <ui:NavigationViewItem.Icon>\n                <ui:FontIcon Icon=\"{x:Static ui:FluentSystemIcons.Home_20_Regular}\"/>\n            </ui:NavigationViewItem.Icon>\n        </ui:NavigationViewItem>\n        <ui:NavigationViewItem x:Name=\"NavigationViewItem_Apps\" Content=\"Apps\">\n            <ui:NavigationViewItem.Icon>\n                <ui:FontIcon Icon=\"{x:Static ui:FluentSystemIcons.Apps_20_Regular}\"/>\n            </ui:NavigationViewItem.Icon>\n        </ui:NavigationViewItem>\n        <ui:NavigationViewItem x:Name=\"NavigationViewItem_Games\" Content=\"Games\">\n            <ui:NavigationViewItem.Icon>\n                <ui:FontIcon Icon=\"{x:Static ui:FluentSystemIcons.Games_24_Regular}\"/>\n            </ui:NavigationViewItem.Icon>\n        </ui:NavigationViewItem>\n    </ui:NavigationView.MenuItems>\n    <ui:Frame x:Name=\"Frame_Main\"/>\n</ui:NavigationView>",
           "source": "samples/NavigationViewExample/MainWindow.xaml"
         }
       ]
@@ -347,7 +347,7 @@
         },
         {
           "title": "带 FontIcon 的 TreeView 模板",
-          "code": "<DataTemplate x:Key=\"FileTemplate\">\n    <StackPanel Orientation=\"Horizontal\">\n        <ui:FontIcon Icon=\"{x:Static ui:SegoeFluentIcons.Document}\" FontSize=\"20\"/>\n        <TextBlock Margin=\"0,0,10,0\" />\n        <TextBlock Text=\"{Binding Name}\" />\n    </StackPanel>\n</DataTemplate>",
+          "code": "<DataTemplate x:Key=\"FileTemplate\">\n    <StackPanel Orientation=\"Horizontal\">\n        <ui:FontIcon Icon=\"{x:Static ui:FluentSystemIcons.Document_20_Regular}\" FontSize=\"20\"/>\n        <TextBlock Margin=\"0,0,10,0\" />\n        <TextBlock Text=\"{Binding Name}\" />\n    </StackPanel>\n</DataTemplate>",
           "source": "Gallery/Pages/Controls/Windows/TreeViewPage.xaml"
         }
       ]
@@ -417,11 +417,11 @@
     },
     "FontIcon": {
       "namespace": "ui:",
-      "description": "字体图标控件，使用 SegoeFluentIcons 枚举来引用图标。",
+      "description": "字体图标控件，使用 FluentSystemIcons 枚举来引用图标。",
       "snippets": [
         {
-          "title": "使用 SegoeFluentIcons 枚举",
-          "code": "<ui:FontIcon Icon=\"{x:Static ui:SegoeFluentIcons.Home}\"/>",
+          "title": "使用 FluentSystemIcons 枚举",
+          "code": "<ui:FontIcon Icon=\"{x:Static ui:FluentSystemIcons.Home_20_Regular}\"/>",
           "source": "samples/NavigationViewExample/MainWindow.xaml"
         },
         {
@@ -431,7 +431,7 @@
         },
         {
           "title": "带字体大小的 FontIcon",
-          "code": "<ui:FontIcon Icon=\"{x:Static ui:SegoeFluentIcons.Document}\" FontSize=\"20\"/>",
+          "code": "<ui:FontIcon Icon=\"{x:Static ui:FluentSystemIcons.Document_20_Regular}\" FontSize=\"20\"/>",
           "source": "Gallery/Pages/Controls/Windows/TreeViewPage.xaml"
         }
       ]

@@ -94,7 +94,7 @@
                         VerticalAlignment="Top"
                         CornerRadius="10"
                         Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}"
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Shield_20_Regular}"
                                  FontSize="24"
                                  HorizontalAlignment="Center"
                                  VerticalAlignment="Center" />
@@ -158,7 +158,7 @@
                         Margin="0,0,8,0"
                         Click="ButtonCancel_Click">
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cancel}" FontSize="12" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Dismiss_20_Regular}" FontSize="12" />
                         <TextBlock Text="取消" />
                     </ikw:SimpleStackPanel>
                 </Button>
@@ -171,7 +171,7 @@
                         Style="{DynamicResource AccentButtonStyle}"
                         Click="ButtonAccept_Click">
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Accept}" FontSize="12" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Checkmark_20_Regular}" FontSize="12" />
                         <TextBlock Text="同意" />
                     </ikw:SimpleStackPanel>
                 </Button>

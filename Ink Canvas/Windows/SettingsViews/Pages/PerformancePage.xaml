@@ -42,7 +42,7 @@
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchEnableMonitoring"
                         Header="{x:Static props:PerformanceStrings.EnableMonitoring}"
                         Description="{x:Static props:PerformanceStrings.EnableMonitoringHint}"
-                        Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}"
+                        Icon="{x:Static ui:FluentSystemIcons.TopSpeed_20_Regular}"
                         IsOn="False"
                         Toggled="ToggleSwitchEnableMonitoring_Toggled"/>
 
@@ -55,7 +55,7 @@
                         Description=""
                         ContentAlignment="Left">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.PreviewLink}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PreviewLink_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel x:Name="PanelCurrentMetrics" Spacing="12"
                             Orientation="Horizontal" Visibility="Collapsed">
@@ -92,7 +92,7 @@
                         Header="{x:Static props:PerformanceStrings.HistoryHint}"
                         ContentAlignment="Left">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AreaChart}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DataArea_24_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Spacing="8">
                             <TextBlock x:Name="TextHistorySummary"
@@ -133,7 +133,7 @@
                         Description="{x:Static props:PerformanceStrings.HistoryHint}"
                         ContentAlignment="Left">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Draw}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DrawShape_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Spacing="8">
                             <TextBlock x:Name="TextSmoothingHistorySummary"
@@ -194,7 +194,7 @@
                         Header="{x:Static props:PerformanceStrings.HistorySection}"
                         Description="{x:Static props:PerformanceStrings.ClearHistory}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Delete}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Delete_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <Button Content="{x:Static props:PerformanceStrings.ClearHistory}"
                                 Click="CardClearHistory_Click" />
@@ -208,7 +208,7 @@
                         Header="{x:Static props:PerformanceStrings.DeviceScoreHint}"
                         ContentAlignment="Left">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Health}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.HeartPulse_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Spacing="12">
                             <ikw:SimpleStackPanel x:Name="PanelDeviceScoreResult" Spacing="8"
@@ -257,7 +257,7 @@
                         Header="{x:Static props:PerformanceStrings.DeviceScoreSection}"
                         Description="{x:Static props:PerformanceStrings.DeviceScoreHint}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <Button x:Name="BtnRunDeviceTest"
                                 Content="{x:Static props:PerformanceStrings.RunDeviceTest}"
@@ -272,7 +272,7 @@
                         Header="{x:Static props:PerformanceStrings.InkSmoothingHint}"
                         ContentAlignment="Left">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Draw}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DrawShape_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Spacing="12">
                             <TextBlock x:Name="TextInkSmoothingInactive"

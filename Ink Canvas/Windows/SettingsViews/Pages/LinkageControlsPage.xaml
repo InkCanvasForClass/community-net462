@@ -35,14 +35,14 @@
 
                     <controls:LabeledSettingsCard x:Name="CardShowPPTButton"
                             Header="{x:Static props:PPTStrings.ShowFlipButtons}"
-                            Icon="{x:Static ui:SegoeFluentIcons.ShowResults}"
+                            Icon="{x:Static ui:FluentSystemIcons.Search_20_Regular}"
                             Toggled="ToggleSwitchShowPPTButton_OnToggled"/>
 
                     <ui:SettingsExpander Header="{x:Static props:PPTStrings.Position_Left}" d:Visibility="Visible" d:IsExpanded="True"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                             helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidLeft}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.CaretLeft_20_Filled}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Content>
                             <CheckBox x:Name="CheckboxEnableLSPPTButton" Checked="CheckboxEnableLSPPTButton_IsCheckChanged" Unchecked="CheckboxEnableLSPPTButton_IsCheckChanged"/>
@@ -69,7 +69,7 @@
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                             helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidRight}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.CaretRight_20_Filled}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Content>
                             <CheckBox x:Name="CheckboxEnableRSPPTButton" Checked="CheckboxEnableRSPPTButton_IsCheckChanged" Unchecked="CheckboxEnableRSPPTButton_IsCheckChanged"/>
@@ -96,7 +96,7 @@
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                             helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidDown}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.CaretDown_20_Filled}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Content>
                             <CheckBox x:Name="CheckboxEnableLBPPTButton" Checked="CheckboxEnableLBPPTButton_IsCheckChanged" Unchecked="CheckboxEnableLBPPTButton_IsCheckChanged"/>
@@ -123,7 +123,7 @@
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                             helpers:SettingsExpanderSafety.SafeExpanded="{Binding IsOn, ElementName=CardShowPPTButton, Mode=OneWay}">
                         <ui:SettingsExpander.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CaretSolidDown}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.CaretDown_20_Filled}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsExpander.HeaderIcon>
                         <ui:SettingsExpander.Content>
                             <CheckBox x:Name="CheckboxEnableRBPPTButton" Checked="CheckboxEnableRBPPTButton_IsCheckChanged" Unchecked="CheckboxEnableRBPPTButton_IsCheckChanged"/>
@@ -149,7 +149,7 @@
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.SideGroupTitle}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DockLeft}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PanelLeft_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6">
                             <CheckBox x:Name="CheckboxSPPTDisplayPage" Content="{x:Static props:PPTStrings.ShowPageNumber}" Checked="CheckboxSPPTDisplayPage_IsCheckChange" Unchecked="CheckboxSPPTDisplayPage_IsCheckChange"/>
@@ -161,7 +161,7 @@
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.BottomGroupTitle}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DockBottom}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PanelBottom_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6">
                             <CheckBox x:Name="CheckboxBPPTDisplayPage" Content="{x:Static props:PPTStrings.ShowPageNumber}" Checked="CheckboxBPPTDisplayPage_IsCheckChange" Unchecked="CheckboxBPPTDisplayPage_IsCheckChange"/>
@@ -173,7 +173,7 @@
                     <ui:SettingsCard Header="{x:Static props:PPTStrings.FlipButtonsScale}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Zoom}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Search_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="PPTNavBarScaleText"
@@ -187,21 +187,21 @@
                     <controls:LabeledSettingsCard x:Name="CardEnablePPTButtonPageClickable"
                             Header="{x:Static props:PPTStrings.PageButtonClickable}"
                             Description="{x:Static props:PPTStrings.PageButtonClickableHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+                            Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Toggled="ToggleSwitchEnablePPTButtonPageClickable_OnToggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardEnablePPTButtonEnhancedPreview"
                             Header="{x:Static props:PPTStrings.EnhancedPreview}"
                             Description="{x:Static props:PPTStrings.EnhancedPreviewHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}"
+                            Icon="{x:Static ui:FluentSystemIcons.Cursor_20_Regular}"
                             Visibility="{Binding IsOn, ElementName=CardEnablePPTButtonPageClickable, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Toggled="ToggleSwitchEnablePPTButtonEnhancedPreview_OnToggled"/>
 
                     <controls:LabeledSettingsCard x:Name="CardEnablePPTButtonLongPressPageTurn"
                             Header="{x:Static props:PPTStrings.LongPressPageTurn}"
                             Description="{x:Static props:PPTStrings.LongPressPageTurnHint}"
-                            Icon="{x:Static ui:SegoeFluentIcons.Touch}"
+                            Icon="{x:Static ui:FluentSystemIcons.HandPoint_24_Regular}"
                             Visibility="{Binding IsOn, ElementName=CardShowPPTButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Toggled="ToggleSwitchEnablePPTButtonLongPressPageTurn_OnToggled"/>
 

@@ -20,7 +20,7 @@
                              Header="{x:Static props:FeedbackStrings.Page3_PastebinUpload}"
                              Description="{x:Static props:FeedbackStrings.Page3_PastebinUploadDesc}">
                 <ui:SettingsExpander.HeaderIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Cloud}"/>
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Cloud_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                 </ui:SettingsExpander.HeaderIcon>
                 <Button x:Name="BtnUploadPastebin"
                         Content="{x:Static props:FeedbackStrings.Page3_UploadToPastebin}">
@@ -44,7 +44,7 @@
                                      Header=""
                                      Visibility="Collapsed">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <Button x:Name="BtnCopyPasteUrl"
                                 Content="{x:Static props:FeedbackStrings.Page3_CopyPastebinUrl}">
@@ -61,7 +61,7 @@
                              Header="{x:Static props:FeedbackStrings.Page3_GitHub}"
                              Description="{x:Static props:FeedbackStrings.Page3_GitHubDesc}">
                 <ui:SettingsExpander.HeaderIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Mail}"/>
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Mail_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                 </ui:SettingsExpander.HeaderIcon>
                 <Button x:Name="BtnOpenGitHubIssue"
                         Content="{x:Static props:FeedbackStrings.Page3_OpenGitHub}">
@@ -74,7 +74,7 @@
                                      Header="{x:Static props:FeedbackStrings.Page3_CopyIssueUrl}"
                                      IsClickEnabled="True">
                         <ui:SettingsCard.ActionIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Copy}"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Copy_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}"/>
                         </ui:SettingsCard.ActionIcon>
                     </ui:SettingsCard>
                 </ui:SettingsExpander.Items>
@@ -85,7 +85,7 @@
                              Header="{x:Static props:FeedbackStrings.Page3_Markdown}"
                              Description="{x:Static props:FeedbackStrings.Page3_MarkdownDesc}">
                 <ui:SettingsExpander.HeaderIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Code}"/>
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Code_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                 </ui:SettingsExpander.HeaderIcon>
                 <Button x:Name="BtnCopyMarkdown"
                         Content="{x:Static props:FeedbackStrings.Page3_CopyMarkdown}">

@@ -610,12 +610,12 @@ namespace Ink_Canvas.Windows
                 if (isFinish)
                 {
                     BtnConfirmText.Text = Properties.OobeStrings.Oobe_SaveAndStart;
-                    BtnConfirmIcon.Icon = SegoeFluentIcons.Accept;
+                    BtnConfirmIcon.Icon = FluentSystemIcons.Checkmark_20_Regular;
                 }
                 else
                 {
                     BtnConfirmText.Text = Properties.OobeStrings.Oobe_Next;
-                    BtnConfirmIcon.Icon = SegoeFluentIcons.ChevronRight;
+                    BtnConfirmIcon.Icon = FluentSystemIcons.ChevronRight_20_Regular;
                 }
 
                 UpdateConfirmEnabled();
@@ -703,15 +703,15 @@ namespace Ink_Canvas.Windows
                 default: themeText = ThemeStrings.Theme_System; break;
             }
 
-            AddSummaryRow(SegoeFluentIcons.Shield, Properties.OobeStrings.Oobe_SummaryTelemetryLevel, telemetryText);
-            AddSummaryRow(SegoeFluentIcons.Sync, UpdateStrings.Header_AutoUpdate, BoolText(CardAutoUpdate.IsOn));
-            AddSummaryRow(SegoeFluentIcons.Personalize, Properties.OobeStrings.Oobe_SummaryAppTheme, themeText);
-            AddSummaryRow(SegoeFluentIcons.FullScreen, ThemeStrings.Theme_WindowBackdrop, backdropText);
-            AddSummaryRow(SegoeFluentIcons.Slideshow, Properties.OobeStrings.Oobe_SummaryPPTLink, BoolText(CardPPTSupport.IsOn));
-            AddSummaryRow(SegoeFluentIcons.TouchPointer, Properties.OobeStrings.Oobe_SummaryTwoFingerZoom,
+            AddSummaryRow(FluentSystemIcons.Shield_20_Regular, Properties.OobeStrings.Oobe_SummaryTelemetryLevel, telemetryText);
+            AddSummaryRow(FluentSystemIcons.ArrowSync_20_Regular, UpdateStrings.Header_AutoUpdate, BoolText(CardAutoUpdate.IsOn));
+            AddSummaryRow(FluentSystemIcons.PaintBrush_20_Regular, Properties.OobeStrings.Oobe_SummaryAppTheme, themeText);
+            AddSummaryRow(FluentSystemIcons.ArrowMaximize_20_Regular, ThemeStrings.Theme_WindowBackdrop, backdropText);
+            AddSummaryRow(FluentSystemIcons.ProjectionScreen_20_Regular, Properties.OobeStrings.Oobe_SummaryPPTLink, BoolText(CardPPTSupport.IsOn));
+            AddSummaryRow(FluentSystemIcons.Cursor_20_Regular, Properties.OobeStrings.Oobe_SummaryTwoFingerZoom,
                 $"{BoolText(CardTwoFingerZoom.IsOn)} / {BoolText(CardTwoFingerTranslate.IsOn)}");
-            AddSummaryRow(SegoeFluentIcons.Pin, Properties.OobeStrings.Oobe_SummaryTrayIcon, BoolText(CardEnableTrayIcon.IsOn));
-            AddSummaryRow(SegoeFluentIcons.Document, Properties.OobeStrings.Oobe_SummaryLogEnabled, BoolText(CardIsLogEnabled.IsOn));
+            AddSummaryRow(FluentSystemIcons.Pin_20_Regular, Properties.OobeStrings.Oobe_SummaryTrayIcon, BoolText(CardEnableTrayIcon.IsOn));
+            AddSummaryRow(FluentSystemIcons.Document_20_Regular, Properties.OobeStrings.Oobe_SummaryLogEnabled, BoolText(CardIsLogEnabled.IsOn));
         }
 
         private static string BoolText(bool value) => value ? Properties.OobeStrings.Oobe_BoolEnabled : Properties.OobeStrings.Oobe_BoolDisabled;

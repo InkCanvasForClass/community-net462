@@ -33,7 +33,7 @@
 
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchDisplayRandWindowNamesInputBtn"
                         Header="{x:Static props:RandomStrings.Random_ShowEditNamesButton}"
-                        Icon="{x:Static ui:SegoeFluentIcons.Edit}"
+                        Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}"
                         IsOn="True"
                         Toggled="ToggleSwitchDisplayRandWindowNamesInputBtn_OnToggled"/>
 

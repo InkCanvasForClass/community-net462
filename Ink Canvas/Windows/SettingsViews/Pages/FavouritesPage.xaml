@@ -34,7 +34,7 @@
                         Header="{x:Static props:NavStrings.Nav_Favourites_Empty}"
                         ContentAlignment="Left">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FavoriteStar}" />
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Star_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
                 </ikw:SimpleStackPanel>
