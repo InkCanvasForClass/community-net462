@@ -31,11 +31,11 @@
 > [!NOTE]
 > 您可以从此处下载该版本的最新软件构建：
 >
-> | 架构 | Normal | Minimize |
-> |:---:|:---:|:---:|
+> |  架构  |                                                                                                                                     Normal                                                                                                                                      |                                                                                                                                             Minimize                                                                                                                                              |
+> | :----: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 > | AnyCPU | [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.zip) | [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.minimize.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.AnyCPU.minimize.zip) |
-> | x86 | [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip) | [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.minimize.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.minimize.zip) |
-> | arm64 | [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.zip) | [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.minimize.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.minimize.zip) |
+> |  x86   |    [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.zip)    |    [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.minimize.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.x86.minimize.zip)    |
+> | arm64  |  [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.zip)  |  [Download](https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.minimize.zip) / [GhProxy](https://gh-proxy.com/https://nightly.link/InkCanvasForClass/community/workflows/dotnet-desktop/net462/InkCanvasForClass.CE.arm64.minimize.zip)  |
 
 ## 💫 软件说明
 
@@ -139,6 +139,7 @@
 感谢 [CN-Ironegg](https://github.com/CN-Ironegg)、[jiajiaxd](https://github.com/jiajiaxd)、[Kengwang](https://github.com/kengwang)、[Raspberry Kan](https://github.com/Raspberry-Monster)、[clover-yan](https://github.com/clover-yan)、[STBBRD](https://github.com/STBBRD)、[ChangSakura](https://github.com/WuChanging) 为本项目贡献代码！
 
 ## 赞助
+
 😻👉 [给CJK捐款谢谢喵](https://www.ifdian.net/a/CJIK_mkp)
 
 ## License
