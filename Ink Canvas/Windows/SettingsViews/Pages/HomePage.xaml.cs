@@ -19,6 +19,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
         }
 
+        private void BtnOpenDashboard_Click(object sender, RoutedEventArgs e)
+        {
+            (Window.GetWindow(this) as SettingsWindow)?.NavigateToPage("HomeDashboardPage");
+        }
+
         private void BtnRestart_Click(object sender, RoutedEventArgs e)
         {
             SettingsActionHub.OnRestartApplication(sender, e);

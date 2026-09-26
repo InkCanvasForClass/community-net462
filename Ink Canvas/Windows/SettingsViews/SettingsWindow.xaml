@@ -53,17 +53,32 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
             IsHitTestVisible="True"
             Canvas.ZIndex="10">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="137"/>
-                </Grid.ColumnDefinitions>
-                <ikw:SimpleStackPanel x:Name="AppTitle" Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <Image Source="\Resources\icc.ico" Width="20" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <TextBlock x:Name="AppTitleText"
-                        VerticalAlignment="Center"
-                        Text="{x:Static props:NavStrings.Nav_AppSettings}" TextWrapping="NoWrap"/>
-                </ikw:SimpleStackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="137"/>
+                    </Grid.ColumnDefinitions>
+                    <ikw:SimpleStackPanel x:Name="AppTitle" Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Image Source="\Resources\icc.ico" Width="20" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock x:Name="AppTitleText"
+                            VerticalAlignment="Center"
+                            Text="{x:Static props:NavStrings.Nav_AppSettings}" TextWrapping="NoWrap"/>
+                    </ikw:SimpleStackPanel>
+                </Grid>
+                <ui:AutoSuggestBox
+                    x:Name="controlsSearchBox"
+                    Width="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    x:FieldModifier="public"
+                    PlaceholderText="{x:Static props:NavStrings.Nav_SearchSettings}"
+                    QuerySubmitted="OnControlsSearchBoxQuerySubmitted"
+                    TextChanged="OnControlsSearchBoxTextChanged">
+                    <ui:AutoSuggestBox.QueryIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Search}" FontSize="12"/>
+                    </ui:AutoSuggestBox.QueryIcon>
+                </ui:AutoSuggestBox>
             </Grid>
         </Border>
 
@@ -99,26 +114,11 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                 </DataTemplate>
             </ui:NavigationView.HeaderTemplate>
 
-            <ui:NavigationView.AutoSuggestBox>
-                <ui:AutoSuggestBox
-                    x:Name="controlsSearchBox"
-                    MinWidth="200"
-                    VerticalAlignment="Center"
-                    x:FieldModifier="public"
-                    PlaceholderText="{x:Static props:NavStrings.Nav_SearchSettings}"
-                    QuerySubmitted="OnControlsSearchBoxQuerySubmitted"
-                    TextChanged="OnControlsSearchBoxTextChanged">
-                    <ui:AutoSuggestBox.QueryIcon>
-                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Search_20_Regular}" FontSize="12"/>
-                    </ui:AutoSuggestBox.QueryIcon>
-                </ui:AutoSuggestBox>
-            </ui:NavigationView.AutoSuggestBox>
-
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem
                     x:Name="HomeItem"
                     Content="{x:Static props:NavStrings.Nav_Home}"
-                    Tag="HomePage"
+                    Tag="HomeDashboardPage"
                     ToolTipService.ToolTip="{x:Static props:NavStrings.Nav_Home_Tooltip}">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Home_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}"/>

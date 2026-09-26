@@ -28,6 +28,10 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
+                    <Button HorizontalAlignment="Right" Padding="10,6" Margin="0,24,0,0"
+                            Content="{x:Static props:HomeStrings.Home_TryNewUI}"
+                            Click="BtnOpenDashboard_Click" />
+
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:NotificationStrings.ActionsTitle}" />
                     
