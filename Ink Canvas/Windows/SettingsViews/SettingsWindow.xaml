@@ -76,7 +76,7 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                     QuerySubmitted="OnControlsSearchBoxQuerySubmitted"
                     TextChanged="OnControlsSearchBoxTextChanged">
                     <ui:AutoSuggestBox.QueryIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Search}" FontSize="12"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Search_20_Regular}" FontSize="12"/>
                     </ui:AutoSuggestBox.QueryIcon>
                 </ui:AutoSuggestBox>
             </Grid>
@@ -494,7 +494,7 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                     Content="{x:Static props:NavStrings.Nav_AboutInkCanvas}"
                     Tag="AboutPage">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Help" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.QuestionCircle_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.FooterMenuItems>

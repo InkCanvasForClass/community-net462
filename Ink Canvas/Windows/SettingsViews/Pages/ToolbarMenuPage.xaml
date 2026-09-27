@@ -74,10 +74,12 @@
                         <TextBlock Text="{Binding Description}" Opacity="0.65" FontSize="12"
                                    TextWrapping="Wrap" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <Button Grid.Column="3" Click="AddLibraryItem_Click" x:Name="BtnAddItem" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                    <Button Grid.Column="3" Click="AddLibraryItem_Click" x:Name="BtnAddItem"
                             Background="Transparent" BorderThickness="0"
                             Padding="6,4" VerticalAlignment="Center"
-                            Cursor="Hand" Visibility="Collapsed"/>
+                            Cursor="Hand" Visibility="Collapsed">
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12"/>
+                    </Button>
                 </Grid>
             </Border>
         </DataTemplate>

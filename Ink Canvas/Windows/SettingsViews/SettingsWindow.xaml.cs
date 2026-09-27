@@ -1,6 +1,7 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Pages;
+using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
@@ -933,7 +934,10 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                         navItem.Icon = new FontIcon
                         {
-                            Glyph = "\uE713"
+                            Icon = FluentSystemIcons.Settings_20_Regular,
+                            FontSize = 16,
+                            RenderTransformOrigin = new Point(0.5, 0.5),
+                            RenderTransform = new System.Windows.Media.ScaleTransform(1.25, 1.25)
                         };
 
                         NavigationViewControl.MenuItems.Add(navItem);

@@ -126,12 +126,12 @@
                                 <Button Width="36" Height="36" Padding="0"
                                         Tag="UpdatePage" Click="QuickNavCard_Click"
                                         ToolTipService.ToolTip="{x:Static props:NotificationStrings.Type_Update}">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Sync}" FontSize="16" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" FontSize="16" />
                                 </Button>
                                 <Button Width="36" Height="36" Padding="0"
                                         Tag="NotificationCenterPage" Click="QuickNavCard_Click"
                                         ToolTipService.ToolTip="{x:Static props:NavStrings.Nav_NotificationCenter}">
-                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Message}" FontSize="16" />
+                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Chat_20_Regular}" FontSize="16" />
                                 </Button>
                             </ikw:SimpleStackPanel>
                         </Grid>
@@ -164,49 +164,49 @@
                                         <UniformGrid Grid.Row="2" Columns="4" Rows="2" Margin="8,8,8,12">
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="StartupPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:StartupStrings.Start}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="BoardPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Edit_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:NavStrings.Nav_BoardPage}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="FloatingBarPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Rename}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Rename_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:NavStrings.Nav_FloatingBar}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="TimerPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Recent}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Timer_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:NavStrings.Nav_Timer}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="RollCallPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.People}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:RandomStrings.Random_Title}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="ScreenTouchPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TouchPointer}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Tv_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:NavStrings.Nav_ScreenTouch}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="HotkeyPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.KeyboardStandard}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Keyboard_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:NavStrings.Nav_Shortcuts}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="PluginPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Puzzle}" FontSize="24" HorizontalAlignment="Center" />
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.PuzzlePiece_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:NavStrings.Nav_Plugins}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>

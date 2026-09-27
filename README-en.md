@@ -43,10 +43,6 @@ Before using and distributing this software, please make sure you understand the
 
 ## 📗 FAQ
 
-### Why do some icons show up as "□" on systems below Windows 10?
-
-[Click here to download](https://aka.ms/SegoeFonts "SegoeFonts") the SegoeFonts files. Install the `SegMDL2.ttf` font from the zip archive and restart your system to resolve the issue.
-
 ### The application crashes immediately upon turning a page in PowerPoint slideshow mode
 
 Please [activate Microsoft Office](https://www.coolhub.top/archives/14).

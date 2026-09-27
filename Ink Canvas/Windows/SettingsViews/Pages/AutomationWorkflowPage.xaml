@@ -187,7 +187,7 @@
                                                 <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
                                                         Background="Transparent" Padding="2,4" Margin="0,0,4,0"
                                                         Cursor="SizeAll">
-                                                    <TextBlock Text="&#xE76F;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ReOrderDotsVertical_20_Filled}" FontSize="10"
                                                                VerticalAlignment="Center" Opacity="0.45"/>
                                                 </Border>
 
@@ -271,7 +271,7 @@
                                                     <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
                                                             Background="Transparent" Padding="2,4" Margin="0,0,4,0"
                                                             Cursor="SizeAll">
-                                                        <TextBlock Text="&#xE76F;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ReOrderDotsVertical_20_Filled}" FontSize="10"
                                                                    VerticalAlignment="Center" Opacity="0.45"/>
                                                     </Border>
 
@@ -386,7 +386,7 @@
                                                 <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
                                                         Background="Transparent" Padding="2,4" Margin="0,0,4,0"
                                                         Cursor="SizeAll">
-                                                    <TextBlock Text="&#xE76F;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ReOrderDotsVertical_20_Filled}" FontSize="10"
                                                                VerticalAlignment="Center" Opacity="0.45"/>
                                                 </Border>
 

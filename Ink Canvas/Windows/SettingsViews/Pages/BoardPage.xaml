@@ -103,12 +103,13 @@
                             <TextBlock Text="{Binding Description}" Opacity="0.65" FontSize="12"
                                        TextWrapping="Wrap" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <Button Grid.Column="3" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
-                                Click="AddToolbarLibraryItem_Click" x:Name="BtnAddItem"
+                        <Button Grid.Column="3" Click="AddToolbarLibraryItem_Click" x:Name="BtnAddItem"
                                 Background="Transparent" BorderThickness="0"
                                 Padding="6,4" VerticalAlignment="Center"
                                 ToolTip="{x:Static props:FloatingBarStrings.ToolbarPage_AddToAdded}"
-                                Cursor="Hand" Visibility="Collapsed"/>
+                                Cursor="Hand" Visibility="Collapsed">
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12"/>
+                        </Button>
                     </Grid>
                 </Border>
             </DataTemplate>
@@ -222,10 +223,12 @@
                             <TextBlock Text="{Binding Description}" Opacity="0.65" FontSize="12"
                                        TextWrapping="Wrap" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <Button Grid.Column="3" Click="AddMenuLibraryItem_Click" x:Name="BtnAddMenuItem" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                        <Button Grid.Column="3" Click="AddMenuLibraryItem_Click" x:Name="BtnAddMenuItem"
                                 Background="Transparent" BorderThickness="0"
                                 Padding="6,4" VerticalAlignment="Center"
-                                Cursor="Hand" Visibility="Collapsed"/>
+                                Cursor="Hand" Visibility="Collapsed">
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12"/>
+                        </Button>
                     </Grid>
                 </Border>
             </DataTemplate>
@@ -441,7 +444,7 @@
 
                 <ui:SettingsCard Header="{x:Static props:ThemeStrings.AppearancePanel_24HourTimeFormat}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Glyph="&#xE917;" FontSize="20" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Clock_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ComboBox x:Name="ComboBoxTimeFormat"
                               SelectedIndex="0"
