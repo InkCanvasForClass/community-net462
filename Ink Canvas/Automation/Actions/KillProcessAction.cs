@@ -23,7 +23,7 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "结束进程", "CloseCircleOutline")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_KillProcess, "CloseCircleOutline")
             {
                 SettingsType = typeof(KillProcessActionSettings)
             };

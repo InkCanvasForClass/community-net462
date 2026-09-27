@@ -9,7 +9,7 @@ namespace Ink_Canvas.WorkflowAutomation.Models
     public class ActionSet : ObservableObject
     {
         private bool _isEnabled = true;
-        private string _name = "新行动";
+        private string _name = Properties.AutomationStrings.Automation_DefaultActionName;
         private string _guid = System.Guid.NewGuid().ToString();
         private bool _isOn = false;
         private ObservableCollection<Action> _actions = new();

@@ -109,7 +109,7 @@ namespace Ink_Canvas.Windows
 
         private MagnifierWindow()
         {
-            Title = "聚焦放大镜";
+            Title = Properties.PPTStrings.PPTQuickPanel_FocusMagnifier;
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
             AllowsTransparency = true;
@@ -192,7 +192,7 @@ namespace Ink_Canvas.Windows
             };
             var sp = new StackPanel { Orientation = Orientation.Horizontal };
 
-            _blackoutButton = new ToggleButton { Content = MakeBtnContent("💡", "关灯") };
+            _blackoutButton = new ToggleButton { Content = MakeBtnContent("💡", Properties.MainWindowStrings.Main_Magnifier_LightsOff) };
             StyleToolButton(_blackoutButton);
             _blackoutButton.Checked += (s, e) => SetBlackout(true);
             _blackoutButton.Unchecked += (s, e) => SetBlackout(false);

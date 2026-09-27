@@ -102,4 +102,40 @@
   <data name="SettingsTag_FavouriteRemove" xml:space="preserve">
     <value>取消收藏</value>
   </data>
+
+  <data name="Common_Unlimited" xml:space="preserve">
+    <value>無限制</value>
+  </data>
+
+  <data name="Common_Unit_People" xml:space="preserve">
+    <value>人</value>
+  </data>
+
+  <data name="Common_AutoScreenshot" xml:space="preserve">
+    <value>自動截圖</value>
+  </data>
+
+  <data name="Common_Unit_Items" xml:space="preserve">
+    <value>條</value>
+  </data>
+
+  <data name="Common_Timeout" xml:space="preserve">
+    <value>逾時</value>
+  </data>
+
+  <data name="SettingsItemMore" xml:space="preserve">
+    <value>更多操作</value>
+  </data>
+  <data name="SettingsItemCopyKey" xml:space="preserve">
+    <value>複製設定鍵名</value>
+  </data>
+  <data name="SettingsItemCopyUrl" xml:space="preserve">
+    <value>複製URL</value>
+  </data>
+  <data name="SettingsItemAddFavourite" xml:space="preserve">
+    <value>設為收藏</value>
+  </data>
+  <data name="SettingsItemRemoveFavourite" xml:space="preserve">
+    <value>取消收藏</value>
+  </data>
 </root>

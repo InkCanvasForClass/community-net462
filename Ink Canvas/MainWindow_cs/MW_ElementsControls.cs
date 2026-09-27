@@ -200,7 +200,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void Element_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("移动图片"))
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_MoveImage))
             {
                 e.Handled = true;
                 return;
@@ -336,7 +336,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void Element_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("缩放图片"))
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ScaleImage))
             {
                 e.Handled = true;
                 return;
@@ -379,7 +379,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void Element_TouchDown(object sender, TouchEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("移动图片"))
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_MoveImage))
             {
                 e.Handled = true;
                 return;
@@ -434,7 +434,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void Element_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("移动或缩放图片"))
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_MoveOrScaleImage))
             {
                 e.Handled = true;
                 return;
@@ -1195,9 +1195,9 @@ namespace Ink_Canvas
         {
             mediaElement.MediaFailed += (_, args) =>
             {
-                string message = args.ErrorException?.Message ?? "未知错误";
+                string message = args.ErrorException?.Message ?? Properties.MainWindowStrings.Main_Media_UnknownError;
                 LogHelper.WriteLogToFile($"媒体加载失败: {message}", LogHelper.LogType.Error);
-                ShowNotification("媒体加载失败，可能是不支持的格式或缺少系统解码器。");
+                ShowNotification(Properties.MainWindowStrings.Main_Media_LoadFailed);
             };
         }
 
@@ -1290,7 +1290,7 @@ namespace Ink_Canvas
                 uint pageCount = await PdfWinRtHelper.GetPageCountAsync(newFilePath);
                 if (pageCount == 0)
                 {
-                    ShowNotification("无法打开 PDF（可能已加密、损坏或不支持）。");
+                    ShowNotification(Properties.MainWindowStrings.Main_PDF_OpenFailed);
                     return null;
                 }
 
@@ -2217,7 +2217,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BorderImageClone_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("克隆图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_CloneImage)) return;
             try
             {
                 if (currentSelectedElement is Image originalImage)
@@ -2264,7 +2264,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BorderImageCloneToNewBoard_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("克隆图片到新页面")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_CloneImageToNewPage)) return;
             try
             {
                 if (currentSelectedElement is Image originalImage)
@@ -2316,7 +2316,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BorderImageRotateLeft_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("旋转图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_RotateImage)) return;
             try
             {
                 if (currentSelectedElement != null)
@@ -2351,7 +2351,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BorderImageRotateRight_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("旋转图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_RotateImage)) return;
             try
             {
                 if (currentSelectedElement != null)
@@ -2387,7 +2387,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void GridImageScaleDecrease_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("缩放图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ScaleImage)) return;
             try
             {
                 if (currentSelectedElement != null)
@@ -2424,7 +2424,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void GridImageScaleIncrease_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("缩放图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ScaleImage)) return;
             try
             {
                 if (currentSelectedElement != null)
@@ -2520,7 +2520,7 @@ namespace Ink_Canvas
 
         private async void BorderPdfSidebarPagePrev_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换 PDF 页")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchPdfPage)) return;
             try
             {
                 var pdf = GetPdfSidebarTargetElement();
@@ -2536,7 +2536,7 @@ namespace Ink_Canvas
 
         private async void BorderPdfSidebarPageNext_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换 PDF 页")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchPdfPage)) return;
             try
             {
                 var pdf = GetPdfSidebarTargetElement();
@@ -2555,7 +2555,7 @@ namespace Ink_Canvas
         /// </summary>
         private void BorderImageDelete_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("删除图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_DeleteImage)) return;
             try
             {
                 if (currentSelectedElement != null)
@@ -2897,7 +2897,7 @@ namespace Ink_Canvas
 
         private void ImageSelectionOverlay_ResizeDelta(object sender, ImageResizeDeltaEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("缩放图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ScaleImage)) return;
             try
             {
                 if (!IsBitmapLikeCanvasElement(currentSelectedElement)) return;
@@ -2911,7 +2911,7 @@ namespace Ink_Canvas
 
         private void ImageSelectionOverlay_MoveDelta(object sender, ImageMoveDeltaEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("移动图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_MoveImage)) return;
             try
             {
                 if (currentSelectedElement == null) return;
@@ -2944,7 +2944,7 @@ namespace Ink_Canvas
 
         private void ImageSelectionOverlay_RotateDelta(object sender, ImageRotateDeltaEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("旋转图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_RotateImage)) return;
             try
             {
                 if (currentSelectedElement == null) return;

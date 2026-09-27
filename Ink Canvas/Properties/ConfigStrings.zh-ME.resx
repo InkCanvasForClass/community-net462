@@ -99,4 +99,8 @@
   <data name="DeletedProfile" xml:space="preserve">
     <value>已删掉方案：{0}，再见！</value>
   </data>
+
+  <data name="Config_Unnamed" xml:space="preserve">
+    <value>未命名</value>
+  </data>
 </root>

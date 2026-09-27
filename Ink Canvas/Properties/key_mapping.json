@@ -4407,4 +4407,1292 @@
                                               "NewKey":  "Theme_AutoCollapseQuickPanelDelay",
                                               "Group":  "ThemeStrings"
                                           }
-}
+,
+    "AutoWf_StateSatisfied": {
+        "NewKey": "AutoWf_StateSatisfied",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_StateNotSatisfied": {
+        "NewKey": "AutoWf_StateNotSatisfied",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_StateUnknown": {
+        "NewKey": "AutoWf_StateUnknown",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AddWorkflow": {
+        "NewKey": "AutoWf_AddWorkflow",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_Copy": {
+        "NewKey": "AutoWf_Copy",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_Delete": {
+        "NewKey": "AutoWf_Delete",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_Name": {
+        "NewKey": "AutoWf_Name",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_EnableRevert": {
+        "NewKey": "AutoWf_EnableRevert",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_Invoke": {
+        "NewKey": "AutoWf_Invoke",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_Revert": {
+        "NewKey": "AutoWf_Revert",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_WhenEvents": {
+        "NewKey": "AutoWf_WhenEvents",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AddTrigger": {
+        "NewKey": "AutoWf_AddTrigger",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AndConditions": {
+        "NewKey": "AutoWf_AndConditions",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_ConditionDisabledHint": {
+        "NewKey": "AutoWf_ConditionDisabledHint",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AnyGroup": {
+        "NewKey": "AutoWf_AnyGroup",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AllGroups": {
+        "NewKey": "AutoWf_AllGroups",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_Reverse": {
+        "NewKey": "AutoWf_Reverse",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AddGroup": {
+        "NewKey": "AutoWf_AddGroup",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AnyRule": {
+        "NewKey": "AutoWf_AnyRule",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AllRules": {
+        "NewKey": "AutoWf_AllRules",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AddRule": {
+        "NewKey": "AutoWf_AddRule",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_EnableGroup": {
+        "NewKey": "AutoWf_EnableGroup",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_Actions": {
+        "NewKey": "AutoWf_Actions",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AddAction": {
+        "NewKey": "AutoWf_AddAction",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_AutoRevertHint": {
+        "NewKey": "AutoWf_AutoRevertHint",
+        "Group": "AutomationStrings"
+    },
+    "AutoWf_EmptyState": {
+        "NewKey": "AutoWf_EmptyState",
+        "Group": "AutomationStrings"
+    },
+    "Timer_CountdownWindowTitle": {
+        "NewKey": "Timer_CountdownWindowTitle",
+        "Group": "TimerStrings"
+    },
+    "Timer_ClickToExitFullscreen": {
+        "NewKey": "Timer_ClickToExitFullscreen",
+        "Group": "TimerStrings"
+    },
+    "Privacy_WindowTitle": {
+        "NewKey": "Privacy_WindowTitle",
+        "Group": "AboutStrings"
+    },
+    "Privacy_Heading": {
+        "NewKey": "Privacy_Heading",
+        "Group": "AboutStrings"
+    },
+    "Privacy_Intro": {
+        "NewKey": "Privacy_Intro",
+        "Group": "AboutStrings"
+    },
+    "Privacy_NoCollect": {
+        "NewKey": "Privacy_NoCollect",
+        "Group": "AboutStrings"
+    },
+    "Privacy_Agree": {
+        "NewKey": "Privacy_Agree",
+        "Group": "AboutStrings"
+    },
+    "Window_Guide_Title": {
+        "NewKey": "Window_Guide_Title",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Shortcuts": {
+        "NewKey": "Window_Guide_Shortcuts",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Undo": {
+        "NewKey": "Window_Guide_Undo",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Redo": {
+        "NewKey": "Window_Guide_Redo",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Clear": {
+        "NewKey": "Window_Guide_Clear",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Visibility": {
+        "NewKey": "Window_Guide_Visibility",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Capture": {
+        "NewKey": "Window_Guide_Capture",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Select": {
+        "NewKey": "Window_Guide_Select",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Draw": {
+        "NewKey": "Window_Guide_Draw",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Quit": {
+        "NewKey": "Window_Guide_Quit",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Board": {
+        "NewKey": "Window_Guide_Board",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Eraser": {
+        "NewKey": "Window_Guide_Eraser",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_Line": {
+        "NewKey": "Window_Guide_Line",
+        "Group": "WindowStrings"
+    },
+    "Window_Guide_ExitPpt": {
+        "NewKey": "Window_Guide_ExitPpt",
+        "Group": "WindowStrings"
+    },
+    "Random_RandWindowTitle": {
+        "NewKey": "Random_RandWindowTitle",
+        "Group": "RandomStrings"
+    },
+    "Random_Rand_AvoidPopular": {
+        "NewKey": "Random_Rand_AvoidPopular",
+        "Group": "RandomStrings"
+    },
+    "Random_Rand_AvoidRare": {
+        "NewKey": "Random_Rand_AvoidRare",
+        "Group": "RandomStrings"
+    },
+    "Random_Rand_Start": {
+        "NewKey": "Random_Rand_Start",
+        "Group": "RandomStrings"
+    },
+    "Nav_SmallTools": {
+        "NewKey": "Nav_SmallTools",
+        "Group": "NavStrings"
+    },
+    "Nav_Debug": {
+        "NewKey": "Nav_Debug",
+        "Group": "NavStrings"
+    },
+    "Board_MenuConfigHint": {
+        "NewKey": "Board_MenuConfigHint",
+        "Group": "CanvasStrings"
+    },
+    "Board_AddedMenuItems": {
+        "NewKey": "Board_AddedMenuItems",
+        "Group": "CanvasStrings"
+    },
+    "Board_AvailableMenuItems": {
+        "NewKey": "Board_AvailableMenuItems",
+        "Group": "CanvasStrings"
+    },
+    "Board_ResetMenuLayout": {
+        "NewKey": "Board_ResetMenuLayout",
+        "Group": "CanvasStrings"
+    },
+    "FloatingBar_QuickPanel": {
+        "NewKey": "FloatingBar_QuickPanel",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_Appearance": {
+        "NewKey": "FloatingBar_Appearance",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_ColorfulBar": {
+        "NewKey": "FloatingBar_ColorfulBar",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_ToolbarBehavior": {
+        "NewKey": "FloatingBar_ToolbarBehavior",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_ToolbarPosition": {
+        "NewKey": "FloatingBar_ToolbarPosition",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_ToolbarPositionDesc": {
+        "NewKey": "FloatingBar_ToolbarPositionDesc",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_PositionTop": {
+        "NewKey": "FloatingBar_PositionTop",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_PositionBottom": {
+        "NewKey": "FloatingBar_PositionBottom",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_FlipContent": {
+        "NewKey": "FloatingBar_FlipContent",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_FlipContentDesc": {
+        "NewKey": "FloatingBar_FlipContentDesc",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_DisableToolbarAnimation": {
+        "NewKey": "FloatingBar_DisableToolbarAnimation",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_DisableToolbarAnimationDesc": {
+        "NewKey": "FloatingBar_DisableToolbarAnimationDesc",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_AutoFlipWhenCramped": {
+        "NewKey": "FloatingBar_AutoFlipWhenCramped",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_AutoFlipWhenCrampedDesc": {
+        "NewKey": "FloatingBar_AutoFlipWhenCrampedDesc",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_FlipContentOnAutoFlip": {
+        "NewKey": "FloatingBar_FlipContentOnAutoFlip",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_FlipContentOnAutoFlipDesc": {
+        "NewKey": "FloatingBar_FlipContentOnAutoFlipDesc",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_ScaleAndOpacity": {
+        "NewKey": "FloatingBar_ScaleAndOpacity",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_ToolbarComponents": {
+        "NewKey": "FloatingBar_ToolbarComponents",
+        "Group": "FloatingBarStrings"
+    },
+    "FloatingBar_ToolbarMenu": {
+        "NewKey": "FloatingBar_ToolbarMenu",
+        "Group": "FloatingBarStrings"
+    },
+    "InkRecog_LineNormalizeThreshold": {
+        "NewKey": "InkRecog_LineNormalizeThreshold",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_NibModeBoundsHeader": {
+        "NewKey": "ScreenTouch_NibModeBoundsHeader",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_FingerModeBoundsHeader": {
+        "NewKey": "ScreenTouch_FingerModeBoundsHeader",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_NibEraserSizeHeader": {
+        "NewKey": "ScreenTouch_NibEraserSizeHeader",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_FingerEraserSizeHeader": {
+        "NewKey": "ScreenTouch_FingerEraserSizeHeader",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_AutoCalibrateHeader": {
+        "NewKey": "ScreenTouch_AutoCalibrateHeader",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_AutoCalibrateDesc": {
+        "NewKey": "ScreenTouch_AutoCalibrateDesc",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_CalibrateStepsHeader": {
+        "NewKey": "ScreenTouch_CalibrateStepsHeader",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_CalibrateHint": {
+        "NewKey": "ScreenTouch_CalibrateHint",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_StepNib": {
+        "NewKey": "ScreenTouch_StepNib",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_StepFinger": {
+        "NewKey": "ScreenTouch_StepFinger",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_StepPalm": {
+        "NewKey": "ScreenTouch_StepPalm",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_StartCalibrate": {
+        "NewKey": "ScreenTouch_StartCalibrate",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_ClickButtonToStart": {
+        "NewKey": "ScreenTouch_ClickButtonToStart",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_NibNotCalibrated": {
+        "NewKey": "ScreenTouch_NibNotCalibrated",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_FingerNotCalibrated": {
+        "NewKey": "ScreenTouch_FingerNotCalibrated",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_PalmNotCalibrated": {
+        "NewKey": "ScreenTouch_PalmNotCalibrated",
+        "Group": "CanvasStrings"
+    },
+    "ToolbarMenu_ConfigHint": {
+        "NewKey": "ToolbarMenu_ConfigHint",
+        "Group": "FloatingBarStrings"
+    },
+    "ToolbarMenu_AddedMenuItems": {
+        "NewKey": "ToolbarMenu_AddedMenuItems",
+        "Group": "FloatingBarStrings"
+    },
+    "ToolbarMenu_AvailableMenuItems": {
+        "NewKey": "ToolbarMenu_AvailableMenuItems",
+        "Group": "FloatingBarStrings"
+    },
+    "Random_Rand_DrawAll": {
+        "NewKey": "Random_Rand_DrawAll",
+        "Group": "RandomStrings"
+    },
+    "Random_Rand_BoysOnly": {
+        "NewKey": "Random_Rand_BoysOnly",
+        "Group": "RandomStrings"
+    },
+    "Random_Rand_GirlsOnly": {
+        "NewKey": "Random_Rand_GirlsOnly",
+        "Group": "RandomStrings"
+    },
+    "Splash_LoadingConfig": {
+        "NewKey": "Splash_LoadingConfig",
+        "Group": "HomeStrings"
+    },
+    "Splash_InitializingMain": {
+        "NewKey": "Splash_InitializingMain",
+        "Group": "HomeStrings"
+    },
+    "Splash_Complete": {
+        "NewKey": "Splash_Complete",
+        "Group": "HomeStrings"
+    },
+    "Common_Unlimited": {
+        "NewKey": "Common_Unlimited",
+        "Group": "CommonStrings"
+    },
+    "Common_Unit_People": {
+        "NewKey": "Common_Unit_People",
+        "Group": "CommonStrings"
+    },
+    "Common_AutoScreenshot": {
+        "NewKey": "Common_AutoScreenshot",
+        "Group": "CommonStrings"
+    },
+    "Common_Unit_Items": {
+        "NewKey": "Common_Unit_Items",
+        "Group": "CommonStrings"
+    },
+    "Automation_Action_FoldToolbar": {
+        "NewKey": "Automation_Action_FoldToolbar",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_KillProcess": {
+        "NewKey": "Automation_Action_KillProcess",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_SaveStrokes": {
+        "NewKey": "Automation_Action_SaveStrokes",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_ToggleAnnotation": {
+        "NewKey": "Automation_Action_ToggleAnnotation",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_ClearStrokes": {
+        "NewKey": "Automation_Action_ClearStrokes",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_ShowNotification": {
+        "NewKey": "Automation_Action_ShowNotification",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_ToggleTopmost": {
+        "NewKey": "Automation_Action_ToggleTopmost",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_ResetDesktopPosition": {
+        "NewKey": "Automation_Action_ResetDesktopPosition",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Action_ResetPptPosition": {
+        "NewKey": "Automation_Action_ResetPptPosition",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Rule_ProcessRunning": {
+        "NewKey": "Automation_Rule_ProcessRunning",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Rule_WindowTitleContains": {
+        "NewKey": "Automation_Rule_WindowTitleContains",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Rule_IsAnnotationMode": {
+        "NewKey": "Automation_Rule_IsAnnotationMode",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Rule_IsPptSlideshow": {
+        "NewKey": "Automation_Rule_IsPptSlideshow",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Rule_ForegroundWindowProcess": {
+        "NewKey": "Automation_Rule_ForegroundWindowProcess",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Rule_IsFloatingBarFolded": {
+        "NewKey": "Automation_Rule_IsFloatingBarFolded",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Rule_IsForegroundWhiteboard": {
+        "NewKey": "Automation_Rule_IsForegroundWhiteboard",
+        "Group": "AutomationStrings"
+    },
+    "Automation_SlideShow": {
+        "NewKey": "Automation_SlideShow",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_WhiteboardEnter": {
+        "NewKey": "Automation_Trigger_WhiteboardEnter",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_WhiteboardExit": {
+        "NewKey": "Automation_Trigger_WhiteboardExit",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_AnnotationEnter": {
+        "NewKey": "Automation_Trigger_AnnotationEnter",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_AnnotationExit": {
+        "NewKey": "Automation_Trigger_AnnotationExit",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_PptEnter": {
+        "NewKey": "Automation_Trigger_PptEnter",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_PptExit": {
+        "NewKey": "Automation_Trigger_PptExit",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_PptDetection": {
+        "NewKey": "Automation_Trigger_PptDetection",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_ProcessDetected": {
+        "NewKey": "Automation_Trigger_ProcessDetected",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_RulesetChanged": {
+        "NewKey": "Automation_Trigger_RulesetChanged",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_Timer": {
+        "NewKey": "Automation_Trigger_Timer",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Trigger_WindowFocusChanged": {
+        "NewKey": "Automation_Trigger_WindowFocusChanged",
+        "Group": "AutomationStrings"
+    },
+    "Automation_DefaultActionName": {
+        "NewKey": "Automation_DefaultActionName",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Workflow_CopySuffix": {
+        "NewKey": "Automation_Workflow_CopySuffix",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_ProcessName": {
+        "NewKey": "Automation_Field_ProcessName",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_TitleContains": {
+        "NewKey": "Automation_Field_TitleContains",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_IgnoreCase": {
+        "NewKey": "Automation_Field_IgnoreCase",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_NotificationType": {
+        "NewKey": "Automation_Field_NotificationType",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_NotificationContent": {
+        "NewKey": "Automation_Field_NotificationContent",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_SavePath": {
+        "NewKey": "Automation_Field_SavePath",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_SaveAsXml": {
+        "NewKey": "Automation_Field_SaveAsXml",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_Fold": {
+        "NewKey": "Automation_Field_Fold",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_EnterAnnotation": {
+        "NewKey": "Automation_Field_EnterAnnotation",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Field_Topmost": {
+        "NewKey": "Automation_Field_Topmost",
+        "Group": "AutomationStrings"
+    },
+    "Automation_Workflow_DefaultNameFormat": {
+        "NewKey": "Automation_Workflow_DefaultNameFormat",
+        "Group": "AutomationStrings"
+    },
+    "Main_Freeze_Action_Modify": {
+        "NewKey": "Main_Freeze_Action_Modify",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_SwitchToEdit": {
+        "NewKey": "Main_Freeze_Action_SwitchToEdit",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_WriteOrErase": {
+        "NewKey": "Main_Freeze_Action_WriteOrErase",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_MoveOrScaleContent": {
+        "NewKey": "Main_Freeze_Action_MoveOrScaleContent",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_OpenGeometry": {
+        "NewKey": "Main_Freeze_Action_OpenGeometry",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_DrawShape": {
+        "NewKey": "Main_Freeze_Action_DrawShape",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_SwitchToPen": {
+        "NewKey": "Main_Freeze_Action_SwitchToPen",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_CloneInk": {
+        "NewKey": "Main_Freeze_Action_CloneInk",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_CloneInkToNewPage": {
+        "NewKey": "Main_Freeze_Action_CloneInkToNewPage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_InsertInkToWhiteboard": {
+        "NewKey": "Main_Freeze_Action_InsertInkToWhiteboard",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_ChangeInkWidth": {
+        "NewKey": "Main_Freeze_Action_ChangeInkWidth",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_FlipInk": {
+        "NewKey": "Main_Freeze_Action_FlipInk",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_RotateInk": {
+        "NewKey": "Main_Freeze_Action_RotateInk",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_MoveInk": {
+        "NewKey": "Main_Freeze_Action_MoveInk",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_MoveOrScaleInk": {
+        "NewKey": "Main_Freeze_Action_MoveOrScaleInk",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_ResizeInk": {
+        "NewKey": "Main_Freeze_Action_ResizeInk",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_OpenInkFile": {
+        "NewKey": "Main_Freeze_Action_OpenInkFile",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_RestoreInkFile": {
+        "NewKey": "Main_Freeze_Action_RestoreInkFile",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_SwitchToSelect": {
+        "NewKey": "Main_Freeze_Action_SwitchToSelect",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_ClearFrozenContent": {
+        "NewKey": "Main_Freeze_Action_ClearFrozenContent",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_InsertScreenshot": {
+        "NewKey": "Main_Freeze_Action_InsertScreenshot",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_PasteImage": {
+        "NewKey": "Main_Freeze_Action_PasteImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_UndoFrozenContent": {
+        "NewKey": "Main_Freeze_Action_UndoFrozenContent",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_RedoFrozenContent": {
+        "NewKey": "Main_Freeze_Action_RedoFrozenContent",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_ReplayFrozenContent": {
+        "NewKey": "Main_Freeze_Action_ReplayFrozenContent",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_SwitchToEraser": {
+        "NewKey": "Main_Freeze_Action_SwitchToEraser",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_SwitchToStrokeEraser": {
+        "NewKey": "Main_Freeze_Action_SwitchToStrokeEraser",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_EmptyFrozenContent": {
+        "NewKey": "Main_Freeze_Action_EmptyFrozenContent",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_InsertImage": {
+        "NewKey": "Main_Freeze_Action_InsertImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_EraseFrozenPage": {
+        "NewKey": "Main_Freeze_Action_EraseFrozenPage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_MoveImage": {
+        "NewKey": "Main_Freeze_Action_MoveImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_ScaleImage": {
+        "NewKey": "Main_Freeze_Action_ScaleImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_MoveOrScaleImage": {
+        "NewKey": "Main_Freeze_Action_MoveOrScaleImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_CloneImage": {
+        "NewKey": "Main_Freeze_Action_CloneImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_CloneImageToNewPage": {
+        "NewKey": "Main_Freeze_Action_CloneImageToNewPage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_RotateImage": {
+        "NewKey": "Main_Freeze_Action_RotateImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_SwitchPdfPage": {
+        "NewKey": "Main_Freeze_Action_SwitchPdfPage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Freeze_Action_DeleteImage": {
+        "NewKey": "Main_Freeze_Action_DeleteImage",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Media_UnknownError": {
+        "NewKey": "Main_Media_UnknownError",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Media_LoadFailed": {
+        "NewKey": "Main_Media_LoadFailed",
+        "Group": "MainWindowStrings"
+    },
+    "Main_PDF_OpenFailed": {
+        "NewKey": "Main_PDF_OpenFailed",
+        "Group": "MainWindowStrings"
+    },
+    "Common_Timeout": {
+        "NewKey": "Common_Timeout",
+        "Group": "CommonStrings"
+    },
+    "Config_Unnamed": {
+        "NewKey": "Config_Unnamed",
+        "Group": "ConfigStrings"
+    },
+    "Main_Hotkey_SingleScreen": {
+        "NewKey": "Main_Hotkey_SingleScreen",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Hotkey_ScreenInfoUnavailable": {
+        "NewKey": "Main_Hotkey_ScreenInfoUnavailable",
+        "Group": "MainWindowStrings"
+    },
+    "Feedback_MicroBin_ServerUrlEmpty": {
+        "NewKey": "Feedback_MicroBin_ServerUrlEmpty",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_MicroBin_ContentEmpty": {
+        "NewKey": "Feedback_MicroBin_ContentEmpty",
+        "Group": "FeedbackStrings"
+    },
+    "Booth_SeewoNotFound": {
+        "NewKey": "Booth_SeewoNotFound",
+        "Group": "BoothStrings"
+    },
+    "Booth_SeewoLaunchFailed": {
+        "NewKey": "Booth_SeewoLaunchFailed",
+        "Group": "BoothStrings"
+    },
+    "Security_UsbDrive": {
+        "NewKey": "Security_UsbDrive",
+        "Group": "SecurityStrings"
+    },
+    "PPT_VstoRegisterSuccess": {
+        "NewKey": "PPT_VstoRegisterSuccess",
+        "Group": "PPTStrings"
+    },
+    "PPT_VstoRegisterWritten": {
+        "NewKey": "PPT_VstoRegisterWritten",
+        "Group": "PPTStrings"
+    },
+    "Main_Settings_RestoreFailedDefaults": {
+        "NewKey": "Main_Settings_RestoreFailedDefaults",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Settings_RestoreReloadFailedDefaults": {
+        "NewKey": "Main_Settings_RestoreReloadFailedDefaults",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Settings_RestoreLoadFailedDefaults": {
+        "NewKey": "Main_Settings_RestoreLoadFailedDefaults",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Clock_DateFormat": {
+        "NewKey": "Main_Clock_DateFormat",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Clock_TimeFormat": {
+        "NewKey": "Main_Clock_TimeFormat",
+        "Group": "MainWindowStrings"
+    },
+    "Main_AutoKill_SeewoBoard5": {
+        "NewKey": "Main_AutoKill_SeewoBoard5",
+        "Group": "MainWindowStrings"
+    },
+    "Main_AutoKill_HiteAnnotation": {
+        "NewKey": "Main_AutoKill_HiteAnnotation",
+        "Group": "MainWindowStrings"
+    },
+    "Main_AutoKill_Ica": {
+        "NewKey": "Main_AutoKill_Ica",
+        "Group": "MainWindowStrings"
+    },
+    "Main_AutoKill_InkCanvas": {
+        "NewKey": "Main_AutoKill_InkCanvas",
+        "Group": "MainWindowStrings"
+    },
+    "Main_ImageInsert_CameraInserted": {
+        "NewKey": "Main_ImageInsert_CameraInserted",
+        "Group": "MainWindowStrings"
+    },
+    "Main_ImageInsert_CameraFailed": {
+        "NewKey": "Main_ImageInsert_CameraFailed",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Uri_MissingNameParam": {
+        "NewKey": "Main_Uri_MissingNameParam",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Uri_SchemeNotFound": {
+        "NewKey": "Main_Uri_SchemeNotFound",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Magnifier_LightsOff": {
+        "NewKey": "Main_Magnifier_LightsOff",
+        "Group": "MainWindowStrings"
+    },
+    "Hotkey_PressKey": {
+        "NewKey": "Hotkey_PressKey",
+        "Group": "HotkeyStrings"
+    },
+    "PPT_ImagePdfFilter": {
+        "NewKey": "PPT_ImagePdfFilter",
+        "Group": "PPTStrings"
+    },
+    "CloudStorage_AuthResponseFailed": {
+        "NewKey": "CloudStorage_AuthResponseFailed",
+        "Group": "CloudStorageStrings"
+    },
+    "Debug_SimulateCrashConfirm": {
+        "NewKey": "Debug_SimulateCrashConfirm",
+        "Group": "AdvancedStrings"
+    },
+    "Debug_SimulateCrashConfirmTitle": {
+        "NewKey": "Debug_SimulateCrashConfirmTitle",
+        "Group": "AdvancedStrings"
+    },
+    "Debug_HeartbeatTimeoutConfirm": {
+        "NewKey": "Debug_HeartbeatTimeoutConfirm",
+        "Group": "AdvancedStrings"
+    },
+    "Debug_HeartbeatTimeoutConfirmTitle": {
+        "NewKey": "Debug_HeartbeatTimeoutConfirmTitle",
+        "Group": "AdvancedStrings"
+    },
+    "Debug_BreakerResetMessage": {
+        "NewKey": "Debug_BreakerResetMessage",
+        "Group": "AdvancedStrings"
+    },
+    "Debug_ResetDoneTitle": {
+        "NewKey": "Debug_ResetDoneTitle",
+        "Group": "AdvancedStrings"
+    },
+    "ScreenTouch_Code_UseNibHint": {
+        "NewKey": "ScreenTouch_Code_UseNibHint",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_NibWaiting": {
+        "NewKey": "ScreenTouch_Code_NibWaiting",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_FingerNotCalibrated": {
+        "NewKey": "ScreenTouch_Code_FingerNotCalibrated",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_PalmNotCalibrated": {
+        "NewKey": "ScreenTouch_Code_PalmNotCalibrated",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_UseFingerHint": {
+        "NewKey": "ScreenTouch_Code_UseFingerHint",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_UsePalmHint": {
+        "NewKey": "ScreenTouch_Code_UsePalmHint",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_Done": {
+        "NewKey": "ScreenTouch_Code_Done",
+        "Group": "CanvasStrings"
+    },
+    "ToolbarMenu_MaxItems": {
+        "NewKey": "ToolbarMenu_MaxItems",
+        "Group": "FloatingBarStrings"
+    },
+    "Board_PositionFirst": {
+        "NewKey": "Board_PositionFirst",
+        "Group": "FloatingBarStrings"
+    },
+    "Board_PositionLast": {
+        "NewKey": "Board_PositionLast",
+        "Group": "FloatingBarStrings"
+    },
+    "Board_PositionSingle": {
+        "NewKey": "Board_PositionSingle",
+        "Group": "FloatingBarStrings"
+    },
+    "Feedback_FetchFailed": {
+        "NewKey": "Feedback_FetchFailed",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_NoPptLinkage": {
+        "NewKey": "Feedback_NoPptLinkage",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_PptLinkageFailed": {
+        "NewKey": "Feedback_PptLinkageFailed",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_NoInkRecognition": {
+        "NewKey": "Feedback_NoInkRecognition",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_InkRecognitionFailed": {
+        "NewKey": "Feedback_InkRecognitionFailed",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_SectionEnvironment": {
+        "NewKey": "Feedback_SectionEnvironment",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_SectionDeviceInfo": {
+        "NewKey": "Feedback_SectionDeviceInfo",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_SectionSoftwareConfig": {
+        "NewKey": "Feedback_SectionSoftwareConfig",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_SectionPptLinkage": {
+        "NewKey": "Feedback_SectionPptLinkage",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_SectionInkRecognition": {
+        "NewKey": "Feedback_SectionInkRecognition",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_PptLinkageHeader": {
+        "NewKey": "Feedback_PptLinkageHeader",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_InkRecognitionHeader": {
+        "NewKey": "Feedback_InkRecognitionHeader",
+        "Group": "FeedbackStrings"
+    },
+    "Main_Camera_RefreshFailed": {
+        "NewKey": "Main_Camera_RefreshFailed",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Camera_PreviewStartFailed": {
+        "NewKey": "Main_Camera_PreviewStartFailed",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Camera_SwitchFailed": {
+        "NewKey": "Main_Camera_SwitchFailed",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Camera_FrameProcessFailed": {
+        "NewKey": "Main_Camera_FrameProcessFailed",
+        "Group": "MainWindowStrings"
+    },
+    "CloudStorage_TokenFailed": {
+        "NewKey": "CloudStorage_TokenFailed",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_TokenNetworkError": {
+        "NewKey": "CloudStorage_TokenNetworkError",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_TokenError": {
+        "NewKey": "CloudStorage_TokenError",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_ApiRequestFailed": {
+        "NewKey": "CloudStorage_ApiRequestFailed",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_RequestError": {
+        "NewKey": "CloudStorage_RequestError",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_FileNotFound": {
+        "NewKey": "CloudStorage_FileNotFound",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_UploadFailed": {
+        "NewKey": "CloudStorage_UploadFailed",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_UploadNetworkError": {
+        "NewKey": "CloudStorage_UploadNetworkError",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_UploadError": {
+        "NewKey": "CloudStorage_UploadError",
+        "Group": "CloudStorageStrings"
+    },
+    "CloudStorage_AutoUploadTitle": {
+        "NewKey": "CloudStorage_AutoUploadTitle",
+        "Group": "CloudStorageStrings"
+    },
+    "Main_Duration_Seconds": {
+        "NewKey": "Main_Duration_Seconds",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Duration_MinutesSeconds": {
+        "NewKey": "Main_Duration_MinutesSeconds",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Duration_Minutes": {
+        "NewKey": "Main_Duration_Minutes",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Duration_Hours": {
+        "NewKey": "Main_Duration_Hours",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Duration_MinutesShort": {
+        "NewKey": "Main_Duration_MinutesShort",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Duration_SecondsShort": {
+        "NewKey": "Main_Duration_SecondsShort",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Hotkey_ScreenSuffix": {
+        "NewKey": "Main_Hotkey_ScreenSuffix",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Hotkey_MultiScreen": {
+        "NewKey": "Main_Hotkey_MultiScreen",
+        "Group": "MainWindowStrings"
+    },
+    "Feedback_MicroBin_UploadFailed": {
+        "NewKey": "Feedback_MicroBin_UploadFailed",
+        "Group": "FeedbackStrings"
+    },
+    "Main_ForceFullscreen": {
+        "NewKey": "Main_ForceFullscreen",
+        "Group": "MainWindowStrings"
+    },
+    "Random_History_ItemFormat": {
+        "NewKey": "Random_History_ItemFormat",
+        "Group": "RandomStrings"
+    },
+    "Main_Interceptor_Blocked": {
+        "NewKey": "Main_Interceptor_Blocked",
+        "Group": "MainWindowStrings"
+    },
+    "ScreenTouch_Code_NibValue": {
+        "NewKey": "ScreenTouch_Code_NibValue",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_FingerValue": {
+        "NewKey": "ScreenTouch_Code_FingerValue",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_PalmValue": {
+        "NewKey": "ScreenTouch_Code_PalmValue",
+        "Group": "CanvasStrings"
+    },
+    "ScreenTouch_Code_CalibrateSuccess": {
+        "NewKey": "ScreenTouch_Code_CalibrateSuccess",
+        "Group": "CanvasStrings"
+    },
+    "Main_WindowRestoredToFullscreen": {
+        "NewKey": "Main_WindowRestoredToFullscreen",
+        "Group": "MainWindowStrings"
+    },
+    "Feedback_PptLinkageLineFormat": {
+        "NewKey": "Feedback_PptLinkageLineFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_WpsSupportLineFormat": {
+        "NewKey": "Feedback_WpsSupportLineFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_MsoSupportLineFormat": {
+        "NewKey": "Feedback_MsoSupportLineFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_InkRecognitionLineFormat": {
+        "NewKey": "Feedback_InkRecognitionLineFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_EngineLineFormat": {
+        "NewKey": "Feedback_EngineLineFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_DeviceIdFormat": {
+        "NewKey": "Feedback_DeviceIdFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_PptLinkageBlockFormat": {
+        "NewKey": "Feedback_PptLinkageBlockFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_InkRecognitionBlockFormat": {
+        "NewKey": "Feedback_InkRecognitionBlockFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_SoftwareVersionFormat": {
+        "NewKey": "Feedback_SoftwareVersionFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_UpdateChannelFormat": {
+        "NewKey": "Feedback_UpdateChannelFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_OsVersionFormat": {
+        "NewKey": "Feedback_OsVersionFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_NetVersionFormat": {
+        "NewKey": "Feedback_NetVersionFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_DeviceIdLineFormat": {
+        "NewKey": "Feedback_DeviceIdLineFormat",
+        "Group": "FeedbackStrings"
+    },
+    "Feedback_DeviceIdLineFormat2": {
+        "NewKey": "Feedback_DeviceIdLineFormat2",
+        "Group": "FeedbackStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoBoard3": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoBoard3",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoBoard5": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoBoard5",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoBoard5C": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoBoard5C",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoPincoDesktop": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoPincoDesktop",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoPincoPen": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoPincoPen",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoPincoBoard": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoPincoBoard",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoPptTools": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoPptTools",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_AiClass": {
+        "NewKey": "FloatingInterceptor_Rule_AiClass",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanMain": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanMain",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanPenSettings": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanPenSettings",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanSwipeClear": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanSwipeClear",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanInteraction": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanInteraction",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanSubject": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanSubject",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanControl": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanControl",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanTools": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanTools",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanSceneBar": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanSceneBar",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanDrawWindow": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanDrawWindow",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanPptFloat": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanPptFloat",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanPptPage": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanPptPage",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanPptBack": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanPptBack",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_ChangYanPptPreview": {
+        "NewKey": "FloatingInterceptor_Rule_ChangYanPptPreview",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_IntelligentClassDesktop": {
+        "NewKey": "FloatingInterceptor_Rule_IntelligentClassDesktop",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_IntelligentClassPptFloat": {
+        "NewKey": "FloatingInterceptor_Rule_IntelligentClassPptFloat",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoDesktopPen": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoDesktopPen",
+        "Group": "AutomationStrings"
+    },
+    "FloatingInterceptor_Rule_SeewoDesktopSideBar": {
+        "NewKey": "FloatingInterceptor_Rule_SeewoDesktopSideBar",
+        "Group": "AutomationStrings"
+    },
+    "Main_Camera_NoDevice": {
+        "NewKey": "Main_Camera_NoDevice",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Camera_IndexOutOfRange": {
+        "NewKey": "Main_Camera_IndexOutOfRange",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Ink_MissingMetadata": {
+        "NewKey": "Main_Ink_MissingMetadata",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Ink_NotInPptMode": {
+        "NewKey": "Main_Ink_NotInPptMode",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Ink_NotInBoardMode": {
+        "NewKey": "Main_Ink_NotInBoardMode",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Ink_InvalidXmlFormat": {
+        "NewKey": "Main_Ink_InvalidXmlFormat",
+        "Group": "MainWindowStrings"
+    },
+    "Main_Ink_PptMismatch": {
+        "NewKey": "Main_Ink_PptMismatch",
+        "Group": "MainWindowStrings"
+    }}

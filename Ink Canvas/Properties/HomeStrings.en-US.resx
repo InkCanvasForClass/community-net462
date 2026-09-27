@@ -132,4 +132,24 @@
   <data name="Home_BackToOldUI" xml:space="preserve">
     <value>Back to old UI</value>
   </data>
+
+  <data name="Splash_LoadingConfig" xml:space="preserve">
+    <value>Loading configuration...</value>
+  </data>
+
+  <data name="Splash_InitializingMain" xml:space="preserve">
+    <value>Initializing main window...</value>
+  </data>
+
+  <data name="Splash_Complete" xml:space="preserve">
+    <value>Startup complete!</value>
+  </data>
+
+  <data name="Home_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+
+  <data name="Home_NewHomeNotice" xml:space="preserve">
+    <value>The new home page is still in development — help us test it!</value>
+  </data>
 </root>

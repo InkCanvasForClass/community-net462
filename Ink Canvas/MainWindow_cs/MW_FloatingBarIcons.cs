@@ -803,7 +803,7 @@ namespace Ink_Canvas
         /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconUndo_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("撤销冻结页面内容")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_UndoFrozenContent)) return;
             if (!IsUndoEnabled) return;
             BtnUndo_Click(null, null);
             HideSubPanels();
@@ -816,7 +816,7 @@ namespace Ink_Canvas
         /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconRedo_MouseUp(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("重做冻结页面内容")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_RedoFrozenContent)) return;
             if (!IsRedoEnabled) return;
             BtnRedo_Click(null, null);
             HideSubPanels();
@@ -1110,7 +1110,7 @@ namespace Ink_Canvas
         /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconDelete_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("清除冻结页面内容")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ClearFrozenContent)) return;
             if (inkCanvas.GetSelectedStrokes().Count > 0)
             {
                 inkCanvas.Strokes.Remove(inkCanvas.GetSelectedStrokes());
@@ -1508,7 +1508,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         private void GridInkReplayButton_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("重播冻结页面内容")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ReplayFrozenContent)) return;
             //if (lastBorderMouseDownObject != sender) return;
 
             AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
@@ -3459,7 +3459,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         internal void PenIcon_Click(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到画笔")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToPen)) return;
 
             if (lastBorderMouseDownObject is Panel panel)
                 panel.Background = new SolidColorBrush(Colors.Transparent);
@@ -3763,7 +3763,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         internal void EraserIcon_Click(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到橡皮擦")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToEraser)) return;
 
             bool isAlreadyEraser = inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
             forceEraser = false;
@@ -3839,7 +3839,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         private void BoardEraserIcon_Click(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到橡皮擦")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToEraser)) return;
 
             bool isAlreadyEraser = inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
             forceEraser = false;
@@ -3897,7 +3897,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         internal void EraserIconByStrokes_Click(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到线擦")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToStrokeEraser)) return;
 
             // 如果当前不在批注模式，先切换到批注模式
             if (!IsAnnotating)
@@ -3937,7 +3937,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         internal void BoardEraserIconByStrokes_Click(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到线擦")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToStrokeEraser)) return;
 
             // 禁用高级橡皮擦系统
             DisableEraserOverlay();
@@ -4221,7 +4221,7 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         private void SelectIcon_MouseUp(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到选择工具")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToSelect)) return;
 
             // 禁用高级橡皮擦系统
             DisableEraserOverlay();
@@ -4467,7 +4467,7 @@ namespace Ink_Canvas
 
         private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("清空冻结页面内容")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_EmptyFrozenContent)) return;
             forceEraser = false;
             //BorderClearInDelete.Visibility = Visibility.Collapsed;
 
@@ -4986,7 +4986,7 @@ namespace Ink_Canvas
 
         private async void ImageOptionScreenshot_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("插入截图")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return;
             // Hide the options panel
             AnimationsHelper.HidePopupWithSlideAndFade(BoardImageOptionsPanel);
 
@@ -5065,7 +5065,7 @@ namespace Ink_Canvas
         // 插入图片方法
         private async void InsertImage_MouseUp_New(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("插入图片")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertImage)) return;
             var dialog = new OpenFileDialog
             {
                 Filter = MainWindowStrings.Main_FileInsert_OpenDialogFilter

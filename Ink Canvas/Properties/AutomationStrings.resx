@@ -297,4 +297,372 @@
   <data name="FileAssoc_ExitedFoldMode" xml:space="preserve">
     <value>已退出收纳模式并恢复浮动栏</value>
   </data>
+
+  <data name="AutoWf_StateSatisfied" xml:space="preserve">
+    <value>已满足</value>
+  </data>
+
+  <data name="AutoWf_StateNotSatisfied" xml:space="preserve">
+    <value>不满足</value>
+  </data>
+
+  <data name="AutoWf_StateUnknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+
+  <data name="AutoWf_AddWorkflow" xml:space="preserve">
+    <value>添加自动化</value>
+  </data>
+
+  <data name="AutoWf_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+
+  <data name="AutoWf_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+
+  <data name="AutoWf_Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+
+  <data name="AutoWf_EnableRevert" xml:space="preserve">
+    <value>启用恢复</value>
+  </data>
+
+  <data name="AutoWf_Invoke" xml:space="preserve">
+    <value>触发</value>
+  </data>
+
+  <data name="AutoWf_Revert" xml:space="preserve">
+    <value>恢复</value>
+  </data>
+
+  <data name="AutoWf_WhenEvents" xml:space="preserve">
+    <value>当以下事件触发时</value>
+  </data>
+
+  <data name="AutoWf_AddTrigger" xml:space="preserve">
+    <value>添加触发器</value>
+  </data>
+
+  <data name="AutoWf_AndConditions" xml:space="preserve">
+    <value>并且满足以下条件时</value>
+  </data>
+
+  <data name="AutoWf_ConditionDisabledHint" xml:space="preserve">
+    <value>工作流运行时不会考虑条件。</value>
+  </data>
+
+  <data name="AutoWf_AnyGroup" xml:space="preserve">
+    <value>当以下任意条件组满足时</value>
+  </data>
+
+  <data name="AutoWf_AllGroups" xml:space="preserve">
+    <value>当以下所有条件组满足时</value>
+  </data>
+
+  <data name="AutoWf_Reverse" xml:space="preserve">
+    <value>反转</value>
+  </data>
+
+  <data name="AutoWf_AddGroup" xml:space="preserve">
+    <value>添加组</value>
+  </data>
+
+  <data name="AutoWf_AnyRule" xml:space="preserve">
+    <value>当以下任意条件满足时</value>
+  </data>
+
+  <data name="AutoWf_AllRules" xml:space="preserve">
+    <value>当以下所有条件满足时</value>
+  </data>
+
+  <data name="AutoWf_AddRule" xml:space="preserve">
+    <value>添加规则</value>
+  </data>
+
+  <data name="AutoWf_EnableGroup" xml:space="preserve">
+    <value>启用条件组</value>
+  </data>
+
+  <data name="AutoWf_Actions" xml:space="preserve">
+    <value>触发行动</value>
+  </data>
+
+  <data name="AutoWf_AddAction" xml:space="preserve">
+    <value>添加行动</value>
+  </data>
+
+  <data name="AutoWf_AutoRevertHint" xml:space="preserve">
+    <value>当规则不再满足时，将自动恢复行动。</value>
+  </data>
+
+  <data name="AutoWf_EmptyState" xml:space="preserve">
+    <value>在左侧选择或添加一个自动化，然后在此处进行设置。</value>
+  </data>
+
+  <data name="Automation_Action_FoldToolbar" xml:space="preserve">
+    <value>折叠/展开工具栏</value>
+  </data>
+
+  <data name="Automation_Action_KillProcess" xml:space="preserve">
+    <value>结束进程</value>
+  </data>
+
+  <data name="Automation_Action_SaveStrokes" xml:space="preserve">
+    <value>保存笔画</value>
+  </data>
+
+  <data name="Automation_Action_ToggleAnnotation" xml:space="preserve">
+    <value>切换批注模式</value>
+  </data>
+
+  <data name="Automation_Action_ClearStrokes" xml:space="preserve">
+    <value>清空笔画</value>
+  </data>
+
+  <data name="Automation_Action_ShowNotification" xml:space="preserve">
+    <value>显示通知</value>
+  </data>
+
+  <data name="Automation_Action_ToggleTopmost" xml:space="preserve">
+    <value>切换窗口置顶</value>
+  </data>
+
+  <data name="Automation_Action_ResetDesktopPosition" xml:space="preserve">
+    <value>重置桌面模式位置</value>
+  </data>
+
+  <data name="Automation_Action_ResetPptPosition" xml:space="preserve">
+    <value>重置PPT模式位置</value>
+  </data>
+
+  <data name="Automation_Rule_ProcessRunning" xml:space="preserve">
+    <value>进程正在运行</value>
+  </data>
+
+  <data name="Automation_Rule_WindowTitleContains" xml:space="preserve">
+    <value>窗口标题包含</value>
+  </data>
+
+  <data name="Automation_Rule_IsAnnotationMode" xml:space="preserve">
+    <value>批注模式</value>
+  </data>
+
+  <data name="Automation_Rule_IsPptSlideshow" xml:space="preserve">
+    <value>PPT放映中</value>
+  </data>
+
+  <data name="Automation_Rule_ForegroundWindowProcess" xml:space="preserve">
+    <value>前台窗口进程名</value>
+  </data>
+
+  <data name="Automation_Rule_IsFloatingBarFolded" xml:space="preserve">
+    <value>工具栏已折叠</value>
+  </data>
+
+  <data name="Automation_Rule_IsForegroundWhiteboard" xml:space="preserve">
+    <value>前台窗口是 ICC-CE 白板</value>
+  </data>
+
+  <data name="Automation_SlideShow" xml:space="preserve">
+    <value>幻灯片放映</value>
+  </data>
+
+  <data name="Automation_Trigger_WhiteboardEnter" xml:space="preserve">
+    <value>进入白板模式</value>
+  </data>
+
+  <data name="Automation_Trigger_WhiteboardExit" xml:space="preserve">
+    <value>退出白板模式</value>
+  </data>
+
+  <data name="Automation_Trigger_AnnotationEnter" xml:space="preserve">
+    <value>进入批注模式</value>
+  </data>
+
+  <data name="Automation_Trigger_AnnotationExit" xml:space="preserve">
+    <value>退出批注模式</value>
+  </data>
+
+  <data name="Automation_Trigger_PptEnter" xml:space="preserve">
+    <value>进入PPT放映</value>
+  </data>
+
+  <data name="Automation_Trigger_PptExit" xml:space="preserve">
+    <value>退出PPT放映</value>
+  </data>
+
+  <data name="Automation_Trigger_PptDetection" xml:space="preserve">
+    <value>PPT放映检测</value>
+  </data>
+
+  <data name="Automation_Trigger_ProcessDetected" xml:space="preserve">
+    <value>进程检测</value>
+  </data>
+
+  <data name="Automation_Trigger_RulesetChanged" xml:space="preserve">
+    <value>规则集更新</value>
+  </data>
+
+  <data name="Automation_Trigger_Timer" xml:space="preserve">
+    <value>定时触发</value>
+  </data>
+
+  <data name="Automation_Trigger_WindowFocusChanged" xml:space="preserve">
+    <value>前台窗口变化</value>
+  </data>
+
+  <data name="Automation_DefaultActionName" xml:space="preserve">
+    <value>新行动</value>
+  </data>
+
+  <data name="Automation_Workflow_CopySuffix" xml:space="preserve">
+    <value> (副本)</value>
+  </data>
+
+  <data name="Automation_Field_ProcessName" xml:space="preserve">
+    <value>进程名</value>
+  </data>
+
+  <data name="Automation_Field_TitleContains" xml:space="preserve">
+    <value>标题包含</value>
+  </data>
+
+  <data name="Automation_Field_IgnoreCase" xml:space="preserve">
+    <value>忽略大小写</value>
+  </data>
+
+  <data name="Automation_Field_NotificationType" xml:space="preserve">
+    <value>通知类型</value>
+  </data>
+
+  <data name="Automation_Field_NotificationContent" xml:space="preserve">
+    <value>通知内容</value>
+  </data>
+
+  <data name="Automation_Field_SavePath" xml:space="preserve">
+    <value>保存路径</value>
+  </data>
+
+  <data name="Automation_Field_SaveAsXml" xml:space="preserve">
+    <value>保存为 XML</value>
+  </data>
+
+  <data name="Automation_Field_Fold" xml:space="preserve">
+    <value>折叠</value>
+  </data>
+
+  <data name="Automation_Field_EnterAnnotation" xml:space="preserve">
+    <value>进入批注</value>
+  </data>
+
+  <data name="Automation_Field_Topmost" xml:space="preserve">
+    <value>置顶</value>
+  </data>
+
+  <data name="Automation_Workflow_DefaultNameFormat" xml:space="preserve">
+    <value>自定义自动化 {0}</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoBoard3" xml:space="preserve">
+    <value>希沃白板3 桌面悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoBoard5" xml:space="preserve">
+    <value>希沃白板5 桌面悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoBoard5C" xml:space="preserve">
+    <value>希沃白板5C 桌面悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPincoDesktop" xml:space="preserve">
+    <value>希沃品课教师端 桌面悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPincoPen" xml:space="preserve">
+    <value>希沃品课教师端 画笔悬浮窗（包括PPT控件）</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPincoBoard" xml:space="preserve">
+    <value>希沃品课教师端 桌面画板</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPptTools" xml:space="preserve">
+    <value>希沃PPT小工具</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_AiClass" xml:space="preserve">
+    <value>AiClass 桌面悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanMain" xml:space="preserve">
+    <value>畅言智慧课堂 主栏悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPenSettings" xml:space="preserve">
+    <value>畅言智慧课堂 画笔设置</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanSwipeClear" xml:space="preserve">
+    <value>畅言智慧课堂 滑动清除</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanInteraction" xml:space="preserve">
+    <value>畅言智慧课堂 互动</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanSubject" xml:space="preserve">
+    <value>畅言智慧课堂 学科应用</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanControl" xml:space="preserve">
+    <value>畅言智慧课堂 管控</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanTools" xml:space="preserve">
+    <value>畅言智慧课堂 通用工具</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanSceneBar" xml:space="preserve">
+    <value>畅言智慧课堂 场景工具栏</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanDrawWindow" xml:space="preserve">
+    <value>畅言智慧课堂 绘制窗口</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptFloat" xml:space="preserve">
+    <value>畅言智慧课堂 PPT悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptPage" xml:space="preserve">
+    <value>畅言智慧课堂 PPT页面控制</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptBack" xml:space="preserve">
+    <value>畅言智慧课堂 PPT返回</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptPreview" xml:space="preserve">
+    <value>畅言智慧课堂 PPT预览</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_IntelligentClassDesktop" xml:space="preserve">
+    <value>天喻教育云互动课堂 桌面悬浮窗（包括PPT控件）</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_IntelligentClassPptFloat" xml:space="preserve">
+    <value>天喻教育云互动课堂 PPT悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoDesktopPen" xml:space="preserve">
+    <value>希沃桌面 画笔悬浮窗</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoDesktopSideBar" xml:space="preserve">
+    <value>希沃桌面 侧栏悬浮窗</value>
+  </data>
 </root>

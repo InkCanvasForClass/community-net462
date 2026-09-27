@@ -629,7 +629,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
                 if (result == null || !result.Success)
                 {
-                    throw new Exception("认证响应失败");
+                    throw new Exception(Properties.CloudStorageStrings.CloudStorage_AuthResponseFailed);
                 }
 
                 var whiteboards = result.Whiteboards ?? new List<WhiteboardInfo>();

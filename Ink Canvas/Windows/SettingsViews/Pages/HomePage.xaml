@@ -28,9 +28,17 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <Button HorizontalAlignment="Right" Padding="10,6" Margin="0,24,0,0"
-                            Content="{x:Static props:HomeStrings.Home_TryNewUI}"
-                            Click="BtnOpenDashboard_Click" />
+                <ui:InfoBar Margin="0,24,0,0"
+                            IsOpen="True"
+                            IsClosable="False"
+                            Severity="Informational"
+                            Message="{x:Static props:HomeStrings.Home_NewHomeNotice}"
+                            Title="">
+                    <ui:InfoBar.ActionButton>
+                        <Button Content="{x:Static props:HomeStrings.Home_TryNewUI}"
+                                Click="BtnOpenDashboard_Click" />
+                    </ui:InfoBar.ActionButton>
+                </ui:InfoBar>
 
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:NotificationStrings.ActionsTitle}" />
@@ -311,7 +319,7 @@
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="调试" Description="调试"
+                    <ui:SettingsCard Header="{x:Static props:NavStrings.Nav_Debug}" Description="{x:Static props:NavStrings.Nav_Debug}"
                         IsClickEnabled="True" Click="QuickNavCard_Click" Tag="DebugPage">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WrenchScrewdriver_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />

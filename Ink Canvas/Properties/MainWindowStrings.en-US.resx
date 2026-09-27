@@ -577,4 +577,316 @@ Please check if the update was successful.</value>
     <value>Sorry, an unexpected error occurred that may cause InkCanvasForClass to run unstably.
     It is recommended to save your ink and restart the application.</value>
   </data>
+
+  <data name="Main_Freeze_Action_Modify" xml:space="preserve">
+    <value>modify the frozen page</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToEdit" xml:space="preserve">
+    <value>switch to the edit tool</value>
+  </data>
+
+  <data name="Main_Freeze_Action_WriteOrErase" xml:space="preserve">
+    <value>write or erase</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveOrScaleContent" xml:space="preserve">
+    <value>move or scale content</value>
+  </data>
+
+  <data name="Main_Freeze_Action_OpenGeometry" xml:space="preserve">
+    <value>open the geometry tool</value>
+  </data>
+
+  <data name="Main_Freeze_Action_DrawShape" xml:space="preserve">
+    <value>draw a shape</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToPen" xml:space="preserve">
+    <value>switch to the pen</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneInk" xml:space="preserve">
+    <value>clone ink</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneInkToNewPage" xml:space="preserve">
+    <value>clone ink to a new page</value>
+  </data>
+
+  <data name="Main_Freeze_Action_InsertInkToWhiteboard" xml:space="preserve">
+    <value>insert ink into the whiteboard</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ChangeInkWidth" xml:space="preserve">
+    <value>change ink thickness</value>
+  </data>
+
+  <data name="Main_Freeze_Action_FlipInk" xml:space="preserve">
+    <value>flip ink</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RotateInk" xml:space="preserve">
+    <value>rotate ink</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveInk" xml:space="preserve">
+    <value>move ink</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveOrScaleInk" xml:space="preserve">
+    <value>move or scale ink</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ResizeInk" xml:space="preserve">
+    <value>resize ink</value>
+  </data>
+
+  <data name="Main_Freeze_Action_OpenInkFile" xml:space="preserve">
+    <value>open an ink file</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RestoreInkFile" xml:space="preserve">
+    <value>restore an ink file</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToSelect" xml:space="preserve">
+    <value>switch to the select tool</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ClearFrozenContent" xml:space="preserve">
+    <value>clear the frozen page content</value>
+  </data>
+
+  <data name="Main_Freeze_Action_InsertScreenshot" xml:space="preserve">
+    <value>insert a screenshot</value>
+  </data>
+
+  <data name="Main_Freeze_Action_PasteImage" xml:space="preserve">
+    <value>paste an image</value>
+  </data>
+
+  <data name="Main_Freeze_Action_UndoFrozenContent" xml:space="preserve">
+    <value>undo on the frozen page</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RedoFrozenContent" xml:space="preserve">
+    <value>redo on the frozen page</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ReplayFrozenContent" xml:space="preserve">
+    <value>replay the frozen page content</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToEraser" xml:space="preserve">
+    <value>switch to the eraser</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToStrokeEraser" xml:space="preserve">
+    <value>switch to the stroke eraser</value>
+  </data>
+
+  <data name="Main_Freeze_Action_EmptyFrozenContent" xml:space="preserve">
+    <value>empty the frozen page content</value>
+  </data>
+
+  <data name="Main_Freeze_Action_InsertImage" xml:space="preserve">
+    <value>insert an image</value>
+  </data>
+
+  <data name="Main_Freeze_Action_EraseFrozenPage" xml:space="preserve">
+    <value>erase on the frozen page</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveImage" xml:space="preserve">
+    <value>move the image</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ScaleImage" xml:space="preserve">
+    <value>scale the image</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveOrScaleImage" xml:space="preserve">
+    <value>move or scale the image</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneImage" xml:space="preserve">
+    <value>clone the image</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneImageToNewPage" xml:space="preserve">
+    <value>clone the image to a new page</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RotateImage" xml:space="preserve">
+    <value>rotate the image</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchPdfPage" xml:space="preserve">
+    <value>switch the PDF page</value>
+  </data>
+
+  <data name="Main_Freeze_Action_DeleteImage" xml:space="preserve">
+    <value>delete the image</value>
+  </data>
+
+  <data name="Main_Media_UnknownError" xml:space="preserve">
+    <value>Unknown error</value>
+  </data>
+
+  <data name="Main_Media_LoadFailed" xml:space="preserve">
+    <value>Failed to load media. The format may be unsupported or a system codec is missing.</value>
+  </data>
+
+  <data name="Main_PDF_OpenFailed" xml:space="preserve">
+    <value>Cannot open the PDF (it may be encrypted, corrupted, or unsupported).</value>
+  </data>
+
+  <data name="Main_Hotkey_SingleScreen" xml:space="preserve">
+    <value>Single-screen environment</value>
+  </data>
+
+  <data name="Main_Hotkey_ScreenInfoUnavailable" xml:space="preserve">
+    <value>Cannot get screen information</value>
+  </data>
+
+  <data name="Main_Settings_RestoreFailedDefaults" xml:space="preserve">
+    <value>Restore from backup failed; default settings are used</value>
+  </data>
+
+  <data name="Main_Settings_RestoreReloadFailedDefaults" xml:space="preserve">
+    <value>Reload after restoring from backup failed; default settings are used</value>
+  </data>
+
+  <data name="Main_Settings_RestoreLoadFailedDefaults" xml:space="preserve">
+    <value>Load after restoring from backup failed; default settings are used</value>
+  </data>
+
+  <data name="Main_Clock_DateFormat" xml:space="preserve">
+    <value>yyyy-MM-dd dddd</value>
+  </data>
+
+  <data name="Main_Clock_TimeFormat" xml:space="preserve">
+    <value>hh:mm:ss tt</value>
+  </data>
+
+  <data name="Main_AutoKill_SeewoBoard5" xml:space="preserve">
+    <value>"Seewo Whiteboard 5" was closed automatically</value>
+  </data>
+
+  <data name="Main_AutoKill_HiteAnnotation" xml:space="preserve">
+    <value>"Hite Annotation" was closed automatically</value>
+  </data>
+
+  <data name="Main_AutoKill_Ica" xml:space="preserve">
+    <value>"ICA" was closed automatically</value>
+  </data>
+
+  <data name="Main_AutoKill_InkCanvas" xml:space="preserve">
+    <value>"Ink Canvas" was closed automatically</value>
+  </data>
+
+  <data name="Main_ImageInsert_CameraInserted" xml:space="preserve">
+    <value>Camera snapshot inserted into the canvas</value>
+  </data>
+
+  <data name="Main_ImageInsert_CameraFailed" xml:space="preserve">
+    <value>Failed to insert camera snapshot</value>
+  </data>
+
+  <data name="Main_Uri_MissingNameParam" xml:space="preserve">
+    <value>error: missing parameter name</value>
+  </data>
+
+  <data name="Main_Magnifier_LightsOff" xml:space="preserve">
+    <value>Lights off</value>
+  </data>
+
+  <data name="Main_Camera_RefreshFailed" xml:space="preserve">
+    <value>Failed to refresh camera list: {0}</value>
+  </data>
+
+  <data name="Main_Camera_PreviewStartFailed" xml:space="preserve">
+    <value>Failed to start camera preview: {0}</value>
+  </data>
+
+  <data name="Main_Camera_SwitchFailed" xml:space="preserve">
+    <value>Failed to switch camera: {0}</value>
+  </data>
+
+  <data name="Main_Camera_FrameProcessFailed" xml:space="preserve">
+    <value>Failed to process a new frame: {0}</value>
+  </data>
+
+  <data name="Main_Duration_Seconds" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+
+  <data name="Main_Duration_MinutesSeconds" xml:space="preserve">
+    <value>{0}m {1}s</value>
+  </data>
+
+  <data name="Main_Duration_Minutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+
+  <data name="Main_Duration_Hours" xml:space="preserve">
+    <value>{0}h</value>
+  </data>
+
+  <data name="Main_Duration_MinutesShort" xml:space="preserve">
+    <value>{0}m</value>
+  </data>
+
+  <data name="Main_Duration_SecondsShort" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+
+  <data name="Main_Hotkey_ScreenSuffix" xml:space="preserve">
+    <value> (screen: {0})</value>
+  </data>
+
+  <data name="Main_Hotkey_MultiScreen" xml:space="preserve">
+    <value>Multi-screen environment - current screen: {0} ({1}x{2})</value>
+  </data>
+
+  <data name="Main_ForceFullscreen" xml:space="preserve">
+    <value>Forced full screen: {0}x{1} (scale {2}x{3})</value>
+  </data>
+
+  <data name="Main_Interceptor_Blocked" xml:space="preserve">
+    <value>Blocked floating window: {0}</value>
+  </data>
+
+  <data name="Main_WindowRestoredToFullscreen" xml:space="preserve">
+    <value>Window size change detected; restored to full screen automatically: {0}x{1} (scale {2}x{3})</value>
+  </data>
+
+  <data name="Main_Camera_NoDevice" xml:space="preserve">
+    <value>No available camera device was found</value>
+  </data>
+
+  <data name="Main_Camera_IndexOutOfRange" xml:space="preserve">
+    <value>Camera index is out of range</value>
+  </data>
+
+  <data name="Main_Ink_MissingMetadata" xml:space="preserve">
+    <value>Metadata file was not found in the archive</value>
+  </data>
+
+  <data name="Main_Ink_NotInPptMode" xml:space="preserve">
+    <value>Not in PPT slideshow mode; cannot restore PPT ink</value>
+  </data>
+
+  <data name="Main_Ink_NotInBoardMode" xml:space="preserve">
+    <value>Not in whiteboard mode; cannot restore whiteboard ink</value>
+  </data>
+
+  <data name="Main_Ink_InvalidXmlFormat" xml:space="preserve">
+    <value>Invalid XML ink file format</value>
+  </data>
+
+  <data name="Main_Ink_PptMismatch" xml:space="preserve">
+    <value>The ink file does not match the current PPT file. Saved PPT: {0}, current PPT: {1}</value>
+  </data>
 </root>

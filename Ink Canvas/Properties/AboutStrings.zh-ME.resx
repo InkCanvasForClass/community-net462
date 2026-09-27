@@ -163,4 +163,24 @@
   <data name="Privacy_ConfirmRevokePrivacy_Title" xml:space="preserve">
     <value>确认取消小秘密同意</value>
   </data>
+
+  <data name="Privacy_WindowTitle" xml:space="preserve">
+    <value>隱私說明 - InkCanvasForClass</value>
+  </data>
+
+  <data name="Privacy_Heading" xml:space="preserve">
+    <value>隱私說明</value>
+  </data>
+
+  <data name="Privacy_Intro" xml:space="preserve">
+    <value>請仔細閱讀以下條款。點擊&amp;quot;同意&amp;quot;即表示您理解並接受本軟體的隱私實踐。</value>
+  </data>
+
+  <data name="Privacy_NoCollect" xml:space="preserve">
+    <value>本軟體不會收集課堂內容或可識別的個人信息。</value>
+  </data>
+
+  <data name="Privacy_Agree" xml:space="preserve">
+    <value>同意</value>
+  </data>
 </root>

@@ -84,8 +84,8 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"刷新摄像头列表失败: {ex.Message}", LogHelper.LogType.Error);
-                ErrorOccurred?.Invoke(this, $"刷新摄像头列表失败: {ex.Message}");
+                LogHelper.WriteLogToFile(string.Format(Properties.MainWindowStrings.Main_Camera_RefreshFailed, ex.Message), LogHelper.LogType.Error);
+                ErrorOccurred?.Invoke(this, string.Format(Properties.MainWindowStrings.Main_Camera_RefreshFailed, ex.Message));
             }
         }
 
@@ -102,14 +102,14 @@ namespace Ink_Canvas.Helpers
                     RefreshCameraList();
                     if (AvailableCameras.Count == 0)
                     {
-                        ErrorOccurred?.Invoke(this, "未找到可用的摄像头设备");
+                        ErrorOccurred?.Invoke(this, Properties.MainWindowStrings.Main_Camera_NoDevice);
                         return false;
                     }
                 }
 
                 if (cameraIndex < 0 || cameraIndex >= AvailableCameras.Count)
                 {
-                    ErrorOccurred?.Invoke(this, "摄像头索引超出范围");
+                    ErrorOccurred?.Invoke(this, Properties.MainWindowStrings.Main_Camera_IndexOutOfRange);
                     return false;
                 }
 
@@ -131,8 +131,8 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"启动摄像头预览失败: {ex.Message}", LogHelper.LogType.Error);
-                ErrorOccurred?.Invoke(this, $"启动摄像头预览失败: {ex.Message}");
+                LogHelper.WriteLogToFile(string.Format(Properties.MainWindowStrings.Main_Camera_PreviewStartFailed, ex.Message), LogHelper.LogType.Error);
+                ErrorOccurred?.Invoke(this, string.Format(Properties.MainWindowStrings.Main_Camera_PreviewStartFailed, ex.Message));
                 return false;
             }
         }
@@ -170,7 +170,7 @@ namespace Ink_Canvas.Helpers
             {
                 if (cameraIndex < 0 || cameraIndex >= AvailableCameras.Count)
                 {
-                    ErrorOccurred?.Invoke(this, "摄像头索引超出范围");
+                    ErrorOccurred?.Invoke(this, Properties.MainWindowStrings.Main_Camera_IndexOutOfRange);
                     return false;
                 }
 
@@ -178,8 +178,8 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"切换摄像头失败: {ex.Message}", LogHelper.LogType.Error);
-                ErrorOccurred?.Invoke(this, $"切换摄像头失败: {ex.Message}");
+                LogHelper.WriteLogToFile(string.Format(Properties.MainWindowStrings.Main_Camera_SwitchFailed, ex.Message), LogHelper.LogType.Error);
+                ErrorOccurred?.Invoke(this, string.Format(Properties.MainWindowStrings.Main_Camera_SwitchFailed, ex.Message));
                 return false;
             }
         }
@@ -319,8 +319,8 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"处理新帧失败: {ex.Message}", LogHelper.LogType.Error);
-                ErrorOccurred?.Invoke(this, $"处理新帧失败: {ex.Message}");
+                LogHelper.WriteLogToFile(string.Format(Properties.MainWindowStrings.Main_Camera_FrameProcessFailed, ex.Message), LogHelper.LogType.Error);
+                ErrorOccurred?.Invoke(this, string.Format(Properties.MainWindowStrings.Main_Camera_FrameProcessFailed, ex.Message));
             }
         }
 

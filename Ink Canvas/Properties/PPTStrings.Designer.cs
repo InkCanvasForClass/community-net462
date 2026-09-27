@@ -207,5 +207,11 @@ namespace Ink_Canvas.Properties
         public static string SmartMode => ResourceManager.GetString(nameof(SmartMode), _resourceCulture);
 
         public static string SmartModeHint => ResourceManager.GetString(nameof(SmartModeHint), _resourceCulture);
+
+        public static string PPT_VstoRegisterSuccess => ResourceManager.GetString(nameof(PPT_VstoRegisterSuccess), _resourceCulture);
+
+        public static string PPT_VstoRegisterWritten => ResourceManager.GetString(nameof(PPT_VstoRegisterWritten), _resourceCulture);
+
+        public static string PPT_ImagePdfFilter => ResourceManager.GetString(nameof(PPT_ImagePdfFilter), _resourceCulture);
     }
 }

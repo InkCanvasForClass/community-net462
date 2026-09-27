@@ -408,4 +408,36 @@ If not installed, please download and install it from the official website. If a
   <data name="Random_RollCall_NameListClearVerifyMessage" xml:space="preserve">
     <value>Please enter your security password or TOTP verification code to clear the name list.</value>
   </data>
+
+  <data name="Random_RandWindowTitle" xml:space="preserve">
+    <value>Ink Canvas Lucky Draw</value>
+  </data>
+
+  <data name="Random_Rand_AvoidPopular" xml:space="preserve">
+    <value>Exclude popular students</value>
+  </data>
+
+  <data name="Random_Rand_AvoidRare" xml:space="preserve">
+    <value>Avoid uncommon characters</value>
+  </data>
+
+  <data name="Random_Rand_Start" xml:space="preserve">
+    <value>Draw</value>
+  </data>
+
+  <data name="Random_Rand_DrawAll" xml:space="preserve">
+    <value>Draw all</value>
+  </data>
+
+  <data name="Random_Rand_BoysOnly" xml:space="preserve">
+    <value>Boys only</value>
+  </data>
+
+  <data name="Random_Rand_GirlsOnly" xml:space="preserve">
+    <value>Girls only</value>
+  </data>
+
+  <data name="Random_History_ItemFormat" xml:space="preserve">
+    <value>{0} ({1} times recently)</value>
+  </data>
 </root>

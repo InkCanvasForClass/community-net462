@@ -114,4 +114,60 @@
   <data name="FollowMouseScreenHint" xml:space="preserve">
     <value>On by default: automatically use the display where the mouse is as the target display</value>
   </data>
+
+  <data name="Window_Guide_Title" xml:space="preserve">
+    <value>Ink Canvas Annotation User Guide</value>
+  </data>
+
+  <data name="Window_Guide_Shortcuts" xml:space="preserve">
+    <value>Keyboard shortcuts</value>
+  </data>
+
+  <data name="Window_Guide_Undo" xml:space="preserve">
+    <value> Ctrl + Z  ——  Undo</value>
+  </data>
+
+  <data name="Window_Guide_Redo" xml:space="preserve">
+    <value> Ctrl + Y  ——  Redo</value>
+  </data>
+
+  <data name="Window_Guide_Clear" xml:space="preserve">
+    <value> Ctrl + E  ——  Clear screen</value>
+  </data>
+
+  <data name="Window_Guide_Visibility" xml:space="preserve">
+    <value> Alt  + V  ——  Show/hide the toolbar right of the smiley (Visibility)</value>
+  </data>
+
+  <data name="Window_Guide_Capture" xml:space="preserve">
+    <value> Alt  + C  ——  Screenshot (Capture)</value>
+  </data>
+
+  <data name="Window_Guide_Select" xml:space="preserve">
+    <value> Alt  + S  ——  Switch to select mode (Select)</value>
+  </data>
+
+  <data name="Window_Guide_Draw" xml:space="preserve">
+    <value> Alt  + D  ——  Switch to annotation mode / ink color picker (Draw)</value>
+  </data>
+
+  <data name="Window_Guide_Quit" xml:space="preserve">
+    <value> Alt  + Q  ——  Exit annotation mode (Quit)</value>
+  </data>
+
+  <data name="Window_Guide_Board" xml:space="preserve">
+    <value> Alt  + B  ——  Toggle/exit board mode (Board)</value>
+  </data>
+
+  <data name="Window_Guide_Eraser" xml:space="preserve">
+    <value> Alt  + E  ——  Switch to area/stroke eraser (Eraser)</value>
+  </data>
+
+  <data name="Window_Guide_Line" xml:space="preserve">
+    <value> Alt  + L  ——  Switch to single straight-line drawing (Line)</value>
+  </data>
+
+  <data name="Window_Guide_ExitPpt" xml:space="preserve">
+    <value>Shift + Esc  ——  Exit PPT slideshow</value>
+  </data>
 </root>

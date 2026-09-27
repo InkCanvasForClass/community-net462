@@ -11,7 +11,6 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar.Items
     {
         public override string Id => "board.videoBooth";
         public override string LocalizationKey => "Board_VideoBooth";
-        public override string Description => "视频展台";
         public override string IconGeometry => null;
         public override FontIconData? IconKey => FluentSystemIcons.Video_24_Regular;
         public override ButtonPosition DefaultPosition => ButtonPosition.Single;

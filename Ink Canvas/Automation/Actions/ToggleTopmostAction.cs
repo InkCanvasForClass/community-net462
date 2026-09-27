@@ -24,7 +24,7 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "切换窗口置顶", "Pin")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_ToggleTopmost, "Pin")
             {
                 SettingsType = typeof(ToggleTopmostActionSettings)
             };

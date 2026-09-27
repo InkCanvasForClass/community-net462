@@ -16,7 +16,7 @@ namespace Ink_Canvas.Helpers
             if (string.IsNullOrEmpty(executablePath))
             {
                 MessageBox.Show(
-                    "未找到希沃视频展台安装信息（已扫描 64 位与 32 位卸载注册表）。请确认已通过官方安装包安装「希沃视频展台」。",
+                    Properties.BoothStrings.Booth_SeewoNotFound,
                     "Ink Canvas",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -37,7 +37,7 @@ namespace Ink_Canvas.Helpers
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "无法启动希沃视频展台：" + ex.Message,
+                    Properties.BoothStrings.Booth_SeewoLaunchFailed + ex.Message,
                     "Ink Canvas",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);

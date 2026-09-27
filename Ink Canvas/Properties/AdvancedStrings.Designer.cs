@@ -127,5 +127,17 @@ namespace Ink_Canvas.Properties
         public static string Debug_ResetStartupCount_Desc => ResourceManager.GetString(nameof(Debug_ResetStartupCount_Desc), _resourceCulture);
 
         public static string Debug_ResetStartupCount_Button => ResourceManager.GetString(nameof(Debug_ResetStartupCount_Button), _resourceCulture);
+
+        public static string Debug_SimulateCrashConfirm => ResourceManager.GetString(nameof(Debug_SimulateCrashConfirm), _resourceCulture);
+
+        public static string Debug_SimulateCrashConfirmTitle => ResourceManager.GetString(nameof(Debug_SimulateCrashConfirmTitle), _resourceCulture);
+
+        public static string Debug_HeartbeatTimeoutConfirm => ResourceManager.GetString(nameof(Debug_HeartbeatTimeoutConfirm), _resourceCulture);
+
+        public static string Debug_HeartbeatTimeoutConfirmTitle => ResourceManager.GetString(nameof(Debug_HeartbeatTimeoutConfirmTitle), _resourceCulture);
+
+        public static string Debug_BreakerResetMessage => ResourceManager.GetString(nameof(Debug_BreakerResetMessage), _resourceCulture);
+
+        public static string Debug_ResetDoneTitle => ResourceManager.GetString(nameof(Debug_ResetDoneTitle), _resourceCulture);
     }
 }

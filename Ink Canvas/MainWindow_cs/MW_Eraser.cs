@@ -101,7 +101,7 @@ namespace Ink_Canvas
         /// </summary>
         private void EraserOverlay_PointerDown(object sender)
         {
-            if (TryBlockFrozenPageMutation("擦除冻结页面")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_EraseFrozenPage)) return;
             if (isUsingGeometryEraser) return;
 
             // 锁定
@@ -188,7 +188,7 @@ namespace Ink_Canvas
         /// </summary>
         private void EraserOverlay_PointerMove(object sender, Point pt)
         {
-            if (TryBlockFrozenPageMutation("擦除冻结页面")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_EraseFrozenPage)) return;
             if (!isUsingGeometryEraser) return;
 
             if (isUsingStrokesEraser)

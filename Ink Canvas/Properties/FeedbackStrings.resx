@@ -204,4 +204,133 @@
   <data name="Page3_PastebinNotConfigured" xml:space="preserve">
     <value>未配置 Pastebin 服务器</value>
   </data>
+
+  <data name="Feedback_MicroBin_ServerUrlEmpty" xml:space="preserve">
+    <value>服务器地址为空</value>
+  </data>
+
+  <data name="Feedback_MicroBin_ContentEmpty" xml:space="preserve">
+    <value>内容为空</value>
+  </data>
+
+  <data name="Feedback_FetchFailed" xml:space="preserve">
+    <value>获取失败</value>
+  </data>
+
+  <data name="Feedback_NoPptLinkage" xml:space="preserve">
+    <value>未配置PPT联动设置</value>
+  </data>
+
+  <data name="Feedback_PptLinkageFailed" xml:space="preserve">
+    <value>获取PPT联动设置失败</value>
+  </data>
+
+  <data name="Feedback_NoInkRecognition" xml:space="preserve">
+    <value>未配置墨迹识别设置</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionFailed" xml:space="preserve">
+    <value>获取墨迹识别设置失败</value>
+  </data>
+
+  <data name="Feedback_SectionEnvironment" xml:space="preserve">
+    <value>## 环境信息\n</value>
+  </data>
+
+  <data name="Feedback_SectionDeviceInfo" xml:space="preserve">
+    <value>\n## 设备信息\n</value>
+  </data>
+
+  <data name="Feedback_SectionSoftwareConfig" xml:space="preserve">
+    <value>\n## 软件配置\n</value>
+  </data>
+
+  <data name="Feedback_SectionPptLinkage" xml:space="preserve">
+    <value>### PPT联动设置\n</value>
+  </data>
+
+  <data name="Feedback_SectionInkRecognition" xml:space="preserve">
+    <value>### 墨迹识别设置\n</value>
+  </data>
+
+  <data name="Feedback_PptLinkageHeader" xml:space="preserve">
+    <value>\nPPT联动设置:\n</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionHeader" xml:space="preserve">
+    <value>\n墨迹识别设置:\n</value>
+  </data>
+
+  <data name="Feedback_MicroBin_UploadFailed" xml:space="preserve">
+    <value>表单上传: {0}; Raw上传: {1}</value>
+  </data>
+
+  <data name="Feedback_PptLinkageLineFormat" xml:space="preserve">
+    <value>启用PPT联动: {0}
+</value>
+  </data>
+
+  <data name="Feedback_WpsSupportLineFormat" xml:space="preserve">
+    <value>WPS支持: {0}
+</value>
+  </data>
+
+  <data name="Feedback_MsoSupportLineFormat" xml:space="preserve">
+    <value>MSO支持: {0}
+</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionLineFormat" xml:space="preserve">
+    <value>启用墨迹识别: {0}
+</value>
+  </data>
+
+  <data name="Feedback_EngineLineFormat" xml:space="preserve">
+    <value>识别引擎: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdFormat" xml:space="preserve">
+    <value>设备ID: {0}</value>
+  </data>
+
+  <data name="Feedback_PptLinkageBlockFormat" xml:space="preserve">
+    <value>PPT联动设置:
+{0}</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionBlockFormat" xml:space="preserve">
+    <value>墨迹识别设置:
+{0}</value>
+  </data>
+
+  <data name="Feedback_SoftwareVersionFormat" xml:space="preserve">
+    <value>- 软件版本: {0}
+</value>
+  </data>
+
+  <data name="Feedback_UpdateChannelFormat" xml:space="preserve">
+    <value>- 更新通道: {0}
+</value>
+  </data>
+
+  <data name="Feedback_OsVersionFormat" xml:space="preserve">
+    <value>- 操作系统: {0}
+</value>
+  </data>
+
+  <data name="Feedback_NetVersionFormat" xml:space="preserve">
+    <value>- .NET 版本: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdLineFormat" xml:space="preserve">
+    <value>- 设备ID: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdLineFormat2" xml:space="preserve">
+    <value>设备ID: {0}
+</value>
+  </data>
 </root>

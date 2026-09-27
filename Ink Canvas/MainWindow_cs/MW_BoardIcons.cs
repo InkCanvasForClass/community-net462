@@ -353,7 +353,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BoardLassoIcon_Click(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到选择工具")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToSelect)) return;
 
             BtnSelect_Click(null, null);
 
@@ -386,7 +386,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BoardSymbolIconDelete_MouseUp(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("清除冻结页面内容")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ClearFrozenContent)) return;
             PenIcon_Click(null, null);
             SymbolIconDelete_MouseUp(null, null);
 
@@ -425,7 +425,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BoardSymbolIconDeleteInkAndHistories_MouseUp(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("清除冻结页面内容")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_ClearFrozenContent)) return;
             PenIcon_Click(null, null);
             SymbolIconDelete_MouseUp(null, null);
             if (!Settings.Canvas.ClearCanvasAndClearTimeMachine) timeMachine.ClearStrokeHistory();

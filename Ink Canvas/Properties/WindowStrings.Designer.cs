@@ -87,5 +87,33 @@ namespace Ink_Canvas.Properties
         public static string FollowMouseScreen => ResourceManager.GetString(nameof(FollowMouseScreen), _resourceCulture);
 
         public static string FollowMouseScreenHint => ResourceManager.GetString(nameof(FollowMouseScreenHint), _resourceCulture);
+
+        public static string Window_Guide_Title => ResourceManager.GetString(nameof(Window_Guide_Title), _resourceCulture);
+
+        public static string Window_Guide_Shortcuts => ResourceManager.GetString(nameof(Window_Guide_Shortcuts), _resourceCulture);
+
+        public static string Window_Guide_Undo => ResourceManager.GetString(nameof(Window_Guide_Undo), _resourceCulture);
+
+        public static string Window_Guide_Redo => ResourceManager.GetString(nameof(Window_Guide_Redo), _resourceCulture);
+
+        public static string Window_Guide_Clear => ResourceManager.GetString(nameof(Window_Guide_Clear), _resourceCulture);
+
+        public static string Window_Guide_Visibility => ResourceManager.GetString(nameof(Window_Guide_Visibility), _resourceCulture);
+
+        public static string Window_Guide_Capture => ResourceManager.GetString(nameof(Window_Guide_Capture), _resourceCulture);
+
+        public static string Window_Guide_Select => ResourceManager.GetString(nameof(Window_Guide_Select), _resourceCulture);
+
+        public static string Window_Guide_Draw => ResourceManager.GetString(nameof(Window_Guide_Draw), _resourceCulture);
+
+        public static string Window_Guide_Quit => ResourceManager.GetString(nameof(Window_Guide_Quit), _resourceCulture);
+
+        public static string Window_Guide_Board => ResourceManager.GetString(nameof(Window_Guide_Board), _resourceCulture);
+
+        public static string Window_Guide_Eraser => ResourceManager.GetString(nameof(Window_Guide_Eraser), _resourceCulture);
+
+        public static string Window_Guide_Line => ResourceManager.GetString(nameof(Window_Guide_Line), _resourceCulture);
+
+        public static string Window_Guide_ExitPpt => ResourceManager.GetString(nameof(Window_Guide_ExitPpt), _resourceCulture);
     }
 }

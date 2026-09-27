@@ -19,10 +19,10 @@ namespace Ink_Canvas.Helpers
         /// <summary>将配置文件名称转为安全文件名（去掉非法字符）。</summary>
         private static string ToSafeFileName(string profileName)
         {
-            if (string.IsNullOrWhiteSpace(profileName)) return "未命名";
+            if (string.IsNullOrWhiteSpace(profileName)) return Properties.ConfigStrings.Config_Unnamed;
             var invalid = Path.GetInvalidFileNameChars();
             var name = string.Join("_", profileName.Trim().Split(invalid, StringSplitOptions.RemoveEmptyEntries));
-            return string.IsNullOrEmpty(name) ? "未命名" : name;
+            return string.IsNullOrEmpty(name) ? Properties.ConfigStrings.Config_Unnamed : name;
         }
 
         /// <summary>确保配置文件目录存在。</summary>

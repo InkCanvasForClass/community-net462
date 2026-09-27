@@ -19,7 +19,7 @@ namespace Ink_Canvas.WorkflowAutomation.Rules
 
         public static RuleRegistryInfo Register()
         {
-            var info = new RuleRegistryInfo(RuleId, "工具栏已折叠", "ArrowCollapse")
+            var info = new RuleRegistryInfo(RuleId, Properties.AutomationStrings.Automation_Rule_IsFloatingBarFolded, "ArrowCollapse")
             {
                 SettingsType = typeof(IsFloatingBarFoldedRuleSettings)
             };

@@ -204,4 +204,133 @@
   <data name="Page3_PastebinNotConfigured" xml:space="preserve">
     <value>没配 Pastebin 服务器</value>
   </data>
+
+  <data name="Feedback_MicroBin_ServerUrlEmpty" xml:space="preserve">
+    <value>伺服器位址為空</value>
+  </data>
+
+  <data name="Feedback_MicroBin_ContentEmpty" xml:space="preserve">
+    <value>內容為空</value>
+  </data>
+
+  <data name="Feedback_FetchFailed" xml:space="preserve">
+    <value>取得失敗</value>
+  </data>
+
+  <data name="Feedback_NoPptLinkage" xml:space="preserve">
+    <value>未設定PPT聯動設定</value>
+  </data>
+
+  <data name="Feedback_PptLinkageFailed" xml:space="preserve">
+    <value>取得PPT聯動設定失敗</value>
+  </data>
+
+  <data name="Feedback_NoInkRecognition" xml:space="preserve">
+    <value>未設定筆跡辨識設定</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionFailed" xml:space="preserve">
+    <value>取得筆跡辨識設定失敗</value>
+  </data>
+
+  <data name="Feedback_SectionEnvironment" xml:space="preserve">
+    <value>## 環境資訊\n</value>
+  </data>
+
+  <data name="Feedback_SectionDeviceInfo" xml:space="preserve">
+    <value>\n## 裝置資訊\n</value>
+  </data>
+
+  <data name="Feedback_SectionSoftwareConfig" xml:space="preserve">
+    <value>\n## 軟體設定\n</value>
+  </data>
+
+  <data name="Feedback_SectionPptLinkage" xml:space="preserve">
+    <value>### PPT聯動設定\n</value>
+  </data>
+
+  <data name="Feedback_SectionInkRecognition" xml:space="preserve">
+    <value>### 筆跡辨識設定\n</value>
+  </data>
+
+  <data name="Feedback_PptLinkageHeader" xml:space="preserve">
+    <value>\nPPT聯動設定:\n</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionHeader" xml:space="preserve">
+    <value>\n筆跡辨識設定:\n</value>
+  </data>
+
+  <data name="Feedback_MicroBin_UploadFailed" xml:space="preserve">
+    <value>表單上傳: {0}; Raw 上傳: {1}</value>
+  </data>
+
+  <data name="Feedback_PptLinkageLineFormat" xml:space="preserve">
+    <value>啟用PPT聯動: {0}
+</value>
+  </data>
+
+  <data name="Feedback_WpsSupportLineFormat" xml:space="preserve">
+    <value>WPS支援: {0}
+</value>
+  </data>
+
+  <data name="Feedback_MsoSupportLineFormat" xml:space="preserve">
+    <value>MSO支援: {0}
+</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionLineFormat" xml:space="preserve">
+    <value>啟用筆跡辨識: {0}
+</value>
+  </data>
+
+  <data name="Feedback_EngineLineFormat" xml:space="preserve">
+    <value>辨識引擎: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdFormat" xml:space="preserve">
+    <value>裝置ID: {0}</value>
+  </data>
+
+  <data name="Feedback_PptLinkageBlockFormat" xml:space="preserve">
+    <value>PPT聯動設定:
+{0}</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionBlockFormat" xml:space="preserve">
+    <value>筆跡辨識設定:
+{0}</value>
+  </data>
+
+  <data name="Feedback_SoftwareVersionFormat" xml:space="preserve">
+    <value>- 軟體版本: {0}
+</value>
+  </data>
+
+  <data name="Feedback_UpdateChannelFormat" xml:space="preserve">
+    <value>- 更新通道: {0}
+</value>
+  </data>
+
+  <data name="Feedback_OsVersionFormat" xml:space="preserve">
+    <value>- 作業系統: {0}
+</value>
+  </data>
+
+  <data name="Feedback_NetVersionFormat" xml:space="preserve">
+    <value>- .NET 版本: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdLineFormat" xml:space="preserve">
+    <value>- 裝置ID: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdLineFormat2" xml:space="preserve">
+    <value>裝置ID: {0}
+</value>
+  </data>
 </root>

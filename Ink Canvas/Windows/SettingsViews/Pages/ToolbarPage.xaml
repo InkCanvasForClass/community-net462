@@ -13,7 +13,7 @@
       xmlns:touch="clr-namespace:Ink_Canvas.Helpers"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d"
-      Title="工具栏">
+      Title="{x:Static props:NavStrings.Nav_Toolbar}">
 
     <Page.Resources>
         <ResourceDictionary>

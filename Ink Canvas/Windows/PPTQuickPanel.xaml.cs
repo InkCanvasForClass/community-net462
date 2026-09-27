@@ -946,7 +946,7 @@ namespace Ink_Canvas.Windows
             {
                 var dialog = new OpenFileDialog
                 {
-                    Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
+                    Filter = Properties.PPTStrings.PPT_ImagePdfFilter
                 };
 
                 if (dialog.ShowDialog() == true)

@@ -51,15 +51,6 @@
           "System.Runtime.CompilerServices.Unsafe": "6.1.0"
         }
       },
-      "Costura.Fody": {
-        "type": "Direct",
-        "requested": "[6.1.0, )",
-        "resolved": "6.1.0",
-        "contentHash": "11W5jOuFqZreNfzYK4MDMBgJlVGyOgcKxKvaxnrBByABXsLEjug5P288pdk8kFOv7dw9BQI0o00FvqfZY/o8Jg==",
-        "dependencies": {
-          "Fody": "6.9.3"
-        }
-      },
       "gong-wpf-dragdrop": {
         "type": "Direct",
         "requested": "[4.0.0, )",
@@ -100,6 +91,16 @@
         "dependencies": {
           "AvalonEdit": "6.3.0.90",
           "MdXaml.Plugins": "1.27.0"
+        }
+      },
+      "Microsoft.DotNet.Framework.NativeImageCompiler": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "NXb5sh4DMh3K/XjNikQJhFwQeKP7Jwbyk8awI6Ya1PvhDUQnW/yFLQ3iLoltcANxuGphCzW9GiwG5ENCWBdROg==",
+        "dependencies": {
+          "runtime.win10-x64.Microsoft.DotNet.Framework.NativeImageCompiler": "1.0.0",
+          "runtime.win10-x86.Microsoft.DotNet.Framework.NativeImageCompiler": "1.0.0"
         }
       },
       "Microsoft.Extensions.DependencyInjection": {
@@ -241,11 +242,6 @@
         "resolved": "6.3.0.90",
         "contentHash": "WVTb5MxwGqKdeasd3nG5udlV4t6OpvkFanziwI133K0/QJ5FvZmfzRQgpAjGTJhQfIA8GP7AzKQ3sTY9JOFk8Q=="
       },
-      "Fody": {
-        "type": "Transitive",
-        "resolved": "6.9.3",
-        "contentHash": "1CUGgFdyECDKgi5HaUBhdv6k+VG9Iy4OCforGfHyar3xQXAJypZkzymgKtWj/4SPd6nSG0Qi7NH71qHrDSZLaA=="
-      },
       "H.GeneratedIcons.System.Drawing": {
         "type": "Transitive",
         "resolved": "2.4.1",
@@ -320,6 +316,16 @@
         "type": "Transitive",
         "resolved": "4.0.0",
         "contentHash": "5HKzttVKWeKoDQKJd3+J7Dy1MW6gbNNYfftkVufe2ddFQD0kXjnT1IN3ZJBfF6QVEQmHpQSp+/PT7Jo2YyHFcw=="
+      },
+      "runtime.win10-x64.Microsoft.DotNet.Framework.NativeImageCompiler": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "rll2/h5WmIkV3dzRQxC6e2l55ZEiwHs8IF9JuPoV1p57YvLCOzjJ1+ajTUkVNpgxu3HhkR9M5YrUa5f+EpLQUQ=="
+      },
+      "runtime.win10-x86.Microsoft.DotNet.Framework.NativeImageCompiler": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "HKVdNFroW+O0gAUZ2+PoNvHHWiPZ7yZn+v9c9F/nAgkBT2wnn/Keg8Tb2wrGeZYfFyoAmK+i2TOtKrDNV22oJw=="
       },
       "System.Buffers": {
         "type": "Transitive",

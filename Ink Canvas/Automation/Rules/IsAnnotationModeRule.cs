@@ -18,7 +18,7 @@ namespace Ink_Canvas.WorkflowAutomation.Rules
 
         public static RuleRegistryInfo Register()
         {
-            var info = new RuleRegistryInfo(RuleId, "批注模式", "PenTool")
+            var info = new RuleRegistryInfo(RuleId, Properties.AutomationStrings.Automation_Rule_IsAnnotationMode, "PenTool")
             {
                 SettingsType = typeof(IsAnnotationModeRuleSettings)
             };

@@ -83,8 +83,8 @@ namespace Ink_Canvas.Helpers
                         // 回退到 regasm COM 注册
                         bool regasmOk = RunRegasm("/codebase /tlb");
                         LogHelper.WriteLogToFile(regasmOk
-                            ? "VSTO 插件注册成功（regasm + 注册表）"
-                            : "VSTO 插件注册表已写入（regasm 失败）",
+                            ? Properties.PPTStrings.PPT_VstoRegisterSuccess
+                            : Properties.PPTStrings.PPT_VstoRegisterWritten,
                             regasmOk ? LogHelper.LogType.Event : LogHelper.LogType.Warning);
                     }
                 }

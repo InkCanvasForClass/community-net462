@@ -308,7 +308,7 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="WidgetsItem"
-                            Content="小工具"
+                            Content="{x:Static props:NavStrings.Nav_SmallTools}"
                             SelectsOnInvoked="False">
                             <ui:NavigationViewItem.Icon>
                                 <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Eye_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}"/>
@@ -460,9 +460,9 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
                 <!-- Debug -->
                 <ui:NavigationViewItem
                     x:Name="DebugPageItem"
-                    Content="调试"
+                    Content="{x:Static props:NavStrings.Nav_Debug}"
                     Tag="DebugPage"
-                    ToolTipService.ToolTip="调试">
+                    ToolTipService.ToolTip="{x:Static props:NavStrings.Nav_Debug}">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.WrenchScrewdriver_20_Regular}" FontSize="16" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource NavIconScale}"/>
                     </ui:NavigationViewItem.Icon>

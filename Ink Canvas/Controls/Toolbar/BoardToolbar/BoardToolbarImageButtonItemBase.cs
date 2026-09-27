@@ -10,7 +10,7 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
         public abstract string Id { get; }
         public abstract string LocalizationKey { get; }
         public virtual ButtonPosition DefaultPosition => ButtonPosition.Middle;
-        public virtual string Description => "";
+        public virtual string Description => DisplayName;
 
         public string DisplayName => Strings.GetString(LocalizationKey) ?? LocalizationKey;
 

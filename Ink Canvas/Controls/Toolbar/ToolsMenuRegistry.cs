@@ -12,7 +12,6 @@ namespace Ink_Canvas.Controls.Toolbar
     {
         public string Id { get; set; }
         public string LocalizationKey { get; set; }
-        public string Description { get; set; }
         public string IconGeometry { get; set; }
 
         public string DisplayName => Strings.GetString(LocalizationKey) ?? LocalizationKey;
@@ -33,17 +32,17 @@ namespace Ink_Canvas.Controls.Toolbar
 
         public static readonly List<ToolsMenuItemInfo> AllItems = new List<ToolsMenuItemInfo>
         {
-            new ToolsMenuItemInfo { Id = "timer", LocalizationKey = "QuickPanel_Timer", Description = "计时器", IconGeometry = XamlGraphicsIconGeometries.TimerIconGeometry },
-            new ToolsMenuItemInfo { Id = "randomDraw", LocalizationKey = "Tools_RandomDraw", Description = "随机抽签", IconGeometry = XamlGraphicsIconGeometries.RandomDrawIconGeometry },
-            new ToolsMenuItemInfo { Id = "singleDraw", LocalizationKey = "QuickPanel_SingleDraw", Description = "单人抽签", IconGeometry = XamlGraphicsIconGeometries.SingleDrawIconGeometry },
-            new ToolsMenuItemInfo { Id = "save", LocalizationKey = "Tools_Save", Description = "保存", IconGeometry = XamlGraphicsIconGeometries.SaveIconGeometry },
-            new ToolsMenuItemInfo { Id = "open", LocalizationKey = "Tools_Open", Description = "打开", IconGeometry = XamlGraphicsIconGeometries.OpenIconGeometry },
-            new ToolsMenuItemInfo { Id = "replay", LocalizationKey = "Tools_Replay", Description = "回放", IconGeometry = XamlGraphicsIconGeometries.ReplayIconGeometry },
-            new ToolsMenuItemInfo { Id = "screenshot", LocalizationKey = "Tools_Screenshot", Description = "截图", IconGeometry = XamlGraphicsIconGeometries.ScreenshotIconGeometry },
-            new ToolsMenuItemInfo { Id = "shapeDraw", LocalizationKey = "FloatingBar_Geometry", Description = "几何图形", IconGeometry = XamlGraphicsIconGeometries.ShapesIcon },
-            new ToolsMenuItemInfo { Id = "redo", LocalizationKey = "Board_Redo", Description = "重做", IconGeometry = XamlGraphicsIconGeometries.RedoIcon },
-            new ToolsMenuItemInfo { Id = "manual", LocalizationKey = "Tools_Manual", Description = "使用指南", IconGeometry = XamlGraphicsIconGeometries.ManualIconGeometry },
-            new ToolsMenuItemInfo { Id = "settings", LocalizationKey = "Settings_Title", Description = "设置", IconGeometry = XamlGraphicsIconGeometries.SettingsIconGeometry },
+            new ToolsMenuItemInfo { Id = "timer", LocalizationKey = "QuickPanel_Timer", IconGeometry = XamlGraphicsIconGeometries.TimerIconGeometry },
+            new ToolsMenuItemInfo { Id = "randomDraw", LocalizationKey = "Tools_RandomDraw", IconGeometry = XamlGraphicsIconGeometries.RandomDrawIconGeometry },
+            new ToolsMenuItemInfo { Id = "singleDraw", LocalizationKey = "QuickPanel_SingleDraw", IconGeometry = XamlGraphicsIconGeometries.SingleDrawIconGeometry },
+            new ToolsMenuItemInfo { Id = "save", LocalizationKey = "Tools_Save", IconGeometry = XamlGraphicsIconGeometries.SaveIconGeometry },
+            new ToolsMenuItemInfo { Id = "open", LocalizationKey = "Tools_Open", IconGeometry = XamlGraphicsIconGeometries.OpenIconGeometry },
+            new ToolsMenuItemInfo { Id = "replay", LocalizationKey = "Tools_Replay", IconGeometry = XamlGraphicsIconGeometries.ReplayIconGeometry },
+            new ToolsMenuItemInfo { Id = "screenshot", LocalizationKey = "Tools_Screenshot", IconGeometry = XamlGraphicsIconGeometries.ScreenshotIconGeometry },
+            new ToolsMenuItemInfo { Id = "shapeDraw", LocalizationKey = "FloatingBar_Geometry", IconGeometry = XamlGraphicsIconGeometries.ShapesIcon },
+            new ToolsMenuItemInfo { Id = "redo", LocalizationKey = "Board_Redo", IconGeometry = XamlGraphicsIconGeometries.RedoIcon },
+            new ToolsMenuItemInfo { Id = "manual", LocalizationKey = "Tools_Manual", IconGeometry = XamlGraphicsIconGeometries.ManualIconGeometry },
+            new ToolsMenuItemInfo { Id = "settings", LocalizationKey = "Settings_Title", IconGeometry = XamlGraphicsIconGeometries.SettingsIconGeometry },
         };
 
         public static ToolsMenuItemInfo FindItem(string id)

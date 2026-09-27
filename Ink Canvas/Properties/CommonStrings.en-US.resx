@@ -102,4 +102,40 @@
   <data name="SettingsTag_FavouriteRemove" xml:space="preserve">
     <value>Remove from favourites</value>
   </data>
+
+  <data name="Common_Unlimited" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+
+  <data name="Common_Unit_People" xml:space="preserve">
+    <value>people</value>
+  </data>
+
+  <data name="Common_AutoScreenshot" xml:space="preserve">
+    <value>Auto screenshot</value>
+  </data>
+
+  <data name="Common_Unit_Items" xml:space="preserve">
+    <value>items</value>
+  </data>
+
+  <data name="Common_Timeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+
+  <data name="SettingsItemMore" xml:space="preserve">
+    <value>More actions</value>
+  </data>
+  <data name="SettingsItemCopyKey" xml:space="preserve">
+    <value>Copy setting key</value>
+  </data>
+  <data name="SettingsItemCopyUrl" xml:space="preserve">
+    <value>Copy URL</value>
+  </data>
+  <data name="SettingsItemAddFavourite" xml:space="preserve">
+    <value>Add to favourites</value>
+  </data>
+  <data name="SettingsItemRemoveFavourite" xml:space="preserve">
+    <value>Remove from favourites</value>
+  </data>
 </root>

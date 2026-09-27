@@ -359,13 +359,13 @@ namespace Ink_Canvas
             {
                 if (string.IsNullOrWhiteSpace(profileName))
                 {
-                    File.WriteAllText(resultPath, "error: 缺少参数 name", System.Text.Encoding.UTF8);
+                    File.WriteAllText(resultPath, Properties.MainWindowStrings.Main_Uri_MissingNameParam, System.Text.Encoding.UTF8);
                     LogHelper.WriteLogToFile("URI 切换配置方案: 未指定方案名", LogHelper.LogType.Warning);
                     return;
                 }
                 if (!ConfigProfileManager.ApplyProfile(profileName.Trim()))
                 {
-                    File.WriteAllText(resultPath, "error: 方案不存在或应用失败", System.Text.Encoding.UTF8);
+                    File.WriteAllText(resultPath, Properties.MainWindowStrings.Main_Uri_SchemeNotFound, System.Text.Encoding.UTF8);
                     ShowNotification(string.Format(Properties.MainWindowStrings.Main_Uri_SchemeNotFound, profileName));
                     return;
                 }

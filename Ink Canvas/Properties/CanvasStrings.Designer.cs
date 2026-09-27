@@ -255,5 +255,69 @@ namespace Ink_Canvas.Properties
         public static string Canvas_DarkMode => ResourceManager.GetString(nameof(Canvas_DarkMode), _resourceCulture);
 
         public static string Shape_RemoveAsymptote => ResourceManager.GetString(nameof(Shape_RemoveAsymptote), _resourceCulture);
+
+        public static string Board_MenuConfigHint => ResourceManager.GetString(nameof(Board_MenuConfigHint), _resourceCulture);
+
+        public static string Board_AddedMenuItems => ResourceManager.GetString(nameof(Board_AddedMenuItems), _resourceCulture);
+
+        public static string Board_AvailableMenuItems => ResourceManager.GetString(nameof(Board_AvailableMenuItems), _resourceCulture);
+
+        public static string Board_ResetMenuLayout => ResourceManager.GetString(nameof(Board_ResetMenuLayout), _resourceCulture);
+
+        public static string InkRecog_LineNormalizeThreshold => ResourceManager.GetString(nameof(InkRecog_LineNormalizeThreshold), _resourceCulture);
+
+        public static string ScreenTouch_NibModeBoundsHeader => ResourceManager.GetString(nameof(ScreenTouch_NibModeBoundsHeader), _resourceCulture);
+
+        public static string ScreenTouch_FingerModeBoundsHeader => ResourceManager.GetString(nameof(ScreenTouch_FingerModeBoundsHeader), _resourceCulture);
+
+        public static string ScreenTouch_NibEraserSizeHeader => ResourceManager.GetString(nameof(ScreenTouch_NibEraserSizeHeader), _resourceCulture);
+
+        public static string ScreenTouch_FingerEraserSizeHeader => ResourceManager.GetString(nameof(ScreenTouch_FingerEraserSizeHeader), _resourceCulture);
+
+        public static string ScreenTouch_AutoCalibrateHeader => ResourceManager.GetString(nameof(ScreenTouch_AutoCalibrateHeader), _resourceCulture);
+
+        public static string ScreenTouch_AutoCalibrateDesc => ResourceManager.GetString(nameof(ScreenTouch_AutoCalibrateDesc), _resourceCulture);
+
+        public static string ScreenTouch_CalibrateStepsHeader => ResourceManager.GetString(nameof(ScreenTouch_CalibrateStepsHeader), _resourceCulture);
+
+        public static string ScreenTouch_CalibrateHint => ResourceManager.GetString(nameof(ScreenTouch_CalibrateHint), _resourceCulture);
+
+        public static string ScreenTouch_StepNib => ResourceManager.GetString(nameof(ScreenTouch_StepNib), _resourceCulture);
+
+        public static string ScreenTouch_StepFinger => ResourceManager.GetString(nameof(ScreenTouch_StepFinger), _resourceCulture);
+
+        public static string ScreenTouch_StepPalm => ResourceManager.GetString(nameof(ScreenTouch_StepPalm), _resourceCulture);
+
+        public static string ScreenTouch_StartCalibrate => ResourceManager.GetString(nameof(ScreenTouch_StartCalibrate), _resourceCulture);
+
+        public static string ScreenTouch_ClickButtonToStart => ResourceManager.GetString(nameof(ScreenTouch_ClickButtonToStart), _resourceCulture);
+
+        public static string ScreenTouch_NibNotCalibrated => ResourceManager.GetString(nameof(ScreenTouch_NibNotCalibrated), _resourceCulture);
+
+        public static string ScreenTouch_FingerNotCalibrated => ResourceManager.GetString(nameof(ScreenTouch_FingerNotCalibrated), _resourceCulture);
+
+        public static string ScreenTouch_PalmNotCalibrated => ResourceManager.GetString(nameof(ScreenTouch_PalmNotCalibrated), _resourceCulture);
+
+        public static string ScreenTouch_Code_UseNibHint => ResourceManager.GetString(nameof(ScreenTouch_Code_UseNibHint), _resourceCulture);
+
+        public static string ScreenTouch_Code_NibWaiting => ResourceManager.GetString(nameof(ScreenTouch_Code_NibWaiting), _resourceCulture);
+
+        public static string ScreenTouch_Code_FingerNotCalibrated => ResourceManager.GetString(nameof(ScreenTouch_Code_FingerNotCalibrated), _resourceCulture);
+
+        public static string ScreenTouch_Code_PalmNotCalibrated => ResourceManager.GetString(nameof(ScreenTouch_Code_PalmNotCalibrated), _resourceCulture);
+
+        public static string ScreenTouch_Code_UseFingerHint => ResourceManager.GetString(nameof(ScreenTouch_Code_UseFingerHint), _resourceCulture);
+
+        public static string ScreenTouch_Code_UsePalmHint => ResourceManager.GetString(nameof(ScreenTouch_Code_UsePalmHint), _resourceCulture);
+
+        public static string ScreenTouch_Code_Done => ResourceManager.GetString(nameof(ScreenTouch_Code_Done), _resourceCulture);
+
+        public static string ScreenTouch_Code_NibValue => ResourceManager.GetString(nameof(ScreenTouch_Code_NibValue), _resourceCulture);
+
+        public static string ScreenTouch_Code_FingerValue => ResourceManager.GetString(nameof(ScreenTouch_Code_FingerValue), _resourceCulture);
+
+        public static string ScreenTouch_Code_PalmValue => ResourceManager.GetString(nameof(ScreenTouch_Code_PalmValue), _resourceCulture);
+
+        public static string ScreenTouch_Code_CalibrateSuccess => ResourceManager.GetString(nameof(ScreenTouch_Code_CalibrateSuccess), _resourceCulture);
     }
 }

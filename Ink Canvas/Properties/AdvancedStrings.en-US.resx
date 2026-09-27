@@ -174,4 +174,28 @@
   <data name="Debug_ResetStartupCount_Button" xml:space="preserve">
     <value>Reset Counter</value>
   </data>
+
+  <data name="Debug_SimulateCrashConfirm" xml:space="preserve">
+    <value>Trigger a simulated crash?\n\nThe app will exit immediately and try to restart automatically.</value>
+  </data>
+
+  <data name="Debug_SimulateCrashConfirmTitle" xml:space="preserve">
+    <value>Crash test confirmation</value>
+  </data>
+
+  <data name="Debug_HeartbeatTimeoutConfirm" xml:space="preserve">
+    <value>Stop the heartbeat timer?\n\nIn about 10 seconds the watchdog will detect the heartbeat timeout and trigger a restart.</value>
+  </data>
+
+  <data name="Debug_HeartbeatTimeoutConfirmTitle" xml:space="preserve">
+    <value>Heartbeat timeout test confirmation</value>
+  </data>
+
+  <data name="Debug_BreakerResetMessage" xml:space="preserve">
+    <value>The circuit breaker counter has been reset to 0.</value>
+  </data>
+
+  <data name="Debug_ResetDoneTitle" xml:space="preserve">
+    <value>Reset complete</value>
+  </data>
 </root>

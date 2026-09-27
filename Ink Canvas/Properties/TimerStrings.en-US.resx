@@ -129,4 +129,12 @@
   <data name="Timer_UseLegacyButtons" xml:space="preserve">
     <value>Legacy Buttons</value>
   </data>
+
+  <data name="Timer_CountdownWindowTitle" xml:space="preserve">
+    <value>Ink Canvas Board - Timer</value>
+  </data>
+
+  <data name="Timer_ClickToExitFullscreen" xml:space="preserve">
+    <value>Click the screen to exit full screen</value>
+  </data>
 </root>

@@ -23,7 +23,7 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "折叠/展开工具栏", "ArrowCollapse")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_FoldToolbar, "ArrowCollapse")
             {
                 SettingsType = typeof(FoldActionSettings)
             };

@@ -73,7 +73,7 @@ namespace Ink_Canvas.Helpers
                     {
                         string driveLetter = d.Name.TrimEnd('\\');
                         string sn = GetVolumeSerialNumber(d.Name);
-                        string label = string.IsNullOrEmpty(d.VolumeLabel) ? "U盘" : d.VolumeLabel;
+                        string label = string.IsNullOrEmpty(d.VolumeLabel) ? Properties.SecurityStrings.Security_UsbDrive : d.VolumeLabel;
 
                         list.Add(new UsbDriveInfo
                         {

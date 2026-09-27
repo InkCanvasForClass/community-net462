@@ -21,7 +21,7 @@ namespace Ink_Canvas.WorkflowAutomation.Rules
 
         public static RuleRegistryInfo Register()
         {
-            var info = new RuleRegistryInfo(RuleId, "前台窗口是 ICC-CE 白板", "Whiteboard")
+            var info = new RuleRegistryInfo(RuleId, Properties.AutomationStrings.Automation_Rule_IsForegroundWhiteboard, "Whiteboard")
             {
                 SettingsType = typeof(IsForegroundWhiteboardRuleSettings)
             };

@@ -78,7 +78,7 @@ namespace Ink_Canvas
                             // 如果仍然失败，使用默认设置
                             if (Settings == null)
                             {
-                                FallbackToDefaultSettings("从备份恢复失败，使用默认设置");
+                                FallbackToDefaultSettings(Properties.MainWindowStrings.Main_Settings_RestoreFailedDefaults);
                             }
                         }
                     }
@@ -103,14 +103,14 @@ namespace Ink_Canvas
                             catch (Exception restoreEx)
                             {
                                 LogHelper.WriteLogToFile($"从备份恢复后重新加载失败: {restoreEx.Message}", LogHelper.LogType.Error);
-                                FallbackToDefaultSettings("从备份恢复后重新加载失败，使用默认设置");
+                                FallbackToDefaultSettings(Properties.MainWindowStrings.Main_Settings_RestoreReloadFailedDefaults);
                             }
                         }
 
                         // 如果仍然失败，使用默认设置
                         if (Settings == null)
                         {
-                            FallbackToDefaultSettings("从备份恢复失败，使用默认设置");
+                            FallbackToDefaultSettings(Properties.MainWindowStrings.Main_Settings_RestoreFailedDefaults);
                         }
                     }
                 }
@@ -132,14 +132,14 @@ namespace Ink_Canvas
                         catch (Exception restoreEx)
                         {
                             LogHelper.WriteLogToFile($"从备份恢复后加载失败: {restoreEx.Message}", LogHelper.LogType.Error);
-                            FallbackToDefaultSettings("从备份恢复后加载失败，使用默认设置");
+                            FallbackToDefaultSettings(Properties.MainWindowStrings.Main_Settings_RestoreLoadFailedDefaults);
                         }
                     }
 
                     // 如果仍然失败，使用默认设置
                     if (Settings == null)
                     {
-                        FallbackToDefaultSettings("从备份恢复失败，使用默认设置");
+                        FallbackToDefaultSettings(Properties.MainWindowStrings.Main_Settings_RestoreFailedDefaults);
                     }
                 }
             }

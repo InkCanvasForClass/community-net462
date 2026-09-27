@@ -149,5 +149,7 @@ namespace Ink_Canvas.Properties
         public static string Hotkey_SaveSuccessTitle => ResourceManager.GetString(nameof(Hotkey_SaveSuccessTitle), _resourceCulture);
 
         public static string Hotkey_SaveErrorMessage => ResourceManager.GetString(nameof(Hotkey_SaveErrorMessage), _resourceCulture);
+
+        public static string Hotkey_PressKey => ResourceManager.GetString(nameof(Hotkey_PressKey), _resourceCulture);
     }
 }

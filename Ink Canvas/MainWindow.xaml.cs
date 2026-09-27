@@ -1269,7 +1269,7 @@ namespace Ink_Canvas
 
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas1.EditingMode))
             {
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 inkCanvas1.EditingMode = InkCanvasEditingMode.None;
                 return;
             }
@@ -1898,7 +1898,7 @@ namespace Ink_Canvas
             if (Settings.Advanced.IsEnableForceFullScreen)
             {
                 if (isLoaded) ShowNotification(
-                    $"检测到窗口大小变化，已自动恢复到全屏：{Screen.PrimaryScreen.Bounds.Width}x{Screen.PrimaryScreen.Bounds.Height}（缩放比例为{Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth}x{Screen.PrimaryScreen.Bounds.Height / SystemParameters.PrimaryScreenHeight}）");
+                    string.Format(Properties.MainWindowStrings.Main_WindowRestoredToFullscreen, Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height, Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth, Screen.PrimaryScreen.Bounds.Height / SystemParameters.PrimaryScreenHeight));
                 WindowState = WindowState.Maximized;
                 MoveWindow(new WindowInteropHelper(this).Handle, 0, 0,
                     Screen.PrimaryScreen.Bounds.Width,
@@ -2346,7 +2346,7 @@ namespace Ink_Canvas
 
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas.EditingMode))
             {
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 e.Handled = true;
                 return;
             }
@@ -2402,7 +2402,7 @@ namespace Ink_Canvas
 
             if (IsCurrentPageFrozen && IsFreezeMutatingMode(inkCanvas.EditingMode))
             {
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 e.Handled = true;
                 return;
             }
@@ -3180,7 +3180,7 @@ namespace Ink_Canvas
             {
                 if (IsCurrentPageFrozen && IsFreezeMutatingMode(newMode))
                 {
-                    TryBlockFrozenPageMutation("切换到编辑工具");
+                    TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToEdit);
                     return false;
                 }
 

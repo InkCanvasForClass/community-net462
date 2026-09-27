@@ -13,7 +13,7 @@ namespace Ink_Canvas.WorkflowAutomation.Triggers
     /// 进入白板/黑板模式时触发的触发器。
     /// 通过订阅 SystemEventMonitor.InternalStateChanged 事件驱动，检测 currentMode 从 0 变为 1。
     /// </summary>
-    [TriggerInfo("inkcanvas.whiteboardenter", "进入白板模式", "Drawing")]
+    [TriggerInfo("inkcanvas.whiteboardenter", "Automation_Trigger_WhiteboardEnter", "Drawing")]
     public class WhiteboardEnterTrigger : TriggerBase<WhiteboardEnterSettings>
     {
         private bool _wasInWhiteboardMode = false;

@@ -114,4 +114,60 @@
   <data name="FollowMouseScreenHint" xml:space="preserve">
     <value>默认开启：自动以鼠标所在屏幕为目标屏幕</value>
   </data>
+
+  <data name="Window_Guide_Title" xml:space="preserve">
+    <value>Ink Canvas Annotation 使用指南</value>
+  </data>
+
+  <data name="Window_Guide_Shortcuts" xml:space="preserve">
+    <value>軟體快捷鍵</value>
+  </data>
+
+  <data name="Window_Guide_Undo" xml:space="preserve">
+    <value> Ctrl + Z  ——  復原</value>
+  </data>
+
+  <data name="Window_Guide_Redo" xml:space="preserve">
+    <value> Ctrl + Y  ——  重做</value>
+  </data>
+
+  <data name="Window_Guide_Clear" xml:space="preserve">
+    <value> Ctrl + E  ——  清屏</value>
+  </data>
+
+  <data name="Window_Guide_Visibility" xml:space="preserve">
+    <value> Alt  + V  ——  顯示/隱藏笑臉右側工具欄（Visibility）</value>
+  </data>
+
+  <data name="Window_Guide_Capture" xml:space="preserve">
+    <value> Alt  + C  ——  截屏（Capture）</value>
+  </data>
+
+  <data name="Window_Guide_Select" xml:space="preserve">
+    <value> Alt  + S  ——  切換至選擇模式（Select）</value>
+  </data>
+
+  <data name="Window_Guide_Draw" xml:space="preserve">
+    <value> Alt  + D  ——  切換至批註模式 / 墨跡顏色選擇器（Draw）</value>
+  </data>
+
+  <data name="Window_Guide_Quit" xml:space="preserve">
+    <value> Alt  + Q  ——  退出批註模式（Quit）</value>
+  </data>
+
+  <data name="Window_Guide_Board" xml:space="preserve">
+    <value> Alt  + B  ——  切換/退出畫板模式（Board）</value>
+  </data>
+
+  <data name="Window_Guide_Eraser" xml:space="preserve">
+    <value> Alt  + E  ——  切換至面積擦/墨跡擦功能（Eraser）</value>
+  </data>
+
+  <data name="Window_Guide_Line" xml:space="preserve">
+    <value> Alt  + L  ——  切換至單次直線繪製功能（Line）</value>
+  </data>
+
+  <data name="Window_Guide_ExitPpt" xml:space="preserve">
+    <value>Shift + Esc  ——  退出 PPT 放映</value>
+  </data>
 </root>

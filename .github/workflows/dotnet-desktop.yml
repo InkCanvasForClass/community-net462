@@ -147,10 +147,6 @@ jobs:
         exclude:
           - architecture: arm64
             nativeImage: true
-          - architecture: x86
-            nativeImage: false
-          - architecture: x64
-            nativeImage: false
     steps:
       - parallel:
           - name: Checkout code
@@ -188,7 +184,7 @@ jobs:
           DLASS_TELEMETRY_TOKEN: ${{ secrets.DLASS_TELEMETRY_TOKEN }}
         run: |
           $platform = "${{ matrix.architecture }}"
-          dotnet build -c Release -p:platform="$platform" -p:GitFlow="$GITFLOW" -p:Minimize="${{ matrix.minimize }}" -p:EnableNativeImage="${{ matrix.nativeImage }}" --no-restore -m
+          dotnet build -c Release -p:platform="$platform" -p:GitFlow="$GITFLOW" -p:Minimize="${{ matrix.minimize }}" -p:EnableNativeImage=${{ matrix.nativeImage }} --no-restore -m
 
       - name: Build & Upload
         id: build-result

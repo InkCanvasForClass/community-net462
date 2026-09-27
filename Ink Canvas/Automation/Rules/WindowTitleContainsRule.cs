@@ -37,7 +37,7 @@ namespace Ink_Canvas.WorkflowAutomation.Rules
 
         public static RuleRegistryInfo Register()
         {
-            var info = new RuleRegistryInfo(RuleId, "窗口标题包含", "Window")
+            var info = new RuleRegistryInfo(RuleId, Properties.AutomationStrings.Automation_Rule_WindowTitleContains, "Window")
             {
                 SettingsType = typeof(WindowTitleContainsRuleSettings)
             };

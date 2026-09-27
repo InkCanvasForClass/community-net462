@@ -276,5 +276,21 @@ namespace Ink_Canvas.Properties
         public static string Random_RollCall_NameListClearVerifyTitle => ResourceManager.GetString(nameof(Random_RollCall_NameListClearVerifyTitle), _resourceCulture);
 
         public static string Random_RollCall_NameListClearVerifyMessage => ResourceManager.GetString(nameof(Random_RollCall_NameListClearVerifyMessage), _resourceCulture);
+
+        public static string Random_RandWindowTitle => ResourceManager.GetString(nameof(Random_RandWindowTitle), _resourceCulture);
+
+        public static string Random_Rand_AvoidPopular => ResourceManager.GetString(nameof(Random_Rand_AvoidPopular), _resourceCulture);
+
+        public static string Random_Rand_AvoidRare => ResourceManager.GetString(nameof(Random_Rand_AvoidRare), _resourceCulture);
+
+        public static string Random_Rand_Start => ResourceManager.GetString(nameof(Random_Rand_Start), _resourceCulture);
+
+        public static string Random_Rand_DrawAll => ResourceManager.GetString(nameof(Random_Rand_DrawAll), _resourceCulture);
+
+        public static string Random_Rand_BoysOnly => ResourceManager.GetString(nameof(Random_Rand_BoysOnly), _resourceCulture);
+
+        public static string Random_Rand_GirlsOnly => ResourceManager.GetString(nameof(Random_Rand_GirlsOnly), _resourceCulture);
+
+        public static string Random_History_ItemFormat => ResourceManager.GetString(nameof(Random_History_ItemFormat), _resourceCulture);
     }
 }

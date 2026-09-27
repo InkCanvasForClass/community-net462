@@ -34,7 +34,7 @@ namespace Ink_Canvas
         /// </remarks>
         internal void ImageDrawShape_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("打开几何工具")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_OpenGeometry)) return;
 
             // 如果当前不在批注模式，先切换到批注模式
             if (!IsAnnotating)
@@ -196,7 +196,7 @@ namespace Ink_Canvas
         /// </remarks>
         private async void Image_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("绘制几何图形"))
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_DrawShape))
             {
                 e.Handled = true;
                 return;
@@ -252,7 +252,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BtnPen_Click(object sender, RoutedEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("切换到画笔")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_SwitchToPen)) return;
             forceEraser = false;
             drawingShapeMode = 0;
             inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
@@ -274,7 +274,7 @@ namespace Ink_Canvas
         /// </remarks>
         private Task<bool> CheckIsDrawingShapesInMultiTouchMode()
         {
-            if (TryBlockFrozenPageMutation("绘制几何图形"))
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_DrawShape))
                 return Task.FromResult(false);
 
             if (isInMultiTouchMode)

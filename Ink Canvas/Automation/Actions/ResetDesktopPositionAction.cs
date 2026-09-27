@@ -20,7 +20,7 @@ namespace Ink_Canvas.WorkflowAutomation.ActionHandlers
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "重置桌面模式位置", "DockBottom")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_ResetDesktopPosition, "DockBottom")
             {
                 SettingsType = typeof(ResetDesktopPositionActionSettings)
             };

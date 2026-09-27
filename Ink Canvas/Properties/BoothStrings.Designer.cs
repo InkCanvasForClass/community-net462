@@ -55,5 +55,9 @@ namespace Ink_Canvas.Properties
         public static string Rotate => ResourceManager.GetString(nameof(Rotate), _resourceCulture);
 
         public static string Title => ResourceManager.GetString(nameof(Title), _resourceCulture);
+
+        public static string Booth_SeewoNotFound => ResourceManager.GetString(nameof(Booth_SeewoNotFound), _resourceCulture);
+
+        public static string Booth_SeewoLaunchFailed => ResourceManager.GetString(nameof(Booth_SeewoLaunchFailed), _resourceCulture);
     }
 }

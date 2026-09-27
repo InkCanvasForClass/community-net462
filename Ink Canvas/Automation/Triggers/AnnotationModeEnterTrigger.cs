@@ -13,7 +13,7 @@ namespace Ink_Canvas.WorkflowAutomation.Triggers
     /// 浮动工具栏进入批注模式时触发的触发器。
     /// 通过订阅 inkCanvas.EditingModeChanged 事件驱动，无需轮询。
     /// </summary>
-    [TriggerInfo("inkcanvas.annotationenter", "进入批注模式", "PenTool")]
+    [TriggerInfo("inkcanvas.annotationenter", "Automation_Trigger_AnnotationEnter", "PenTool")]
     public class AnnotationModeEnterTrigger : TriggerBase<AnnotationModeEnterSettings>
     {
         private bool _wasInAnnotationMode = false;

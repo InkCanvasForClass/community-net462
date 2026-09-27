@@ -577,4 +577,316 @@
   <data name="Main_ExitVerifyPasswordOnly" xml:space="preserve">
     <value>请输入安全密码以退出软件。</value>
   </data>
+
+  <data name="Main_Freeze_Action_Modify" xml:space="preserve">
+    <value>修改冻结页面</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToEdit" xml:space="preserve">
+    <value>切换到编辑工具</value>
+  </data>
+
+  <data name="Main_Freeze_Action_WriteOrErase" xml:space="preserve">
+    <value>书写或擦除</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveOrScaleContent" xml:space="preserve">
+    <value>移动或缩放内容</value>
+  </data>
+
+  <data name="Main_Freeze_Action_OpenGeometry" xml:space="preserve">
+    <value>打开几何工具</value>
+  </data>
+
+  <data name="Main_Freeze_Action_DrawShape" xml:space="preserve">
+    <value>绘制几何图形</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToPen" xml:space="preserve">
+    <value>切换到画笔</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneInk" xml:space="preserve">
+    <value>克隆墨迹</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneInkToNewPage" xml:space="preserve">
+    <value>克隆墨迹到新页面</value>
+  </data>
+
+  <data name="Main_Freeze_Action_InsertInkToWhiteboard" xml:space="preserve">
+    <value>插入墨迹到白板</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ChangeInkWidth" xml:space="preserve">
+    <value>修改墨迹粗细</value>
+  </data>
+
+  <data name="Main_Freeze_Action_FlipInk" xml:space="preserve">
+    <value>翻转墨迹</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RotateInk" xml:space="preserve">
+    <value>旋转墨迹</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveInk" xml:space="preserve">
+    <value>移动墨迹</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveOrScaleInk" xml:space="preserve">
+    <value>移动或缩放墨迹</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ResizeInk" xml:space="preserve">
+    <value>调整墨迹大小</value>
+  </data>
+
+  <data name="Main_Freeze_Action_OpenInkFile" xml:space="preserve">
+    <value>打开墨迹文件</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RestoreInkFile" xml:space="preserve">
+    <value>恢复墨迹文件</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToSelect" xml:space="preserve">
+    <value>切换到选择工具</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ClearFrozenContent" xml:space="preserve">
+    <value>清除冻结页面内容</value>
+  </data>
+
+  <data name="Main_Freeze_Action_InsertScreenshot" xml:space="preserve">
+    <value>插入截图</value>
+  </data>
+
+  <data name="Main_Freeze_Action_PasteImage" xml:space="preserve">
+    <value>粘贴图片</value>
+  </data>
+
+  <data name="Main_Freeze_Action_UndoFrozenContent" xml:space="preserve">
+    <value>撤销冻结页面内容</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RedoFrozenContent" xml:space="preserve">
+    <value>重做冻结页面内容</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ReplayFrozenContent" xml:space="preserve">
+    <value>重播冻结页面内容</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToEraser" xml:space="preserve">
+    <value>切换到橡皮擦</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchToStrokeEraser" xml:space="preserve">
+    <value>切换到线擦</value>
+  </data>
+
+  <data name="Main_Freeze_Action_EmptyFrozenContent" xml:space="preserve">
+    <value>清空冻结页面内容</value>
+  </data>
+
+  <data name="Main_Freeze_Action_InsertImage" xml:space="preserve">
+    <value>插入图片</value>
+  </data>
+
+  <data name="Main_Freeze_Action_EraseFrozenPage" xml:space="preserve">
+    <value>擦除冻结页面</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveImage" xml:space="preserve">
+    <value>移动图片</value>
+  </data>
+
+  <data name="Main_Freeze_Action_ScaleImage" xml:space="preserve">
+    <value>缩放图片</value>
+  </data>
+
+  <data name="Main_Freeze_Action_MoveOrScaleImage" xml:space="preserve">
+    <value>移动或缩放图片</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneImage" xml:space="preserve">
+    <value>克隆图片</value>
+  </data>
+
+  <data name="Main_Freeze_Action_CloneImageToNewPage" xml:space="preserve">
+    <value>克隆图片到新页面</value>
+  </data>
+
+  <data name="Main_Freeze_Action_RotateImage" xml:space="preserve">
+    <value>旋转图片</value>
+  </data>
+
+  <data name="Main_Freeze_Action_SwitchPdfPage" xml:space="preserve">
+    <value>切换 PDF 页</value>
+  </data>
+
+  <data name="Main_Freeze_Action_DeleteImage" xml:space="preserve">
+    <value>删除图片</value>
+  </data>
+
+  <data name="Main_Media_UnknownError" xml:space="preserve">
+    <value>未知错误</value>
+  </data>
+
+  <data name="Main_Media_LoadFailed" xml:space="preserve">
+    <value>媒体加载失败，可能是不支持的格式或缺少系统解码器。</value>
+  </data>
+
+  <data name="Main_PDF_OpenFailed" xml:space="preserve">
+    <value>无法打开 PDF（可能已加密、损坏或不支持）。</value>
+  </data>
+
+  <data name="Main_Hotkey_SingleScreen" xml:space="preserve">
+    <value>单屏幕环境</value>
+  </data>
+
+  <data name="Main_Hotkey_ScreenInfoUnavailable" xml:space="preserve">
+    <value>无法获取屏幕信息</value>
+  </data>
+
+  <data name="Main_Settings_RestoreFailedDefaults" xml:space="preserve">
+    <value>从备份恢复失败，使用默认设置</value>
+  </data>
+
+  <data name="Main_Settings_RestoreReloadFailedDefaults" xml:space="preserve">
+    <value>从备份恢复后重新加载失败，使用默认设置</value>
+  </data>
+
+  <data name="Main_Settings_RestoreLoadFailedDefaults" xml:space="preserve">
+    <value>从备份恢复后加载失败，使用默认设置</value>
+  </data>
+
+  <data name="Main_Clock_DateFormat" xml:space="preserve">
+    <value>yyyy'年'MM'月'dd'日' dddd</value>
+  </data>
+
+  <data name="Main_Clock_TimeFormat" xml:space="preserve">
+    <value>tt hh'时'mm'分'ss'秒'</value>
+  </data>
+
+  <data name="Main_AutoKill_SeewoBoard5" xml:space="preserve">
+    <value>「希沃白板 5」已自动关闭</value>
+  </data>
+
+  <data name="Main_AutoKill_HiteAnnotation" xml:space="preserve">
+    <value>「鸿合屏幕书写」已自动关闭</value>
+  </data>
+
+  <data name="Main_AutoKill_Ica" xml:space="preserve">
+    <value>「ICA」已自动关闭</value>
+  </data>
+
+  <data name="Main_AutoKill_InkCanvas" xml:space="preserve">
+    <value>「Ink Canvas」已自动关闭</value>
+  </data>
+
+  <data name="Main_ImageInsert_CameraInserted" xml:space="preserve">
+    <value>摄像头截图已插入到画布</value>
+  </data>
+
+  <data name="Main_ImageInsert_CameraFailed" xml:space="preserve">
+    <value>插入摄像头截图失败</value>
+  </data>
+
+  <data name="Main_Uri_MissingNameParam" xml:space="preserve">
+    <value>error: 缺少参数 name</value>
+  </data>
+
+  <data name="Main_Magnifier_LightsOff" xml:space="preserve">
+    <value>关灯</value>
+  </data>
+
+  <data name="Main_Camera_RefreshFailed" xml:space="preserve">
+    <value>刷新摄像头列表失败: {0}</value>
+  </data>
+
+  <data name="Main_Camera_PreviewStartFailed" xml:space="preserve">
+    <value>启动摄像头预览失败: {0}</value>
+  </data>
+
+  <data name="Main_Camera_SwitchFailed" xml:space="preserve">
+    <value>切换摄像头失败: {0}</value>
+  </data>
+
+  <data name="Main_Camera_FrameProcessFailed" xml:space="preserve">
+    <value>处理新帧失败: {0}</value>
+  </data>
+
+  <data name="Main_Duration_Seconds" xml:space="preserve">
+    <value>{0}秒</value>
+  </data>
+
+  <data name="Main_Duration_MinutesSeconds" xml:space="preserve">
+    <value>{0}分{1}秒</value>
+  </data>
+
+  <data name="Main_Duration_Minutes" xml:space="preserve">
+    <value>{0}分钟</value>
+  </data>
+
+  <data name="Main_Duration_Hours" xml:space="preserve">
+    <value>{0}小时</value>
+  </data>
+
+  <data name="Main_Duration_MinutesShort" xml:space="preserve">
+    <value>{0}分</value>
+  </data>
+
+  <data name="Main_Duration_SecondsShort" xml:space="preserve">
+    <value>{0}秒</value>
+  </data>
+
+  <data name="Main_Hotkey_ScreenSuffix" xml:space="preserve">
+    <value> (屏幕: {0})</value>
+  </data>
+
+  <data name="Main_Hotkey_MultiScreen" xml:space="preserve">
+    <value>多屏幕环境 - 当前屏幕: {0} ({1}x{2})</value>
+  </data>
+
+  <data name="Main_ForceFullscreen" xml:space="preserve">
+    <value>已强制全屏化：{0}x{1}（缩放比例为{2}x{3}）</value>
+  </data>
+
+  <data name="Main_Interceptor_Blocked" xml:space="preserve">
+    <value>已拦截悬浮窗: {0}</value>
+  </data>
+
+  <data name="Main_WindowRestoredToFullscreen" xml:space="preserve">
+    <value>检测到窗口大小变化，已自动恢复到全屏：{0}x{1}（缩放比例为{2}x{3}）</value>
+  </data>
+
+  <data name="Main_Camera_NoDevice" xml:space="preserve">
+    <value>未找到可用的摄像头设备</value>
+  </data>
+
+  <data name="Main_Camera_IndexOutOfRange" xml:space="preserve">
+    <value>摄像头索引超出范围</value>
+  </data>
+
+  <data name="Main_Ink_MissingMetadata" xml:space="preserve">
+    <value>压缩包中未找到元数据文件</value>
+  </data>
+
+  <data name="Main_Ink_NotInPptMode" xml:space="preserve">
+    <value>当前不在PPT放映模式，无法恢复PPT墨迹</value>
+  </data>
+
+  <data name="Main_Ink_NotInBoardMode" xml:space="preserve">
+    <value>当前不在白板模式，无法恢复白板墨迹</value>
+  </data>
+
+  <data name="Main_Ink_InvalidXmlFormat" xml:space="preserve">
+    <value>无效的XML墨迹文件格式</value>
+  </data>
+
+  <data name="Main_Ink_PptMismatch" xml:space="preserve">
+    <value>墨迹文件与当前PPT文件不匹配。保存的PPT: {0}，当前PPT: {1}</value>
+  </data>
 </root>

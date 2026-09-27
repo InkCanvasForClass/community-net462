@@ -78,7 +78,7 @@
 
                     <!-- Quick Panel -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Text="快捷面板" />
+                        Text="{x:Static props:FloatingBarStrings.FloatingBar_QuickPanel}" />
 
                     <controls:LabeledSettingsCard x:Name="CardEnableQuickPanel"
                             Header="{x:Static props:ThemeStrings.Theme_EnableQuickPanel}"

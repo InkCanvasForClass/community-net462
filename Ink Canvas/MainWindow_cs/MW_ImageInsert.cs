@@ -62,7 +62,7 @@ namespace Ink_Canvas
         /// </remarks>
         private async Task CaptureScreenshotAndInsert()
         {
-            if (TryBlockFrozenPageMutation("插入截图")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return;
             try
             {
                 var inkOverlayPreview = CreateInkOverlayPreviewBitmapSource();
@@ -92,7 +92,7 @@ namespace Ink_Canvas
                     if (screenshotResult.Value.CameraBitmapSource != null)
                     {
                         // 摄像头截图（使用BitmapSource）
-                        await InsertBitmapSourceToCanvas(screenshotResult.Value.CameraBitmapSource, "摄像头截图已插入到画布", "插入摄像头截图失败");
+                        await InsertBitmapSourceToCanvas(screenshotResult.Value.CameraBitmapSource, Properties.MainWindowStrings.Main_ImageInsert_CameraInserted, Properties.MainWindowStrings.Main_ImageInsert_CameraFailed);
                     }
                     else if (screenshotResult.Value.CameraImage != null)
                     {
@@ -181,7 +181,7 @@ namespace Ink_Canvas
         /// </remarks>
         private async Task CaptureFullScreenAndInsert()
         {
-            if (TryBlockFrozenPageMutation("插入截图")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return;
             try
             {
                 // 隐藏主窗口以避免截图包含窗口本身
@@ -500,7 +500,7 @@ namespace Ink_Canvas
         /// </remarks>
         private Task InsertScreenshotToCanvas(Bitmap bitmap)
         {
-            if (TryBlockFrozenPageMutation("插入截图")) return Task.CompletedTask;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return Task.CompletedTask;
             try
             {
                 // 验证位图有效性
@@ -599,7 +599,7 @@ namespace Ink_Canvas
         {
             successMessage = successMessage ?? Properties.MainWindowStrings.Main_ImageInsert_Inserted;
             failureMessagePrefix = failureMessagePrefix ?? Properties.MainWindowStrings.Main_ImageInsert_InsertFailed;
-            if (TryBlockFrozenPageMutation("插入截图")) return Task.CompletedTask;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return Task.CompletedTask;
             try
             {
                 // 创建WPF Image控件

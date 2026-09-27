@@ -129,4 +129,12 @@
   <data name="Timer_UseLegacyButtons" xml:space="preserve">
     <value>ICC 版 UI</value>
   </data>
+
+  <data name="Timer_CountdownWindowTitle" xml:space="preserve">
+    <value>Ink Canvas 畫板 - 計時器</value>
+  </data>
+
+  <data name="Timer_ClickToExitFullscreen" xml:space="preserve">
+    <value>點擊螢幕退出全螢幕</value>
+  </data>
 </root>

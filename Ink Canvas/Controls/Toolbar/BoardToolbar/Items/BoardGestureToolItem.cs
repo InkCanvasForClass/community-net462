@@ -6,7 +6,6 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar.Items
     {
         public override string Id => "board.gesture";
         public override string LocalizationKey => "Board_Gesture";
-        public override string Description => "手势";
         public override ButtonPosition DefaultPosition => ButtonPosition.First;
 
         public override string IconGeometry => XamlGraphicsIconGeometries.DisabledGestureIcon;

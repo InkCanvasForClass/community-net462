@@ -911,7 +911,7 @@ namespace Ink_Canvas
 
             if (IsCurrentPageFrozen)
             {
-                TryBlockFrozenPageMutation("书写或擦除");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_WriteOrErase);
                 e.Handled = true;
                 return;
             }
@@ -1479,7 +1479,7 @@ namespace Ink_Canvas
 
             if (IsCurrentPageFrozen)
             {
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 e.Handled = true;
                 return;
             }
@@ -1567,7 +1567,7 @@ namespace Ink_Canvas
 
             if (IsCurrentPageFrozen)
             {
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 e.Handled = true;
                 return;
             }
@@ -2075,7 +2075,7 @@ namespace Ink_Canvas
         {
             if (IsCurrentPageFrozen)
             {
-                TryBlockFrozenPageMutation("移动或缩放内容");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_MoveOrScaleContent);
                 e.Handled = true;
                 return;
             }

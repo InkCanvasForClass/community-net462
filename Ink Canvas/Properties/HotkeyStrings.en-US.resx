@@ -207,4 +207,8 @@
   <data name="Hotkey_SaveErrorMessage" xml:space="preserve">
     <value>Error saving hotkey settings: {0}</value>
   </data>
+
+  <data name="Hotkey_PressKey" xml:space="preserve">
+    <value>Press a key...</value>
+  </data>
 </root>

@@ -842,7 +842,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             if (AddedMenuItems.Count >= 9)
             {
-                MessageBox.Show("最多只能添加 9 个菜单项。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Properties.FloatingBarStrings.ToolbarMenu_MaxItems, Properties.FloatingBarStrings.ToolbarPage_Hint, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             if (sender is FrameworkElement fe && fe.DataContext is ToolsMenuItemInfo item)
@@ -1122,9 +1122,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             return value?.ToString()?.ToLower() switch
             {
-                "first" => "[首]",
-                "last" => "[末]",
-                "single" => "[独立]",
+                "first" => Properties.FloatingBarStrings.Board_PositionFirst,
+                "last" => Properties.FloatingBarStrings.Board_PositionLast,
+                "single" => Properties.FloatingBarStrings.Board_PositionSingle,
                 _ => ""
             };
         }

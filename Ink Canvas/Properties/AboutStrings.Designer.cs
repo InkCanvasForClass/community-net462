@@ -117,5 +117,15 @@ namespace Ink_Canvas.Properties
         public static string Privacy_ConfirmRevokePrivacy_Message => ResourceManager.GetString(nameof(Privacy_ConfirmRevokePrivacy_Message), _resourceCulture);
 
         public static string Privacy_ConfirmRevokePrivacy_Title => ResourceManager.GetString(nameof(Privacy_ConfirmRevokePrivacy_Title), _resourceCulture);
+
+        public static string Privacy_WindowTitle => ResourceManager.GetString(nameof(Privacy_WindowTitle), _resourceCulture);
+
+        public static string Privacy_Heading => ResourceManager.GetString(nameof(Privacy_Heading), _resourceCulture);
+
+        public static string Privacy_Intro => ResourceManager.GetString(nameof(Privacy_Intro), _resourceCulture);
+
+        public static string Privacy_NoCollect => ResourceManager.GetString(nameof(Privacy_NoCollect), _resourceCulture);
+
+        public static string Privacy_Agree => ResourceManager.GetString(nameof(Privacy_Agree), _resourceCulture);
     }
 }
