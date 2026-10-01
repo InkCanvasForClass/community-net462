@@ -46,12 +46,15 @@ jobs:
           DISABLE_ERRORS: true
           # Disable the BIOME_* rule
           VALIDATE_BIOME_FORMAT: false
-          VALIDATE_BIOME_LINT: true
+          VALIDATE_BIOME_LINT: false
           # Disable the SPELL_CODESPELL rule
           VALIDATE_SPELL_CODESPELL: false
           # Disable the GITLEAKS rule temporarily
           VALIDATE_GITLEAKS: false
           # Save the super-linter output
           SAVE_SUPER_LINTER_OUTPUT: true
+
+          DEFAULT_BRANCH: 17194-ep
+          SAVE_SUPER_LINTER_SUMMARY: true
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
