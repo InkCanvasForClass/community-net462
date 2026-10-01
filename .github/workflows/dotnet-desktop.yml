@@ -159,7 +159,7 @@ jobs:
 
       - parallel:
           - name: Restore Package
-            run: dotnet restore "Ink Canvas.sln"
+            run: dotnet restore "Ink Canvas.sln" -p:platform="${{ matrix.architecture }}" -p:EnableNativeImage=${{ matrix.nativeImage }}
 
           - name: Restore x86
             if: matrix.architecture == 'x86' && matrix.minimize != 'true'
