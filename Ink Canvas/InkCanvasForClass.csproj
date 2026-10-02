@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <OutputType>WinExe</OutputType>
@@ -40,6 +40,7 @@
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <CetCompat>false</CetCompat>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>embedded</DebugType>
@@ -139,13 +140,17 @@
     <PackageReference Include="MicrosoftOfficeCore" Version="15.0.0" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
     <PackageReference Include="Microsoft.International.Converters.PinYinConverter" Version="1.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
     <PackageReference Include="System.Composition.AttributedModel" Version="1.2.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Management" Version="6.0.2" />
+    <PackageReference Include="System.Management" Version="10.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- UInk 1.0 规范：主文件为 MessagePack 对象流（Header/HeaderExtension/Canvas/Ink/Shape/Media），由 UInk/ 下的读写器使用 -->
     <PackageReference Include="MessagePack" Version="3.1.8" />
@@ -163,10 +168,10 @@
     <PackageReference Include="WebDav.Client" Version="2.9.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Vortice.Direct2D1" Version="3.2.0" />
-    <PackageReference Include="Vortice.Direct3D11" Version="3.2.0" />
-    <PackageReference Include="Vortice.DirectComposition" Version="3.2.0" />
-    <PackageReference Include="Vortice.DXGI" Version="3.2.0" />
+    <PackageReference Include="Vortice.Direct2D1" Version="2.4.2" />
+    <PackageReference Include="Vortice.Direct3D11" Version="2.4.2" />
+    <PackageReference Include="Vortice.DirectComposition" Version="2.4.2" />
+    <PackageReference Include="Vortice.DXGI" Version="2.4.2" />
     <!-- 视频展台：DirectShow + VMR9 Renderless + D3DImage 零拷贝 GPU 渲染（兼容 Win7 SP1+ 和 Win10+） -->
     <PackageReference Include="JerryShaw.WPFMediaKit" Version="1.0.1" />
   </ItemGroup>
@@ -507,15 +512,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AssemblyInfo.cs" />
-    <!-- 新墨迹系统（原生 WM_POINTER + DirectComposition 湿墨管线）已于 1.7.19.9 回退，
-         代码文件保留原地供后续复用/测试（InkCanvas.NativeInk.Tests 通过 Link 单独编译），
-         此处仅从主项目排除编译。 -->
-    <Compile Remove="Ink\Native\**" />
-    <Compile Remove="MainWindow_cs\MW_NativeWetInk.cs" />
-    <!-- 实时墨迹 FPS/延迟 HUD 与新墨迹渲染配套，数据源（WetInkWindowHost）已排除，一并保留文件、排除编译。 -->
-    <Compile Remove="Helpers\InkPerformanceMonitor.cs" />
-    <Compile Remove="Helpers\RealtimeInkFpsOverlay.cs" />
-    <Compile Remove="MainWindow_cs\MW_RealtimeInkFpsOverlay.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -642,16 +638,16 @@
        CI 的 AnyCPU(=x64 产物)/x86 构建都能带上辅助 exe；单文件发布走 Publish 分支。 -->
   <Target Name="CopyLiquidGlassMagHost" AfterTargets="Build" Condition="'$(PublishSingleFile)' != 'true'">
     <ItemGroup>
-      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' != 'AnyCPU'" />
-      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' == 'AnyCPU'" />
+      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' != 'AnyCPU'" />
+      <LiquidGlassMagHostFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' == 'AnyCPU'" />
     </ItemGroup>
     <Copy SourceFiles="@(LiquidGlassMagHostFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="'@(LiquidGlassMagHostFiles)' != ''" />
   </Target>
 
   <Target Name="CopyLiquidGlassMagHostToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishSingleFile)' == 'true'">
     <ItemGroup>
-      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' != 'AnyCPU'" />
-      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\net6.0-windows10.0.19041.0\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' == 'AnyCPU'" />
+      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Platform)\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' != 'AnyCPU'" />
+      <LiquidGlassMagHostPublishFiles Include="$(MSBuildProjectDirectory)\..\InkCanvas.LiquidGlassMagHost\bin\$(Configuration)\$(TargetFramework)\InkCanvas.LiquidGlassMagHost.*" Condition="'$(Platform)' == 'AnyCPU'" />
     </ItemGroup>
     <Copy SourceFiles="@(LiquidGlassMagHostPublishFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="'@(LiquidGlassMagHostPublishFiles)' != ''" />
   </Target>

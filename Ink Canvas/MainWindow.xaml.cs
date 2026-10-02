@@ -53,6 +53,9 @@ namespace Ink_Canvas
         private GlobalHotkeyManager _globalHotkeyManager;
         internal GlobalHotkeyManager GlobalHotkeyManagerInstance => _globalHotkeyManager;
 
+        // PPT PageUp/PageDown 低级键盘钩子
+        private PPTPageKeyHook _pptPageKeyHook;
+
         // 墨迹渐隐管理器
         private InkFadeManager _inkFadeManager;
         // 暴露给插件墨迹特效服务的入口（未初始化时为 null）
@@ -476,12 +479,41 @@ namespace Ink_Canvas
             content.ExitVideoPresenterButton.Click += BtnExitVideoPresenter_Click;
             content.PhotoCorrectionToggle.Checked += ToggleBtnPhotoCorrection_Checked;
             content.PhotoCorrectionToggle.Unchecked += ToggleBtnPhotoCorrection_Unchecked;
+            content.BrightnessSlider.ValueChanged += BoothBrightnessSlider_ValueChanged;
+            content.ContrastSlider.ValueChanged += (s, e) => BoothCameraPropSlider_ValueChanged(BoothCameraProperty.Contrast, e.NewValue, content.ContrastValueText);
+            content.SaturationSlider.ValueChanged += (s, e) => BoothCameraPropSlider_ValueChanged(BoothCameraProperty.Saturation, e.NewValue, content.SaturationValueText);
+            content.WhiteBalanceSlider.ValueChanged += (s, e) => BoothCameraPropSlider_ValueChanged(BoothCameraProperty.WhiteBalance, e.NewValue, content.WhiteBalanceValueText);
+            content.GainSlider.ValueChanged += (s, e) => BoothCameraPropSlider_ValueChanged(BoothCameraProperty.Gain, e.NewValue, content.GainValueText);
+            content.FocusSlider.ValueChanged += (s, e) => BoothCameraPropSlider_ValueChanged(BoothCameraProperty.Focus, e.NewValue, content.FocusValueText);
+            content.ExposureSlider.ValueChanged += (s, e) => BoothCameraPropSlider_ValueChanged(BoothCameraProperty.Exposure, e.NewValue, content.ExposureValueText);
+            // 重置按钮：点击后把对应滑块设回 0（默认值），ValueChanged 会自动写硬件 + 保存设置
+            content.BrightnessResetButton.Click += (s, e) => ResetBoothCameraPropSlider(BoothCameraProperty.Brightness);
+            content.ContrastResetButton.Click += (s, e) => ResetBoothCameraPropSlider(BoothCameraProperty.Contrast);
+            content.SaturationResetButton.Click += (s, e) => ResetBoothCameraPropSlider(BoothCameraProperty.Saturation);
+            content.WhiteBalanceResetButton.Click += (s, e) => ResetBoothCameraPropSlider(BoothCameraProperty.WhiteBalance);
+            content.GainResetButton.Click += (s, e) => ResetBoothCameraPropSlider(BoothCameraProperty.Gain);
+            content.FocusResetButton.Click += (s, e) => ResetBoothCameraPropSlider(BoothCameraProperty.Focus);
+            content.ExposureResetButton.Click += (s, e) => ResetBoothCameraPropSlider(BoothCameraProperty.Exposure);
+            content.MirrorHorizontalToggle.Checked += (s, e) => SetBoothMirror(true, null);
+            content.MirrorHorizontalToggle.Unchecked += (s, e) => SetBoothMirror(false, null);
+            content.MirrorVerticalToggle.Checked += (s, e) => SetBoothMirror(null, true);
+            content.MirrorVerticalToggle.Unchecked += (s, e) => SetBoothMirror(null, false);
             // X 关闭按钮：只关闭菜单（隐藏 Popup），不退出视频展台模式。
             // 完全退出由菜单内"关闭"按钮（BtnExitVideoPresenter_Click）负责。
             content.CloseButtonControl.Click += (s, e) =>
             {
                 if (BoothPopup != null)
                     AnimationsHelper.HidePopupWithSlideAndFade(BoothPopup);
+
+                // 预览从未真正启动过（没摄像头 / 设备打不开）时，只收起菜单会把展台的特殊模式
+                // 留在原地：#333333 全屏遮罩 + "未检测到摄像头设备" 占位文字仍在，翻页与常规白板
+                // 操作全部失效，用户看到的正是"卡死"，只能退出白板才能恢复。
+                // 这种情况下点 X 的意图就是退出展台，直接走完整退出；
+                // 预览正常时仍保持"X 只收起菜单"的原语义。
+                if (_isVideoPresenterSpecialMode && !_boothMediaOpened)
+                {
+                    BtnExitVideoPresenter_Click(null, null);
+                }
             };
             // 注意：此处不恢复 PhotoCorrectionAccelerationComboBox.SelectedIndex，
             // 因为 WireUpBoothPopupContentEvents 在 LoadSettings 之前调用，Settings 仍为默认值。
@@ -517,6 +549,7 @@ namespace Ink_Canvas
             WireUpGesturePopupContentEvents();
             WireUpImageOptionsPopupContentEvents();
             WireUpWhiteboardModeSelectionEvents();
+            InitializeWhiteboardTipsAutoHide();
             BoardBorderToolsPopup.CustomPopupPlacementCallback =
                 (popupSize, targetSize, offset) => new[]
                 {
@@ -739,7 +772,16 @@ namespace Ink_Canvas
             timeMachine.OnUndoStateChanged += TimeMachine_OnUndoStateChanged;
             inkCanvas.Strokes.StrokesChanged += StrokesOnStrokesChanged;
 
-            SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+            // SystemEvents 依赖消息泵/桌面窗口，在 UIAccess 降权子进程等特殊上下文下会抛
+            // PlatformNotSupportedException；订阅失败降级，不阻断后续初始化。
+            try
+            {
+                SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"MainWindow | 订阅系统主题变化失败，已降级: {ex.Message}", LogHelper.LogType.Warning);
+            }
             try
             {
                 if (File.Exists("SpecialVersion.ini")) SpecialVersionResetToSuggestion_Click();
@@ -760,6 +802,8 @@ namespace Ink_Canvas
 
             // 注册输入事件
             inkCanvas.PreviewMouseDown += inkCanvas_PreviewMouseDown;
+            inkCanvas.PreviewMouseMove += inkCanvas_PreviewMouseMove;
+            inkCanvas.PreviewMouseUp += inkCanvas_PreviewMouseUp;
             inkCanvas.StylusDown += inkCanvas_StylusDown;
             inkCanvas.StylusMove += inkCanvas_StylusMove;
             inkCanvas.MouseRightButtonUp += InkCanvas_MouseRightButtonUp;
@@ -1346,7 +1390,8 @@ namespace Ink_Canvas
         {
             try
             {
-                return inkCanvas?.EditingMode == InkCanvasEditingMode.Ink;
+                return inkCanvas?.EditingMode == InkCanvasEditingMode.Ink
+                       || ResolveLogicalInkTool() == LogicalInkTool.Pen;
             }
             catch
             {
@@ -1426,6 +1471,15 @@ namespace Ink_Canvas
             FloatingBarThemeService.ApplySavedTheme();
         }
 
+        /// <summary>
+        /// 应用或移除彩色浮动栏背景（蓝绿半透明渐变），供 SettingsActionHub 切换开关时实时调用。
+        /// </summary>
+        internal void ApplyColorfulFloatingBar()
+        {
+            FloatingBarThemeService ??= new FloatingBarThemeService(this);
+            FloatingBarThemeService.ApplyColorfulOverlay();
+        }
+
         public void UpdateInkSmoothingConfig()
         {
             _inkSmoothingManager?.UpdateConfig();
@@ -1474,20 +1528,22 @@ namespace Ink_Canvas
         /// </remarks>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            LogHelper.WriteLogToFile($"[Startup] 主窗口加载开始，启动模式={App.CurrentStartupMode}", LogHelper.LogType.Info);
             loadPenCanvas();
             // 工具栏插件化按钮先注入到容器，确保 LoadSettings 内部对 Cursor_Icon / Pen_Icon 等的访问非空。
             // Settings.Toolbar 此时尚为默认值（全部可见），与旧 XAML 行为一致。
             InitializeToolbarPlugins();
-            // 初始化 Popup 管理器（置顶 + 拖动跟随）。快速启动模式下延迟到首帧之后。
-            if (!App.IsFastStartupEnabled)
+            // 初始化 Popup 管理器（置顶 + 拖动跟随）。最快模式下延迟到首帧之后。
+            if (!App.IsFastestStartupMode)
             {
                 InitializePopupManager();
             }
             // 加载设置
             LoadSettings(true);
-            // 启动性能监测（如果已启用）。快速启动模式下延迟到首帧之后。
+            LogHelper.WriteLogToFile("[Startup] 设置加载完成", LogHelper.LogType.Info);
+            // 启动性能监测（如果已启用）。最快模式下延迟到首帧之后。
             // 实时笔迹详细调试日志独立于性能监测，由 Debug 页开关控制，默认关闭。
-            if (!App.IsFastStartupEnabled)
+            if (!App.IsFastestStartupMode)
             {
                 PerformanceMonitorHelper.StartIfEnabled();
                 RealtimeInkPerformanceMonitor.StartIfEnabled();
@@ -1499,6 +1555,12 @@ namespace Ink_Canvas
             {
                 if (IsInPPTPresentationMode) ViewboxFloatingBarMarginAnimation(60, skipAnimation: true);
                 else ViewboxFloatingBarMarginAnimation(100, true, skipAnimation: true);
+            }
+
+            // 默认模式沿用 1.7.19.4：通知与自动化在 Window_Loaded 中初始化。
+            if (App.IsDefaultStartupMode)
+            {
+                InitializeNotificationAndAutomationForStartup();
             }
 
             // 启动时根据设置恢复调试控制台显示状态
@@ -1522,7 +1584,8 @@ namespace Ink_Canvas
                     SetTheme("Dark");
                     break;
                 case 2: // 跟随系统
-                    if (ThemeHelper.IsSystemThemeLight())
+                    _lastFollowedSystemThemeLight = ThemeHelper.IsSystemThemeLight();
+                    if (_lastFollowedSystemThemeLight.Value)
                     {
                         ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
                         SetTheme("Light");
@@ -1544,12 +1607,18 @@ namespace Ink_Canvas
             CheckColorTheme(true);
             ApplyFloatingBarTheme();
 
+            // 默认模式沿用 1.7.19.4：RealtimeStylus 与画板工具栏在首屏加载阶段完成。
+            if (App.IsDefaultStartupMode)
+            {
+                InitializeRealtimeAndBoardForStartup();
+            }
+
             BtnWhiteBoardSwitchPrevious.IsEnabled = CurrentWhiteboardIndex != 1;
             BorderInkReplayToolBox.Visibility = Visibility.Collapsed;
 
             // 识别后端预热改为后台低优先级执行，避免启动主线程被 WinRT 初始化拖慢。
-            // 快速启动模式下由第二阶段统一延迟。
-            if (!App.IsFastStartupEnabled && ShapeRecognitionRouter.ShouldRunShapeRecognition(
+            // 最快模式下由第二阶段统一延迟。
+            if (!App.IsFastestStartupMode && ShapeRecognitionRouter.ShouldRunShapeRecognition(
                     Settings.InkToShape.IsInkToShapeEnabled,
                     ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
             {
@@ -1563,7 +1632,15 @@ namespace Ink_Canvas
                 }), DispatcherPriority.ContextIdle);
             }
 
-            SystemEvents.DisplaySettingsChanged += SystemEventsOnDisplaySettingsChanged;
+            // SystemEvents 在 UIAccess 降权子进程等特殊上下文下会抛 PlatformNotSupportedException，订阅失败降级。
+            try
+            {
+                SystemEvents.DisplaySettingsChanged += SystemEventsOnDisplaySettingsChanged;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"MainWindow | 订阅显示设置变化失败，已降级: {ex.Message}", LogHelper.LogType.Warning);
+            }
             // 自动收纳到侧边栏（若通过 --board 进入白板模式或 --show 参数则跳过收纳）
             if (Settings.Startup.IsFoldAtStartup && !App.StartWithBoardMode && !App.StartWithShowMode)
             {
@@ -1603,6 +1680,9 @@ namespace Ink_Canvas
 
             // 应用无焦点模式设置
             ApplyNoFocusMode();
+
+            // 实验性 WinRT 墨迹管线：加载完成后按当前逻辑工具挂载（默认关闭）。
+            SyncWinRTInkPipelineWithLogicalTool();
 
             // 设置UIA置顶状态
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
@@ -1645,6 +1725,20 @@ namespace Ink_Canvas
                     }
                 }), DispatcherPriority.Loaded);
             }
+
+            // WindowChrome hit testing is initialized only after the HWND exists.  The
+            // startup path previously set no-focus mode but never initialized the matching
+            // transparent hit-through state, so the transparent window could consume input
+            // until a tool/settings action called SetTransparentHitThrough().  Re-apply it
+            // once all Loaded callbacks and startup mode changes have completed.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                ApplyTransparentHitTestForCurrentMode("startup-idle");
+            }), DispatcherPriority.ApplicationIdle);
+
+            LogHelper.WriteLogToFile(
+                $"[Startup] 主窗口加载流程完成: mode={currentMode}, folded={isFloatingBarFolded}, pptOnly={Settings.ModeSettings.IsPPTOnlyMode}",
+                LogHelper.LogType.Info);
         }
 
 
@@ -1671,6 +1765,8 @@ namespace Ink_Canvas
 
                 HandleFloatingBarRecovery();
             }
+
+            UpdateWinRTInkTarget();
         }
 
         private void HandleFloatingBarRecovery()
@@ -1734,6 +1830,9 @@ namespace Ink_Canvas
         {
             try
             {
+                LogHelper.WriteLogToFile(
+                    $"[Exit] 主窗口 Closing: ppt={IsInPPTPresentationMode}, mode={currentMode}, force={_forceCloseFromExitOrRestartButton}, verifyPending={_allowCloseAfterExitVerification}",
+                    LogHelper.LogType.Info);
                 if (_isReloadingForLanguageChange)
                     return;
 
@@ -1751,21 +1850,21 @@ namespace Ink_Canvas
                     return;
                 }
 
-                LogHelper.WriteLogToFile("Ink Canvas closing", LogHelper.LogType.Event);
+                LogHelper.WriteLogToFile("[Exit] 主窗口开始关闭", LogHelper.LogType.Info);
 
                 if (!_forceCloseFromExitOrRestartButton &&
                     IsInPPTPresentationMode)
                 {
                     e.Cancel = true;
                     await ExitPPTPresentation();
-                    LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
+                    LogHelper.WriteLogToFile("[Exit] 关闭请求转为退出 PPT 放映", LogHelper.LogType.Info);
                     return;
                 }
                 if (!_forceCloseFromExitOrRestartButton && currentMode != 0)
                 {
                     e.Cancel = true;
                     CloseWhiteboardImmediately();
-                    LogHelper.WriteLogToFile("Ink Canvas closing converted to exit whiteboard", LogHelper.LogType.Event);
+                    LogHelper.WriteLogToFile("[Exit] 关闭请求转为退出白板", LogHelper.LogType.Info);
                     return;
                 }
 
@@ -1793,15 +1892,17 @@ namespace Ink_Canvas
                                 if (!ok)
                                 {
                                     _forceCloseFromExitOrRestartButton = false;
-                                    LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
+                                    LogHelper.WriteLogToFile("[Exit] 退出密码验证未通过，取消关闭", LogHelper.LogType.Info);
                                     return;
                                 }
 
                                 _allowCloseAfterExitVerification = true;
                                 Close();
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                // 走到这里说明验证流程中途失败且未置位放行标志，窗口会表现为"点关闭没反应"
+                                LogHelper.WriteLogToFile($"[Exit] 退出密码验证流程异常，本次关闭未放行: {ex.Message}", LogHelper.LogType.Info);
                             }
                             finally
                             {
@@ -1811,50 +1912,51 @@ namespace Ink_Canvas
                         return;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogHelper.WriteLogToFile($"[Exit] 检查是否需要退出密码验证失败: {ex.Message}", LogHelper.LogType.Info);
                 }
 
                 if (!CloseIsFromButton && Settings.Advanced.IsSecondConfirmWhenShutdownApp)
                 {
-                    var result1 = MessageBox.Show(Properties.MainWindowStrings.Main_CloseConfirm_Level1, "InkCanvasForClass",
+                    var result1 = MessageBoxHelper.Show(this, Properties.MainWindowStrings.Main_CloseConfirm_Level1, "InkCanvasForClass",
                         MessageBoxButton.OKCancel, MessageBoxImage.Warning);
 
                     if (result1 == MessageBoxResult.Cancel)
                     {
                         _forceCloseFromExitOrRestartButton = false;
                         e.Cancel = true;
-                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled at first confirmation", LogHelper.LogType.Event);
+                        LogHelper.WriteLogToFile("[Exit] 第一次退出确认取消", LogHelper.LogType.Info);
                         return;
                     }
 
-                    var result2 = MessageBox.Show(Properties.MainWindowStrings.Main_CloseConfirm_Level2, "InkCanvasForClass",
+                    var result2 = MessageBoxHelper.Show(this, Properties.MainWindowStrings.Main_CloseConfirm_Level2, "InkCanvasForClass",
                         MessageBoxButton.OKCancel, MessageBoxImage.Error);
 
                     if (result2 == MessageBoxResult.Cancel)
                     {
                         _forceCloseFromExitOrRestartButton = false;
                         e.Cancel = true;
-                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled at second confirmation", LogHelper.LogType.Event);
+                        LogHelper.WriteLogToFile("[Exit] 第二次退出确认取消", LogHelper.LogType.Info);
                         return;
                     }
 
-                    var result3 = MessageBox.Show(Properties.MainWindowStrings.Main_CloseConfirm_Level3, "InkCanvasForClass",
+                    var result3 = MessageBoxHelper.Show(this, Properties.MainWindowStrings.Main_CloseConfirm_Level3, "InkCanvasForClass",
                         MessageBoxButton.OKCancel, MessageBoxImage.Question);
 
                     if (result3 == MessageBoxResult.Cancel)
                     {
                         _forceCloseFromExitOrRestartButton = false;
                         e.Cancel = true;
-                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled at final confirmation", LogHelper.LogType.Event);
+                        LogHelper.WriteLogToFile("[Exit] 最终退出确认取消", LogHelper.LogType.Info);
                         return;
                     }
 
                     e.Cancel = false;
-                    LogHelper.WriteLogToFile("Ink Canvas closing confirmed by user", LogHelper.LogType.Event);
+                    LogHelper.WriteLogToFile("[Exit] 用户确认关闭主窗口", LogHelper.LogType.Info);
                 }
 
-                if (e.Cancel) LogHelper.WriteLogToFile("Ink Canvas closing cancelled", LogHelper.LogType.Event);
+                if (e.Cancel) LogHelper.WriteLogToFile("[Exit] 主窗口关闭已取消", LogHelper.LogType.Info);
             }
             catch (Exception ex)
             {
@@ -1886,8 +1988,18 @@ namespace Ink_Canvas
         /// <param name="e">关闭事件的参数（未使用）。</param>
         private void Window_Closed(object sender, EventArgs e)
         {
+            LogHelper.WriteLogToFile("[Exit] 主窗口 Closed，开始释放资源", LogHelper.LogType.Info);
             RealtimeInkFrameScheduler.Clear();
-            SystemEvents.DisplaySettingsChanged -= SystemEventsOnDisplaySettingsChanged;
+            try
+            {
+                SystemEvents.DisplaySettingsChanged -= SystemEventsOnDisplaySettingsChanged;
+                SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"MainWindow | 取消系统事件订阅失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+            _systemThemeRetryTimer?.Stop();
             // 玻璃浮动栏刻意不设 Owner，必须显式关闭，否则残留窗口会挡住进程退出
             HideLiquidGlassBar();
 
@@ -1917,6 +2029,13 @@ namespace Ink_Canvas
             // 清理剪贴板监控
             CleanupClipboardMonitoring();
             ClipboardNotification.Stop();
+
+            // 清理 PPT PageUp/PageDown 低级键盘钩子
+            if (_pptPageKeyHook != null)
+            {
+                _pptPageKeyHook.Dispose();
+                _pptPageKeyHook = null;
+            }
 
             // 清理全局快捷键管理器
             if (_globalHotkeyManager != null)
@@ -1952,7 +2071,7 @@ namespace Ink_Canvas
             // 清理统一窗口置顶管理器
             WindowTopmostManager.Shutdown();
 
-            LogHelper.WriteLogToFile("Ink Canvas closed", LogHelper.LogType.Event);
+            LogHelper.WriteLogToFile("[Exit] 主窗口资源释放完成", LogHelper.LogType.Info);
 
             // 检查是否有待安装的更新
             CheckPendingUpdates();
@@ -2326,6 +2445,14 @@ namespace Ink_Canvas
         // 鼠标输入
         private void inkCanvas_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.ChangedButton == MouseButton.Left && inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke)
+            {
+                if (BeginSecAgentStrokeErase(e.GetPosition(inkCanvas)))
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
             // 视频展台特殊模式：非 Ink 模式下，鼠标左键拖动应该移动摄像头预览画面，
             // 而不是触发 InkCanvas 内部框选逻辑。这里拦截事件，启动鼠标拖动。
             if (VideoPresenterSpecialMode_HandleMouseDown(e))
@@ -2347,6 +2474,7 @@ namespace Ink_Canvas
             var hitTest = e.OriginalSource;
             var dependencyObject = hitTest as DependencyObject;
             bool clickedMediaControl = false;
+            bool clickedSecAgentSceneElement = false;
             while (dependencyObject != null)
             {
                 if (dependencyObject is CanvasMediaControl)
@@ -2354,9 +2482,16 @@ namespace Ink_Canvas
                     clickedMediaControl = true;
                     break;
                 }
+                if (string.Equals(dependencyObject.GetType().FullName, "Ink_Canvas.SecAgent.Plugin.SvgSceneElement", StringComparison.Ordinal)
+                    || string.Equals(dependencyObject.GetType().FullName, "Ink_Canvas.SecAgent.Plugin.SvgCanvasElement", StringComparison.Ordinal)
+                    || string.Equals(dependencyObject.GetType().FullName, "Ink_Canvas.SecAgent.Plugin.SvgSceneGroup", StringComparison.Ordinal))
+                {
+                    clickedSecAgentSceneElement = true;
+                    break;
+                }
                 dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
             }
-            if (!(hitTest is Image) && !(hitTest is MediaElement) && !(hitTest is CanvasMediaControl) && !clickedMediaControl)
+            if (!(hitTest is Image) && !(hitTest is MediaElement) && !(hitTest is CanvasMediaControl) && !clickedMediaControl && !clickedSecAgentSceneElement)
             {
                 // 如果当前有选中的元素，取消选中状态
                 if (currentSelectedElement != null)
@@ -2376,9 +2511,35 @@ namespace Ink_Canvas
 
         }
 
+        private void inkCanvas_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (inkCanvas?.EditingMode != InkCanvasEditingMode.EraseByStroke || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            if (MoveSecAgentStrokeErase(e.GetPosition(inkCanvas)))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void inkCanvas_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Left) return;
+            if (inkCanvas?.EditingMode == InkCanvasEditingMode.EraseByStroke)
+                EndSecAgentStrokeErase();
+        }
+
         // 手写笔输入
         private void inkCanvas_StylusDown(object sender, StylusDownEventArgs e)
         {
+            if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke)
+            {
+                if (BeginSecAgentStrokeErase(e.GetPosition(inkCanvas)))
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
             _stylusDownTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             if (IsBoardRoamingMode)
@@ -2386,7 +2547,7 @@ namespace Ink_Canvas
                 inkCanvas.CaptureStylus();
                 ViewboxFloatingBar.IsHitTestVisible = false;
                 BlackboardUIGridForInkReplay.IsHitTestVisible = false;
-                BeginBoardRoaming(e.GetPosition(inkCanvas));
+                BeginBoardRoamingContact(e.StylusDevice.Id, e.GetPosition(inkCanvas));
                 e.Handled = true;
                 return;
             }
@@ -2404,21 +2565,31 @@ namespace Ink_Canvas
 
         private void inkCanvas_StylusMove(object sender, StylusEventArgs e)
         {
-            if (!_isBoardRoamingPointerDown) return;
+            if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
+                && MoveSecAgentStrokeErase(e.GetPosition(inkCanvas)))
+            {
+                e.Handled = true;
+                return;
+            }
+            if (!_isBoardRoamingPointerDown && !_isBoardRoamingTwoFingerGesture && _boardRoamingContacts.Count == 0) return;
 
-            MoveBoardRoaming(e.GetPosition(inkCanvas));
+            MoveBoardRoamingContact(e.StylusDevice.Id, e.GetPosition(inkCanvas));
             e.Handled = true;
         }
 
         // 手写笔抬起事件（用于橡皮擦自动切换）
         private void inkCanvas_StylusUp(object sender, StylusEventArgs e)
         {
-            if (_isBoardRoamingPointerDown)
+            EndSecAgentStrokeErase();
+            if (_isBoardRoamingPointerDown || _isBoardRoamingTwoFingerGesture || _boardRoamingContacts.Count > 0)
             {
-                EndBoardRoaming();
-                inkCanvas.ReleaseStylusCapture();
-                ViewboxFloatingBar.IsHitTestVisible = true;
-                BlackboardUIGridForInkReplay.IsHitTestVisible = true;
+                EndBoardRoamingContact(e.StylusDevice.Id);
+                if (_boardRoamingContacts.Count == 0)
+                {
+                    inkCanvas.ReleaseStylusCapture();
+                    ViewboxFloatingBar.IsHitTestVisible = true;
+                    BlackboardUIGridForInkReplay.IsHitTestVisible = true;
+                }
                 e.Handled = true;
                 return;
             }
@@ -2502,6 +2673,7 @@ namespace Ink_Canvas
             }
             currentCanvas = whiteboardPages[index];
             currentPageIndex = index;
+            LogHelper.WriteLogToFile($"[Whiteboard] 已切换到第 {index + 1}/{whiteboardPages.Count} 页", LogHelper.LogType.Info);
         }
         // 新建页面
         private void AddNewPage()
@@ -2510,6 +2682,7 @@ namespace Ink_Canvas
             whiteboardPages.Add(newCanvas);
             InkCanvasGridForInkReplay.Children.Add(newCanvas);
             ShowPage(whiteboardPages.Count - 1);
+            LogHelper.WriteLogToFile($"[Whiteboard] 已新建页面，当前共 {whiteboardPages.Count} 页", LogHelper.LogType.Info);
         }
         // 删除当前页面
         private void DeleteCurrentPage()
@@ -2520,6 +2693,7 @@ namespace Ink_Canvas
             if (currentPageIndex >= whiteboardPages.Count)
                 currentPageIndex = whiteboardPages.Count - 1;
             ShowPage(currentPageIndex);
+            LogHelper.WriteLogToFile($"[Whiteboard] 已删除页面，当前共 {whiteboardPages.Count} 页", LogHelper.LogType.Info);
         }
         // 快速面板退出PPT放映按钮事件
         private async void ExitPPTSlideShow_MouseUp(object sender, MouseButtonEventArgs e)
@@ -2577,28 +2751,8 @@ namespace Ink_Canvas
             _popupManager?.OnOwnerActivated();
         }
 
-        private async Task RunDeferredStartupPhaseBAsync()
+        private void InitializeNotificationAndAutomationForStartup()
         {
-            if (_deferredPhaseBCompleted) return;
-            _deferredPhaseBCompleted = true;
-
-            await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
-            await Task.Delay(App.IsFastStartupEnabled ? 1000 : 600);
-
-            if (App.IsFastStartupEnabled)
-            {
-                try
-                {
-                    InitializePopupManager();
-                    PerformanceMonitorHelper.StartIfEnabled();
-                    RealtimeInkPerformanceMonitor.StartIfEnabled();
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"[MainWindow] 快速启动延迟基础服务初始化出错: {ex.Message}", LogHelper.LogType.Error);
-                }
-            }
-
             try
             {
                 InitializeNotificationProviders();
@@ -2616,17 +2770,10 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"[MainWindow] 初始化自动化系统时出错: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
 
-            // 后移的非首屏初始化
-            if (App.IsFastStartupEnabled &&
-                ShapeRecognitionRouter.ShouldRunShapeRecognition(
-                    Settings.InkToShape.IsInkToShapeEnabled,
-                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
-            {
-                _ = Task.Run(() => InkRecognizeHelper.WarmupShapeRecognition(
-                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)));
-            }
-
+        private void InitializeRealtimeAndBoardForStartup()
+        {
             try
             {
                 EnsureRealtimeStylusPipelineBinding();
@@ -2665,6 +2812,52 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"[MainWindow] 黑板工具栏初始化出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private async Task RunDeferredStartupPhaseBAsync()
+        {
+            if (_deferredPhaseBCompleted) return;
+            _deferredPhaseBCompleted = true;
+
+            if (!App.IsDefaultStartupMode)
+            {
+                await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+            }
+            await Task.Delay(App.IsFastestStartupMode ? 1000 : 600);
+
+            if (App.IsFastestStartupMode)
+            {
+                try
+                {
+                    InitializePopupManager();
+                    PerformanceMonitorHelper.StartIfEnabled();
+                    RealtimeInkPerformanceMonitor.StartIfEnabled();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"[MainWindow] 最快启动延迟基础服务初始化出错: {ex.Message}", LogHelper.LogType.Error);
+                }
+            }
+
+            if (!App.IsDefaultStartupMode)
+            {
+                InitializeNotificationAndAutomationForStartup();
+            }
+
+            // 后移的非首屏初始化
+            if (App.IsFastestStartupMode &&
+                ShapeRecognitionRouter.ShouldRunShapeRecognition(
+                    Settings.InkToShape.IsInkToShapeEnabled,
+                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
+            {
+                _ = Task.Run(() => InkRecognizeHelper.WarmupShapeRecognition(
+                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)));
+            }
+
+            if (!App.IsDefaultStartupMode)
+            {
+                InitializeRealtimeAndBoardForStartup();
             }
 
             try
@@ -2828,17 +3021,51 @@ namespace Ink_Canvas
         {
             try
             {
-                _globalHotkeyManager = new GlobalHotkeyManager(this);
-                // 启动时加载快捷键，但默认为鼠标模式，禁用快捷键以放行键盘操作
-                _globalHotkeyManager.EnableHotkeyRegistration();
-                // 启动时默认为鼠标模式，禁用快捷键
-                _globalHotkeyManager.UpdateHotkeyStateForToolMode(true);
+                // 幂等：插件服务（HotkeyService）可能在延迟任务之前按需创建过管理器，
+                // 这里只补齐 PPT 翻页钩子，避免重复创建导致热键重复注册。
+                _globalHotkeyManager = EnsureGlobalHotkeyManagerCreated();
+                if (_globalHotkeyManager == null) return;
+
+                _pptPageKeyHook = new PPTPageKeyHook(
+                    Dispatcher,
+                    () => BtnPPTSlidesUp_Click(null, null),
+                    () => BtnPPTSlidesDown_Click(null, null));
+                RefreshPPTPageKeyHook();
+
                 LogHelper.WriteLogToFile("全局快捷键管理器已初始化，启动时默认为鼠标模式并禁用快捷键", LogHelper.LogType.Event);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"初始化全局快捷键管理器时出错: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        /// <summary>
+        /// 确保全局快捷键管理器已创建（幂等）。供插件服务（IHotkeyService）在
+        /// 依赖注入注册后按需触发：RegisterPluginServices 在 MainWindow 构造后立即执行，
+        /// 早于 RunDeferredStartupPhaseBAsync 里的 InitializeGlobalHotkeyManager，
+        /// 若不按需创建，HotkeyService 拿到的 manager 就是 null，插件热键全部静默失败。
+        /// </summary>
+        internal GlobalHotkeyManager EnsureGlobalHotkeyManagerCreated()
+        {
+            try
+            {
+                if (_globalHotkeyManager == null)
+                {
+                    _globalHotkeyManager = new GlobalHotkeyManager(this);
+                    // 启动时加载快捷键，但默认为鼠标模式，禁用快捷键以放行键盘操作
+                    _globalHotkeyManager.EnableHotkeyRegistration();
+                    // 启动时默认为鼠标模式，禁用快捷键
+                    _globalHotkeyManager.UpdateHotkeyStateForToolMode(true);
+
+                    LogHelper.WriteLogToFile("全局快捷键管理器已按需初始化（插件服务触发）", LogHelper.LogType.Event);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"按需初始化全局快捷键管理器时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+            return _globalHotkeyManager;
         }
 
         /// <summary>
@@ -3292,6 +3519,11 @@ namespace Ink_Canvas
         {
             try
             {
+                if (newMode == InkCanvasEditingMode.EraseByPoint)
+                    isUsingStrokesEraser = false;
+                else if (newMode == InkCanvasEditingMode.EraseByStroke)
+                    isUsingStrokesEraser = true;
+
                 if (IsCurrentPageFrozen && IsFreezeMutatingMode(newMode))
                 {
                     TryBlockFrozenPageMutation("切换到编辑工具");
@@ -3306,6 +3538,7 @@ namespace Ink_Canvas
 
                 // 执行模式切换
                 inkCanvas.EditingMode = newMode;
+                SyncWinRTInkPipelineWithLogicalTool();
 
                 // 根据模式确定是否为鼠标模式（无工具模式）
                 bool isMouseMode = newMode == InkCanvasEditingMode.None;
@@ -3468,14 +3701,19 @@ namespace Ink_Canvas
         {
             try
             {
+                // 手动切换主题时基线失效，运行时系统深浅色切换需要重新建立
+                _lastFollowedSystemThemeLight = null;
+
                 switch (themeIndex)
                 {
                     case 0: // 浅色主题
+                        ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
                         SetTheme("Light", true);
                         // 浅色主题下设置浮动栏为完全不透明
                         ViewboxFloatingBar.Opacity = 1.0;
                         break;
                     case 1: // 深色主题
+                        ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
                         SetTheme("Dark", true);
                         // 深色主题下设置浮动栏为完全不透明
                         ViewboxFloatingBar.Opacity = 1.0;
@@ -3483,11 +3721,13 @@ namespace Ink_Canvas
                     case 2: // 跟随系统
                         if (ThemeHelper.IsSystemThemeLight())
                         {
+                            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
                             SetTheme("Light", true);
                             ViewboxFloatingBar.Opacity = 1.0;
                         }
                         else
                         {
+                            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
                             SetTheme("Dark", true);
                             ViewboxFloatingBar.Opacity = 1.0;
                         }

@@ -1,5 +1,6 @@
 using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Ink;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1130,8 +1131,7 @@ namespace Ink_Canvas
         {
             // 视频展台特殊模式：所有触摸交给 VideoPresenterSpecialModeContainer 的 Manipulation 处理，
             // 不进入下面的 EditingMode 切换逻辑（避免把 Ink 切到 None 干扰预览绘制）。
-            // 图形绘制模式例外：需要走正常绘制流程
-            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0) return;
+            if (_isVideoPresenterSpecialMode) return;
 
             if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
                 || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
@@ -1780,8 +1780,7 @@ namespace Ink_Canvas
             // 视频展台特殊模式：不在此处切换 EditingMode，
             // PreviewTouchDown 已临时切到 None 抑制 InkCanvas 框选/绘制；
             // 这里再切会覆盖 None → Ink，导致特殊模式下仍画出墨迹（Q7 真正根因）。
-            // 图形绘制模式例外：需要走正常绘制流程
-            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
+            if (_isVideoPresenterSpecialMode)
             {
                 return;
             }
@@ -1845,19 +1844,29 @@ namespace Ink_Canvas
             }
         }
 
-        /// <summary>
-        /// 获取触摸边界宽度方法
-        /// </summary>
-        /// <param name="e">触摸事件参数</param>
-        /// <returns>返回触摸边界宽度</returns>
-        /// <remarks>
-        /// 手掌擦阈值与特殊屏 <c>TouchMultiplier</c> 在激活逻辑中单独参与计算，此处仅返回几何接触尺寸。
-        /// </remarks>
-        public double GetTouchBoundWidth(TouchEventArgs e)
+        private PalmEraserPolicy BuildPalmEraserPolicy()
         {
-            var args = e.GetTouchPoint(null).Bounds;
-            if (!Settings.Advanced.IsQuadIR) return args.Width;
-            return Math.Sqrt(args.Width * args.Height);
+            var canvas = Settings.Canvas;
+            var advanced = Settings.Advanced;
+            var isNib = Settings.Startup.IsEnableNibMode;
+
+            return new PalmEraserPolicy(
+                enabled: canvas.EnablePalmEraser,
+                isActive: isPalmEraserActive,
+                isQuadIr: advanced.IsQuadIR,
+                isSpecialScreen: advanced.IsSpecialScreen,
+                boundsWidthDip: BoundsWidth,
+                thresholdFactor: isNib
+                    ? advanced.NibModeBoundsWidthThresholdValue
+                    : advanced.FingerModeBoundsWidthThresholdValue,
+                sensitivityMultiplier: PalmEraserCalculator.GetSensitivityMultiplier(
+                    canvas.PalmEraserSensitivity),
+                eraserSizeFactor: isNib
+                    ? advanced.NibModeBoundsWidthEraserSize
+                    : advanced.FingerModeBoundsWidthEraserSize,
+                touchMultiplier: advanced.TouchMultiplier,
+                maximumEraserWidthDip: EraserSizeCalculator.GetMaximumPresetWidthDip(
+                    isEraserCircleShape));
         }
 
         /// <summary>
@@ -1895,7 +1904,7 @@ namespace Ink_Canvas
             // 注意：不能用 e.Handled = true —— 这样会同时阻断 Manipulation 事件的提升，
             //      导致 VideoPresenterSpecialMode_ManipulationDelta 永远收不到事件（Q7 根因）。
             // 仍维护 dec，保证 InkCanvas_PreviewTouchUp 中的 dec.Remove 配对。
-            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
+            if (_isVideoPresenterSpecialMode)
             {
                 bool isSecondFinger = dec.Count >= 1;
                 dec.Add(e.TouchDevice.Id);
@@ -2052,53 +2061,27 @@ namespace Ink_Canvas
             if (Settings.Canvas.EnablePalmEraser && !isPalmEraserActive && drawingShapeMode == 0)
             {
                 var touchPoint = e.GetTouchPoint(inkCanvas);
-                double boundWidth = GetTouchBoundWidth(e);
+                var touchBounds = e.GetTouchPoint(null).Bounds;
+                var palmEvaluation = PalmEraserCalculator.Evaluate(
+                    touchBounds.Width,
+                    touchBounds.Height,
+                    BuildPalmEraserPolicy());
 
-                if ((Settings.Advanced.TouchMultiplier != 0 || !Settings.Advanced.IsSpecialScreen)
-                    && (boundWidth > BoundsWidth))
+                if (palmEvaluation.ActivatesEraser)
                 {
-                    double thresholdMultiplier;
-                    switch (Settings.Canvas.PalmEraserSensitivity)
+                    palmEraserPreviousEditingMode = inkCanvas.EditingMode;
+                    inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
+                    isPalmEraserActive = true;
+
+                    EnableEraserOverlay();
+                    eraserWidth = palmEvaluation.EraserWidthDip;
+                    UpdateEraserStyle();
+                    EraserOverlay_PointerDown(sender);
+                    EraserOverlay_PointerMove(sender, touchPoint.Position);
+                    if (Settings.Canvas.IsShowCursor)
                     {
-                        case 0:
-                            thresholdMultiplier = 3.0;
-                            break;
-                        case 1:
-                            thresholdMultiplier = 2.5;
-                            break;
-                        case 2:
-                        default:
-                            thresholdMultiplier = 2.0;
-                            break;
-                    }
-
-                    double EraserThresholdValue = Settings.Startup.IsEnableNibMode
-                        ? Settings.Advanced.NibModeBoundsWidthThresholdValue
-                        : Settings.Advanced.FingerModeBoundsWidthThresholdValue;
-
-                    if (boundWidth > BoundsWidth * EraserThresholdValue * thresholdMultiplier)
-                    {
-                        boundWidth *= Settings.Startup.IsEnableNibMode
-                            ? Settings.Advanced.NibModeBoundsWidthEraserSize
-                            : Settings.Advanced.FingerModeBoundsWidthEraserSize;
-
-                        if (Settings.Advanced.IsSpecialScreen)
-                            boundWidth *= Settings.Advanced.TouchMultiplier;
-                        palmEraserPreviousEditingMode = inkCanvas.EditingMode;
-                        inkCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
-                        isPalmEraserActive = true;
-
-                        EnableEraserOverlay();
-                        eraserWidth = boundWidth;
-                        UpdateEraserStyle();
-                        touchPoint = e.GetTouchPoint(inkCanvas);
-                        EraserOverlay_PointerDown(sender);
-                        EraserOverlay_PointerMove(sender, touchPoint.Position);
-                        if (Settings.Canvas.IsShowCursor)
-                        {
-                            inkCanvas.ForceCursor = false;
-                            inkCanvas.UseCustomCursor = false;
-                        }
+                        inkCanvas.ForceCursor = false;
+                        inkCanvas.UseCustomCursor = false;
                     }
                 }
             }
@@ -2222,21 +2205,13 @@ namespace Ink_Canvas
         {
             // 视频展台特殊模式：所有手指抬起后恢复用户原本的 EditingMode
             // （PreviewTouchDown 中为了抑制 InkCanvas 内部框选临时切到了 None）
-            // 图形绘制模式例外：需要走正常绘制流程完成图形
-            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
+            if (_isVideoPresenterSpecialMode)
             {
                 dec.Remove(e.TouchDevice.Id);
                 if (dec.Count == 0)
                 {
-                    if (_boothTouchSavedInkEditingMode.HasValue && inkCanvas != null)
-                    {
-                        try
-                        {
-                            inkCanvas.EditingMode = _boothTouchSavedInkEditingMode.Value;
-                        }
-                        catch { }
-                        _boothTouchSavedInkEditingMode = null;
-                    }
+                    // 恢复触摸前保存的 EditingMode（失败时保证不会把画布留在 None）
+                    RestoreBoothInkEditingMode("touch-up");
                 }
                 // 仍然执行常规清理（释放触摸捕获、恢复浮动栏可见性等）
                 inkCanvas?.ReleaseAllTouchCaptures();
@@ -2454,8 +2429,7 @@ namespace Ink_Canvas
         {
             // 视频展台特殊模式：不在此处恢复 EditingMode，
             // PreviewTouchUp 已经在所有手指抬起后恢复用户原本的模式
-            // 图形绘制模式例外：需要走正常绘制流程
-            if (_isVideoPresenterSpecialMode && drawingShapeMode == 0)
+            if (_isVideoPresenterSpecialMode)
             {
                 return;
             }
@@ -2528,7 +2502,7 @@ namespace Ink_Canvas
             // 只缩放墨迹不缩放预览画面（画面不同步），并留下第一指的残留墨迹。
             // VideoPresenterSpecialModeContainer 在 Z 顺序最底层，触摸事件被 inkCanvas 拦截，
             // 根本到不了 Container 上的处理器，必须在此转发。
-            if (_isVideoPresenterSpecialMode && inkCanvas != null && drawingShapeMode == 0)
+            if (_isVideoPresenterSpecialMode && inkCanvas != null)
             {
                 int manipulatorCount = e.Manipulators?.Count() ?? 0;
                 bool penInkSingleFinger = inkCanvas.EditingMode == InkCanvasEditingMode.Ink && manipulatorCount < 2;
@@ -2546,6 +2520,15 @@ namespace Ink_Canvas
             if (IsCurrentPageFrozen)
             {
                 TryBlockFrozenPageMutation("移动或缩放内容");
+                e.Handled = true;
+                return;
+            }
+
+            if (IsBoardRoamingMode
+                && (_boardRoamingContacts.Count > 0
+                    || _isBoardRoamingTwoFingerGesture
+                    || (e.Manipulators?.Count() ?? 0) != 1))
+            {
                 e.Handled = true;
                 return;
             }

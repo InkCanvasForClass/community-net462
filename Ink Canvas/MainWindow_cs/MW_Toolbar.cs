@@ -61,7 +61,11 @@ namespace Ink_Canvas
             ShapeDrawFloatingBarBtn = btn;
             BorderDrawShape.PlacementTarget = btn;
         }
-        internal void AttachSymbolIconUndo(ToolbarImageButton btn) => SymbolIconUndo = btn;
+        internal void AttachSymbolIconUndo(ToolbarImageButton btn)
+        {
+            SymbolIconUndo = btn;
+            AttachUndoLongPressHandlers(btn);
+        }
         internal void AttachSymbolIconRedo(ToolbarImageButton btn) => SymbolIconRedo = btn;
         internal void AttachCursorWithDelBtn(ToolbarImageButton btn) => CursorWithDelFloatingBarBtn = btn;
         internal void AttachWhiteboardBtn(ToolbarImageButton btn) => WhiteboardFloatingBarBtn = btn;
@@ -443,6 +447,15 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"MW_Toolbar: RebuildToolbar 异常: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", LogHelper.LogType.Error);
             }
+        }
+
+        /// <summary>
+        /// 插件注册/注销后重建浮动与白板两套插件工具栏（调用方通常经 Dispatcher 排队调用）。
+        /// </summary>
+        internal void RebuildPluginToolbars()
+        {
+            RebuildToolbar();
+            RebuildBoardToolbar();
         }
 
         /// <summary>

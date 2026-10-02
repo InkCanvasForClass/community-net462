@@ -1,4 +1,4 @@
-using Ink_Canvas.Helpers;
+﻿using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,10 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
 {
@@ -184,10 +187,10 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
             var border = new Border
             {
                 CornerRadius = new CornerRadius(5, 5, 5, 5),
-                Background = (Brush)Application.Current.TryFindResource("BoardFloatBarBackground"),
                 Margin = new Thickness(0),
                 Child = panel
             };
+            border.SetResourceReference(Border.BackgroundProperty, "FloatingBarBackgroundBrush");
 
             return border;
         }
@@ -241,7 +244,27 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar
 
                 var path = GetConfigFilePath(name);
                 var json = JsonConvert.SerializeObject(layout, Formatting.Indented);
-                File.WriteAllText(path, json);
+                // 临时文件 + File.Replace/Move 原子替换，避免断电/进程被杀导致 default.json
+                // 停在 0 字节或半截，下次启动 LoadConfigFile 反序列化失败→fallback CreateDefault，
+                // 用户整套自定义布局静默丢失。
+                var tmpPath = path + ".tmp";
+                try
+                {
+                    File.WriteAllText(tmpPath, json);
+                    if (File.Exists(path))
+                        File.Replace(tmpPath, path, null);
+                    else
+                        File.Move(tmpPath, path);
+                }
+                catch (Exception innerEx)
+                {
+                    try { if (File.Exists(tmpPath)) File.Delete(tmpPath); }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"[Toolbar] BoardToolbarRegistry 原子写入失败后删除临时文件 {Path.GetFileName(tmpPath)} 失败: {ex.Message}", LogHelper.LogType.Info);
+                    }
+                    throw new Exception($"原子写入失败: {innerEx.Message}", innerEx);
+                }
                 LogHelper.WriteLogToFile($"BoardToolbarRegistry: 保存配置 [{name}] 成功", LogHelper.LogType.Info);
             }
             catch (Exception ex)

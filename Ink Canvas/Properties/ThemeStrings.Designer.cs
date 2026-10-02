@@ -206,6 +206,10 @@ namespace Ink_Canvas.Properties
 
         public static string Theme_HideFloatingBarBorderHint => ResourceManager.GetString(nameof(Theme_HideFloatingBarBorderHint), _resourceCulture);
 
+        public static string Theme_ColorfulFloatingBar => ResourceManager.GetString(nameof(Theme_ColorfulFloatingBar), _resourceCulture);
+
+        public static string Theme_ColorfulFloatingBarHint => ResourceManager.GetString(nameof(Theme_ColorfulFloatingBarHint), _resourceCulture);
+
         public static string Theme_FloatingBarBorderColor => ResourceManager.GetString(nameof(Theme_FloatingBarBorderColor), _resourceCulture);
 
         public static string Theme_FloatingBarBorderColorHint => ResourceManager.GetString(nameof(Theme_FloatingBarBorderColorHint), _resourceCulture);
@@ -348,6 +352,18 @@ namespace Ink_Canvas.Properties
         public static string Theme_Tips_GlobalSettings => ResourceManager.GetString(nameof(Theme_Tips_GlobalSettings), _resourceCulture);
 
         public static string Theme_Tips_GlobalSettingsHint => ResourceManager.GetString(nameof(Theme_Tips_GlobalSettingsHint), _resourceCulture);
+
+        public static string Theme_Tips_AutoHideInstantRestore => ResourceManager.GetString(nameof(Theme_Tips_AutoHideInstantRestore), _resourceCulture);
+
+        public static string Theme_Tips_AutoHideInstantRestoreHint => ResourceManager.GetString(nameof(Theme_Tips_AutoHideInstantRestoreHint), _resourceCulture);
+
+        public static string Theme_Tips_AutoHideOnInteraction => ResourceManager.GetString(nameof(Theme_Tips_AutoHideOnInteraction), _resourceCulture);
+
+        public static string Theme_Tips_AutoHideOnInteractionHint => ResourceManager.GetString(nameof(Theme_Tips_AutoHideOnInteractionHint), _resourceCulture);
+
+        public static string Theme_Tips_AutoHideRestoreDelay => ResourceManager.GetString(nameof(Theme_Tips_AutoHideRestoreDelay), _resourceCulture);
+
+        public static string Theme_Tips_AutoHideRestoreDelayHint => ResourceManager.GetString(nameof(Theme_Tips_AutoHideRestoreDelayHint), _resourceCulture);
 
         public static string Theme_Tips_AutoRotation => ResourceManager.GetString(nameof(Theme_Tips_AutoRotation), _resourceCulture);
 

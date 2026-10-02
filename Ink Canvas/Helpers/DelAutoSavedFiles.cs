@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace Ink_Canvas.Helpers
@@ -7,7 +7,7 @@ namespace Ink_Canvas.Helpers
     {
         public static void DeleteFilesOlder(string directoryPath, int daysThreshold)
         {
-            string[] extensionsToDel = { ".icstk", ".png" };
+            string[] extensionsToDel = { ".icstk", ".png", ".jpg" };
             if (Directory.Exists(directoryPath))
             {
                 // 获取目录中的所有子目录

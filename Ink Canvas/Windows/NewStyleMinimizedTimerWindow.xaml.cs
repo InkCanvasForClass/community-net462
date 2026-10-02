@@ -1,3 +1,6 @@
+using Ink_Canvas.Helpers;
+using Ink_Canvas.Windows.SettingsViews.Helpers;
+using iNKORE.UI.WPF.Modern;
 using System;
 using System.Timers;
 using System.Windows;
@@ -30,6 +33,10 @@ namespace Ink_Canvas.Windows
             Action stopTimerCallback)
         {
             InitializeComponent();
+            if (!SettingsManager.Settings.Timer.IsOpenTransparency)
+            {
+                MainBorder.Background = (Brush)FindResource("NewTimerWindowBackground");
+            }
             _getRemainingTime = remainingTime;
             _shouldHide = shouldHide;
             _restoreCallback = restoreCallback;
@@ -63,6 +70,7 @@ namespace Ink_Canvas.Windows
                 if (!IsVisible) return;
                 if (_shouldHide != null && _shouldHide())
                 {
+                    _restoreCallback?.Invoke();
                     Close();
                     return;
                 }
@@ -129,8 +137,10 @@ namespace Ink_Canvas.Windows
             {
                 DragMove();
             }
-            catch
+            catch (Exception ex)
             {
+                LogHelper.WriteLogToFile(
+                    $"[Timer] 最小化计时器窗口拖动 DragMove 失败: {ex.Message}", LogHelper.LogType.Info);
             }
         }
 
@@ -150,6 +160,22 @@ namespace Ink_Canvas.Windows
         {
             _stopTimerCallback?.Invoke();
             Close();
+        }
+
+        private void ToggleTransparency_Click(object sender, RoutedEventArgs e)
+        {
+            if(SettingsManager.Settings.Timer.IsOpenTransparency)
+            {
+                MainBorder.Background = (Brush)FindResource("NewTimerWindowBackground");
+                SettingsManager.Settings.Timer.IsOpenTransparency = false;
+                SettingsManager.SaveSettingsToFile();
+            }
+            else
+            {
+                MainBorder.Background = (Brush)FindResource(ThemeKeys.CardBackgroundFillColorDefaultBrushKey);//还原
+                SettingsManager.Settings.Timer.IsOpenTransparency = true;
+                SettingsManager.SaveSettingsToFile();
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Common.IconKeys;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,6 +17,7 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar.Items
         public string IconGeometry => XamlGraphicsIconGeometries.PageInfoIconGeometry;
         public FontIconData? IconKey => null;
         public ButtonPosition DefaultPosition => ButtonPosition.Middle;
+        public Func<FrameworkElement> CustomSettingsPanelFactory => null;
 
         public FrameworkElement BuildView(IBoardToolbarHost host)
         {
@@ -33,6 +35,8 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar.Items
                 FontWeight = FontWeights.Bold,
                 TextAlignment = TextAlignment.Center
             };
+            pageInfoTextBlock.SetResourceReference(TextBlock.ForegroundProperty, "FloatingBarForegroundBrush");
+
             if (areaId != null)
                 host.RegisterView($"board.pageInfo.{areaId}", pageInfoTextBlock);
             else
@@ -41,11 +45,11 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar.Items
             var pageLabel = new TextBlock
             {
                 Text = FloatingBarStrings.Board_Page,
-                Foreground = (Brush)Application.Current.TryFindResource("FloatingBarForegroundBrush"),
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 FontSize = 12
             };
+            pageLabel.SetResourceReference(TextBlock.ForegroundProperty, "FloatingBarForegroundBrush");
 
             var grid = new Grid { Margin = new Thickness(6, 6, 6, 4) };
             grid.Children.Add(pageInfoTextBlock);

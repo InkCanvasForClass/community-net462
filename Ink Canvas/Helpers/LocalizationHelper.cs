@@ -60,7 +60,10 @@ namespace Ink_Canvas.Helpers
                     UpdateAllToggleSwitches(onText, offText);
                 }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 应用 ToggleSwitch 本地化失败: {ex.Message}", LogHelper.LogType.Info);
+            }
         }
 
         /// <summary>
@@ -102,7 +105,10 @@ namespace Ink_Canvas.Helpers
                     _originalModernStringsRM ?? current, toggleKeys);
                 resourceManField.SetValue(null, patched);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 反射替换 iNKORE Strings 的 ResourceManager 失败: {ex.Message}", LogHelper.LogType.Info);
+            }
         }
 
         /// <summary>
@@ -154,7 +160,10 @@ namespace Ink_Canvas.Helpers
                     UpdateToggleSwitchesInLogicalTree(window, onText, offText);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 遍历窗口更新 ToggleSwitch 失败: {ex.Message}", LogHelper.LogType.Info);
+            }
         }
 
         private static void UpdateToggleSwitchesInLogicalTree(DependencyObject parent, string onText, string offText)
@@ -175,7 +184,10 @@ namespace Ink_Canvas.Helpers
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 遍历逻辑树更新 ToggleSwitch 失败 (node={parent?.GetType().Name}): {ex.Message}", LogHelper.LogType.Info);
+            }
         }
 
         private static void UpdateSingleToggleSwitch(ToggleSwitch ts, string onText, string offText)
@@ -198,7 +210,10 @@ namespace Ink_Canvas.Helpers
                     ts.SetCurrentValue(ToggleSwitch.OffContentProperty, offText);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 更新单个 ToggleSwitch 文本失败: {ex.Message}", LogHelper.LogType.Info);
+            }
         }
 
         /// <summary>
@@ -212,7 +227,10 @@ namespace Ink_Canvas.Helpers
                 UpdateToggleSwitchesInLogicalTree(window,
                     CommonStrings.Common_On, CommonStrings.Common_Off);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 为设置窗口绑定 ToggleSwitch 文本失败: {ex.Message}", LogHelper.LogType.Info);
+            }
         }
 
         public static bool TrySetCulture(string cultureName)
@@ -259,7 +277,10 @@ namespace Ink_Canvas.Helpers
             {
                 return new CultureInfo(name);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 按名称创建自定义 Culture 失败 (name={name}): {ex.Message}", LogHelper.LogType.Info);
+            }
 
             try
             {
@@ -279,7 +300,10 @@ namespace Ink_Canvas.Helpers
                 directNameField?.SetValue(clone, name);
                 return clone;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 反射克隆父 Culture 失败，将回退 zh-CN (name={name}): {ex.Message}", LogHelper.LogType.Info);
+            }
 
             return CultureInfo.GetCultureInfo("zh-CN");
         }
@@ -395,7 +419,10 @@ namespace Ink_Canvas.Helpers
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 加载内嵌 .resources 失败 ({resName}): {ex.Message}", LogHelper.LogType.Info);
+            }
 
             if (result.Count > 0)
             {
@@ -412,7 +439,10 @@ namespace Ink_Canvas.Helpers
                     ParseResx(stream, result);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 加载程序集内嵌 .resx 失败 ({resxName}): {ex.Message}", LogHelper.LogType.Info);
+            }
 
             if (result.Count > 0)
             {
@@ -432,7 +462,10 @@ namespace Ink_Canvas.Helpers
                     ParseResx(fs, result);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[I18n] 从程序目录加载 .resx 失败 ({className}.{cultureName}): {ex.Message}", LogHelper.LogType.Info);
+            }
 
             _embeddedCache[cacheKey] = result;
             return result;
