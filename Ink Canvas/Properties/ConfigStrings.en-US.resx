@@ -99,4 +99,8 @@
   <data name="DeletedProfile" xml:space="preserve">
     <value>Deleted profile: {0}</value>
   </data>
+
+  <data name="Config_Unnamed" xml:space="preserve">
+    <value>Untitled</value>
+  </data>
 </root>

@@ -366,4 +366,132 @@
   <data name="Shape_RemoveAsymptote" xml:space="preserve">
     <value>Remove asymptote lines?</value>
   </data>
+
+  <data name="Board_MenuConfigHint" xml:space="preserve">
+    <value>Configure the items and order shown in the board tool menu, 9 max (3x3 layout).</value>
+  </data>
+
+  <data name="Board_AddedMenuItems" xml:space="preserve">
+    <value>Added menu items</value>
+  </data>
+
+  <data name="Board_AvailableMenuItems" xml:space="preserve">
+    <value>Available menu items</value>
+  </data>
+
+  <data name="Board_ResetMenuLayout" xml:space="preserve">
+    <value>Restore default menu layout</value>
+  </data>
+
+  <data name="InkRecog_LineNormalizeThreshold" xml:space="preserve">
+    <value>Line normalization threshold</value>
+  </data>
+
+  <data name="ScreenTouch_NibModeBoundsHeader" xml:space="preserve">
+    <value>Nib mode bounds threshold</value>
+  </data>
+
+  <data name="ScreenTouch_FingerModeBoundsHeader" xml:space="preserve">
+    <value>Finger mode bounds threshold</value>
+  </data>
+
+  <data name="ScreenTouch_NibEraserSizeHeader" xml:space="preserve">
+    <value>Nib mode eraser size</value>
+  </data>
+
+  <data name="ScreenTouch_FingerEraserSizeHeader" xml:space="preserve">
+    <value>Finger mode eraser size</value>
+  </data>
+
+  <data name="ScreenTouch_AutoCalibrateHeader" xml:space="preserve">
+    <value>Auto-calibrate touch parameters</value>
+  </data>
+
+  <data name="ScreenTouch_AutoCalibrateDesc" xml:space="preserve">
+    <value>Compute suitable nib/finger thresholds and touch multiplier from three touches</value>
+  </data>
+
+  <data name="ScreenTouch_CalibrateStepsHeader" xml:space="preserve">
+    <value>Calibration steps</value>
+  </data>
+
+  <data name="ScreenTouch_CalibrateHint" xml:space="preserve">
+    <value>Click "Start calibration", then in the area below use:</value>
+  </data>
+
+  <data name="ScreenTouch_StepNib" xml:space="preserve">
+    <value>1. Nib (stylus)</value>
+  </data>
+
+  <data name="ScreenTouch_StepFinger" xml:space="preserve">
+    <value>2. Finger</value>
+  </data>
+
+  <data name="ScreenTouch_StepPalm" xml:space="preserve">
+    <value>3. Palm (simulated mis-touch)</value>
+  </data>
+
+  <data name="ScreenTouch_StartCalibrate" xml:space="preserve">
+    <value>Start calibration</value>
+  </data>
+
+  <data name="ScreenTouch_ClickButtonToStart" xml:space="preserve">
+    <value>Click the button above to start</value>
+  </data>
+
+  <data name="ScreenTouch_NibNotCalibrated" xml:space="preserve">
+    <value>Nib: not calibrated</value>
+  </data>
+
+  <data name="ScreenTouch_FingerNotCalibrated" xml:space="preserve">
+    <value>Finger: not calibrated</value>
+  </data>
+
+  <data name="ScreenTouch_PalmNotCalibrated" xml:space="preserve">
+    <value>Palm: not calibrated</value>
+  </data>
+
+  <data name="ScreenTouch_Code_UseNibHint" xml:space="preserve">
+    <value>Tap here with the nib</value>
+  </data>
+
+  <data name="ScreenTouch_Code_NibWaiting" xml:space="preserve">
+    <value>Nib: waiting for calibration...</value>
+  </data>
+
+  <data name="ScreenTouch_Code_FingerNotCalibrated" xml:space="preserve">
+    <value>Finger: not calibrated</value>
+  </data>
+
+  <data name="ScreenTouch_Code_PalmNotCalibrated" xml:space="preserve">
+    <value>Palm: not calibrated</value>
+  </data>
+
+  <data name="ScreenTouch_Code_UseFingerHint" xml:space="preserve">
+    <value>Tap here with a finger</value>
+  </data>
+
+  <data name="ScreenTouch_Code_UsePalmHint" xml:space="preserve">
+    <value>Tap here with the palm (simulated mis-touch)</value>
+  </data>
+
+  <data name="ScreenTouch_Code_Done" xml:space="preserve">
+    <value>Calibration complete! Click the button to recalibrate</value>
+  </data>
+
+  <data name="ScreenTouch_Code_NibValue" xml:space="preserve">
+    <value>Nib: {0:F2}</value>
+  </data>
+
+  <data name="ScreenTouch_Code_FingerValue" xml:space="preserve">
+    <value>Finger: {0:F2}</value>
+  </data>
+
+  <data name="ScreenTouch_Code_PalmValue" xml:space="preserve">
+    <value>Palm: {0:F2}</value>
+  </data>
+
+  <data name="ScreenTouch_Code_CalibrateSuccess" xml:space="preserve">
+    <value>Calibration succeeded! Nib threshold={0}, finger threshold={1}, touch multiplier={2:F2}</value>
+  </data>
 </root>

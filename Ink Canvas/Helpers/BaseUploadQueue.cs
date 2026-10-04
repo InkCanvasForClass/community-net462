@@ -457,9 +457,9 @@ namespace Ink_Canvas.Helpers
                     {
                         // 检查是否是可重试的错误（超时、网络错误等）
                         var errorMessage = ex.Message.ToLower();
-                        bool isRetryable = errorMessage.Contains("超时") ||
+                        bool isRetryable = errorMessage.Contains(Properties.CommonStrings.Common_Timeout) ||
                                           errorMessage.Contains("timeout") ||
-                                          errorMessage.Contains("网络错误") ||
+                                          errorMessage.Contains(Properties.UpdateStrings.Status_NetworkError) ||
                                           errorMessage.Contains("network") ||
                                           errorMessage.Contains("408") || // 请求超时
                                           errorMessage.Contains("423") || // 资源锁定

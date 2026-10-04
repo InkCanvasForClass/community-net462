@@ -97,5 +97,9 @@ namespace Ink_Canvas.Properties
         public static string Timer_FullScreen => ResourceManager.GetString(nameof(Timer_FullScreen), _resourceCulture);
 
         public static string Timer_StartPause => ResourceManager.GetString(nameof(Timer_StartPause), _resourceCulture);
+
+        public static string Timer_CountdownWindowTitle => ResourceManager.GetString(nameof(Timer_CountdownWindowTitle), _resourceCulture);
+
+        public static string Timer_ClickToExitFullscreen => ResourceManager.GetString(nameof(Timer_ClickToExitFullscreen), _resourceCulture);
     }
 }

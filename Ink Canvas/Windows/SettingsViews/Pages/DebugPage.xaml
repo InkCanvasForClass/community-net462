@@ -9,7 +9,7 @@
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
 mc:Ignorable="d"
-      Title="调试">
+      Title="{x:Static props:NavStrings.Nav_Debug}">
 
     <ScrollViewer PanningMode="VerticalFirst">
         <Grid Margin="59,0,59,0">
@@ -29,7 +29,7 @@ mc:Ignorable="d"
                 Spacing="{StaticResource SettingsCardSpacing}">
 
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                    Text="调试" />
+                    Text="{x:Static props:NavStrings.Nav_Debug}" />
 
                 <controls:LabeledSettingsCard x:Name="ToggleSwitchDebugConsole"
                     Header="{x:Static props:AdvancedStrings.Debug_ShowConsole_Header}"
@@ -84,7 +84,7 @@ mc:Ignorable="d"
                     d:Visibility="Visible" d:IsExpanded="True">
 
                     <ui:SettingsExpander.HeaderIcon>
-                        <ui:FontIcon Glyph="&#xE91B;" FontSize="20"/>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Settings_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}"/>
                     </ui:SettingsExpander.HeaderIcon>
 
                     <controls:CopyButton Text="You can override the Left indention of a SettingsCard by overriding the SettingsCardLeftIndention"/>

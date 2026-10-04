@@ -209,5 +209,164 @@ namespace Ink_Canvas.Properties
         public static string FileAssoc_SwitchedToBoardMode => ResourceManager.GetString(nameof(FileAssoc_SwitchedToBoardMode), _resourceCulture);
 
         public static string FileAssoc_ExitedFoldMode => ResourceManager.GetString(nameof(FileAssoc_ExitedFoldMode), _resourceCulture);
+
+        public static string AutoWf_StateSatisfied => ResourceManager.GetString(nameof(AutoWf_StateSatisfied), _resourceCulture);
+        public static string AutoWf_StateNotSatisfied => ResourceManager.GetString(nameof(AutoWf_StateNotSatisfied), _resourceCulture);
+        public static string AutoWf_StateUnknown => ResourceManager.GetString(nameof(AutoWf_StateUnknown), _resourceCulture);
+        public static string AutoWf_AddWorkflow => ResourceManager.GetString(nameof(AutoWf_AddWorkflow), _resourceCulture);
+        public static string AutoWf_Copy => ResourceManager.GetString(nameof(AutoWf_Copy), _resourceCulture);
+        public static string AutoWf_Delete => ResourceManager.GetString(nameof(AutoWf_Delete), _resourceCulture);
+        public static string AutoWf_Name => ResourceManager.GetString(nameof(AutoWf_Name), _resourceCulture);
+        public static string AutoWf_EnableRevert => ResourceManager.GetString(nameof(AutoWf_EnableRevert), _resourceCulture);
+        public static string AutoWf_Invoke => ResourceManager.GetString(nameof(AutoWf_Invoke), _resourceCulture);
+        public static string AutoWf_Revert => ResourceManager.GetString(nameof(AutoWf_Revert), _resourceCulture);
+        public static string AutoWf_WhenEvents => ResourceManager.GetString(nameof(AutoWf_WhenEvents), _resourceCulture);
+        public static string AutoWf_AddTrigger => ResourceManager.GetString(nameof(AutoWf_AddTrigger), _resourceCulture);
+        public static string AutoWf_AndConditions => ResourceManager.GetString(nameof(AutoWf_AndConditions), _resourceCulture);
+        public static string AutoWf_ConditionDisabledHint => ResourceManager.GetString(nameof(AutoWf_ConditionDisabledHint), _resourceCulture);
+        public static string AutoWf_AnyGroup => ResourceManager.GetString(nameof(AutoWf_AnyGroup), _resourceCulture);
+        public static string AutoWf_AllGroups => ResourceManager.GetString(nameof(AutoWf_AllGroups), _resourceCulture);
+        public static string AutoWf_Reverse => ResourceManager.GetString(nameof(AutoWf_Reverse), _resourceCulture);
+        public static string AutoWf_AddGroup => ResourceManager.GetString(nameof(AutoWf_AddGroup), _resourceCulture);
+        public static string AutoWf_AnyRule => ResourceManager.GetString(nameof(AutoWf_AnyRule), _resourceCulture);
+        public static string AutoWf_AllRules => ResourceManager.GetString(nameof(AutoWf_AllRules), _resourceCulture);
+        public static string AutoWf_AddRule => ResourceManager.GetString(nameof(AutoWf_AddRule), _resourceCulture);
+        public static string AutoWf_EnableGroup => ResourceManager.GetString(nameof(AutoWf_EnableGroup), _resourceCulture);
+        public static string AutoWf_Actions => ResourceManager.GetString(nameof(AutoWf_Actions), _resourceCulture);
+        public static string AutoWf_AddAction => ResourceManager.GetString(nameof(AutoWf_AddAction), _resourceCulture);
+        public static string AutoWf_AutoRevertHint => ResourceManager.GetString(nameof(AutoWf_AutoRevertHint), _resourceCulture);
+        public static string AutoWf_EmptyState => ResourceManager.GetString(nameof(AutoWf_EmptyState), _resourceCulture);
+
+        public static string Automation_Action_FoldToolbar => ResourceManager.GetString(nameof(Automation_Action_FoldToolbar), _resourceCulture);
+
+        public static string Automation_Action_KillProcess => ResourceManager.GetString(nameof(Automation_Action_KillProcess), _resourceCulture);
+
+        public static string Automation_Action_SaveStrokes => ResourceManager.GetString(nameof(Automation_Action_SaveStrokes), _resourceCulture);
+
+        public static string Automation_Action_ToggleAnnotation => ResourceManager.GetString(nameof(Automation_Action_ToggleAnnotation), _resourceCulture);
+
+        public static string Automation_Action_ClearStrokes => ResourceManager.GetString(nameof(Automation_Action_ClearStrokes), _resourceCulture);
+
+        public static string Automation_Action_ShowNotification => ResourceManager.GetString(nameof(Automation_Action_ShowNotification), _resourceCulture);
+
+        public static string Automation_Action_ToggleTopmost => ResourceManager.GetString(nameof(Automation_Action_ToggleTopmost), _resourceCulture);
+
+        public static string Automation_Action_ResetDesktopPosition => ResourceManager.GetString(nameof(Automation_Action_ResetDesktopPosition), _resourceCulture);
+
+        public static string Automation_Action_ResetPptPosition => ResourceManager.GetString(nameof(Automation_Action_ResetPptPosition), _resourceCulture);
+
+        public static string Automation_Rule_ProcessRunning => ResourceManager.GetString(nameof(Automation_Rule_ProcessRunning), _resourceCulture);
+
+        public static string Automation_Rule_WindowTitleContains => ResourceManager.GetString(nameof(Automation_Rule_WindowTitleContains), _resourceCulture);
+
+        public static string Automation_Rule_IsAnnotationMode => ResourceManager.GetString(nameof(Automation_Rule_IsAnnotationMode), _resourceCulture);
+
+        public static string Automation_Rule_IsPptSlideshow => ResourceManager.GetString(nameof(Automation_Rule_IsPptSlideshow), _resourceCulture);
+
+        public static string Automation_Rule_ForegroundWindowProcess => ResourceManager.GetString(nameof(Automation_Rule_ForegroundWindowProcess), _resourceCulture);
+
+        public static string Automation_Rule_IsFloatingBarFolded => ResourceManager.GetString(nameof(Automation_Rule_IsFloatingBarFolded), _resourceCulture);
+
+        public static string Automation_Rule_IsForegroundWhiteboard => ResourceManager.GetString(nameof(Automation_Rule_IsForegroundWhiteboard), _resourceCulture);
+
+        public static string Automation_SlideShow => ResourceManager.GetString(nameof(Automation_SlideShow), _resourceCulture);
+
+        public static string Automation_Trigger_WhiteboardEnter => ResourceManager.GetString(nameof(Automation_Trigger_WhiteboardEnter), _resourceCulture);
+
+        public static string Automation_Trigger_WhiteboardExit => ResourceManager.GetString(nameof(Automation_Trigger_WhiteboardExit), _resourceCulture);
+
+        public static string Automation_Trigger_AnnotationEnter => ResourceManager.GetString(nameof(Automation_Trigger_AnnotationEnter), _resourceCulture);
+
+        public static string Automation_Trigger_AnnotationExit => ResourceManager.GetString(nameof(Automation_Trigger_AnnotationExit), _resourceCulture);
+
+        public static string Automation_Trigger_PptEnter => ResourceManager.GetString(nameof(Automation_Trigger_PptEnter), _resourceCulture);
+
+        public static string Automation_Trigger_PptExit => ResourceManager.GetString(nameof(Automation_Trigger_PptExit), _resourceCulture);
+
+        public static string Automation_Trigger_PptDetection => ResourceManager.GetString(nameof(Automation_Trigger_PptDetection), _resourceCulture);
+
+        public static string Automation_Trigger_ProcessDetected => ResourceManager.GetString(nameof(Automation_Trigger_ProcessDetected), _resourceCulture);
+
+        public static string Automation_Trigger_RulesetChanged => ResourceManager.GetString(nameof(Automation_Trigger_RulesetChanged), _resourceCulture);
+
+        public static string Automation_Trigger_Timer => ResourceManager.GetString(nameof(Automation_Trigger_Timer), _resourceCulture);
+
+        public static string Automation_Trigger_WindowFocusChanged => ResourceManager.GetString(nameof(Automation_Trigger_WindowFocusChanged), _resourceCulture);
+
+        public static string Automation_DefaultActionName => ResourceManager.GetString(nameof(Automation_DefaultActionName), _resourceCulture);
+
+        public static string Automation_Workflow_CopySuffix => ResourceManager.GetString(nameof(Automation_Workflow_CopySuffix), _resourceCulture);
+
+        public static string Automation_Field_ProcessName => ResourceManager.GetString(nameof(Automation_Field_ProcessName), _resourceCulture);
+
+        public static string Automation_Field_TitleContains => ResourceManager.GetString(nameof(Automation_Field_TitleContains), _resourceCulture);
+
+        public static string Automation_Field_IgnoreCase => ResourceManager.GetString(nameof(Automation_Field_IgnoreCase), _resourceCulture);
+
+        public static string Automation_Field_NotificationType => ResourceManager.GetString(nameof(Automation_Field_NotificationType), _resourceCulture);
+
+        public static string Automation_Field_NotificationContent => ResourceManager.GetString(nameof(Automation_Field_NotificationContent), _resourceCulture);
+
+        public static string Automation_Field_SavePath => ResourceManager.GetString(nameof(Automation_Field_SavePath), _resourceCulture);
+
+        public static string Automation_Field_SaveAsXml => ResourceManager.GetString(nameof(Automation_Field_SaveAsXml), _resourceCulture);
+
+        public static string Automation_Field_Fold => ResourceManager.GetString(nameof(Automation_Field_Fold), _resourceCulture);
+
+        public static string Automation_Field_EnterAnnotation => ResourceManager.GetString(nameof(Automation_Field_EnterAnnotation), _resourceCulture);
+
+        public static string Automation_Field_Topmost => ResourceManager.GetString(nameof(Automation_Field_Topmost), _resourceCulture);
+
+        public static string Automation_Workflow_DefaultNameFormat => ResourceManager.GetString(nameof(Automation_Workflow_DefaultNameFormat), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoBoard3 => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoBoard3), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoBoard5 => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoBoard5), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoBoard5C => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoBoard5C), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoPincoDesktop => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoPincoDesktop), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoPincoPen => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoPincoPen), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoPincoBoard => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoPincoBoard), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoPptTools => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoPptTools), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_AiClass => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_AiClass), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanMain => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanMain), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanPenSettings => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanPenSettings), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanSwipeClear => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanSwipeClear), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanInteraction => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanInteraction), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanSubject => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanSubject), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanControl => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanControl), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanTools => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanTools), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanSceneBar => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanSceneBar), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanDrawWindow => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanDrawWindow), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanPptFloat => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanPptFloat), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanPptPage => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanPptPage), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanPptBack => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanPptBack), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_ChangYanPptPreview => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_ChangYanPptPreview), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_IntelligentClassDesktop => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_IntelligentClassDesktop), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_IntelligentClassPptFloat => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_IntelligentClassPptFloat), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoDesktopPen => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoDesktopPen), _resourceCulture);
+
+        public static string FloatingInterceptor_Rule_SeewoDesktopSideBar => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoDesktopSideBar), _resourceCulture);
     }
 }

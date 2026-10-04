@@ -426,7 +426,7 @@ namespace Ink_Canvas
             {
                 Ink_Canvas.MainWindow.MoveWindow(new WindowInteropHelper(mainWin).Handle, 0, 0,
                     Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height, true);
-                Ink_Canvas.MainWindow.ShowNewMessage($"已强制全屏化：{Screen.PrimaryScreen.Bounds.Width}x{Screen.PrimaryScreen.Bounds.Height}（缩放比例为{Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth}x{Screen.PrimaryScreen.Bounds.Height / SystemParameters.PrimaryScreenHeight}）");
+                Ink_Canvas.MainWindow.ShowNewMessage(string.Format(Ink_Canvas.Properties.MainWindowStrings.Main_ForceFullscreen, Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height, Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth, Screen.PrimaryScreen.Bounds.Height / SystemParameters.PrimaryScreenHeight));
             }
         }
 

@@ -191,4 +191,8 @@
     <value>
 (已启用U盘安全验证，可直接插入已授权的维护U盘)</value>
   </data>
+
+  <data name="Security_UsbDrive" xml:space="preserve">
+    <value>U盘</value>
+  </data>
 </root>

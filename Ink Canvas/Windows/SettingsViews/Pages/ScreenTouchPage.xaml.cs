@@ -283,10 +283,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
             BtnStartCalibrate.IsEnabled = false;
             BorderCalibrate.IsEnabled = true;
-            TextCalibrateHint.Text = "请用 笔尖 点击此处";
-            TextNibCalibrated.Text = "笔尖值: 等待校准...";
-            TextFingerCalibrated.Text = "手指值: 未校准";
-            TextPalmCalibrated.Text = "手掌值: 未校准";
+            TextCalibrateHint.Text = Properties.CanvasStrings.ScreenTouch_Code_UseNibHint;
+            TextNibCalibrated.Text = Properties.CanvasStrings.ScreenTouch_Code_NibWaiting;
+            TextFingerCalibrated.Text = Properties.CanvasStrings.ScreenTouch_Code_FingerNotCalibrated;
+            TextPalmCalibrated.Text = Properties.CanvasStrings.ScreenTouch_Code_PalmNotCalibrated;
             TextCalibrateResult.Text = "";
         }
 
@@ -303,26 +303,26 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             {
                 case 1:
                     _nibTouchWidth = touchWidth;
-                    TextNibCalibrated.Text = $"笔尖值: {touchWidth:F2}";
-                    TextCalibrateHint.Text = "请用 手指 点击此处";
+                    TextNibCalibrated.Text = string.Format(Properties.CanvasStrings.ScreenTouch_Code_NibValue, touchWidth);
+                    TextCalibrateHint.Text = Properties.CanvasStrings.ScreenTouch_Code_UseFingerHint;
                     _calibrateStep = 2;
                     break;
 
                 case 2:
                     _fingerTouchWidth = touchWidth;
-                    TextFingerCalibrated.Text = $"手指值: {touchWidth:F2}";
-                    TextCalibrateHint.Text = "请用 手掌 点击此处（模拟误触）";
+                    TextFingerCalibrated.Text = string.Format(Properties.CanvasStrings.ScreenTouch_Code_FingerValue, touchWidth);
+                    TextCalibrateHint.Text = Properties.CanvasStrings.ScreenTouch_Code_UsePalmHint;
                     _calibrateStep = 3;
                     break;
 
                 case 3:
                     _palmTouchWidth = touchWidth;
-                    TextPalmCalibrated.Text = $"手掌值: {touchWidth:F2}";
+                    TextPalmCalibrated.Text = string.Format(Properties.CanvasStrings.ScreenTouch_Code_PalmValue, touchWidth);
                     ApplyCalibratedSettings();
                     _calibrateStep = 0;
                     BtnStartCalibrate.IsEnabled = true;
                     BorderCalibrate.IsEnabled = false;
-                    TextCalibrateHint.Text = "校准完成！点击按钮重新校准";
+                    TextCalibrateHint.Text = Properties.CanvasStrings.ScreenTouch_Code_Done;
                     break;
             }
 
@@ -353,7 +353,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsActionHub.OnFingerModeBoundsWidthChanged();
             SettingsManager.SaveSettingsToFile();
 
-            TextCalibrateResult.Text = $"校准成功！笔尖阈值={(int)nibThreshold}，手指阈值={(int)fingerThreshold}，触摸倍率={touchMultiplier:F2}";
+            TextCalibrateResult.Text = string.Format(Properties.CanvasStrings.ScreenTouch_Code_CalibrateSuccess, (int)nibThreshold, (int)fingerThreshold, touchMultiplier);
         }
 
         #endregion

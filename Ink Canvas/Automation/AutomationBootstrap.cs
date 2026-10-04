@@ -85,24 +85,24 @@ namespace Ink_Canvas.WorkflowAutomation
             services.AddTrigger<RulesetChangedTrigger>();
 
             // 4. 注册行动（对齐 ClassIsland 的 AddAction<TSettings>()）
-            services.AddAction<FoldActionSettings>("inkcanvas.fold", "折叠/展开工具栏", "DockBottom");
-            services.AddAction<KillProcessActionSettings>("inkcanvas.killprocess", "结束进程", "CloseOutline");
-            services.AddAction<SaveStrokesActionSettings>("inkcanvas.savestrokes", "保存笔画", "ContentSaveOutline");
-            services.AddAction<ToggleAnnotationModeActionSettings>("inkcanvas.toggleannotationmode", "切换批注模式", "PenTool");
-            services.AddAction<ClearStrokesActionSettings>("inkcanvas.clearstrokes", "清空笔画", "Eraser");
-            services.AddAction<ShowNotificationActionSettings>("inkcanvas.shownotification", "显示通知", "BellOutline");
-            services.AddAction<ToggleTopmostActionSettings>("inkcanvas.toggletopmost", "切换窗口置顶", "PinOutline");
-            services.AddAction<ResetDesktopPositionActionSettings>("inkcanvas.resetdesktopposition", "重置桌面模式位置", "DockBottom");
-            services.AddAction<ResetPPTPositionActionSettings>("inkcanvas.resetpptposition", "重置PPT模式位置", "Presentation");
+            services.AddAction<FoldActionSettings>("inkcanvas.fold", Properties.AutomationStrings.Automation_Action_FoldToolbar, "DockBottom");
+            services.AddAction<KillProcessActionSettings>("inkcanvas.killprocess", Properties.AutomationStrings.Automation_Action_KillProcess, "CloseOutline");
+            services.AddAction<SaveStrokesActionSettings>("inkcanvas.savestrokes", Properties.AutomationStrings.Automation_Action_SaveStrokes, "ContentSaveOutline");
+            services.AddAction<ToggleAnnotationModeActionSettings>("inkcanvas.toggleannotationmode", Properties.AutomationStrings.Automation_Action_ToggleAnnotation, "PenTool");
+            services.AddAction<ClearStrokesActionSettings>("inkcanvas.clearstrokes", Properties.AutomationStrings.Automation_Action_ClearStrokes, "Eraser");
+            services.AddAction<ShowNotificationActionSettings>("inkcanvas.shownotification", Properties.AutomationStrings.Automation_Action_ShowNotification, "BellOutline");
+            services.AddAction<ToggleTopmostActionSettings>("inkcanvas.toggletopmost", Properties.AutomationStrings.Automation_Action_ToggleTopmost, "PinOutline");
+            services.AddAction<ResetDesktopPositionActionSettings>("inkcanvas.resetdesktopposition", Properties.AutomationStrings.Automation_Action_ResetDesktopPosition, "DockBottom");
+            services.AddAction<ResetPPTPositionActionSettings>("inkcanvas.resetpptposition", Properties.AutomationStrings.Automation_Action_ResetPptPosition, "Presentation");
 
             // 5. 注册规则（对齐 ClassIsland 的 AddRule<TSettings>()）
-            services.AddRule<ProcessRunningRuleSettings>("inkcanvas.processrunning", "进程正在运行", "ApplicationCogOutline");
-            services.AddRule<WindowTitleContainsRuleSettings>("inkcanvas.windowtitlecontains", "窗口标题包含", "FormatTitle");
-            services.AddRule<IsAnnotationModeRuleSettings>("inkcanvas.isannotationmode", "批注模式", "PenTool");
-            services.AddRule<IsPPTSlideshowRuleSettings>("inkcanvas.ispptslideshow", "PPT放映中", "Presentation");
-            services.AddRule<ForegroundWindowProcessRuleSettings>("inkcanvas.foregroundwindowprocess", "前台窗口进程名", "Window");
-            services.AddRule<IsFloatingBarFoldedRuleSettings>("inkcanvas.isfloatingbarfolded", "工具栏已折叠", "DockBottom");
-            services.AddRule<IsForegroundWhiteboardRuleSettings>("inkcanvas.isforegroundwhiteboard", "前台窗口是 ICC-CE 白板", "Whiteboard");
+            services.AddRule<ProcessRunningRuleSettings>("inkcanvas.processrunning", Properties.AutomationStrings.Automation_Rule_ProcessRunning, "ApplicationCogOutline");
+            services.AddRule<WindowTitleContainsRuleSettings>("inkcanvas.windowtitlecontains", Properties.AutomationStrings.Automation_Rule_WindowTitleContains, "FormatTitle");
+            services.AddRule<IsAnnotationModeRuleSettings>("inkcanvas.isannotationmode", Properties.AutomationStrings.Automation_Rule_IsAnnotationMode, "PenTool");
+            services.AddRule<IsPPTSlideshowRuleSettings>("inkcanvas.ispptslideshow", Properties.AutomationStrings.Automation_Rule_IsPptSlideshow, "Presentation");
+            services.AddRule<ForegroundWindowProcessRuleSettings>("inkcanvas.foregroundwindowprocess", Properties.AutomationStrings.Automation_Rule_ForegroundWindowProcess, "Window");
+            services.AddRule<IsFloatingBarFoldedRuleSettings>("inkcanvas.isfloatingbarfolded", Properties.AutomationStrings.Automation_Rule_IsFloatingBarFolded, "DockBottom");
+            services.AddRule<IsForegroundWhiteboardRuleSettings>("inkcanvas.isforegroundwhiteboard", Properties.AutomationStrings.Automation_Rule_IsForegroundWhiteboard, "Whiteboard");
 
             // 6. 注册行动处理器（对齐 ClassIsland 的 IHostedService 模式）
             services.AddTransient<FoldActionHandler>();

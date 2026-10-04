@@ -103,12 +103,13 @@
                             <TextBlock Text="{Binding Description}" Opacity="0.65" FontSize="12"
                                        TextWrapping="Wrap" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <Button Grid.Column="3" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
-                                Click="AddToolbarLibraryItem_Click" x:Name="BtnAddItem"
+                        <Button Grid.Column="3" Click="AddToolbarLibraryItem_Click" x:Name="BtnAddItem"
                                 Background="Transparent" BorderThickness="0"
                                 Padding="6,4" VerticalAlignment="Center"
                                 ToolTip="{x:Static props:FloatingBarStrings.ToolbarPage_AddToAdded}"
-                                Cursor="Hand" Visibility="Collapsed"/>
+                                Cursor="Hand" Visibility="Collapsed">
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12"/>
+                        </Button>
                     </Grid>
                 </Border>
             </DataTemplate>
@@ -222,10 +223,12 @@
                             <TextBlock Text="{Binding Description}" Opacity="0.65" FontSize="12"
                                        TextWrapping="Wrap" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <Button Grid.Column="3" Click="AddMenuLibraryItem_Click" x:Name="BtnAddMenuItem" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                        <Button Grid.Column="3" Click="AddMenuLibraryItem_Click" x:Name="BtnAddMenuItem"
                                 Background="Transparent" BorderThickness="0"
                                 Padding="6,4" VerticalAlignment="Center"
-                                Cursor="Hand" Visibility="Collapsed"/>
+                                Cursor="Hand" Visibility="Collapsed">
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12"/>
+                        </Button>
                     </Grid>
                 </Border>
             </DataTemplate>
@@ -441,7 +444,7 @@
 
                 <ui:SettingsCard Header="{x:Static props:ThemeStrings.AppearancePanel_24HourTimeFormat}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Glyph="&#xE917;" FontSize="20" />
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Clock_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                     </ui:SettingsCard.HeaderIcon>
                     <ComboBox x:Name="ComboBoxTimeFormat"
                               SelectedIndex="0"
@@ -613,10 +616,10 @@
 
                 <!-- ========== SECTION 8: Board Menu Items ========== -->
                 <TextBlock Text="{x:Static props:NavStrings.Nav_BoardMenu}" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,6"/>
-                <TextBlock Text="配置白板工具菜单中显示的项目和顺序，最多 9 个（3×3 布局）。"
+                <TextBlock Text="{x:Static props:CanvasStrings.Board_MenuConfigHint}"
                            Opacity="0.65" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,6"/>
 
-                <TextBlock Text="已添加的菜单项" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <TextBlock Text="{x:Static props:CanvasStrings.Board_AddedMenuItems}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
                 <Border CornerRadius="8" Padding="6" MinHeight="58">
                     <ListView x:Name="MenuAddedList"
                               ItemTemplate="{StaticResource MenuItemTemplate}"
@@ -640,7 +643,7 @@
                               ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
                               Cursor="SizeNS" Margin="0,4,0,4"/>
 
-                <TextBlock Text="可添加的菜单项" FontSize="14" FontWeight="SemiBold" Margin="0,4,0,6"/>
+                <TextBlock Text="{x:Static props:CanvasStrings.Board_AvailableMenuItems}" FontSize="14" FontWeight="SemiBold" Margin="0,4,0,6"/>
                 <ui:ListView x:Name="MenuLibraryList"
                              ItemTemplate="{StaticResource MenuLibraryItemTemplate}"
                              dd:DragDrop.IsDragSource="True"
@@ -672,7 +675,7 @@
                 <!-- ========== SECTION 9: Reset Buttons ========== -->
                 <Button Content="{x:Static props:FloatingBarStrings.BoardToolbarPage_ResetDefault}" Click="ButtonResetToolbar_Click"
                         Padding="20,10" HorizontalAlignment="Left" Margin="0,4,0,8"/>
-                <Button Content="恢复菜单默认布局" Click="ButtonResetMenu_Click"
+                <Button Content="{x:Static props:CanvasStrings.Board_ResetMenuLayout}" Click="ButtonResetMenu_Click"
                         Padding="20,10" HorizontalAlignment="Left" Margin="0,0,0,16"/>
 
             </ikw:SimpleStackPanel>

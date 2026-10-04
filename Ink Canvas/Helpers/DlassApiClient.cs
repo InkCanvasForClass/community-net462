@@ -94,7 +94,7 @@ namespace Ink_Canvas.Helpers
                 }
                 else
                 {
-                    throw new Exception($"获取Access Token失败: {response.StatusCode}");
+                    throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_TokenFailed, response.StatusCode));
                 }
             }
             catch (OperationCanceledException)
@@ -103,11 +103,11 @@ namespace Ink_Canvas.Helpers
             }
             catch (HttpRequestException httpEx)
             {
-                throw new Exception($"获取Access Token时网络错误: {httpEx.Message}", httpEx);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_TokenNetworkError, httpEx.Message), httpEx);
             }
             catch (Exception ex)
             {
-                throw new Exception($"获取Access Token时出错: {ex.Message}", ex);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_TokenError, ex.Message), ex);
             }
         }
 
@@ -156,7 +156,7 @@ namespace Ink_Canvas.Helpers
                 }
                 else
                 {
-                    throw new Exception($"API请求失败: {response.StatusCode} - {content}");
+                    throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_ApiRequestFailed, response.StatusCode, content));
                 }
             }
             catch (OperationCanceledException)
@@ -165,11 +165,11 @@ namespace Ink_Canvas.Helpers
             }
             catch (HttpRequestException httpEx)
             {
-                throw new Exception($"发送请求时出错: {httpEx.Message}", httpEx);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_RequestError, httpEx.Message), httpEx);
             }
             catch (Exception ex)
             {
-                throw new Exception($"发送请求时出错: {ex.Message}", ex);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_RequestError, ex.Message), ex);
             }
         }
 
@@ -225,7 +225,7 @@ namespace Ink_Canvas.Helpers
                 }
                 else
                 {
-                    throw new Exception($"API请求失败: {response.StatusCode} - {content}");
+                    throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_ApiRequestFailed, response.StatusCode, content));
                 }
             }
             catch (OperationCanceledException)
@@ -234,11 +234,11 @@ namespace Ink_Canvas.Helpers
             }
             catch (HttpRequestException httpEx)
             {
-                throw new Exception($"发送请求时出错: {httpEx.Message}", httpEx);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_RequestError, httpEx.Message), httpEx);
             }
             catch (Exception ex)
             {
-                throw new Exception($"发送请求时出错: {ex.Message}", ex);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_RequestError, ex.Message), ex);
             }
         }
 
@@ -295,7 +295,7 @@ namespace Ink_Canvas.Helpers
                 }
                 else
                 {
-                    throw new Exception($"API请求失败: {response.StatusCode} - {content}");
+                    throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_ApiRequestFailed, response.StatusCode, content));
                 }
             }
             catch (OperationCanceledException)
@@ -304,11 +304,11 @@ namespace Ink_Canvas.Helpers
             }
             catch (HttpRequestException httpEx)
             {
-                throw new Exception($"发送请求时出错: {httpEx.Message}", httpEx);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_RequestError, httpEx.Message), httpEx);
             }
             catch (Exception ex)
             {
-                throw new Exception($"发送请求时出错: {ex.Message}", ex);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_RequestError, ex.Message), ex);
             }
         }
 
@@ -389,7 +389,7 @@ namespace Ink_Canvas.Helpers
 
                 if (!File.Exists(filePath))
                 {
-                    throw new FileNotFoundException($"文件不存在: {filePath}");
+                    throw new FileNotFoundException(string.Format(Properties.CloudStorageStrings.CloudStorage_FileNotFound, filePath));
                 }
 
                 var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
@@ -436,7 +436,7 @@ namespace Ink_Canvas.Helpers
                 }
                 else
                 {
-                    throw new Exception($"上传文件失败: {response.StatusCode} - {responseContent}");
+                    throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_UploadFailed, response.StatusCode, responseContent));
                 }
             }
             catch (OperationCanceledException)
@@ -445,11 +445,11 @@ namespace Ink_Canvas.Helpers
             }
             catch (HttpRequestException httpEx)
             {
-                throw new Exception($"上传文件时网络错误: {httpEx.Message}", httpEx);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_UploadNetworkError, httpEx.Message), httpEx);
             }
             catch (Exception ex)
             {
-                throw new Exception($"上传文件时出错: {ex.Message}", ex);
+                throw new Exception(string.Format(Properties.CloudStorageStrings.CloudStorage_UploadError, ex.Message), ex);
             }
         }
 

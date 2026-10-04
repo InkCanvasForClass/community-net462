@@ -20,7 +20,7 @@ namespace Ink_Canvas.WorkflowAutomation.ActionHandlers
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "重置PPT模式位置", "Presentation")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_ResetPptPosition, "Presentation")
             {
                 SettingsType = typeof(ResetPPTPositionActionSettings)
             };

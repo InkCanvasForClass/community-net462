@@ -18,7 +18,7 @@ namespace Ink_Canvas.WorkflowAutomation.Rules
 
         public static RuleRegistryInfo Register()
         {
-            var info = new RuleRegistryInfo(RuleId, "PPT放映中", "Presentation")
+            var info = new RuleRegistryInfo(RuleId, Properties.AutomationStrings.Automation_Rule_IsPptSlideshow, "Presentation")
             {
                 SettingsType = typeof(IsPPTSlideshowRuleSettings)
             };

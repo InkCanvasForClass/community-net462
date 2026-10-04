@@ -207,4 +207,8 @@
   <data name="Hotkey_SaveErrorMessage" xml:space="preserve">
     <value>保存快捷键设置时翻车了: {0}</value>
   </data>
+
+  <data name="Hotkey_PressKey" xml:space="preserve">
+    <value>請按鍵...</value>
+  </data>
 </root>

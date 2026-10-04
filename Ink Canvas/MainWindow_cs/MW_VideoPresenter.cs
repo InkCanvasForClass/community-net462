@@ -412,7 +412,7 @@ namespace Ink_Canvas
             {
                 var tb = new TextBlock
                 {
-                    Text = "未检测到摄像头设备",
+                    Text = Properties.MainWindowStrings.Main_Camera_NoDevice,
                     FontSize = 12,
                     Margin = new Thickness(5),
                     HorizontalAlignment = HorizontalAlignment.Center

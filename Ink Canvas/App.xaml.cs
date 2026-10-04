@@ -945,7 +945,7 @@ namespace Ink_Canvas
             if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
             {
                 ShowSplashScreen();
-                SetSplashMessage("正在启动 Ink Canvas...");
+                SetSplashMessage(HomeStrings.Splash_Starting);
                 SetSplashProgress(25);
 
                 // 强制刷新UI，确保启动画面显示
@@ -998,7 +998,7 @@ namespace Ink_Canvas
 
             if (_isSplashScreenShown)
             {
-                SetSplashMessage("正在加载配置...");
+                SetSplashMessage(HomeStrings.Splash_LoadingConfig);
                 SetSplashProgress(50);
                 await Task.Delay(100);
             }
@@ -1272,7 +1272,7 @@ namespace Ink_Canvas
             // 在非更新模式下创建主窗口
             if (_isSplashScreenShown)
             {
-                SetSplashMessage("正在初始化主界面...");
+                SetSplashMessage(HomeStrings.Splash_InitializingMain);
                 SetSplashProgress(75);
             }
             var mainWindow = new MainWindow();
@@ -1320,7 +1320,7 @@ namespace Ink_Canvas
 
                 if (_isSplashScreenShown)
                 {
-                    SetSplashMessage("启动完成！");
+                    SetSplashMessage(HomeStrings.Splash_Complete);
                     SetSplashProgress(100);
                     Task.Delay(100).ContinueWith(_ =>
                     {

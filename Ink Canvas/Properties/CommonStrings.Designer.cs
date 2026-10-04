@@ -85,5 +85,15 @@ namespace Ink_Canvas.Properties
         public static string SettingsItemAddFavourite => ResourceManager.GetString(nameof(SettingsItemAddFavourite), _resourceCulture);
 
         public static string SettingsItemRemoveFavourite => ResourceManager.GetString(nameof(SettingsItemRemoveFavourite), _resourceCulture);
+
+        public static string Common_Unlimited => ResourceManager.GetString(nameof(Common_Unlimited), _resourceCulture);
+
+        public static string Common_Unit_People => ResourceManager.GetString(nameof(Common_Unit_People), _resourceCulture);
+
+        public static string Common_AutoScreenshot => ResourceManager.GetString(nameof(Common_AutoScreenshot), _resourceCulture);
+
+        public static string Common_Unit_Items => ResourceManager.GetString(nameof(Common_Unit_Items), _resourceCulture);
+
+        public static string Common_Timeout => ResourceManager.GetString(nameof(Common_Timeout), _resourceCulture);
     }
 }

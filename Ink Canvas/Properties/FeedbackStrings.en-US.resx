@@ -204,4 +204,133 @@
   <data name="Page3_PastebinNotConfigured" xml:space="preserve">
     <value>Pastebin server not configured</value>
   </data>
+
+  <data name="Feedback_MicroBin_ServerUrlEmpty" xml:space="preserve">
+    <value>Server address is empty</value>
+  </data>
+
+  <data name="Feedback_MicroBin_ContentEmpty" xml:space="preserve">
+    <value>Content is empty</value>
+  </data>
+
+  <data name="Feedback_FetchFailed" xml:space="preserve">
+    <value>Failed to retrieve</value>
+  </data>
+
+  <data name="Feedback_NoPptLinkage" xml:space="preserve">
+    <value>PPT linkage is not configured</value>
+  </data>
+
+  <data name="Feedback_PptLinkageFailed" xml:space="preserve">
+    <value>Failed to retrieve PPT linkage settings</value>
+  </data>
+
+  <data name="Feedback_NoInkRecognition" xml:space="preserve">
+    <value>Ink recognition is not configured</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionFailed" xml:space="preserve">
+    <value>Failed to retrieve ink recognition settings</value>
+  </data>
+
+  <data name="Feedback_SectionEnvironment" xml:space="preserve">
+    <value>## Environment\n</value>
+  </data>
+
+  <data name="Feedback_SectionDeviceInfo" xml:space="preserve">
+    <value>\n## Device information\n</value>
+  </data>
+
+  <data name="Feedback_SectionSoftwareConfig" xml:space="preserve">
+    <value>\n## Software configuration\n</value>
+  </data>
+
+  <data name="Feedback_SectionPptLinkage" xml:space="preserve">
+    <value>### PPT linkage settings\n</value>
+  </data>
+
+  <data name="Feedback_SectionInkRecognition" xml:space="preserve">
+    <value>### Ink recognition settings\n</value>
+  </data>
+
+  <data name="Feedback_PptLinkageHeader" xml:space="preserve">
+    <value>\nPPT linkage settings:\n</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionHeader" xml:space="preserve">
+    <value>\nInk recognition settings:\n</value>
+  </data>
+
+  <data name="Feedback_MicroBin_UploadFailed" xml:space="preserve">
+    <value>Form upload: {0}; raw upload: {1}</value>
+  </data>
+
+  <data name="Feedback_PptLinkageLineFormat" xml:space="preserve">
+    <value>PPT linkage enabled: {0}
+</value>
+  </data>
+
+  <data name="Feedback_WpsSupportLineFormat" xml:space="preserve">
+    <value>WPS support: {0}
+</value>
+  </data>
+
+  <data name="Feedback_MsoSupportLineFormat" xml:space="preserve">
+    <value>MSO support: {0}
+</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionLineFormat" xml:space="preserve">
+    <value>Ink recognition enabled: {0}
+</value>
+  </data>
+
+  <data name="Feedback_EngineLineFormat" xml:space="preserve">
+    <value>Recognition engine: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdFormat" xml:space="preserve">
+    <value>Device ID: {0}</value>
+  </data>
+
+  <data name="Feedback_PptLinkageBlockFormat" xml:space="preserve">
+    <value>PPT linkage settings:
+{0}</value>
+  </data>
+
+  <data name="Feedback_InkRecognitionBlockFormat" xml:space="preserve">
+    <value>Ink recognition settings:
+{0}</value>
+  </data>
+
+  <data name="Feedback_SoftwareVersionFormat" xml:space="preserve">
+    <value>- Software version: {0}
+</value>
+  </data>
+
+  <data name="Feedback_UpdateChannelFormat" xml:space="preserve">
+    <value>- Update channel: {0}
+</value>
+  </data>
+
+  <data name="Feedback_OsVersionFormat" xml:space="preserve">
+    <value>- Operating system: {0}
+</value>
+  </data>
+
+  <data name="Feedback_NetVersionFormat" xml:space="preserve">
+    <value>- .NET version: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdLineFormat" xml:space="preserve">
+    <value>- Device ID: {0}
+</value>
+  </data>
+
+  <data name="Feedback_DeviceIdLineFormat2" xml:space="preserve">
+    <value>Device ID: {0}
+</value>
+  </data>
 </root>

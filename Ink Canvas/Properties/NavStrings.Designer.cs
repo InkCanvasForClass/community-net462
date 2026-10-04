@@ -265,5 +265,9 @@ namespace Ink_Canvas.Properties
         public static string Nav_Favourites_Empty => ResourceManager.GetString(nameof(Nav_Favourites_Empty), _resourceCulture);
 
         public static string Nav_Favourites_LocatedIn => ResourceManager.GetString(nameof(Nav_Favourites_LocatedIn), _resourceCulture);
+
+        public static string Nav_SmallTools => ResourceManager.GetString(nameof(Nav_SmallTools), _resourceCulture);
+
+        public static string Nav_Debug => ResourceManager.GetString(nameof(Nav_Debug), _resourceCulture);
     }
 }

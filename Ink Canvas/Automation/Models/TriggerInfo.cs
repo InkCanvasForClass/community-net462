@@ -13,9 +13,14 @@ namespace Ink_Canvas.WorkflowAutomation.Models
         public string Id { get; }
 
         /// <summary>
-        /// 触发器名称
+        /// 触发器名称（资源键或字面量）。
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// 本地化后的显示名称。
+        /// </summary>
+        public string DisplayName => Ink_Canvas.Properties.AutomationStrings.GetString(Name) ?? Name;
 
         /// <summary>
         /// 触发器图标（字符串标识，如 Unicode 或图标名）

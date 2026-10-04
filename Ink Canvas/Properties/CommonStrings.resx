@@ -111,4 +111,24 @@
   <data name="SettingsItemRemoveFavourite" xml:space="preserve">
     <value>取消收藏</value>
   </data>
+
+  <data name="Common_Unlimited" xml:space="preserve">
+    <value>无限制</value>
+  </data>
+
+  <data name="Common_Unit_People" xml:space="preserve">
+    <value>人</value>
+  </data>
+
+  <data name="Common_AutoScreenshot" xml:space="preserve">
+    <value>自动截图</value>
+  </data>
+
+  <data name="Common_Unit_Items" xml:space="preserve">
+    <value>条</value>
+  </data>
+
+  <data name="Common_Timeout" xml:space="preserve">
+    <value>超时</value>
+  </data>
 </root>

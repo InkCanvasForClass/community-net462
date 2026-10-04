@@ -13,7 +13,7 @@ namespace Ink_Canvas.WorkflowAutomation.Triggers
     /// 退出白板/黑板模式时触发的触发器。
     /// 通过订阅 SystemEventMonitor.InternalStateChanged 事件驱动，检测 currentMode 从 1 变为 0。
     /// </summary>
-    [TriggerInfo("inkcanvas.whiteboardexit", "退出白板模式", "Drawing")]
+    [TriggerInfo("inkcanvas.whiteboardexit", "Automation_Trigger_WhiteboardExit", "Drawing")]
     public class WhiteboardExitTrigger : TriggerBase<WhiteboardExitSettings>
     {
         private bool _wasInWhiteboardMode = false;

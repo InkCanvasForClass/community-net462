@@ -408,4 +408,36 @@
   <data name="Random_RollCall_NameListClearVerifyMessage" xml:space="preserve">
     <value>请输入安全密码或 TOTP 验证码来清空名单，别想偷偷清~</value>
   </data>
+
+  <data name="Random_RandWindowTitle" xml:space="preserve">
+    <value>Ink Canvas 抽獎</value>
+  </data>
+
+  <data name="Random_Rand_AvoidPopular" xml:space="preserve">
+    <value>不抽熱門人物</value>
+  </data>
+
+  <data name="Random_Rand_AvoidRare" xml:space="preserve">
+    <value>避開生僻字</value>
+  </data>
+
+  <data name="Random_Rand_Start" xml:space="preserve">
+    <value>開抽</value>
+  </data>
+
+  <data name="Random_Rand_DrawAll" xml:space="preserve">
+    <value>全都抽</value>
+  </data>
+
+  <data name="Random_Rand_BoysOnly" xml:space="preserve">
+    <value>只抽男</value>
+  </data>
+
+  <data name="Random_Rand_GirlsOnly" xml:space="preserve">
+    <value>只抽女</value>
+  </data>
+
+  <data name="Random_History_ItemFormat" xml:space="preserve">
+    <value>{0} (最近累計{1}次)</value>
+  </data>
 </root>

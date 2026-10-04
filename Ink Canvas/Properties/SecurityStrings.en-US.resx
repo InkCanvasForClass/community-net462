@@ -191,4 +191,8 @@
     <value>
 (USB verification enabled. Direct insert authorized USB.)</value>
   </data>
+
+  <data name="Security_UsbDrive" xml:space="preserve">
+    <value>USB drive</value>
+  </data>
 </root>

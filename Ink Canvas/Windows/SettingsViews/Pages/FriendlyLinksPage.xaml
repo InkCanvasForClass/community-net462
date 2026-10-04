@@ -59,7 +59,7 @@
                         NavigateUri="https://github.com/Alan-CRL/Inkeys/" />
                 </ui:SettingsCard>
 
-                <ui:SettingsCard Header="开发者云平台"
+                <ui:SettingsCard Header="{x:Static props:FriendlyLinksStrings.FriendlyLinks_DeveloperCloudDescription}"
                     Description="{x:Static props:FriendlyLinksStrings.FriendlyLinks_DeveloperCloudDescription}">
                     <ui:SettingsCard.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Link_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />

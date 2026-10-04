@@ -32,7 +32,7 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "显示通知", "Message")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_ShowNotification, "Message")
             {
                 SettingsType = typeof(ShowNotificationActionSettings)
             };

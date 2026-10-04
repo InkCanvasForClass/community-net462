@@ -64,7 +64,7 @@ namespace Ink_Canvas.Windows.FeedbackPages
             }
             catch (Exception ex)
             {
-                _appVersion = "未知";
+                _appVersion = Properties.AboutStrings.Unknown;
                 Debug.WriteLine($"获取软件版本失败: {ex.Message}");
             }
 
@@ -78,7 +78,7 @@ namespace Ink_Canvas.Windows.FeedbackPages
             }
             catch (Exception ex)
             {
-                _updateChannel = "未知";
+                _updateChannel = Properties.AboutStrings.Unknown;
                 Debug.WriteLine($"获取更新通道失败: {ex.Message}");
             }
 
@@ -88,7 +88,7 @@ namespace Ink_Canvas.Windows.FeedbackPages
             }
             catch (Exception ex)
             {
-                _osVersion = "未知";
+                _osVersion = Properties.AboutStrings.Unknown;
                 Debug.WriteLine($"获取系统版本失败: {ex.Message}");
             }
 
@@ -98,7 +98,7 @@ namespace Ink_Canvas.Windows.FeedbackPages
             }
             catch (Exception ex)
             {
-                _netVersion = "未知";
+                _netVersion = Properties.AboutStrings.Unknown;
                 Debug.WriteLine($"获取.NET版本失败: {ex.Message}");
             }
 
@@ -108,7 +108,7 @@ namespace Ink_Canvas.Windows.FeedbackPages
             }
             catch (Exception ex)
             {
-                _deviceId = "获取失败";
+                _deviceId = Properties.FeedbackStrings.Feedback_FetchFailed;
                 Debug.WriteLine($"获取设备ID失败: {ex.Message}");
             }
 
@@ -117,18 +117,18 @@ namespace Ink_Canvas.Windows.FeedbackPages
                 var settings = SettingsManager.Settings;
                 if (settings?.PowerPointSettings != null)
                 {
-                    _pptLinkageSettings = $"启用PPT联动: {settings.PowerPointSettings.PowerPointSupport}\n";
-                    _pptLinkageSettings += $"WPS支持: {settings.PowerPointSettings.IsSupportWPS}\n";
-                    _pptLinkageSettings += $"MSO支持: {settings.PowerPointSettings.PowerPointSupport}\n";
+                    _pptLinkageSettings = string.Format(Properties.FeedbackStrings.Feedback_PptLinkageLineFormat, settings.PowerPointSettings.PowerPointSupport);
+                    _pptLinkageSettings += string.Format(Properties.FeedbackStrings.Feedback_WpsSupportLineFormat, settings.PowerPointSettings.IsSupportWPS);
+                    _pptLinkageSettings += string.Format(Properties.FeedbackStrings.Feedback_MsoSupportLineFormat, settings.PowerPointSettings.PowerPointSupport);
                 }
                 else
                 {
-                    _pptLinkageSettings = "未配置PPT联动设置";
+                    _pptLinkageSettings = Properties.FeedbackStrings.Feedback_NoPptLinkage;
                 }
             }
             catch (Exception ex)
             {
-                _pptLinkageSettings = "获取PPT联动设置失败";
+                _pptLinkageSettings = Properties.FeedbackStrings.Feedback_PptLinkageFailed;
                 Debug.WriteLine($"获取PPT联动设置失败: {ex.Message}");
             }
 
@@ -137,20 +137,20 @@ namespace Ink_Canvas.Windows.FeedbackPages
                 var settings = SettingsManager.Settings;
                 if (settings?.InkToShape != null)
                 {
-                    _inkRecognitionSettings = $"启用墨迹识别: {settings.InkToShape.IsInkToShapeEnabled}\n";
+                    _inkRecognitionSettings = string.Format(Properties.FeedbackStrings.Feedback_InkRecognitionLineFormat, settings.InkToShape.IsInkToShapeEnabled);
 
                     var engineMode = ShapeRecognitionRouter.FromSettingsInt(settings.InkToShape.ShapeRecognitionEngine);
                     bool useWinRT = ShapeRecognitionRouter.ResolveUseWinRt(engineMode);
-                    _inkRecognitionSettings += $"识别引擎: {(useWinRT ? "WinRT" : "IACore")}\n";
+                    _inkRecognitionSettings += string.Format(Properties.FeedbackStrings.Feedback_EngineLineFormat, useWinRT ? "WinRT" : "IACore");
                 }
                 else
                 {
-                    _inkRecognitionSettings = "未配置墨迹识别设置";
+                    _inkRecognitionSettings = Properties.FeedbackStrings.Feedback_NoInkRecognition;
                 }
             }
             catch (Exception ex)
             {
-                _inkRecognitionSettings = "获取墨迹识别设置失败";
+                _inkRecognitionSettings = Properties.FeedbackStrings.Feedback_InkRecognitionFailed;
                 Debug.WriteLine($"获取墨迹识别设置失败: {ex.Message}");
             }
         }
@@ -246,11 +246,11 @@ namespace Ink_Canvas.Windows.FeedbackPages
 
                 if (_page1.CheckDeviceId.IsChecked == true)
                 {
-                    _page2.TextDeviceInfo.Text = $"设备ID: {_deviceId}";
+                    _page2.TextDeviceInfo.Text = string.Format(Properties.FeedbackStrings.Feedback_DeviceIdFormat, _deviceId);
                 }
                 else
                 {
-                    _page2.TextDeviceInfo.Text = $"设备ID: {FeedbackStrings.Page2_Exclude}";
+                    _page2.TextDeviceInfo.Text = string.Format(Properties.FeedbackStrings.Feedback_DeviceIdFormat, FeedbackStrings.Page2_Exclude);
                 }
 
                 if (_page1.CheckPPTLinkage.IsChecked == true || _page1.CheckInkRecognition.IsChecked == true)
@@ -259,12 +259,12 @@ namespace Ink_Canvas.Windows.FeedbackPages
                     _page2.TextConfigurationInfo.Text = "";
                     if (_page1.CheckPPTLinkage.IsChecked == true)
                     {
-                        _page2.TextConfigurationInfo.Text += $"PPT联动设置:\n{_pptLinkageSettings.TrimEnd('\n', '\r')}";
+                        _page2.TextConfigurationInfo.Text += string.Format(Properties.FeedbackStrings.Feedback_PptLinkageBlockFormat, _pptLinkageSettings.TrimEnd('\n', '\r'));
                     }
                     if (_page1.CheckInkRecognition.IsChecked == true)
                     {
                         if (_page1.CheckPPTLinkage.IsChecked == true) _page2.TextConfigurationInfo.Text += "\n";
-                        _page2.TextConfigurationInfo.Text += $"墨迹识别设置:\n{_inkRecognitionSettings.TrimEnd('\n', '\r')}";
+                        _page2.TextConfigurationInfo.Text += string.Format(Properties.FeedbackStrings.Feedback_InkRecognitionBlockFormat, _inkRecognitionSettings.TrimEnd('\n', '\r'));
                     }
                 }
                 else
@@ -283,43 +283,43 @@ namespace Ink_Canvas.Windows.FeedbackPages
         /// </summary>
         private void GenerateMarkdownTemplate()
         {
-            string template = "## 环境信息\n";
+            string template = Properties.FeedbackStrings.Feedback_SectionEnvironment;
 
             if (_page1.CheckAppVersion.IsChecked == true)
             {
-                template += $"- 软件版本: {_appVersion}\n";
+                template += string.Format(Properties.FeedbackStrings.Feedback_SoftwareVersionFormat, _appVersion);
             }
             if (_page1.CheckUpdateChannel.IsChecked == true)
             {
-                template += $"- 更新通道: {_updateChannel}\n";
+                template += string.Format(Properties.FeedbackStrings.Feedback_UpdateChannelFormat, _updateChannel);
             }
             if (_page1.CheckOSVersion.IsChecked == true)
             {
-                template += $"- 操作系统: {_osVersion}\n";
+                template += string.Format(Properties.FeedbackStrings.Feedback_OsVersionFormat, _osVersion);
             }
             if (_page1.CheckNetVersion.IsChecked == true)
             {
-                template += $"- .NET 版本: {_netVersion}\n";
+                template += string.Format(Properties.FeedbackStrings.Feedback_NetVersionFormat, _netVersion);
             }
 
-            template += "\n## 设备信息\n";
+            template += Properties.FeedbackStrings.Feedback_SectionDeviceInfo;
             if (_page1.CheckDeviceId.IsChecked == true)
             {
-                template += $"- 设备ID: {_deviceId}\n";
+                template += string.Format(Properties.FeedbackStrings.Feedback_DeviceIdLineFormat, _deviceId);
             }
 
             if (_page1.CheckPPTLinkage.IsChecked == true || _page1.CheckInkRecognition.IsChecked == true)
             {
-                template += "\n## 软件配置\n";
+                template += Properties.FeedbackStrings.Feedback_SectionSoftwareConfig;
                 if (_page1.CheckPPTLinkage.IsChecked == true)
                 {
-                    template += "### PPT联动设置\n";
+                    template += Properties.FeedbackStrings.Feedback_SectionPptLinkage;
                     template += _pptLinkageSettings.TrimEnd('\n', '\r');
                 }
                 if (_page1.CheckInkRecognition.IsChecked == true)
                 {
                     if (_page1.CheckPPTLinkage.IsChecked == true) template += "\n";
-                    template += "### 墨迹识别设置\n";
+                    template += Properties.FeedbackStrings.Feedback_SectionInkRecognition;
                     template += _inkRecognitionSettings.TrimEnd('\n', '\r');
                 }
             }
@@ -358,18 +358,18 @@ namespace Ink_Canvas.Windows.FeedbackPages
 
             if (_page1.CheckDeviceId.IsChecked == true)
             {
-                extraInfo += $"设备ID: {_deviceId}\n";
+                extraInfo += string.Format(Properties.FeedbackStrings.Feedback_DeviceIdLineFormat2, _deviceId);
             }
 
             if (_page1.CheckPPTLinkage.IsChecked == true)
             {
-                extraInfo += "\nPPT联动设置:\n";
+                extraInfo += Properties.FeedbackStrings.Feedback_PptLinkageHeader;
                 extraInfo += _pptLinkageSettings.TrimEnd('\n', '\r');
             }
 
             if (_page1.CheckInkRecognition.IsChecked == true)
             {
-                extraInfo += "\n墨迹识别设置:\n";
+                extraInfo += Properties.FeedbackStrings.Feedback_InkRecognitionHeader;
                 extraInfo += _inkRecognitionSettings.TrimEnd('\n', '\r');
             }
 

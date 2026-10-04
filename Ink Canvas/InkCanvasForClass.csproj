@@ -31,7 +31,6 @@
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU;x86;x64</Platforms>
     <LangVersion>10</LangVersion>
-    <NoWarn>$(NoWarn);CA1416;NU1701;MSB3270;CS8012;NETSDK1138</NoWarn>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
@@ -106,10 +105,12 @@
   <ItemGroup>
     <None Include="app.manifest" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="6.1.0">
+  <ItemGroup Condition="$(EnableNativeImage) != 'true'">
+    <PackageReference Include="Costura.Fody" Version="6.2.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
     <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
     <PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
@@ -135,8 +136,8 @@
     <PackageReference Include="AForge.Math" Version="2.2.5" />
     <PackageReference Include="System.Private.Uri" Version="4.3.2" />
     <PackageReference Include="WebDav.Client" Version="2.9.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
   <ItemGroup Condition="$(EnableNativeImage) == 'true' And $(Platform) != 'AnyCPU' And $(Platform) != 'ARM64'">
     <PackageReference Include="Microsoft.DotNet.Framework.NativeImageCompiler" Version="1.0.0">

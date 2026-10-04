@@ -74,10 +74,12 @@
                         <TextBlock Text="{Binding Description}" Opacity="0.65" FontSize="12"
                                    TextWrapping="Wrap" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <Button Grid.Column="3" Click="AddLibraryItem_Click" x:Name="BtnAddItem" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                    <Button Grid.Column="3" Click="AddLibraryItem_Click" x:Name="BtnAddItem"
                             Background="Transparent" BorderThickness="0"
                             Padding="6,4" VerticalAlignment="Center"
-                            Cursor="Hand" Visibility="Collapsed"/>
+                            Cursor="Hand" Visibility="Collapsed">
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12"/>
+                    </Button>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -96,13 +98,13 @@
         <!-- ===== Section 1: 标题 + 提示 ===== -->
         <StackPanel Grid.Row="0" Margin="0,36,0,6">
             <TextBlock Text="{x:Static props:NavStrings.Nav_ToolbarMenu}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
-            <TextBlock Text="配置浮动栏工具菜单中显示的项目和顺序，最多 9 个（3×3 布局）。"
+            <TextBlock Text="{x:Static props:FloatingBarStrings.ToolbarMenu_ConfigHint}"
                        Opacity="0.65" FontSize="13" TextWrapping="Wrap"/>
         </StackPanel>
 
         <!-- ===== Section 2: 已添加的菜单项 ===== -->
         <DockPanel Grid.Row="1" LastChildFill="True" ClipToBounds="True">
-            <TextBlock Text="已添加的菜单项" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"
+            <TextBlock Text="{x:Static props:FloatingBarStrings.ToolbarMenu_AddedMenuItems}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"
                        DockPanel.Dock="Top"/>
             <Border CornerRadius="8" Padding="6" MinHeight="58">
                 <Border.Style>
@@ -141,7 +143,7 @@
 
         <!-- ===== Section 3: 可添加的菜单项 ===== -->
         <DockPanel Grid.Row="3" LastChildFill="True">
-            <TextBlock Text="可添加的菜单项" FontSize="14" FontWeight="SemiBold" Margin="0,4,0,6"
+            <TextBlock Text="{x:Static props:FloatingBarStrings.ToolbarMenu_AvailableMenuItems}" FontSize="14" FontWeight="SemiBold" Margin="0,4,0,6"
                        DockPanel.Dock="Top"/>
             <ui:ListView x:Name="LibraryList"
                      ItemTemplate="{StaticResource LibraryItemTemplate}"
@@ -168,7 +170,7 @@
         </DockPanel>
 
         <!-- ===== Section 4: 恢复默认布局 ===== -->
-        <Button Grid.Row="4" Content="恢复默认布局" Click="ButtonReset_Click"
+        <Button Grid.Row="4" Content="{x:Static props:FloatingBarStrings.ToolbarPage_ResetLayout}" Click="ButtonReset_Click"
                 Padding="20,10" HorizontalAlignment="Left" Margin="0,12,0,16"/>
     </Grid>
 </ui:Page>

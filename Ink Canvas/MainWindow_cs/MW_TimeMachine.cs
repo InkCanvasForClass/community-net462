@@ -456,7 +456,7 @@ namespace Ink_Canvas
                 {
                     _currentCommitType = previousCommitType;
                 }
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 return;
             }
 
@@ -541,7 +541,7 @@ namespace Ink_Canvas
         {
             if (IsCurrentPageFrozen && _currentCommitType != CommitReason.CodeInput)
             {
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 return;
             }
 
@@ -624,7 +624,7 @@ namespace Ink_Canvas
         {
             if (IsCurrentPageFrozen && _currentCommitType != CommitReason.CodeInput)
             {
-                TryBlockFrozenPageMutation("修改冻结页面");
+                TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_Modify);
                 return;
             }
 

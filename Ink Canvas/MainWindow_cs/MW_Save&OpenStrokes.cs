@@ -1010,7 +1010,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void SymbolIconOpenStrokes_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (TryBlockFrozenPageMutation("打开墨迹文件")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_OpenInkFile)) return;
             if (lastBorderMouseDownObject != sender) return;
             AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
             AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
@@ -1072,7 +1072,7 @@ namespace Ink_Canvas
                     string metadataFile = Path.Combine(tempDir, "metadata.txt");
                     if (!File.Exists(metadataFile))
                     {
-                        throw new Exception("压缩包中未找到元数据文件");
+                        throw new Exception(Properties.MainWindowStrings.Main_Ink_MissingMetadata);
                     }
 
                     var metadata = ReadMetadataFile(metadataFile);
@@ -1161,13 +1161,13 @@ namespace Ink_Canvas
         /// </summary>
         private void RestorePPTStrokesFromZip(string tempDir, Dictionary<string, string> metadata)
         {
-            if (TryBlockFrozenPageMutation("恢复墨迹文件")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_RestoreInkFile)) return;
             try
             {
                 // 确保当前处于PPT放映模式
                 if (!IsInPPTPresentationMode || pptApplication == null)
                 {
-                    throw new InvalidOperationException("当前不在PPT放映模式，无法恢复PPT墨迹");
+                    throw new InvalidOperationException(Properties.MainWindowStrings.Main_Ink_NotInPptMode);
                 }
 
                 // 检查PPT文件路径是否匹配
@@ -1184,7 +1184,7 @@ namespace Ink_Canvas
 
                         if (savedHash != currentHash)
                         {
-                            throw new InvalidOperationException($"墨迹文件与当前PPT文件不匹配。保存的PPT: {savedPPTPath}，当前PPT: {currentPPTPath}");
+                            throw new InvalidOperationException(string.Format(Properties.MainWindowStrings.Main_Ink_PptMismatch, savedPPTPath, currentPPTPath));
                         }
                     }
                 }
@@ -1257,13 +1257,13 @@ namespace Ink_Canvas
         /// </summary>
         private void RestoreWhiteboardStrokesFromZip(string tempDir, Dictionary<string, string> metadata)
         {
-            if (TryBlockFrozenPageMutation("恢复墨迹文件")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_RestoreInkFile)) return;
             try
             {
                 // 确保当前处于白板模式
                 if (currentMode == 0)
                 {
-                    throw new InvalidOperationException("当前不在白板模式，无法恢复白板墨迹");
+                    throw new InvalidOperationException(Properties.MainWindowStrings.Main_Ink_NotInBoardMode);
                 }
 
                 // 清空当前墨迹
@@ -1331,14 +1331,14 @@ namespace Ink_Canvas
         /// </summary>
         public void OpenXMLStrokeFile(string filePath)
         {
-            if (TryBlockFrozenPageMutation("打开墨迹文件")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_OpenInkFile)) return;
             try
             {
                 XDocument doc = XDocument.Load(filePath);
                 var root = doc.Root;
                 if (root == null || root.Name != "InkCanvasStrokes")
                 {
-                    throw new Exception("无效的XML墨迹文件格式");
+                    throw new Exception(Properties.MainWindowStrings.Main_Ink_InvalidXmlFormat);
                 }
 
                 var strokes = new StrokeCollection();
@@ -1522,7 +1522,7 @@ namespace Ink_Canvas
         /// </remarks>
         public void OpenSingleStrokeFile(string filePath)
         {
-            if (TryBlockFrozenPageMutation("打开墨迹文件")) return;
+            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_OpenInkFile)) return;
             var fileStreamHasNoStroke = false;
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {

@@ -77,5 +77,7 @@ namespace Ink_Canvas.Properties
         public static string DeletedAndSwitched => ResourceManager.GetString(nameof(DeletedAndSwitched), _resourceCulture);
 
         public static string DeletedProfile => ResourceManager.GetString(nameof(DeletedProfile), _resourceCulture);
+
+        public static string Config_Unnamed => ResourceManager.GetString(nameof(Config_Unnamed), _resourceCulture);
     }
 }

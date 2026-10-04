@@ -88,7 +88,7 @@ namespace Ink_Canvas.Windows
             }
             _activeCaptureItem = this;
 
-            CurrentHotkeyTextBlock.Text = "请按键...";
+            CurrentHotkeyTextBlock.Text = Properties.HotkeyStrings.Hotkey_PressKey;
             Focus();
             KeyDown += HotkeyItem_KeyDown;
             KeyUp += HotkeyItem_KeyUp;

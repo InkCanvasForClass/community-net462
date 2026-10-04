@@ -651,4 +651,108 @@
   <data name="MiniWhiteboard_Settings_Opacity" xml:space="preserve">
     <value>Opacity</value>
   </data>
+
+  <data name="FloatingBar_QuickPanel" xml:space="preserve">
+    <value>Quick panel</value>
+  </data>
+
+  <data name="FloatingBar_Appearance" xml:space="preserve">
+    <value>Floating bar appearance</value>
+  </data>
+
+  <data name="FloatingBar_ColorfulBar" xml:space="preserve">
+    <value>Colorful floating bar</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarBehavior" xml:space="preserve">
+    <value>Toolbar behavior</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarPosition" xml:space="preserve">
+    <value>Toolbar position</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarPositionDesc" xml:space="preserve">
+    <value>Set the toolbar's position relative to the drag icon</value>
+  </data>
+
+  <data name="FloatingBar_PositionTop" xml:space="preserve">
+    <value>Top</value>
+  </data>
+
+  <data name="FloatingBar_PositionBottom" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+
+  <data name="FloatingBar_FlipContent" xml:space="preserve">
+    <value>Flip component content</value>
+  </data>
+
+  <data name="FloatingBar_FlipContentDesc" xml:space="preserve">
+    <value>Flip the direction of the component content; restarting the app is recommended after changing</value>
+  </data>
+
+  <data name="FloatingBar_DisableToolbarAnimation" xml:space="preserve">
+    <value>Disable toolbar animation</value>
+  </data>
+
+  <data name="FloatingBar_DisableToolbarAnimationDesc" xml:space="preserve">
+    <value>When on, unselected toolbar buttons do not automatically sink and center</value>
+  </data>
+
+  <data name="FloatingBar_AutoFlipWhenCramped" xml:space="preserve">
+    <value>Auto-flip when out of space</value>
+  </data>
+
+  <data name="FloatingBar_AutoFlipWhenCrampedDesc" xml:space="preserve">
+    <value>Automatically flip direction when the toolbar is dragged to a screen edge with insufficient space; restarting the app is recommended after changing</value>
+  </data>
+
+  <data name="FloatingBar_FlipContentOnAutoFlip" xml:space="preserve">
+    <value>Flip component content after auto-flip</value>
+  </data>
+
+  <data name="FloatingBar_FlipContentOnAutoFlipDesc" xml:space="preserve">
+    <value>When on, auto-flip only moves the drag icon; the component content keeps its original order. Restarting the app is recommended after changing</value>
+  </data>
+
+  <data name="FloatingBar_ScaleAndOpacity" xml:space="preserve">
+    <value>Scale and opacity</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarComponents" xml:space="preserve">
+    <value>Toolbar components</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarMenu" xml:space="preserve">
+    <value>Toolbar menu</value>
+  </data>
+
+  <data name="ToolbarMenu_ConfigHint" xml:space="preserve">
+    <value>Configure the items and order shown in the floating bar tool menu, 9 max (3x3 layout).</value>
+  </data>
+
+  <data name="ToolbarMenu_AddedMenuItems" xml:space="preserve">
+    <value>Added menu items</value>
+  </data>
+
+  <data name="ToolbarMenu_AvailableMenuItems" xml:space="preserve">
+    <value>Available menu items</value>
+  </data>
+
+  <data name="ToolbarMenu_MaxItems" xml:space="preserve">
+    <value>You can add at most 9 menu items.</value>
+  </data>
+
+  <data name="Board_PositionFirst" xml:space="preserve">
+    <value>[First]</value>
+  </data>
+
+  <data name="Board_PositionLast" xml:space="preserve">
+    <value>[Last]</value>
+  </data>
+
+  <data name="Board_PositionSingle" xml:space="preserve">
+    <value>[Single]</value>
+  </data>
 </root>

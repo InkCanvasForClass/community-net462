@@ -118,7 +118,7 @@ namespace Ink_Canvas.Helpers
                 _registeredHotkeys[hotkeyName] = hotkeyInfo;
 
                 // 记录注册信息
-                var screenInfo = _isMultiScreenMode ? $" (屏幕: {_currentScreen?.DeviceName})" : "";
+                var screenInfo = _isMultiScreenMode ? string.Format(Properties.MainWindowStrings.Main_Hotkey_ScreenSuffix, _currentScreen?.DeviceName) : "";
 
                 return true;
             }
@@ -607,17 +607,17 @@ namespace Ink_Canvas.Helpers
             {
                 if (_isMultiScreenMode && _currentScreen != null)
                 {
-                    return $"多屏幕环境 - 当前屏幕: {_currentScreen.DeviceName} ({_currentScreen.Bounds.Width}x{_currentScreen.Bounds.Height})";
+                    return string.Format(Properties.MainWindowStrings.Main_Hotkey_MultiScreen, _currentScreen.DeviceName, _currentScreen.Bounds.Width, _currentScreen.Bounds.Height);
                 }
                 else
                 {
-                    return "单屏幕环境";
+                    return Properties.MainWindowStrings.Main_Hotkey_SingleScreen;
                 }
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"获取当前屏幕信息时出错: {ex.Message}", LogHelper.LogType.Error);
-                return "无法获取屏幕信息";
+                return Properties.MainWindowStrings.Main_Hotkey_ScreenInfoUnavailable;
             }
         }
 

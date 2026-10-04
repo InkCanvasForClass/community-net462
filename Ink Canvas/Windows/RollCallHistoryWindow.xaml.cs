@@ -89,7 +89,7 @@ namespace Ink_Canvas
                 var historyLines = new System.Collections.Generic.List<string>();
                 foreach (var item in historyWithCount)
                 {
-                    historyLines.Add($"{item.Item1} (最近累计{item.Item2}次)");
+                    historyLines.Add(string.Format(Properties.RandomStrings.Random_History_ItemFormat, item.Item1, item.Item2));
                 }
 
                 // 显示统计信息

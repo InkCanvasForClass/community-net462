@@ -174,4 +174,28 @@
   <data name="Debug_ResetStartupCount_Button" xml:space="preserve">
     <value>重置计数</value>
   </data>
+
+  <data name="Debug_SimulateCrashConfirm" xml:space="preserve">
+    <value>確定要觸發一次模擬崩潰嗎？\n\n應用將立即退出並嘗試自動重啟。</value>
+  </data>
+
+  <data name="Debug_SimulateCrashConfirmTitle" xml:space="preserve">
+    <value>崩潰測試確認</value>
+  </data>
+
+  <data name="Debug_HeartbeatTimeoutConfirm" xml:space="preserve">
+    <value>確定要停止心跳計時器嗎？\n\n約10秒後守護檢查將偵測到心跳逾時並觸發重啟。</value>
+  </data>
+
+  <data name="Debug_HeartbeatTimeoutConfirmTitle" xml:space="preserve">
+    <value>心跳逾時測試確認</value>
+  </data>
+
+  <data name="Debug_BreakerResetMessage" xml:space="preserve">
+    <value>熔斷計數器已重設為 0。</value>
+  </data>
+
+  <data name="Debug_ResetDoneTitle" xml:space="preserve">
+    <value>重設完成</value>
+  </data>
 </root>

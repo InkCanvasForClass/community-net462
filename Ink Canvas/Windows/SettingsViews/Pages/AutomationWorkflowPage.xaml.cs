@@ -110,7 +110,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private void BtnAddWorkflow_Click(object sender, RoutedEventArgs e)
         {
             var workflow = new Workflow();
-            workflow.ActionSet.Name = $"自定义自动化 {Service.Workflows.Count + 1}";
+            workflow.ActionSet.Name = string.Format(Properties.AutomationStrings.Automation_Workflow_DefaultNameFormat, Service.Workflows.Count + 1);
             // 初始化一个默认规则组
             workflow.Ruleset.Groups.Add(new RuleGroup
             {
@@ -138,7 +138,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var copy = Newtonsoft.Json.JsonConvert.DeserializeObject<Workflow>(json);
             if (copy != null)
             {
-                copy.ActionSet.Name += " (副本)";
+                copy.ActionSet.Name += Properties.AutomationStrings.Automation_Workflow_CopySuffix;
                 Service.Workflows.Add(copy);
                 Service.SaveConfig("DuplicateWorkflow");
                 RefreshWorkflowList();
@@ -777,16 +777,16 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             return propertyName switch
             {
-                "ProcessName" => "进程名",
-                "TitleContains" => "标题包含",
-                "IgnoreCase" => "忽略大小写",
-                "Type" => "通知类型",
-                "Message" => "通知内容",
-                "SavePath" => "保存路径",
-                "SaveAsXml" => "保存为 XML",
-                "Fold" => "折叠",
-                "EnterAnnotation" => "进入批注",
-                "Topmost" => "置顶",
+                "ProcessName" => Properties.AutomationStrings.Automation_Field_ProcessName,
+                "TitleContains" => Properties.AutomationStrings.Automation_Field_TitleContains,
+                "IgnoreCase" => Properties.AutomationStrings.Automation_Field_IgnoreCase,
+                "Type" => Properties.AutomationStrings.Automation_Field_NotificationType,
+                "Message" => Properties.AutomationStrings.Automation_Field_NotificationContent,
+                "SavePath" => Properties.AutomationStrings.Automation_Field_SavePath,
+                "SaveAsXml" => Properties.AutomationStrings.Automation_Field_SaveAsXml,
+                "Fold" => Properties.AutomationStrings.Automation_Field_Fold,
+                "EnterAnnotation" => Properties.AutomationStrings.Automation_Field_EnterAnnotation,
+                "Topmost" => Properties.AutomationStrings.Automation_Field_Topmost,
                 _ => propertyName
             };
         }

@@ -294,4 +294,16 @@
   <data name="SmartModeHint" xml:space="preserve">
     <value>自动检测 PPT 中的视频控件区域，鼠标进入时切换为指针模式，离开后恢复批注模式</value>
   </data>
+
+  <data name="PPT_VstoRegisterSuccess" xml:space="preserve">
+    <value>VSTO 插件注册成功（regasm + 注册表）</value>
+  </data>
+
+  <data name="PPT_VstoRegisterWritten" xml:space="preserve">
+    <value>VSTO 插件注册表已写入（regasm 失败）</value>
+  </data>
+
+  <data name="PPT_ImagePdfFilter" xml:space="preserve">
+    <value>图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf</value>
+  </data>
 </root>

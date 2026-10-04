@@ -294,4 +294,16 @@
   <data name="SmartModeHint" xml:space="preserve">
     <value>Auto-detect video controls in PPT slides; switch to pointer mode when the cursor enters a video region, and restore annotation mode when it leaves</value>
   </data>
+
+  <data name="PPT_VstoRegisterSuccess" xml:space="preserve">
+    <value>VSTO add-in registered (regasm + registry)</value>
+  </data>
+
+  <data name="PPT_VstoRegisterWritten" xml:space="preserve">
+    <value>VSTO add-in registry written (regasm failed)</value>
+  </data>
+
+  <data name="PPT_ImagePdfFilter" xml:space="preserve">
+    <value>Images and PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|Image files|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf</value>
+  </data>
 </root>

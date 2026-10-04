@@ -23,6 +23,11 @@ namespace Ink_Canvas.WorkflowAutomation.Models
         public string Name { get; internal set; }
 
         /// <summary>
+        /// 本地化后的显示名称。
+        /// </summary>
+        public string DisplayName => Ink_Canvas.Properties.AutomationStrings.GetString(Name) ?? Name;
+
+        /// <summary>
         /// 设置控件类型。
         /// </summary>
         public Type SettingsControlType { get; internal set; }

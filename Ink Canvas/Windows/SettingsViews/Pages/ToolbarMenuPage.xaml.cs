@@ -72,7 +72,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             if (AddedItems.Count >= 9)
             {
-                System.Windows.MessageBox.Show("最多只能添加 9 个菜单项。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show(Properties.FloatingBarStrings.ToolbarMenu_MaxItems, Properties.FloatingBarStrings.ToolbarPage_Hint, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             if (sender is FrameworkElement fe && fe.DataContext is ToolsMenuItemInfo item)

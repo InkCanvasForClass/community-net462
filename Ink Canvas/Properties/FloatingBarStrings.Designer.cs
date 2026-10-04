@@ -443,5 +443,57 @@ namespace Ink_Canvas.Properties
         public static string MiniWhiteboard_Settings_DefaultSize => ResourceManager.GetString(nameof(MiniWhiteboard_Settings_DefaultSize), _resourceCulture);
 
         public static string MiniWhiteboard_Settings_Opacity => ResourceManager.GetString(nameof(MiniWhiteboard_Settings_Opacity), _resourceCulture);
+
+        public static string FloatingBar_QuickPanel => ResourceManager.GetString(nameof(FloatingBar_QuickPanel), _resourceCulture);
+
+        public static string FloatingBar_Appearance => ResourceManager.GetString(nameof(FloatingBar_Appearance), _resourceCulture);
+
+        public static string FloatingBar_ColorfulBar => ResourceManager.GetString(nameof(FloatingBar_ColorfulBar), _resourceCulture);
+
+        public static string FloatingBar_ToolbarBehavior => ResourceManager.GetString(nameof(FloatingBar_ToolbarBehavior), _resourceCulture);
+
+        public static string FloatingBar_ToolbarPosition => ResourceManager.GetString(nameof(FloatingBar_ToolbarPosition), _resourceCulture);
+
+        public static string FloatingBar_ToolbarPositionDesc => ResourceManager.GetString(nameof(FloatingBar_ToolbarPositionDesc), _resourceCulture);
+
+        public static string FloatingBar_PositionTop => ResourceManager.GetString(nameof(FloatingBar_PositionTop), _resourceCulture);
+
+        public static string FloatingBar_PositionBottom => ResourceManager.GetString(nameof(FloatingBar_PositionBottom), _resourceCulture);
+
+        public static string FloatingBar_FlipContent => ResourceManager.GetString(nameof(FloatingBar_FlipContent), _resourceCulture);
+
+        public static string FloatingBar_FlipContentDesc => ResourceManager.GetString(nameof(FloatingBar_FlipContentDesc), _resourceCulture);
+
+        public static string FloatingBar_DisableToolbarAnimation => ResourceManager.GetString(nameof(FloatingBar_DisableToolbarAnimation), _resourceCulture);
+
+        public static string FloatingBar_DisableToolbarAnimationDesc => ResourceManager.GetString(nameof(FloatingBar_DisableToolbarAnimationDesc), _resourceCulture);
+
+        public static string FloatingBar_AutoFlipWhenCramped => ResourceManager.GetString(nameof(FloatingBar_AutoFlipWhenCramped), _resourceCulture);
+
+        public static string FloatingBar_AutoFlipWhenCrampedDesc => ResourceManager.GetString(nameof(FloatingBar_AutoFlipWhenCrampedDesc), _resourceCulture);
+
+        public static string FloatingBar_FlipContentOnAutoFlip => ResourceManager.GetString(nameof(FloatingBar_FlipContentOnAutoFlip), _resourceCulture);
+
+        public static string FloatingBar_FlipContentOnAutoFlipDesc => ResourceManager.GetString(nameof(FloatingBar_FlipContentOnAutoFlipDesc), _resourceCulture);
+
+        public static string FloatingBar_ScaleAndOpacity => ResourceManager.GetString(nameof(FloatingBar_ScaleAndOpacity), _resourceCulture);
+
+        public static string FloatingBar_ToolbarComponents => ResourceManager.GetString(nameof(FloatingBar_ToolbarComponents), _resourceCulture);
+
+        public static string FloatingBar_ToolbarMenu => ResourceManager.GetString(nameof(FloatingBar_ToolbarMenu), _resourceCulture);
+
+        public static string ToolbarMenu_ConfigHint => ResourceManager.GetString(nameof(ToolbarMenu_ConfigHint), _resourceCulture);
+
+        public static string ToolbarMenu_AddedMenuItems => ResourceManager.GetString(nameof(ToolbarMenu_AddedMenuItems), _resourceCulture);
+
+        public static string ToolbarMenu_AvailableMenuItems => ResourceManager.GetString(nameof(ToolbarMenu_AvailableMenuItems), _resourceCulture);
+
+        public static string ToolbarMenu_MaxItems => ResourceManager.GetString(nameof(ToolbarMenu_MaxItems), _resourceCulture);
+
+        public static string Board_PositionFirst => ResourceManager.GetString(nameof(Board_PositionFirst), _resourceCulture);
+
+        public static string Board_PositionLast => ResourceManager.GetString(nameof(Board_PositionLast), _resourceCulture);
+
+        public static string Board_PositionSingle => ResourceManager.GetString(nameof(Board_PositionSingle), _resourceCulture);
     }
 }

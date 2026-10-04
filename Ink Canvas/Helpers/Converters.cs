@@ -59,20 +59,20 @@ namespace Ink_Canvas.Converter
         {
             if ((double)value == 0)
             {
-                return "无限制";
+                return Properties.CommonStrings.Common_Unlimited;
             }
 
-            return ((double)value) + "人";
+            return ((double)value) + Properties.CommonStrings.Common_Unit_People;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if ((double)value == 0)
             {
-                return "无限制";
+                return Properties.CommonStrings.Common_Unlimited;
             }
 
-            return ((double)value) + "人";
+            return ((double)value) + Properties.CommonStrings.Common_Unit_People;
         }
     }
 
@@ -82,20 +82,20 @@ namespace Ink_Canvas.Converter
         {
             if ((double)value == 0)
             {
-                return "自动截图";
+                return Properties.CommonStrings.Common_AutoScreenshot;
             }
 
-            return ((double)value) + "条";
+            return ((double)value) + Properties.CommonStrings.Common_Unit_Items;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if ((double)value == 0)
             {
-                return "自动截图";
+                return Properties.CommonStrings.Common_AutoScreenshot;
             }
 
-            return ((double)value) + "条";
+            return ((double)value) + Properties.CommonStrings.Common_Unit_Items;
         }
     }
 

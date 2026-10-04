@@ -234,7 +234,7 @@
                                     <TextBlock x:Name="StepIndicatorText"
                                                Style="{DynamicResource CaptionTextBlockStyle}"
                                                Opacity="0.7"
-                                               Text="步骤 1 / 8" />
+                                               Text="{x:Static props:OobeStrings.Oobe_StepFormat}" />
                                     <TextBlock x:Name="StepTitleText"
                                                Style="{DynamicResource TitleTextBlockStyle}"
                                                Text="{x:Static props:OobeStrings.Oobe_Step1Title}" />

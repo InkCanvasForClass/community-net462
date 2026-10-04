@@ -297,4 +297,372 @@
   <data name="FileAssoc_ExitedFoldMode" xml:space="preserve">
     <value>Exited fold mode and restored floating bar</value>
   </data>
+
+  <data name="AutoWf_StateSatisfied" xml:space="preserve">
+    <value>Satisfied</value>
+  </data>
+
+  <data name="AutoWf_StateNotSatisfied" xml:space="preserve">
+    <value>Not satisfied</value>
+  </data>
+
+  <data name="AutoWf_StateUnknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+
+  <data name="AutoWf_AddWorkflow" xml:space="preserve">
+    <value>Add automation</value>
+  </data>
+
+  <data name="AutoWf_Copy" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+
+  <data name="AutoWf_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+
+  <data name="AutoWf_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+
+  <data name="AutoWf_EnableRevert" xml:space="preserve">
+    <value>Enable revert</value>
+  </data>
+
+  <data name="AutoWf_Invoke" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+
+  <data name="AutoWf_Revert" xml:space="preserve">
+    <value>Revert</value>
+  </data>
+
+  <data name="AutoWf_WhenEvents" xml:space="preserve">
+    <value>When any of the following events fires</value>
+  </data>
+
+  <data name="AutoWf_AddTrigger" xml:space="preserve">
+    <value>Add trigger</value>
+  </data>
+
+  <data name="AutoWf_AndConditions" xml:space="preserve">
+    <value>And the following conditions are met</value>
+  </data>
+
+  <data name="AutoWf_ConditionDisabledHint" xml:space="preserve">
+    <value>Conditions are ignored while the workflow runs.</value>
+  </data>
+
+  <data name="AutoWf_AnyGroup" xml:space="preserve">
+    <value>When any of the following condition groups is met</value>
+  </data>
+
+  <data name="AutoWf_AllGroups" xml:space="preserve">
+    <value>When all of the following condition groups are met</value>
+  </data>
+
+  <data name="AutoWf_Reverse" xml:space="preserve">
+    <value>Reverse</value>
+  </data>
+
+  <data name="AutoWf_AddGroup" xml:space="preserve">
+    <value>Add group</value>
+  </data>
+
+  <data name="AutoWf_AnyRule" xml:space="preserve">
+    <value>When any of the following conditions is met</value>
+  </data>
+
+  <data name="AutoWf_AllRules" xml:space="preserve">
+    <value>When all of the following conditions are met</value>
+  </data>
+
+  <data name="AutoWf_AddRule" xml:space="preserve">
+    <value>Add rule</value>
+  </data>
+
+  <data name="AutoWf_EnableGroup" xml:space="preserve">
+    <value>Enable condition group</value>
+  </data>
+
+  <data name="AutoWf_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+
+  <data name="AutoWf_AddAction" xml:space="preserve">
+    <value>Add action</value>
+  </data>
+
+  <data name="AutoWf_AutoRevertHint" xml:space="preserve">
+    <value>When the rules no longer hold, actions are reverted automatically.</value>
+  </data>
+
+  <data name="AutoWf_EmptyState" xml:space="preserve">
+    <value>Select or add an automation on the left, then configure it here.</value>
+  </data>
+
+  <data name="Automation_Action_FoldToolbar" xml:space="preserve">
+    <value>Fold/expand toolbar</value>
+  </data>
+
+  <data name="Automation_Action_KillProcess" xml:space="preserve">
+    <value>Kill process</value>
+  </data>
+
+  <data name="Automation_Action_SaveStrokes" xml:space="preserve">
+    <value>Save strokes</value>
+  </data>
+
+  <data name="Automation_Action_ToggleAnnotation" xml:space="preserve">
+    <value>Toggle annotation mode</value>
+  </data>
+
+  <data name="Automation_Action_ClearStrokes" xml:space="preserve">
+    <value>Clear strokes</value>
+  </data>
+
+  <data name="Automation_Action_ShowNotification" xml:space="preserve">
+    <value>Show notification</value>
+  </data>
+
+  <data name="Automation_Action_ToggleTopmost" xml:space="preserve">
+    <value>Toggle window topmost</value>
+  </data>
+
+  <data name="Automation_Action_ResetDesktopPosition" xml:space="preserve">
+    <value>Reset desktop mode position</value>
+  </data>
+
+  <data name="Automation_Action_ResetPptPosition" xml:space="preserve">
+    <value>Reset PPT mode position</value>
+  </data>
+
+  <data name="Automation_Rule_ProcessRunning" xml:space="preserve">
+    <value>Process is running</value>
+  </data>
+
+  <data name="Automation_Rule_WindowTitleContains" xml:space="preserve">
+    <value>Window title contains</value>
+  </data>
+
+  <data name="Automation_Rule_IsAnnotationMode" xml:space="preserve">
+    <value>Annotation mode</value>
+  </data>
+
+  <data name="Automation_Rule_IsPptSlideshow" xml:space="preserve">
+    <value>PPT is presenting</value>
+  </data>
+
+  <data name="Automation_Rule_ForegroundWindowProcess" xml:space="preserve">
+    <value>Foreground window process name</value>
+  </data>
+
+  <data name="Automation_Rule_IsFloatingBarFolded" xml:space="preserve">
+    <value>Toolbar is folded</value>
+  </data>
+
+  <data name="Automation_Rule_IsForegroundWhiteboard" xml:space="preserve">
+    <value>Foreground window is the ICC-CE whiteboard</value>
+  </data>
+
+  <data name="Automation_SlideShow" xml:space="preserve">
+    <value>Slide show</value>
+  </data>
+
+  <data name="Automation_Trigger_WhiteboardEnter" xml:space="preserve">
+    <value>Enter whiteboard mode</value>
+  </data>
+
+  <data name="Automation_Trigger_WhiteboardExit" xml:space="preserve">
+    <value>Exit whiteboard mode</value>
+  </data>
+
+  <data name="Automation_Trigger_AnnotationEnter" xml:space="preserve">
+    <value>Enter annotation mode</value>
+  </data>
+
+  <data name="Automation_Trigger_AnnotationExit" xml:space="preserve">
+    <value>Exit annotation mode</value>
+  </data>
+
+  <data name="Automation_Trigger_PptEnter" xml:space="preserve">
+    <value>Enter PPT slideshow</value>
+  </data>
+
+  <data name="Automation_Trigger_PptExit" xml:space="preserve">
+    <value>Exit PPT slideshow</value>
+  </data>
+
+  <data name="Automation_Trigger_PptDetection" xml:space="preserve">
+    <value>PPT slideshow detection</value>
+  </data>
+
+  <data name="Automation_Trigger_ProcessDetected" xml:space="preserve">
+    <value>Process detected</value>
+  </data>
+
+  <data name="Automation_Trigger_RulesetChanged" xml:space="preserve">
+    <value>Ruleset updated</value>
+  </data>
+
+  <data name="Automation_Trigger_Timer" xml:space="preserve">
+    <value>Timed trigger</value>
+  </data>
+
+  <data name="Automation_Trigger_WindowFocusChanged" xml:space="preserve">
+    <value>Foreground window changed</value>
+  </data>
+
+  <data name="Automation_DefaultActionName" xml:space="preserve">
+    <value>New action</value>
+  </data>
+
+  <data name="Automation_Workflow_CopySuffix" xml:space="preserve">
+    <value> (copy)</value>
+  </data>
+
+  <data name="Automation_Field_ProcessName" xml:space="preserve">
+    <value>Process name</value>
+  </data>
+
+  <data name="Automation_Field_TitleContains" xml:space="preserve">
+    <value>Title contains</value>
+  </data>
+
+  <data name="Automation_Field_IgnoreCase" xml:space="preserve">
+    <value>Ignore case</value>
+  </data>
+
+  <data name="Automation_Field_NotificationType" xml:space="preserve">
+    <value>Notification type</value>
+  </data>
+
+  <data name="Automation_Field_NotificationContent" xml:space="preserve">
+    <value>Notification content</value>
+  </data>
+
+  <data name="Automation_Field_SavePath" xml:space="preserve">
+    <value>Save path</value>
+  </data>
+
+  <data name="Automation_Field_SaveAsXml" xml:space="preserve">
+    <value>Save as XML</value>
+  </data>
+
+  <data name="Automation_Field_Fold" xml:space="preserve">
+    <value>Fold</value>
+  </data>
+
+  <data name="Automation_Field_EnterAnnotation" xml:space="preserve">
+    <value>Enter annotation</value>
+  </data>
+
+  <data name="Automation_Field_Topmost" xml:space="preserve">
+    <value>Topmost</value>
+  </data>
+
+  <data name="Automation_Workflow_DefaultNameFormat" xml:space="preserve">
+    <value>Custom automation {0}</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoBoard3" xml:space="preserve">
+    <value>Seewo Whiteboard 3 desktop floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoBoard5" xml:space="preserve">
+    <value>Seewo Whiteboard 5 desktop floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoBoard5C" xml:space="preserve">
+    <value>Seewo Whiteboard 5C desktop floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPincoDesktop" xml:space="preserve">
+    <value>Seewo Pinco teacher desktop floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPincoPen" xml:space="preserve">
+    <value>Seewo Pinco teacher pen floating window (including PPT controls)</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPincoBoard" xml:space="preserve">
+    <value>Seewo Pinco teacher desktop canvas</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoPptTools" xml:space="preserve">
+    <value>Seewo PPT tools</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_AiClass" xml:space="preserve">
+    <value>AiClass desktop floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanMain" xml:space="preserve">
+    <value>ChangYan Smart Class main bar floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPenSettings" xml:space="preserve">
+    <value>ChangYan Smart Class pen settings</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanSwipeClear" xml:space="preserve">
+    <value>ChangYan Smart Class swipe to clear</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanInteraction" xml:space="preserve">
+    <value>ChangYan Smart Class interaction</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanSubject" xml:space="preserve">
+    <value>ChangYan Smart Class subject apps</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanControl" xml:space="preserve">
+    <value>ChangYan Smart Class control</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanTools" xml:space="preserve">
+    <value>ChangYan Smart Class general tools</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanSceneBar" xml:space="preserve">
+    <value>ChangYan Smart Class scene toolbar</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanDrawWindow" xml:space="preserve">
+    <value>ChangYan Smart Class drawing window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptFloat" xml:space="preserve">
+    <value>ChangYan Smart Class PPT floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptPage" xml:space="preserve">
+    <value>ChangYan Smart Class PPT page control</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptBack" xml:space="preserve">
+    <value>ChangYan Smart Class PPT back</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_ChangYanPptPreview" xml:space="preserve">
+    <value>ChangYan Smart Class PPT preview</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_IntelligentClassDesktop" xml:space="preserve">
+    <value>Tianyu Cloud Interactive Class desktop floating window (including PPT controls)</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_IntelligentClassPptFloat" xml:space="preserve">
+    <value>Tianyu Cloud Interactive Class PPT floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoDesktopPen" xml:space="preserve">
+    <value>Seewo Desktop pen floating window</value>
+  </data>
+
+  <data name="FloatingInterceptor_Rule_SeewoDesktopSideBar" xml:space="preserve">
+    <value>Seewo Desktop side bar floating window</value>
+  </data>
 </root>

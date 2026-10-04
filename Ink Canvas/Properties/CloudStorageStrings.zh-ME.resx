@@ -234,4 +234,48 @@
   <data name="CloudStorage_TokenSelected" xml:space="preserve">
     <value>通行证已选中~</value>
   </data>
+
+  <data name="CloudStorage_AuthResponseFailed" xml:space="preserve">
+    <value>認證回應失敗</value>
+  </data>
+
+  <data name="CloudStorage_TokenFailed" xml:space="preserve">
+    <value>取得 Access Token 失敗: {0}</value>
+  </data>
+
+  <data name="CloudStorage_TokenNetworkError" xml:space="preserve">
+    <value>取得 Access Token 時網路錯誤: {0}</value>
+  </data>
+
+  <data name="CloudStorage_TokenError" xml:space="preserve">
+    <value>取得 Access Token 時發生錯誤: {0}</value>
+  </data>
+
+  <data name="CloudStorage_ApiRequestFailed" xml:space="preserve">
+    <value>API 請求失敗: {0} - {1}</value>
+  </data>
+
+  <data name="CloudStorage_RequestError" xml:space="preserve">
+    <value>傳送請求時發生錯誤: {0}</value>
+  </data>
+
+  <data name="CloudStorage_FileNotFound" xml:space="preserve">
+    <value>檔案不存在: {0}</value>
+  </data>
+
+  <data name="CloudStorage_UploadFailed" xml:space="preserve">
+    <value>上傳檔案失敗: {0} - {1}</value>
+  </data>
+
+  <data name="CloudStorage_UploadNetworkError" xml:space="preserve">
+    <value>上傳檔案時網路錯誤: {0}</value>
+  </data>
+
+  <data name="CloudStorage_UploadError" xml:space="preserve">
+    <value>上傳檔案時發生錯誤: {0}</value>
+  </data>
+
+  <data name="CloudStorage_AutoUploadTitle" xml:space="preserve">
+    <value>自動上傳的{0} - {1}</value>
+  </data>
 </root>

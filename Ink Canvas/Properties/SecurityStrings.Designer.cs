@@ -137,5 +137,7 @@ namespace Ink_Canvas.Properties
         public static string Security_UsbBypassDialogHint => ResourceManager.GetString(nameof(Security_UsbBypassDialogHint), _resourceCulture);
 
         public static string Security_UsbBypassDialogHintShort => ResourceManager.GetString(nameof(Security_UsbBypassDialogHintShort), _resourceCulture);
+
+        public static string Security_UsbDrive => ResourceManager.GetString(nameof(Security_UsbDrive), _resourceCulture);
     }
 }

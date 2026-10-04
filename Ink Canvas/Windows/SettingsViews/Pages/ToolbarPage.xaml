@@ -13,7 +13,7 @@
       xmlns:touch="clr-namespace:Ink_Canvas.Helpers"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d"
-      Title="工具栏">
+      Title="{x:Static props:NavStrings.Nav_Toolbar}">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -97,12 +97,14 @@
                                TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
 
-                <Button Grid.Column="3" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                <Button Grid.Column="3"
                         Click="AddLibraryItem_Click" x:Name="BtnAddItem"
                         Background="Transparent" BorderThickness="0"
                         Padding="6,4" VerticalAlignment="Center"
                         ToolTip="{x:Static props:FloatingBarStrings.ToolbarPage_AddToAdded}"
-                        Cursor="Hand" Visibility="Collapsed"/>
+                        Cursor="Hand" Visibility="Collapsed">
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Add_20_Regular}" FontSize="12"/>
+                </Button>
             </Grid>
         </DataTemplate>
     </ResourceDictionary>

@@ -651,4 +651,108 @@
   <data name="MiniWhiteboard_Settings_Opacity" xml:space="preserve">
     <value>不透明度</value>
   </data>
+
+  <data name="FloatingBar_QuickPanel" xml:space="preserve">
+    <value>快捷面板</value>
+  </data>
+
+  <data name="FloatingBar_Appearance" xml:space="preserve">
+    <value>浮动栏外观</value>
+  </data>
+
+  <data name="FloatingBar_ColorfulBar" xml:space="preserve">
+    <value>彩色浮动栏</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarBehavior" xml:space="preserve">
+    <value>工具栏行为</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarPosition" xml:space="preserve">
+    <value>工具栏位置</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarPositionDesc" xml:space="preserve">
+    <value>设置工具栏相对于拖动图标的显示位置</value>
+  </data>
+
+  <data name="FloatingBar_PositionTop" xml:space="preserve">
+    <value>上方</value>
+  </data>
+
+  <data name="FloatingBar_PositionBottom" xml:space="preserve">
+    <value>下方</value>
+  </data>
+
+  <data name="FloatingBar_FlipContent" xml:space="preserve">
+    <value>翻转组件内容</value>
+  </data>
+
+  <data name="FloatingBar_FlipContentDesc" xml:space="preserve">
+    <value>翻转组件内容的方向，更改后建议重启应用</value>
+  </data>
+
+  <data name="FloatingBar_DisableToolbarAnimation" xml:space="preserve">
+    <value>禁止工具栏动画</value>
+  </data>
+
+  <data name="FloatingBar_DisableToolbarAnimationDesc" xml:space="preserve">
+    <value>开启后非选定工具栏按钮不会自动下沉居中</value>
+  </data>
+
+  <data name="FloatingBar_AutoFlipWhenCramped" xml:space="preserve">
+    <value>空间不足时自动翻转</value>
+  </data>
+
+  <data name="FloatingBar_AutoFlipWhenCrampedDesc" xml:space="preserve">
+    <value>拖动工具栏到屏幕边缘空间不足时自动翻转方向，更改后建议重启应用</value>
+  </data>
+
+  <data name="FloatingBar_FlipContentOnAutoFlip" xml:space="preserve">
+    <value>自动翻转后翻转组件内容</value>
+  </data>
+
+  <data name="FloatingBar_FlipContentOnAutoFlipDesc" xml:space="preserve">
+    <value>开启后自动翻转时仅移动拖动图标位置，组件内容保持原顺序，更改后建议重启应用</value>
+  </data>
+
+  <data name="FloatingBar_ScaleAndOpacity" xml:space="preserve">
+    <value>缩放与透明度</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarComponents" xml:space="preserve">
+    <value>工具栏组件</value>
+  </data>
+
+  <data name="FloatingBar_ToolbarMenu" xml:space="preserve">
+    <value>工具栏菜单</value>
+  </data>
+
+  <data name="ToolbarMenu_ConfigHint" xml:space="preserve">
+    <value>配置浮动栏工具菜单中显示的项目和顺序，最多 9 个（3×3 布局）。</value>
+  </data>
+
+  <data name="ToolbarMenu_AddedMenuItems" xml:space="preserve">
+    <value>已添加的菜单项</value>
+  </data>
+
+  <data name="ToolbarMenu_AvailableMenuItems" xml:space="preserve">
+    <value>可添加的菜单项</value>
+  </data>
+
+  <data name="ToolbarMenu_MaxItems" xml:space="preserve">
+    <value>最多只能添加 9 个菜单项。</value>
+  </data>
+
+  <data name="Board_PositionFirst" xml:space="preserve">
+    <value>[首]</value>
+  </data>
+
+  <data name="Board_PositionLast" xml:space="preserve">
+    <value>[末]</value>
+  </data>
+
+  <data name="Board_PositionSingle" xml:space="preserve">
+    <value>[独立]</value>
+  </data>
 </root>

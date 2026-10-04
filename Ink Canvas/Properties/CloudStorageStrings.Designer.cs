@@ -165,5 +165,27 @@ namespace Ink_Canvas.Properties
         public static string CloudStorage_DeleteTokenError => ResourceManager.GetString(nameof(CloudStorage_DeleteTokenError), _resourceCulture);
 
         public static string CloudStorage_TokenSelected => ResourceManager.GetString(nameof(CloudStorage_TokenSelected), _resourceCulture);
+
+        public static string CloudStorage_AuthResponseFailed => ResourceManager.GetString(nameof(CloudStorage_AuthResponseFailed), _resourceCulture);
+
+        public static string CloudStorage_TokenFailed => ResourceManager.GetString(nameof(CloudStorage_TokenFailed), _resourceCulture);
+
+        public static string CloudStorage_TokenNetworkError => ResourceManager.GetString(nameof(CloudStorage_TokenNetworkError), _resourceCulture);
+
+        public static string CloudStorage_TokenError => ResourceManager.GetString(nameof(CloudStorage_TokenError), _resourceCulture);
+
+        public static string CloudStorage_ApiRequestFailed => ResourceManager.GetString(nameof(CloudStorage_ApiRequestFailed), _resourceCulture);
+
+        public static string CloudStorage_RequestError => ResourceManager.GetString(nameof(CloudStorage_RequestError), _resourceCulture);
+
+        public static string CloudStorage_FileNotFound => ResourceManager.GetString(nameof(CloudStorage_FileNotFound), _resourceCulture);
+
+        public static string CloudStorage_UploadFailed => ResourceManager.GetString(nameof(CloudStorage_UploadFailed), _resourceCulture);
+
+        public static string CloudStorage_UploadNetworkError => ResourceManager.GetString(nameof(CloudStorage_UploadNetworkError), _resourceCulture);
+
+        public static string CloudStorage_UploadError => ResourceManager.GetString(nameof(CloudStorage_UploadError), _resourceCulture);
+
+        public static string CloudStorage_AutoUploadTitle => ResourceManager.GetString(nameof(CloudStorage_AutoUploadTitle), _resourceCulture);
     }
 }

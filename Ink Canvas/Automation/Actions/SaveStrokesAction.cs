@@ -27,7 +27,7 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "保存笔画", "ContentSaveOutline")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_SaveStrokes, "ContentSaveOutline")
             {
                 SettingsType = typeof(SaveStrokesActionSettings)
             };

@@ -23,7 +23,7 @@ namespace Ink_Canvas.WorkflowAutomation.Rules
 
         public static RuleRegistryInfo Register()
         {
-            var info = new RuleRegistryInfo(RuleId, "进程正在运行", "ApplicationOutline")
+            var info = new RuleRegistryInfo(RuleId, Properties.AutomationStrings.Automation_Rule_ProcessRunning, "ApplicationOutline")
             {
                 SettingsType = typeof(ProcessRunningRuleSettings)
             };

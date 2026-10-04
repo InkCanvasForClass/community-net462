@@ -236,10 +236,10 @@ namespace Ink_Canvas
             timerNtpSync.Interval = 1000 * 60 * 60 * 2; // 每2小时同步一次
             timerNtpSync.Start();
             timerKillProcess.Start();
-            nowTimeVM.nowDate = DateTime.Now.ToString("yyyy'年'MM'月'dd'日' dddd");
+            nowTimeVM.nowDate = DateTime.Now.ToString(Properties.MainWindowStrings.Main_Clock_DateFormat);
             nowTimeVM.nowTime = Settings.Appearance.Use24HourTimeFormat
                 ? DateTime.Now.ToString("HH:mm:ss")
-                : DateTime.Now.ToString("tt hh'时'mm'分'ss'秒'");
+                : DateTime.Now.ToString(Properties.MainWindowStrings.Main_Clock_TimeFormat);
 
             InitHighPrecisionTimeDisplay();
 
@@ -467,7 +467,7 @@ namespace Ink_Canvas
             }
             else
             {
-                timeString = displayTime.ToString("tt hh'时'mm'分'ss'秒'");
+                timeString = displayTime.ToString(Properties.MainWindowStrings.Main_Clock_TimeFormat);
             }
 
             if (timeString != lastDisplayedTime)
@@ -495,7 +495,7 @@ namespace Ink_Canvas
             // 使用BeginInvoke异步更新UI，避免阻塞
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                nowTimeVM.nowDate = DateTime.Now.ToString("yyyy'年'MM'月'dd'日' dddd");
+                nowTimeVM.nowDate = DateTime.Now.ToString(Properties.MainWindowStrings.Main_Clock_DateFormat);
             }));
         }
 
@@ -530,7 +530,7 @@ namespace Ink_Canvas
             }
             else
             {
-                timeString = displayTime.ToString("tt hh'时'mm'分'ss'秒'");
+                timeString = displayTime.ToString(Properties.MainWindowStrings.Main_Clock_TimeFormat);
             }
 
             if (timeString != lastDisplayedTime)
@@ -624,7 +624,7 @@ namespace Ink_Canvas
                     {
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            ShowNotification("「希沃白板 5」已自动关闭");
+                            ShowNotification(Properties.MainWindowStrings.Main_AutoKill_SeewoBoard5);
                         }));
                     }
 
@@ -632,7 +632,7 @@ namespace Ink_Canvas
                     {
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            ShowNotification("「鸿合屏幕书写」已自动关闭");
+                            ShowNotification(Properties.MainWindowStrings.Main_AutoKill_HiteAnnotation);
                             if (Settings.Automation.IsAutoKillHiteAnnotation && Settings.Automation.IsAutoEnterAnnotationAfterKillHite)
                             {
                                 // 检查是否处于收纳状态，如果是则先展开浮动栏
@@ -655,7 +655,7 @@ namespace Ink_Canvas
                     {
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            ShowNewMessage("「ICA」已自动关闭");
+                            ShowNewMessage(Properties.MainWindowStrings.Main_AutoKill_Ica);
                         }));
                     }
 
@@ -663,7 +663,7 @@ namespace Ink_Canvas
                     {
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            ShowNotification("「Ink Canvas」已自动关闭");
+                            ShowNotification(Properties.MainWindowStrings.Main_AutoKill_InkCanvas);
                         }));
                     }
 

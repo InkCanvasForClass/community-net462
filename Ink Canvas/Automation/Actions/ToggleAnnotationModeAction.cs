@@ -24,7 +24,7 @@ namespace Ink_Canvas.WorkflowAutomation.Actions
 
         public static ActionRegistryInfo Register()
         {
-            var info = new ActionRegistryInfo(ActionId, "切换批注模式", "PenTool")
+            var info = new ActionRegistryInfo(ActionId, Properties.AutomationStrings.Automation_Action_ToggleAnnotation, "PenTool")
             {
                 SettingsType = typeof(ToggleAnnotationModeActionSettings)
             };

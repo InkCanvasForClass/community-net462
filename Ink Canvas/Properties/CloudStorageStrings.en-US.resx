@@ -234,4 +234,48 @@
   <data name="CloudStorage_TokenSelected" xml:space="preserve">
     <value>Token selected</value>
   </data>
+
+  <data name="CloudStorage_AuthResponseFailed" xml:space="preserve">
+    <value>Authentication response failed</value>
+  </data>
+
+  <data name="CloudStorage_TokenFailed" xml:space="preserve">
+    <value>Failed to get access token: {0}</value>
+  </data>
+
+  <data name="CloudStorage_TokenNetworkError" xml:space="preserve">
+    <value>Network error while getting access token: {0}</value>
+  </data>
+
+  <data name="CloudStorage_TokenError" xml:space="preserve">
+    <value>Error while getting access token: {0}</value>
+  </data>
+
+  <data name="CloudStorage_ApiRequestFailed" xml:space="preserve">
+    <value>API request failed: {0} - {1}</value>
+  </data>
+
+  <data name="CloudStorage_RequestError" xml:space="preserve">
+    <value>Error while sending the request: {0}</value>
+  </data>
+
+  <data name="CloudStorage_FileNotFound" xml:space="preserve">
+    <value>File does not exist: {0}</value>
+  </data>
+
+  <data name="CloudStorage_UploadFailed" xml:space="preserve">
+    <value>Failed to upload the file: {0} - {1}</value>
+  </data>
+
+  <data name="CloudStorage_UploadNetworkError" xml:space="preserve">
+    <value>Network error while uploading the file: {0}</value>
+  </data>
+
+  <data name="CloudStorage_UploadError" xml:space="preserve">
+    <value>Error while uploading the file: {0}</value>
+  </data>
+
+  <data name="CloudStorage_AutoUploadTitle" xml:space="preserve">
+    <value>Auto-uploaded {0} - {1}</value>
+  </data>
 </root>

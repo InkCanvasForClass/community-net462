@@ -14,7 +14,7 @@ namespace Ink_Canvas.WorkflowAutomation.Triggers
     /// 当 PPT 进入放映模式时触发的触发器。
     /// 通过 SystemEventMonitor 的进程和窗口事件驱动，无需独立轮询。
     /// </summary>
-    [TriggerInfo("inkcanvas.pptslideshow", "PPT放映检测", "Presentation")]
+    [TriggerInfo("inkcanvas.pptslideshow", "Automation_Trigger_PptDetection", "Presentation")]
     public class PPTSlideShowTrigger : TriggerBase<PPTSlideShowSettings>
     {
         private bool _wasInSlideShow = false;

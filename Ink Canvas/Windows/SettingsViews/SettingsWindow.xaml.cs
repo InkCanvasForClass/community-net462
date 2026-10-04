@@ -1,6 +1,7 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Pages;
+using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,8 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             InitializeComponent();
 
+            System.Windows.Shell.WindowChrome.SetIsHitTestVisibleInChrome(controlsSearchBox, true);
+
             ApplyCurrentTheme();
             global::Ink_Canvas.Helpers.WindowBackdropHelper.Apply(this, Helpers.SettingsManager.Settings);
 
@@ -45,6 +48,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             _pageTypes = new Dictionary<string, Type>
             {
                 { "HomePage", typeof(HomePage) },
+                { "HomeDashboardPage", typeof(HomeDashboardPage) },
                 { "StartupPage", typeof(StartupPage) },
                 { "UpdatePage", typeof(UpdatePage) },
                 { "HotkeyPage", typeof(HotkeyPage) },
@@ -82,7 +86,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             // 默认选中首页
             if (NavigationViewControl.MenuItems.Count > 0)
             {
-                NavigateToPage("HomePage");
+                NavigateToPage("HomeDashboardPage");
                 NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
                 NavigationViewControl.Header = NavStrings.Nav_Home;
             }
@@ -96,7 +100,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    NavigateToPage("HomePage");
+                    NavigateToPage("HomeDashboardPage");
                     NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
                     NavigationViewControl.Header = NavStrings.Nav_Home;
 
@@ -930,7 +934,10 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                         navItem.Icon = new FontIcon
                         {
-                            Glyph = "\uE713"
+                            Icon = FluentSystemIcons.Settings_20_Regular,
+                            FontSize = 16,
+                            RenderTransformOrigin = new Point(0.5, 0.5),
+                            RenderTransform = new System.Windows.Media.ScaleTransform(1.25, 1.25)
                         };
 
                         NavigationViewControl.MenuItems.Add(navItem);

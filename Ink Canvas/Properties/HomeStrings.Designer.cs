@@ -44,6 +44,8 @@ namespace Ink_Canvas.Properties
 
         public static string Home_Reset => ResourceManager.GetString(nameof(Home_Reset), _resourceCulture);
 
+        public static string Home_NewHomeNotice => ResourceManager.GetString(nameof(Home_NewHomeNotice), _resourceCulture);
+
         public static string Home_ResetSettings => ResourceManager.GetString(nameof(Home_ResetSettings), _resourceCulture);
 
         public static string Home_RestartApp => ResourceManager.GetString(nameof(Home_RestartApp), _resourceCulture);
@@ -92,6 +94,20 @@ namespace Ink_Canvas.Properties
 
         public static string Home_FriendlyLinks => ResourceManager.GetString(nameof(Home_FriendlyLinks), _resourceCulture);
 
+        public static string Home_QuickAccess => ResourceManager.GetString(nameof(Home_QuickAccess), _resourceCulture);
+
+        public static string Home_ViewAll => ResourceManager.GetString(nameof(Home_ViewAll), _resourceCulture);
+
+        public static string Home_TryNewUI => ResourceManager.GetString(nameof(Home_TryNewUI), _resourceCulture);
+
+        public static string Home_BackToOldUI => ResourceManager.GetString(nameof(Home_BackToOldUI), _resourceCulture);
+
         public static string Splash_Starting => ResourceManager.GetString(nameof(Splash_Starting), _resourceCulture);
+
+        public static string Splash_LoadingConfig => ResourceManager.GetString(nameof(Splash_LoadingConfig), _resourceCulture);
+
+        public static string Splash_InitializingMain => ResourceManager.GetString(nameof(Splash_InitializingMain), _resourceCulture);
+
+        public static string Splash_Complete => ResourceManager.GetString(nameof(Splash_Complete), _resourceCulture);
     }
 }

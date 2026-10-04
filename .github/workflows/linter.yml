@@ -40,17 +40,21 @@ jobs:
           persist-credentials: false
 
       - name: Super-linter
-        uses: super-linter/super-linter@v8.7.0 # x-release-please-version
+        uses: super-linter/super-linter@v9.0.0 # x-release-please-version
         env:
           # Flag to have the linter complete with exit code 0 even if errors were detected, in order not to make cjk unhappy.
           DISABLE_ERRORS: true
-          # Disable the BIOME_FORMAT rule
+          # Disable the BIOME_* rule
           VALIDATE_BIOME_FORMAT: false
+          VALIDATE_BIOME_LINT: false
           # Disable the SPELL_CODESPELL rule
           VALIDATE_SPELL_CODESPELL: false
           # Disable the GITLEAKS rule temporarily
           VALIDATE_GITLEAKS: false
           # Save the super-linter output
           SAVE_SUPER_LINTER_OUTPUT: true
+
+          DEFAULT_BRANCH: 17194-ep
+          SAVE_SUPER_LINTER_SUMMARY: true
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

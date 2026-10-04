@@ -147,5 +147,63 @@ namespace Ink_Canvas.Properties
         public static string Page3_Uploading => ResourceManager.GetString(nameof(Page3_Uploading), _resourceCulture);
 
         public static string Page3_PastebinNotConfigured => ResourceManager.GetString(nameof(Page3_PastebinNotConfigured), _resourceCulture);
+
+        public static string Feedback_MicroBin_ServerUrlEmpty => ResourceManager.GetString(nameof(Feedback_MicroBin_ServerUrlEmpty), _resourceCulture);
+
+        public static string Feedback_MicroBin_ContentEmpty => ResourceManager.GetString(nameof(Feedback_MicroBin_ContentEmpty), _resourceCulture);
+
+        public static string Feedback_FetchFailed => ResourceManager.GetString(nameof(Feedback_FetchFailed), _resourceCulture);
+
+        public static string Feedback_NoPptLinkage => ResourceManager.GetString(nameof(Feedback_NoPptLinkage), _resourceCulture);
+
+        public static string Feedback_PptLinkageFailed => ResourceManager.GetString(nameof(Feedback_PptLinkageFailed), _resourceCulture);
+
+        public static string Feedback_NoInkRecognition => ResourceManager.GetString(nameof(Feedback_NoInkRecognition), _resourceCulture);
+
+        public static string Feedback_InkRecognitionFailed => ResourceManager.GetString(nameof(Feedback_InkRecognitionFailed), _resourceCulture);
+
+        public static string Feedback_SectionEnvironment => ResourceManager.GetString(nameof(Feedback_SectionEnvironment), _resourceCulture);
+
+        public static string Feedback_SectionDeviceInfo => ResourceManager.GetString(nameof(Feedback_SectionDeviceInfo), _resourceCulture);
+
+        public static string Feedback_SectionSoftwareConfig => ResourceManager.GetString(nameof(Feedback_SectionSoftwareConfig), _resourceCulture);
+
+        public static string Feedback_SectionPptLinkage => ResourceManager.GetString(nameof(Feedback_SectionPptLinkage), _resourceCulture);
+
+        public static string Feedback_SectionInkRecognition => ResourceManager.GetString(nameof(Feedback_SectionInkRecognition), _resourceCulture);
+
+        public static string Feedback_PptLinkageHeader => ResourceManager.GetString(nameof(Feedback_PptLinkageHeader), _resourceCulture);
+
+        public static string Feedback_InkRecognitionHeader => ResourceManager.GetString(nameof(Feedback_InkRecognitionHeader), _resourceCulture);
+
+        public static string Feedback_MicroBin_UploadFailed => ResourceManager.GetString(nameof(Feedback_MicroBin_UploadFailed), _resourceCulture);
+
+        public static string Feedback_PptLinkageLineFormat => ResourceManager.GetString(nameof(Feedback_PptLinkageLineFormat), _resourceCulture);
+
+        public static string Feedback_WpsSupportLineFormat => ResourceManager.GetString(nameof(Feedback_WpsSupportLineFormat), _resourceCulture);
+
+        public static string Feedback_MsoSupportLineFormat => ResourceManager.GetString(nameof(Feedback_MsoSupportLineFormat), _resourceCulture);
+
+        public static string Feedback_InkRecognitionLineFormat => ResourceManager.GetString(nameof(Feedback_InkRecognitionLineFormat), _resourceCulture);
+
+        public static string Feedback_EngineLineFormat => ResourceManager.GetString(nameof(Feedback_EngineLineFormat), _resourceCulture);
+
+        public static string Feedback_DeviceIdFormat => ResourceManager.GetString(nameof(Feedback_DeviceIdFormat), _resourceCulture);
+
+        public static string Feedback_PptLinkageBlockFormat => ResourceManager.GetString(nameof(Feedback_PptLinkageBlockFormat), _resourceCulture);
+
+        public static string Feedback_InkRecognitionBlockFormat => ResourceManager.GetString(nameof(Feedback_InkRecognitionBlockFormat), _resourceCulture);
+
+        public static string Feedback_SoftwareVersionFormat => ResourceManager.GetString(nameof(Feedback_SoftwareVersionFormat), _resourceCulture);
+
+        public static string Feedback_UpdateChannelFormat => ResourceManager.GetString(nameof(Feedback_UpdateChannelFormat), _resourceCulture);
+
+        public static string Feedback_OsVersionFormat => ResourceManager.GetString(nameof(Feedback_OsVersionFormat), _resourceCulture);
+
+        public static string Feedback_NetVersionFormat => ResourceManager.GetString(nameof(Feedback_NetVersionFormat), _resourceCulture);
+
+        public static string Feedback_DeviceIdLineFormat => ResourceManager.GetString(nameof(Feedback_DeviceIdLineFormat), _resourceCulture);
+
+        public static string Feedback_DeviceIdLineFormat2 => ResourceManager.GetString(nameof(Feedback_DeviceIdLineFormat2), _resourceCulture);
     }
 }

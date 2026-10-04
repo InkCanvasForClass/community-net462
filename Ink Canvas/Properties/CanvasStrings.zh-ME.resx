@@ -366,4 +366,132 @@
   <data name="Shape_RemoveAsymptote" xml:space="preserve">
     <value>渐近线要不要删掉？</value>
   </data>
+
+  <data name="Board_MenuConfigHint" xml:space="preserve">
+    <value>設定白板工具選單中顯示的項目和順序，最多 9 個（3×3 佈局）。</value>
+  </data>
+
+  <data name="Board_AddedMenuItems" xml:space="preserve">
+    <value>已加入的選單項</value>
+  </data>
+
+  <data name="Board_AvailableMenuItems" xml:space="preserve">
+    <value>可加入的選單項</value>
+  </data>
+
+  <data name="Board_ResetMenuLayout" xml:space="preserve">
+    <value>還原選單預設佈局</value>
+  </data>
+
+  <data name="InkRecog_LineNormalizeThreshold" xml:space="preserve">
+    <value>直線歸一化閾值</value>
+  </data>
+
+  <data name="ScreenTouch_NibModeBoundsHeader" xml:space="preserve">
+    <value>筆尖模式邊界閾值</value>
+  </data>
+
+  <data name="ScreenTouch_FingerModeBoundsHeader" xml:space="preserve">
+    <value>手指模式邊界閾值</value>
+  </data>
+
+  <data name="ScreenTouch_NibEraserSizeHeader" xml:space="preserve">
+    <value>筆尖模式橡皮擦尺寸</value>
+  </data>
+
+  <data name="ScreenTouch_FingerEraserSizeHeader" xml:space="preserve">
+    <value>手指模式橡皮擦尺寸</value>
+  </data>
+
+  <data name="ScreenTouch_AutoCalibrateHeader" xml:space="preserve">
+    <value>自動校準觸控參數</value>
+  </data>
+
+  <data name="ScreenTouch_AutoCalibrateDesc" xml:space="preserve">
+    <value>透過三次觸控自動計算合適的筆尖/手指閾值和觸控倍率</value>
+  </data>
+
+  <data name="ScreenTouch_CalibrateStepsHeader" xml:space="preserve">
+    <value>校準步驟</value>
+  </data>
+
+  <data name="ScreenTouch_CalibrateHint" xml:space="preserve">
+    <value>點擊&amp;quot;開始校準&amp;quot;按鈕，然後依次在下方區域用：</value>
+  </data>
+
+  <data name="ScreenTouch_StepNib" xml:space="preserve">
+    <value>1. 筆尖（觸控筆）</value>
+  </data>
+
+  <data name="ScreenTouch_StepFinger" xml:space="preserve">
+    <value>2. 手指</value>
+  </data>
+
+  <data name="ScreenTouch_StepPalm" xml:space="preserve">
+    <value>3. 手掌（模擬誤觸）</value>
+  </data>
+
+  <data name="ScreenTouch_StartCalibrate" xml:space="preserve">
+    <value>開始校準</value>
+  </data>
+
+  <data name="ScreenTouch_ClickButtonToStart" xml:space="preserve">
+    <value>點擊上面的按鈕開始</value>
+  </data>
+
+  <data name="ScreenTouch_NibNotCalibrated" xml:space="preserve">
+    <value>筆尖值: 未校準</value>
+  </data>
+
+  <data name="ScreenTouch_FingerNotCalibrated" xml:space="preserve">
+    <value>手指值: 未校準</value>
+  </data>
+
+  <data name="ScreenTouch_PalmNotCalibrated" xml:space="preserve">
+    <value>手掌值: 未校準</value>
+  </data>
+
+  <data name="ScreenTouch_Code_UseNibHint" xml:space="preserve">
+    <value>請用 筆尖 點擊此處</value>
+  </data>
+
+  <data name="ScreenTouch_Code_NibWaiting" xml:space="preserve">
+    <value>筆尖值: 等待校準...</value>
+  </data>
+
+  <data name="ScreenTouch_Code_FingerNotCalibrated" xml:space="preserve">
+    <value>手指值: 未校準</value>
+  </data>
+
+  <data name="ScreenTouch_Code_PalmNotCalibrated" xml:space="preserve">
+    <value>手掌值: 未校準</value>
+  </data>
+
+  <data name="ScreenTouch_Code_UseFingerHint" xml:space="preserve">
+    <value>請用 手指 點擊此處</value>
+  </data>
+
+  <data name="ScreenTouch_Code_UsePalmHint" xml:space="preserve">
+    <value>請用 手掌 點擊此處（模擬誤觸）</value>
+  </data>
+
+  <data name="ScreenTouch_Code_Done" xml:space="preserve">
+    <value>校準完成！點擊按鈕重新校準</value>
+  </data>
+
+  <data name="ScreenTouch_Code_NibValue" xml:space="preserve">
+    <value>筆尖值: {0:F2}</value>
+  </data>
+
+  <data name="ScreenTouch_Code_FingerValue" xml:space="preserve">
+    <value>手指值: {0:F2}</value>
+  </data>
+
+  <data name="ScreenTouch_Code_PalmValue" xml:space="preserve">
+    <value>手掌值: {0:F2}</value>
+  </data>
+
+  <data name="ScreenTouch_Code_CalibrateSuccess" xml:space="preserve">
+    <value>校準成功！筆尖閾值={0}，手指閾值={1}，觸控倍率={2:F2}</value>
+  </data>
 </root>

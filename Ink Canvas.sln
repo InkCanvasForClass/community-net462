@@ -1,7 +1,7 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.4.11626.88 stable
+VisualStudioVersion = 18.4.11626.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InkCanvasForClass", "Ink Canvas\InkCanvasForClass.csproj", "{8D0EDFC7-F974-4571-BC49-6F3A6653FE81}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InkCanvas.IACoreHelper", "InkCanvas.IACoreHelper\InkCanvas.IACoreHelper.csproj", "{B1A2C3D4-E5F6-7890-ABCD-EF1234567891}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InkCanvas.SettingsTreeView", "InkCanvas.SettingsTreeView\InkCanvas.SettingsTreeView.csproj", "{C1A2D3E4-F5B6-7890-ABCD-EF1234567892}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InkCanvas.PPTAgent.Contracts", "InkCanvas.PPTAgent.Contracts\InkCanvas.PPTAgent.Contracts.csproj", "{2779DF79-A63A-4772-9D5C-9931A577E63D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +129,26 @@ Global
 		{C1A2D3E4-F5B6-7890-ABCD-EF1234567892}.Release|x64.Build.0 = Release|Any CPU
 		{C1A2D3E4-F5B6-7890-ABCD-EF1234567892}.Release|x86.ActiveCfg = Release|Any CPU
 		{C1A2D3E4-F5B6-7890-ABCD-EF1234567892}.Release|x86.Build.0 = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|ARM.Build.0 = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|x64.Build.0 = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Debug|x86.Build.0 = Debug|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|ARM.ActiveCfg = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|ARM.Build.0 = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|ARM64.Build.0 = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|x64.ActiveCfg = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|x64.Build.0 = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|x86.ActiveCfg = Release|Any CPU
+		{2779DF79-A63A-4772-9D5C-9931A577E63D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

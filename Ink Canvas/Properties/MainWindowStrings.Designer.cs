@@ -385,5 +385,161 @@ namespace Ink_Canvas.Properties
         public static string Main_ExitVerifyWithTotp => ResourceManager.GetString(nameof(Main_ExitVerifyWithTotp), _resourceCulture);
 
         public static string Main_ExitVerifyPasswordOnly => ResourceManager.GetString(nameof(Main_ExitVerifyPasswordOnly), _resourceCulture);
+
+        public static string Main_Freeze_Action_Modify => ResourceManager.GetString(nameof(Main_Freeze_Action_Modify), _resourceCulture);
+
+        public static string Main_Freeze_Action_SwitchToEdit => ResourceManager.GetString(nameof(Main_Freeze_Action_SwitchToEdit), _resourceCulture);
+
+        public static string Main_Freeze_Action_WriteOrErase => ResourceManager.GetString(nameof(Main_Freeze_Action_WriteOrErase), _resourceCulture);
+
+        public static string Main_Freeze_Action_MoveOrScaleContent => ResourceManager.GetString(nameof(Main_Freeze_Action_MoveOrScaleContent), _resourceCulture);
+
+        public static string Main_Freeze_Action_OpenGeometry => ResourceManager.GetString(nameof(Main_Freeze_Action_OpenGeometry), _resourceCulture);
+
+        public static string Main_Freeze_Action_DrawShape => ResourceManager.GetString(nameof(Main_Freeze_Action_DrawShape), _resourceCulture);
+
+        public static string Main_Freeze_Action_SwitchToPen => ResourceManager.GetString(nameof(Main_Freeze_Action_SwitchToPen), _resourceCulture);
+
+        public static string Main_Freeze_Action_CloneInk => ResourceManager.GetString(nameof(Main_Freeze_Action_CloneInk), _resourceCulture);
+
+        public static string Main_Freeze_Action_CloneInkToNewPage => ResourceManager.GetString(nameof(Main_Freeze_Action_CloneInkToNewPage), _resourceCulture);
+
+        public static string Main_Freeze_Action_InsertInkToWhiteboard => ResourceManager.GetString(nameof(Main_Freeze_Action_InsertInkToWhiteboard), _resourceCulture);
+
+        public static string Main_Freeze_Action_ChangeInkWidth => ResourceManager.GetString(nameof(Main_Freeze_Action_ChangeInkWidth), _resourceCulture);
+
+        public static string Main_Freeze_Action_FlipInk => ResourceManager.GetString(nameof(Main_Freeze_Action_FlipInk), _resourceCulture);
+
+        public static string Main_Freeze_Action_RotateInk => ResourceManager.GetString(nameof(Main_Freeze_Action_RotateInk), _resourceCulture);
+
+        public static string Main_Freeze_Action_MoveInk => ResourceManager.GetString(nameof(Main_Freeze_Action_MoveInk), _resourceCulture);
+
+        public static string Main_Freeze_Action_MoveOrScaleInk => ResourceManager.GetString(nameof(Main_Freeze_Action_MoveOrScaleInk), _resourceCulture);
+
+        public static string Main_Freeze_Action_ResizeInk => ResourceManager.GetString(nameof(Main_Freeze_Action_ResizeInk), _resourceCulture);
+
+        public static string Main_Freeze_Action_OpenInkFile => ResourceManager.GetString(nameof(Main_Freeze_Action_OpenInkFile), _resourceCulture);
+
+        public static string Main_Freeze_Action_RestoreInkFile => ResourceManager.GetString(nameof(Main_Freeze_Action_RestoreInkFile), _resourceCulture);
+
+        public static string Main_Freeze_Action_SwitchToSelect => ResourceManager.GetString(nameof(Main_Freeze_Action_SwitchToSelect), _resourceCulture);
+
+        public static string Main_Freeze_Action_ClearFrozenContent => ResourceManager.GetString(nameof(Main_Freeze_Action_ClearFrozenContent), _resourceCulture);
+
+        public static string Main_Freeze_Action_InsertScreenshot => ResourceManager.GetString(nameof(Main_Freeze_Action_InsertScreenshot), _resourceCulture);
+
+        public static string Main_Freeze_Action_PasteImage => ResourceManager.GetString(nameof(Main_Freeze_Action_PasteImage), _resourceCulture);
+
+        public static string Main_Freeze_Action_UndoFrozenContent => ResourceManager.GetString(nameof(Main_Freeze_Action_UndoFrozenContent), _resourceCulture);
+
+        public static string Main_Freeze_Action_RedoFrozenContent => ResourceManager.GetString(nameof(Main_Freeze_Action_RedoFrozenContent), _resourceCulture);
+
+        public static string Main_Freeze_Action_ReplayFrozenContent => ResourceManager.GetString(nameof(Main_Freeze_Action_ReplayFrozenContent), _resourceCulture);
+
+        public static string Main_Freeze_Action_SwitchToEraser => ResourceManager.GetString(nameof(Main_Freeze_Action_SwitchToEraser), _resourceCulture);
+
+        public static string Main_Freeze_Action_SwitchToStrokeEraser => ResourceManager.GetString(nameof(Main_Freeze_Action_SwitchToStrokeEraser), _resourceCulture);
+
+        public static string Main_Freeze_Action_EmptyFrozenContent => ResourceManager.GetString(nameof(Main_Freeze_Action_EmptyFrozenContent), _resourceCulture);
+
+        public static string Main_Freeze_Action_InsertImage => ResourceManager.GetString(nameof(Main_Freeze_Action_InsertImage), _resourceCulture);
+
+        public static string Main_Freeze_Action_EraseFrozenPage => ResourceManager.GetString(nameof(Main_Freeze_Action_EraseFrozenPage), _resourceCulture);
+
+        public static string Main_Freeze_Action_MoveImage => ResourceManager.GetString(nameof(Main_Freeze_Action_MoveImage), _resourceCulture);
+
+        public static string Main_Freeze_Action_ScaleImage => ResourceManager.GetString(nameof(Main_Freeze_Action_ScaleImage), _resourceCulture);
+
+        public static string Main_Freeze_Action_MoveOrScaleImage => ResourceManager.GetString(nameof(Main_Freeze_Action_MoveOrScaleImage), _resourceCulture);
+
+        public static string Main_Freeze_Action_CloneImage => ResourceManager.GetString(nameof(Main_Freeze_Action_CloneImage), _resourceCulture);
+
+        public static string Main_Freeze_Action_CloneImageToNewPage => ResourceManager.GetString(nameof(Main_Freeze_Action_CloneImageToNewPage), _resourceCulture);
+
+        public static string Main_Freeze_Action_RotateImage => ResourceManager.GetString(nameof(Main_Freeze_Action_RotateImage), _resourceCulture);
+
+        public static string Main_Freeze_Action_SwitchPdfPage => ResourceManager.GetString(nameof(Main_Freeze_Action_SwitchPdfPage), _resourceCulture);
+
+        public static string Main_Freeze_Action_DeleteImage => ResourceManager.GetString(nameof(Main_Freeze_Action_DeleteImage), _resourceCulture);
+
+        public static string Main_Media_UnknownError => ResourceManager.GetString(nameof(Main_Media_UnknownError), _resourceCulture);
+
+        public static string Main_Media_LoadFailed => ResourceManager.GetString(nameof(Main_Media_LoadFailed), _resourceCulture);
+
+        public static string Main_PDF_OpenFailed => ResourceManager.GetString(nameof(Main_PDF_OpenFailed), _resourceCulture);
+
+        public static string Main_Hotkey_SingleScreen => ResourceManager.GetString(nameof(Main_Hotkey_SingleScreen), _resourceCulture);
+
+        public static string Main_Hotkey_ScreenInfoUnavailable => ResourceManager.GetString(nameof(Main_Hotkey_ScreenInfoUnavailable), _resourceCulture);
+
+        public static string Main_Settings_RestoreFailedDefaults => ResourceManager.GetString(nameof(Main_Settings_RestoreFailedDefaults), _resourceCulture);
+
+        public static string Main_Settings_RestoreReloadFailedDefaults => ResourceManager.GetString(nameof(Main_Settings_RestoreReloadFailedDefaults), _resourceCulture);
+
+        public static string Main_Settings_RestoreLoadFailedDefaults => ResourceManager.GetString(nameof(Main_Settings_RestoreLoadFailedDefaults), _resourceCulture);
+
+        public static string Main_Clock_DateFormat => ResourceManager.GetString(nameof(Main_Clock_DateFormat), _resourceCulture);
+
+        public static string Main_Clock_TimeFormat => ResourceManager.GetString(nameof(Main_Clock_TimeFormat), _resourceCulture);
+
+        public static string Main_AutoKill_SeewoBoard5 => ResourceManager.GetString(nameof(Main_AutoKill_SeewoBoard5), _resourceCulture);
+
+        public static string Main_AutoKill_HiteAnnotation => ResourceManager.GetString(nameof(Main_AutoKill_HiteAnnotation), _resourceCulture);
+
+        public static string Main_AutoKill_Ica => ResourceManager.GetString(nameof(Main_AutoKill_Ica), _resourceCulture);
+
+        public static string Main_AutoKill_InkCanvas => ResourceManager.GetString(nameof(Main_AutoKill_InkCanvas), _resourceCulture);
+
+        public static string Main_ImageInsert_CameraInserted => ResourceManager.GetString(nameof(Main_ImageInsert_CameraInserted), _resourceCulture);
+
+        public static string Main_ImageInsert_CameraFailed => ResourceManager.GetString(nameof(Main_ImageInsert_CameraFailed), _resourceCulture);
+
+        public static string Main_Uri_MissingNameParam => ResourceManager.GetString(nameof(Main_Uri_MissingNameParam), _resourceCulture);
+
+        public static string Main_Magnifier_LightsOff => ResourceManager.GetString(nameof(Main_Magnifier_LightsOff), _resourceCulture);
+
+        public static string Main_Camera_RefreshFailed => ResourceManager.GetString(nameof(Main_Camera_RefreshFailed), _resourceCulture);
+
+        public static string Main_Camera_PreviewStartFailed => ResourceManager.GetString(nameof(Main_Camera_PreviewStartFailed), _resourceCulture);
+
+        public static string Main_Camera_SwitchFailed => ResourceManager.GetString(nameof(Main_Camera_SwitchFailed), _resourceCulture);
+
+        public static string Main_Camera_FrameProcessFailed => ResourceManager.GetString(nameof(Main_Camera_FrameProcessFailed), _resourceCulture);
+
+        public static string Main_Duration_Seconds => ResourceManager.GetString(nameof(Main_Duration_Seconds), _resourceCulture);
+
+        public static string Main_Duration_MinutesSeconds => ResourceManager.GetString(nameof(Main_Duration_MinutesSeconds), _resourceCulture);
+
+        public static string Main_Duration_Minutes => ResourceManager.GetString(nameof(Main_Duration_Minutes), _resourceCulture);
+
+        public static string Main_Duration_Hours => ResourceManager.GetString(nameof(Main_Duration_Hours), _resourceCulture);
+
+        public static string Main_Duration_MinutesShort => ResourceManager.GetString(nameof(Main_Duration_MinutesShort), _resourceCulture);
+
+        public static string Main_Duration_SecondsShort => ResourceManager.GetString(nameof(Main_Duration_SecondsShort), _resourceCulture);
+
+        public static string Main_Hotkey_ScreenSuffix => ResourceManager.GetString(nameof(Main_Hotkey_ScreenSuffix), _resourceCulture);
+
+        public static string Main_Hotkey_MultiScreen => ResourceManager.GetString(nameof(Main_Hotkey_MultiScreen), _resourceCulture);
+
+        public static string Main_ForceFullscreen => ResourceManager.GetString(nameof(Main_ForceFullscreen), _resourceCulture);
+
+        public static string Main_Interceptor_Blocked => ResourceManager.GetString(nameof(Main_Interceptor_Blocked), _resourceCulture);
+
+        public static string Main_WindowRestoredToFullscreen => ResourceManager.GetString(nameof(Main_WindowRestoredToFullscreen), _resourceCulture);
+
+        public static string Main_Camera_NoDevice => ResourceManager.GetString(nameof(Main_Camera_NoDevice), _resourceCulture);
+
+        public static string Main_Camera_IndexOutOfRange => ResourceManager.GetString(nameof(Main_Camera_IndexOutOfRange), _resourceCulture);
+
+        public static string Main_Ink_MissingMetadata => ResourceManager.GetString(nameof(Main_Ink_MissingMetadata), _resourceCulture);
+
+        public static string Main_Ink_NotInPptMode => ResourceManager.GetString(nameof(Main_Ink_NotInPptMode), _resourceCulture);
+
+        public static string Main_Ink_NotInBoardMode => ResourceManager.GetString(nameof(Main_Ink_NotInBoardMode), _resourceCulture);
+
+        public static string Main_Ink_InvalidXmlFormat => ResourceManager.GetString(nameof(Main_Ink_InvalidXmlFormat), _resourceCulture);
+
+        public static string Main_Ink_PptMismatch => ResourceManager.GetString(nameof(Main_Ink_PptMismatch), _resourceCulture);
     }
 }

@@ -141,7 +141,7 @@ namespace Ink_Canvas.Helpers
                     fileType = "笔记";
                     tags = "自动上传,笔记,png";
                 }
-                var description = $"自动上传的{fileType} - {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                var description = string.Format(Properties.CloudStorageStrings.CloudStorage_AutoUploadTitle, fileType, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 // 创建API客户端并上传文件
                 var apiClient = new DlassApiClient(APP_ID, APP_SECRET, apiBaseUrl, userToken);

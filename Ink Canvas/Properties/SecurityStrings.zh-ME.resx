@@ -191,4 +191,8 @@
     <value>
 (秘籍已启用，直接插盘即过)</value>
   </data>
+
+  <data name="Security_UsbDrive" xml:space="preserve">
+    <value>USB 隨身碟</value>
+  </data>
 </root>

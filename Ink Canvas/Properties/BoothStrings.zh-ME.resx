@@ -66,4 +66,12 @@
   <data name="Title" xml:space="preserve">
     <value>视频展台</value>
   </data>
+
+  <data name="Booth_SeewoNotFound" xml:space="preserve">
+    <value>未找到希沃視頻展台安裝資訊（已掃描 64 位與 32 位卸載登錄檔）。請確認已透過官方安裝包安裝「希沃視頻展台」。</value>
+  </data>
+
+  <data name="Booth_SeewoLaunchFailed" xml:space="preserve">
+    <value>無法啟動希沃視頻展台：</value>
+  </data>
 </root>

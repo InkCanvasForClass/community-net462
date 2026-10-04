@@ -314,7 +314,7 @@ namespace Ink_Canvas
                 // 显示通知（如果启用）
                 if (_settings != null && _settings.ShowNotifications)
                 {
-                    ShowNotification($"已拦截悬浮窗: {e.Rule.Description}");
+                    ShowNotification(string.Format(Properties.MainWindowStrings.Main_Interceptor_Blocked, e.Rule.Description));
                 }
 
                 // 触发事件

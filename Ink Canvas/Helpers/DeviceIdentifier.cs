@@ -559,14 +559,14 @@ namespace Ink_Canvas.Helpers
         {
             if (totalSeconds < 60)
             {
-                return $"{totalSeconds}秒";
+                return string.Format(Properties.MainWindowStrings.Main_Duration_Seconds, totalSeconds);
             }
 
             if (totalSeconds < 3600)
             {
                 var minutes = totalSeconds / 60;
                 var seconds = totalSeconds % 60;
-                return seconds > 0 ? $"{minutes}分{seconds}秒" : $"{minutes}分钟";
+                return seconds > 0 ? string.Format(Properties.MainWindowStrings.Main_Duration_MinutesSeconds, minutes, seconds) : string.Format(Properties.MainWindowStrings.Main_Duration_Minutes, minutes);
             }
             else
             {
@@ -574,9 +574,9 @@ namespace Ink_Canvas.Helpers
                 var minutes = (totalSeconds % 3600) / 60;
                 var seconds = totalSeconds % 60;
 
-                var result = $"{hours}小时";
-                if (minutes > 0) result += $"{minutes}分";
-                if (seconds > 0) result += $"{seconds}秒";
+                var result = string.Format(Properties.MainWindowStrings.Main_Duration_Hours, hours);
+                if (minutes > 0) result += string.Format(Properties.MainWindowStrings.Main_Duration_MinutesShort, minutes);
+                if (seconds > 0) result += string.Format(Properties.MainWindowStrings.Main_Duration_SecondsShort, seconds);
 
                 return result;
             }

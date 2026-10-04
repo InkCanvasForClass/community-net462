@@ -58,10 +58,6 @@
 
 ## 📗 FAQ
 
-### 在 Windows 10 以下版本系统中，部分图标显示为 「□」 怎么办？
-
-[点击下载](https://aka.ms/SegoeFonts "SegoeFonts") SegoeFonts 文件，安装压缩包中 `SegMDL2.ttf` 字体后重启即可解决。
-
 ### 点击放映后一翻页就闪退
 
 请[激活 Microsoft Office](https://www.coolhub.top/archives/14)。

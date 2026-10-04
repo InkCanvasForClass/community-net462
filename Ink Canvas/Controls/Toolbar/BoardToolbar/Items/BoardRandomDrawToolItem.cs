@@ -6,7 +6,6 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar.Items
     {
         public override string Id => "board.randomDraw";
         public override string LocalizationKey => "Tools_RandomDraw";
-        public override string Description => "随机抽";
         public override string IconGeometry => XamlGraphicsIconGeometries.RandomDrawIconGeometry;
 
         protected override void OnClick(IBoardToolbarHost host, object sender, MouseButtonEventArgs e)

@@ -120,4 +120,36 @@
   <data name="Splash_Starting" xml:space="preserve">
     <value>正在加载 Ink Canvas，稍等一下下...</value>
   </data>
+  <data name="Home_QuickAccess" xml:space="preserve">
+    <value>快速访问</value>
+  </data>
+  <data name="Home_ViewAll" xml:space="preserve">
+    <value>查看全部</value>
+  </data>
+  <data name="Home_TryNewUI" xml:space="preserve">
+    <value>体验新版</value>
+  </data>
+  <data name="Home_BackToOldUI" xml:space="preserve">
+    <value>返回旧版</value>
+  </data>
+
+  <data name="Splash_LoadingConfig" xml:space="preserve">
+    <value>正在載入設定...</value>
+  </data>
+
+  <data name="Splash_InitializingMain" xml:space="preserve">
+    <value>正在初始化主介面...</value>
+  </data>
+
+  <data name="Splash_Complete" xml:space="preserve">
+    <value>啟動完成！</value>
+  </data>
+
+  <data name="Home_Reset" xml:space="preserve">
+    <value>重設</value>
+  </data>
+
+  <data name="Home_NewHomeNotice" xml:space="preserve">
+    <value>新主頁正在開發中，歡迎協助我們測試新版主頁！</value>
+  </data>
 </root>

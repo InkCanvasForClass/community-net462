@@ -34,9 +34,9 @@ namespace Ink_Canvas.Helpers
         public static async Task<(string url, string error)> UploadRawAsync(string serverUrl, string content)
         {
             if (string.IsNullOrWhiteSpace(serverUrl))
-                return (null, "服务器地址为空");
+                return (null, Properties.FeedbackStrings.Feedback_MicroBin_ServerUrlEmpty);
             if (string.IsNullOrWhiteSpace(content))
-                return (null, "内容为空");
+                return (null, Properties.FeedbackStrings.Feedback_MicroBin_ContentEmpty);
 
             // 自动补全协议
             serverUrl = serverUrl.TrimEnd('/');
@@ -56,7 +56,7 @@ namespace Ink_Canvas.Helpers
             if (!string.IsNullOrEmpty(url2))
                 return (url2, null);
 
-            return (null, $"表单上传: {error}; Raw上传: {error2}");
+            return (null, string.Format(Properties.FeedbackStrings.Feedback_MicroBin_UploadFailed, error, error2));
         }
 
         /// <summary>

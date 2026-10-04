@@ -11,8 +11,8 @@ namespace Ink_Canvas.Controls.Toolbar.BoardToolbar.Items
     {
         public string Id => "board.pageInfo";
         public string LocalizationKey => "Board_Page";
-        public string DisplayName => Strings.GetString(LocalizationKey) ?? "页码";
-        public string Description => "页码";
+        public string DisplayName => Strings.GetString(LocalizationKey) ?? LocalizationKey;
+        public string Description => DisplayName;
         public string IconGeometry => XamlGraphicsIconGeometries.PageInfoIconGeometry;
         public FontIconData? IconKey => null;
         public ButtonPosition DefaultPosition => ButtonPosition.Middle;

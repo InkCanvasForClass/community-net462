@@ -11,7 +11,7 @@ namespace Ink_Canvas.Controls.Toolbar.FloatingToolbar.Items
         public override string Id => "builtin.videoBooth";
         public override string LocalizationKey => "Board_VideoBooth";
         public override ToolbarRuleset DefaultHidingRuleset => ToolbarRuleset.AlwaysShow().WithHideOnCollapsed();
-        public override string Description => Strings.GetString("Board_VideoBooth") ?? "视频展台";
+        public override string Description => DisplayName;
         public override string IconGeometry => null;
         public override FontIconData? IconKey => FluentSystemIcons.Video_24_Regular;
 
