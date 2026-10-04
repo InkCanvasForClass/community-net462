@@ -176,6 +176,7 @@
                     </ui:SettingsCard.HeaderIcon>
                     <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock x:Name="InkSizeText" Text="—" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button x:Name="BtnManageSaves" Content="{x:Static props:StorageStrings.Storage_ManageSaves_Open}" Click="BtnManageSaves_Click"/>
                         <Button x:Name="BtnCleanInk" Content="{x:Static props:StorageStrings.Storage_Clean}" Click="BtnCleanInk_Click"/>
                     </ikw:SimpleStackPanel>
                 </ui:SettingsCard>

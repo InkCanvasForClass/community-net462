@@ -1,0 +1,156 @@
+<ui:Page xmlns:props="clr-namespace:Ink_Canvas.Properties"
+         x:Class="Ink_Canvas.Windows.SettingsViews.Pages.SavesManagerPage"
+         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+         xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+         mc:Ignorable="d"
+         Title="{x:Static props:StorageStrings.Storage_ManageSaves_Title}">
+
+    <Grid Margin="24,0,24,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="{x:Static props:StorageStrings.Storage_ManageSaves_Title}"
+                   FontSize="20" FontWeight="SemiBold" Margin="0,20,0,8" />
+
+        <TabControl x:Name="MainTab"
+                    Grid.Row="1"
+                    Margin="0,4,0,0"
+                    Style="{StaticResource {x:Static ui:ThemeKeys.TabControlPivotStyleKey}}">
+            <TabItem Header="{x:Static props:StorageStrings.Storage_ManageSaves_TabInk}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" Margin="0,10,0,8">
+                        <CheckBox x:Name="InkSelectAll"
+                                  Content="{x:Static props:StorageStrings.Storage_ManageSaves_SelectAll}"
+                                  VerticalAlignment="Center"
+                                  Checked="InkSelectAll_Changed"
+                                  Unchecked="InkSelectAll_Changed" />
+                        <Button x:Name="InkDelete" Content="{x:Static props:StorageStrings.Storage_ManageSaves_DeleteSelected}" Click="InkDelete_Click" />
+                        <Button x:Name="InkRefresh" Content="{x:Static props:StorageStrings.Storage_Refresh}" Click="InkRefresh_Click" />
+                        <Button x:Name="InkOpenFolder" Content="{x:Static props:StorageStrings.Storage_ManageSaves_OpenFolder}" Click="InkOpenFolder_Click" />
+                        <ComboBox x:Name="InkSort" VerticalAlignment="Center" SelectionChanged="InkSort_SelectionChanged">
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_ModifiedDesc}" Tag="ModifiedText|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_ModifiedAsc}" Tag="ModifiedText|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_CreatedDesc}" Tag="CreatedText|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_CreatedAsc}" Tag="CreatedText|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_NameAsc}" Tag="FileName|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_NameDesc}" Tag="FileName|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_SizeDesc}" Tag="SizeText|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_SizeAsc}" Tag="SizeText|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_TypeAsc}" Tag="TypeLabel|asc"/>
+                        </ComboBox>
+                        <TextBlock x:Name="InkCount" VerticalAlignment="Center" Opacity="0.7" />
+                    </ikw:SimpleStackPanel>
+
+                    <ListView x:Name="InkList"
+                              Grid.Row="1"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              SelectionMode="Single"
+                              Foreground="{DynamicResource SettingsPageForeground}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Width="48" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColSelect}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      MinWidth="0" MinHeight="0"
+                                                      HorizontalAlignment="Center" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Width="300" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColName}" DisplayMemberBinding="{Binding FileName}" />
+                                <GridViewColumn Width="70" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColType}" DisplayMemberBinding="{Binding TypeLabel}" />
+                                <GridViewColumn Width="80" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColSize}" DisplayMemberBinding="{Binding SizeText}" />
+                                <GridViewColumn Width="140" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColModified}" DisplayMemberBinding="{Binding ModifiedText}" />
+                                <GridViewColumn Width="140" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColCreated}" DisplayMemberBinding="{Binding CreatedText}" />
+                                <GridViewColumn Width="90" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColActions}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Padding="8,2" Content="{x:Static props:StorageStrings.Storage_ManageSaves_Reveal}" Click="Reveal_Click" Tag="{Binding}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="{x:Static props:StorageStrings.Storage_ManageSaves_TabScreenshots}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" Margin="0,10,0,8">
+                        <CheckBox x:Name="ShotSelectAll"
+                                  Content="{x:Static props:StorageStrings.Storage_ManageSaves_SelectAll}"
+                                  VerticalAlignment="Center"
+                                  Checked="ShotSelectAll_Changed"
+                                  Unchecked="ShotSelectAll_Changed" />
+                        <Button x:Name="ShotDelete" Content="{x:Static props:StorageStrings.Storage_ManageSaves_DeleteSelected}" Click="ShotDelete_Click" />
+                        <Button x:Name="ShotRefresh" Content="{x:Static props:StorageStrings.Storage_Refresh}" Click="ShotRefresh_Click" />
+                        <Button x:Name="ShotOpenFolder" Content="{x:Static props:StorageStrings.Storage_ManageSaves_OpenFolder}" Click="ShotOpenFolder_Click" />
+                        <ComboBox x:Name="ShotSort" VerticalAlignment="Center" SelectionChanged="ShotSort_SelectionChanged">
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_ModifiedDesc}" Tag="ModifiedText|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_ModifiedAsc}" Tag="ModifiedText|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_CreatedDesc}" Tag="CreatedText|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_CreatedAsc}" Tag="CreatedText|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_NameAsc}" Tag="FileName|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_NameDesc}" Tag="FileName|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_SizeDesc}" Tag="SizeText|desc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_SizeAsc}" Tag="SizeText|asc"/>
+                            <ComboBoxItem Content="{x:Static props:StorageStrings.Storage_ManageSaves_Sort_TypeAsc}" Tag="TypeLabel|asc"/>
+                        </ComboBox>
+                        <TextBlock x:Name="ShotCount" VerticalAlignment="Center" Opacity="0.7" />
+                    </ikw:SimpleStackPanel>
+
+                    <ListView x:Name="ShotList"
+                              Grid.Row="1"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              SelectionMode="Single"
+                              Foreground="{DynamicResource SettingsPageForeground}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Width="48" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColSelect}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      MinWidth="0" MinHeight="0"
+                                                      HorizontalAlignment="Center" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Width="300" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColName}" DisplayMemberBinding="{Binding FileName}" />
+                                <GridViewColumn Width="70" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColType}" DisplayMemberBinding="{Binding TypeLabel}" />
+                                <GridViewColumn Width="80" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColSize}" DisplayMemberBinding="{Binding SizeText}" />
+                                <GridViewColumn Width="140" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColModified}" DisplayMemberBinding="{Binding ModifiedText}" />
+                                <GridViewColumn Width="140" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColCreated}" DisplayMemberBinding="{Binding CreatedText}" />
+                                <GridViewColumn Width="90" Header="{x:Static props:StorageStrings.Storage_ManageSaves_ColActions}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Padding="8,2" Content="{x:Static props:StorageStrings.Storage_ManageSaves_Reveal}" Click="Reveal_Click" Tag="{Binding}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</ui:Page>
