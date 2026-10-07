@@ -299,4 +299,94 @@
   <data name="Restore_FailedMsg" xml:space="preserve">
     <value>还原备份失败: {0}</value>
   </data>
+  <data name="Storage_ManageSaves_Open" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="Storage_ManageSaves_Title" xml:space="preserve">
+    <value>墨迹与截图管理</value>
+  </data>
+  <data name="Storage_ManageSaves_TabInk" xml:space="preserve">
+    <value>墨迹</value>
+  </data>
+  <data name="Storage_ManageSaves_TabScreenshots" xml:space="preserve">
+    <value>截图</value>
+  </data>
+  <data name="Storage_ManageSaves_SelectAll" xml:space="preserve">
+    <value>全选</value>
+  </data>
+  <data name="Storage_ManageSaves_DeleteSelected" xml:space="preserve">
+    <value>删除选中</value>
+  </data>
+  <data name="Storage_ManageSaves_OpenFolder" xml:space="preserve">
+    <value>打开文件夹</value>
+  </data>
+  <data name="Storage_ManageSaves_Reveal" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="Storage_ManageSaves_ColSelect" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="Storage_ManageSaves_ColName" xml:space="preserve">
+    <value>文件名</value>
+  </data>
+  <data name="Storage_ManageSaves_ColType" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="Storage_ManageSaves_ColSize" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="Storage_ManageSaves_ColModified" xml:space="preserve">
+    <value>修改日期</value>
+  </data>
+  <data name="Storage_ManageSaves_ColActions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Storage_ManageSaves_Empty" xml:space="preserve">
+    <value>暂无文件</value>
+  </data>
+  <data name="Storage_ManageSaves_CountFormat" xml:space="preserve">
+    <value>共 {0} 项</value>
+  </data>
+  <data name="Storage_ManageSaves_DeleteConfirm_Title" xml:space="preserve">
+    <value>确认删除</value>
+  </data>
+  <data name="Storage_ManageSaves_DeleteConfirm_Body" xml:space="preserve">
+    <value>确定删除选中的 {0} 个文件吗？此操作不可撤销。</value>
+  </data>
+  <data name="Storage_ManageSaves_DeleteDone" xml:space="preserve">
+    <value>已删除 {0} 个文件</value>
+  </data>
+  <data name="Storage_ManageSaves_DeleteFailed" xml:space="preserve">
+    <value>部分文件删除失败：{0}</value>
+  </data>
+  <data name="Storage_ManageSaves_ColCreated" xml:space="preserve">
+    <value>创建日期</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_ModifiedDesc" xml:space="preserve">
+    <value>修改日期：新→旧</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_ModifiedAsc" xml:space="preserve">
+    <value>修改日期：旧→新</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_CreatedDesc" xml:space="preserve">
+    <value>创建日期：新→旧</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_CreatedAsc" xml:space="preserve">
+    <value>创建日期：旧→新</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_NameAsc" xml:space="preserve">
+    <value>名称：A→Z</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_NameDesc" xml:space="preserve">
+    <value>名称：Z→A</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_SizeDesc" xml:space="preserve">
+    <value>大小：大→小</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_SizeAsc" xml:space="preserve">
+    <value>大小：小→大</value>
+  </data>
+  <data name="Storage_ManageSaves_Sort_TypeAsc" xml:space="preserve">
+    <value>类型：A→Z</value>
+  </data>
 </root>

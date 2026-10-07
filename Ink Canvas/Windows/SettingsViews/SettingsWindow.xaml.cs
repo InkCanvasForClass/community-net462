@@ -74,6 +74,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "ConfigPage", typeof(ConfigPage) },
                 { "SyncPage", typeof(SyncPage) },
                 { "StoragePage", typeof(StoragePage) },
+                { "SavesManagerPage", typeof(SavesManagerPage) },
                 { "DebugPage", typeof(DebugPage) },
                 { "FriendlyLinksPage", typeof(FriendlyLinksPage) },
                 { "AboutPage", typeof(AboutPage) },

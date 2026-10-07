@@ -262,6 +262,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             CleanWithConfirm(LocalizationHelper.GetString("Storage_Ink_Header"), InkDirs, keepRoot: true);
         }
 
+        private void BtnManageSaves_Click(object sender, RoutedEventArgs e)
+        {
+            (Window.GetWindow(this) as SettingsWindow)?.NavigateToPage("SavesManagerPage");
+        }
+
         private void BtnCleanBackups_Click(object sender, RoutedEventArgs e)
         {
             CleanWithConfirm(LocalizationHelper.GetString("Storage_Backups_Header"), BackupDirs, keepRoot: true);

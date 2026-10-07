@@ -144,6 +144,66 @@ namespace Ink_Canvas.Properties
 
         public static string Storage_Legend_Plugins => ResourceManager.GetString(nameof(Storage_Legend_Plugins), _resourceCulture);
 
+        public static string Storage_ManageSaves_Open => ResourceManager.GetString(nameof(Storage_ManageSaves_Open), _resourceCulture);
+
+        public static string Storage_ManageSaves_Title => ResourceManager.GetString(nameof(Storage_ManageSaves_Title), _resourceCulture);
+
+        public static string Storage_ManageSaves_TabInk => ResourceManager.GetString(nameof(Storage_ManageSaves_TabInk), _resourceCulture);
+
+        public static string Storage_ManageSaves_TabScreenshots => ResourceManager.GetString(nameof(Storage_ManageSaves_TabScreenshots), _resourceCulture);
+
+        public static string Storage_ManageSaves_SelectAll => ResourceManager.GetString(nameof(Storage_ManageSaves_SelectAll), _resourceCulture);
+
+        public static string Storage_ManageSaves_DeleteSelected => ResourceManager.GetString(nameof(Storage_ManageSaves_DeleteSelected), _resourceCulture);
+
+        public static string Storage_ManageSaves_OpenFolder => ResourceManager.GetString(nameof(Storage_ManageSaves_OpenFolder), _resourceCulture);
+
+        public static string Storage_ManageSaves_Reveal => ResourceManager.GetString(nameof(Storage_ManageSaves_Reveal), _resourceCulture);
+
+        public static string Storage_ManageSaves_ColSelect => ResourceManager.GetString(nameof(Storage_ManageSaves_ColSelect), _resourceCulture);
+
+        public static string Storage_ManageSaves_ColName => ResourceManager.GetString(nameof(Storage_ManageSaves_ColName), _resourceCulture);
+
+        public static string Storage_ManageSaves_ColType => ResourceManager.GetString(nameof(Storage_ManageSaves_ColType), _resourceCulture);
+
+        public static string Storage_ManageSaves_ColSize => ResourceManager.GetString(nameof(Storage_ManageSaves_ColSize), _resourceCulture);
+
+        public static string Storage_ManageSaves_ColModified => ResourceManager.GetString(nameof(Storage_ManageSaves_ColModified), _resourceCulture);
+
+        public static string Storage_ManageSaves_ColActions => ResourceManager.GetString(nameof(Storage_ManageSaves_ColActions), _resourceCulture);
+
+        public static string Storage_ManageSaves_Empty => ResourceManager.GetString(nameof(Storage_ManageSaves_Empty), _resourceCulture);
+
+        public static string Storage_ManageSaves_CountFormat => ResourceManager.GetString(nameof(Storage_ManageSaves_CountFormat), _resourceCulture);
+
+        public static string Storage_ManageSaves_DeleteConfirm_Title => ResourceManager.GetString(nameof(Storage_ManageSaves_DeleteConfirm_Title), _resourceCulture);
+
+        public static string Storage_ManageSaves_DeleteConfirm_Body => ResourceManager.GetString(nameof(Storage_ManageSaves_DeleteConfirm_Body), _resourceCulture);
+
+        public static string Storage_ManageSaves_DeleteDone => ResourceManager.GetString(nameof(Storage_ManageSaves_DeleteDone), _resourceCulture);
+
+        public static string Storage_ManageSaves_DeleteFailed => ResourceManager.GetString(nameof(Storage_ManageSaves_DeleteFailed), _resourceCulture);
+
+        public static string Storage_ManageSaves_ColCreated => ResourceManager.GetString(nameof(Storage_ManageSaves_ColCreated), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_ModifiedDesc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_ModifiedDesc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_ModifiedAsc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_ModifiedAsc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_CreatedDesc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_CreatedDesc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_CreatedAsc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_CreatedAsc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_NameAsc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_NameAsc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_NameDesc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_NameDesc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_SizeDesc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_SizeDesc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_SizeAsc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_SizeAsc), _resourceCulture);
+
+        public static string Storage_ManageSaves_Sort_TypeAsc => ResourceManager.GetString(nameof(Storage_ManageSaves_Sort_TypeAsc), _resourceCulture);
+
         public static string Storage_Logs_Desc => ResourceManager.GetString(nameof(Storage_Logs_Desc), _resourceCulture);
 
         public static string Storage_Logs_Header => ResourceManager.GetString(nameof(Storage_Logs_Header), _resourceCulture);
