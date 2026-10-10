@@ -99,10 +99,23 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
+        /// 检查所需DLL是否全部已存在且有效，用于启动期跳过释放。
+        /// </summary>
+        public static bool AreAllDllsExtracted()
+        {
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            foreach (string dllName in RequiredDlls)
+            {
+                if (!IsValidDll(Path.Combine(appDirectory, dllName)))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// 检查DLL文件是否有效
         /// </summary>
-        private static bool IsValidDll(string filePath)
-        {
+        private static bool IsValidDll(string filePath)        {
             try
             {
                 if (!File.Exists(filePath))

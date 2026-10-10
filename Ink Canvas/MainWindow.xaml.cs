@@ -1495,6 +1495,12 @@ namespace Ink_Canvas
                     InitializeNotificationProviders();
                     AutomationBootstrap.Initialize();
                     PerformanceMonitorHelper.StartIfEnabled();
+                    if (Settings?.Advanced != null && Settings.Advanced.IsDebugConsoleEnabled)
+                    {
+                        Helpers.DebugConsoleManager.Show();
+                    }
+                    ShowQuickDrawFloatingButton();
+                    EnsurePPTOnlyVisibilityProbeTimer();
                 }
                 catch (Exception ex)
                 {
@@ -1502,11 +1508,20 @@ namespace Ink_Canvas
                 }
             }), DispatcherPriority.ContextIdle);
 
-            // 启动时根据设置恢复调试控制台显示状态
-            if (Settings?.Advanced != null && Settings.Advanced.IsDebugConsoleEnabled)
+            // 启动稳定后空闲预热设置窗口（仅在设置项开启时），使首次点击设置也无需等待解析/首渲染
+            Dispatcher.BeginInvoke(new Action(async () =>
             {
-                Helpers.DebugConsoleManager.Show();
-            }
+                try
+                {
+                    if (Settings?.Performance?.IsSettingsPrewarmEnabled != true) return;
+                    await System.Threading.Tasks.Task.Delay(4000);
+                    PrewarmSettingsWindow(this);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"设置窗口预热调度失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
+            }), DispatcherPriority.ApplicationIdle);
 
             LoadCustomBackgroundColor();
             SetWindowMode();
@@ -1599,9 +1614,6 @@ namespace Ink_Canvas
                 UnFoldFloatingBar_MouseUp(new object(), null);
             }
 
-            // 显示快抽悬浮按钮
-            ShowQuickDrawFloatingButton();
-
             // 如果当前不是黑板模式，则切换到黑板模式
             if (currentMode == 0)
             {
@@ -1637,12 +1649,8 @@ namespace Ink_Canvas
             // 处理命令行参数中的文件路径
             HandleCommandLineFileOpen();
 
-            // 初始化文件关联状态显示
-            InitializeFileAssociationStatus();
-
             // 检查模式设置并应用
             CheckMainWindowVisibility();
-            EnsurePPTOnlyVisibilityProbeTimer();
 
             // 检查是否通过--board参数启动，如果是则自动切换到白板模式
             if (App.StartWithBoardMode)
@@ -2127,9 +2135,7 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                var settingsWindow = new SettingsWindow();
-                                settingsWindow.Show();
-                                settingsWindow.NavigateToPage("UpdatePage");
+                                ShowSettingsWindow(this, "UpdatePage");
                             }
                             catch (Exception ex)
                             {
@@ -2533,10 +2539,7 @@ namespace Ink_Canvas
 
         private void HistoryRollbackButton_Click(object sender, RoutedEventArgs e)
         {
-            var settingsWindow = new Windows.SettingsViews.SettingsWindow();
-            settingsWindow.Owner = this;
-            settingsWindow.Show();
-            settingsWindow.NavigateToPage("UpdatePage");
+            ShowSettingsWindow(this, "UpdatePage");
         }
 
         private DispatcherTimer autoSaveStrokesTimer;
@@ -3139,13 +3142,6 @@ namespace Ink_Canvas
             }
         }
 
-
-        /// <summary>
-        /// 初始化文件关联状态显示
-        /// </summary>
-        private void InitializeFileAssociationStatus()
-        {
-        }
 
         /// <summary>
         /// 处理命令行参数中的文件路径

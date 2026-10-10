@@ -12,11 +12,30 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             InitializeComponent();
             Loaded += FavouritesPage_Loaded;
+            Unloaded += FavouritesPage_Unloaded;
         }
+
+        private bool _indexReadySubscribed;
 
         private void FavouritesPage_Loaded(object sender, RoutedEventArgs e)
         {
             RebuildFavourites();
+
+            // 索引在后台增量构建完成后刷新收藏列表
+            if (!_indexReadySubscribed && Window.GetWindow(this) is SettingsWindow win)
+            {
+                win.SearchIndexReady += RebuildFavourites;
+                _indexReadySubscribed = true;
+            }
+        }
+
+        private void FavouritesPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (_indexReadySubscribed && Window.GetWindow(this) is SettingsWindow win)
+            {
+                win.SearchIndexReady -= RebuildFavourites;
+                _indexReadySubscribed = false;
+            }
         }
 
         private void RebuildFavourites()

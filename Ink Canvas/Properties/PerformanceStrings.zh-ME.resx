@@ -51,6 +51,12 @@
   <data name="EnableMonitoringHint" xml:space="preserve">
     <value>每隔一段时间看看 CPU 和内存在干嘛，记下最近 30 次的摸鱼数据。关了就全清空咯。</value>
   </data>
+  <data name="SettingsPrewarm" xml:space="preserve">
+    <value>预加载设置窗口</value>
+  </data>
+  <data name="SettingsPrewarmHint" xml:space="preserve">
+    <value>启动后偷偷把设置窗口先建好，点开设置就不用等啦。代价是默认占用较多内存。</value>
+  </data>
   <data name="CurrentSession" xml:space="preserve">
     <value>本次摸鱼状态</value>
   </data>

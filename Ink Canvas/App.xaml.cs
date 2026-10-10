@@ -448,7 +448,6 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile("启动画面对象创建成功，准备显示...");
                 _splashScreen.Show();
                 _isSplashScreenShown = true;
-                splashScreenStartTime = DateTime.Now;
                 splashStopwatch.Restart();
                 LogHelper.WriteLogToFile("启动画面已显示");
             }
@@ -705,7 +704,6 @@ namespace Ink_Canvas
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
-            appStartupStartTime = DateTime.Now;
             startupStopwatch.Restart();
 
             TryApplyPreferredLanguageFromSettings();
@@ -1128,7 +1126,10 @@ namespace Ink_Canvas
 
                 try
                 {
-                    await IACoreDllExtractor.ExtractIACoreDllsAsync();
+                    if (!IACoreDllExtractor.AreAllDllsExtracted())
+                    {
+                        await IACoreDllExtractor.ExtractIACoreDllsAsync();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1140,9 +1141,12 @@ namespace Ink_Canvas
 
                 try
                 {
-                    LogHelper.WriteLogToFile("开始注册.icstk文件关联");
-                    FileAssociationManager.RegisterFileAssociation();
-                    FileAssociationManager.ShowFileAssociationStatus();
+                    if (!FileAssociationManager.IsFileAssociationRegistered())
+                    {
+                        LogHelper.WriteLogToFile("开始注册.icstk文件关联");
+                        FileAssociationManager.RegisterFileAssociation();
+                        FileAssociationManager.ShowFileAssociationStatus();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1277,8 +1281,6 @@ namespace Ink_Canvas
         private static Timer watchdogTimer;
         private static bool isStartupComplete = false;
         private static DateTime startupCompleteHeartbeat = DateTime.MinValue;
-        private static DateTime splashScreenStartTime = DateTime.MinValue;
-        private static DateTime appStartupStartTime = DateTime.MinValue;
         private static volatile bool isAppExiting = false;
 
         /// <summary>
@@ -1328,26 +1330,9 @@ namespace Ink_Canvas
                 if (IsOobeShowing)
                     return;
 
-                if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
-                {
-                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue
-                        ? splashScreenStartTime
-                        : appStartupStartTime;
-                    TimeSpan elapsedSinceStart = DateTime.Now - startTime;
-                    if (elapsedSinceStart.TotalMinutes >= 2)
-                    {
-                        string timeType = _isSplashScreenShown ? "启动画面已显示" : "应用启动开始";
-                        string restartReason = $"检测到启动假死：{timeType}{elapsedSinceStart.TotalMinutes:F2}分钟，但未收到启动完成心跳，自动重启。";
-                        LogHelper.WriteLogToFile(restartReason, LogHelper.LogType.Error);
-                        WriteCrashLog(restartReason);
-                        SyncCrashActionFromSettings();
-                        if (CrashAction == CrashActionType.SilentRestart)
-                        {
-                            TryRestartWithBreaker(restartReason);
-                        }
-                        return;
-                    }
-                }
+                // 启动完成前看门狗不武装，仅等待；启动耗时在 MainWindow.Loaded 处汇总记录。
+                if (!isStartupComplete)
+                    return;
 
                 if (isStartupComplete)
                 {
