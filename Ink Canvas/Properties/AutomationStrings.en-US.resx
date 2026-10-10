@@ -665,4 +665,48 @@
   <data name="FloatingInterceptor_Rule_SeewoDesktopSideBar" xml:space="preserve">
     <value>Seewo Desktop side bar floating window</value>
   </data>
+
+  <data name="AutoWf_Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+
+  <data name="AutoWf_Category_Workflow" xml:space="preserve">
+    <value>Automation</value>
+  </data>
+
+  <data name="AutoWf_Category_StateGroup" xml:space="preserve">
+    <value>State group</value>
+  </data>
+
+  <data name="AutoWf_Category_ActionGroup" xml:space="preserve">
+    <value>Action group</value>
+  </data>
+
+  <data name="AutoWf_AddStateGroup" xml:space="preserve">
+    <value>Add state group</value>
+  </data>
+
+  <data name="AutoWf_AddActionGroup" xml:space="preserve">
+    <value>Add action group</value>
+  </data>
+
+  <data name="Automation_DefaultStateGroupName" xml:space="preserve">
+    <value>State group</value>
+  </data>
+
+  <data name="Automation_DefaultActionGroupName" xml:space="preserve">
+    <value>Action group</value>
+  </data>
+
+  <data name="Automation_Field_GroupId" xml:space="preserve">
+    <value>Group</value>
+  </data>
+
+  <data name="Automation_Rule_StateGroup" xml:space="preserve">
+    <value>State group is satisfied</value>
+  </data>
+
+  <data name="Automation_Action_RunActionGroup" xml:space="preserve">
+    <value>Run action group</value>
+  </data>
 </root>

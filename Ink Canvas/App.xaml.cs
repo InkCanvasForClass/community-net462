@@ -81,19 +81,6 @@ namespace Ink_Canvas
         private volatile bool powerPointShutdownCleanupCompleted;
         // 新增：是否已初始化崩溃监听器
         private static bool crashListenersInitialized;
-        private static readonly object cpuUsageLock = new object();
-        private static bool hasCpuUsageSample;
-        private static ulong previousSystemIdleTime;
-        private static ulong previousSystemKernelTime;
-        private static ulong previousSystemUserTime;
-        private static TimeSpan previousProcessTotalProcessorTime;
-        private static DateTime previousCpuSampleTime = DateTime.MinValue;
-        private static double? lastSystemCpuUsagePercent;
-        private static double? lastProcessCpuUsagePercent;
-        private IntPtr processDestroyHook = IntPtr.Zero;
-        private IntPtr monitoredMainWindowHandle = IntPtr.Zero;
-        private bool mainWindowDestroyedLogged;
-        private WinEventDelegate processDestroyHookCallback;
         // 新增：启动画面相关
         private static SplashScreen _splashScreen;
         private static bool _isSplashScreenShown = false;
@@ -242,15 +229,6 @@ namespace Ink_Canvas
                 // 尝试注册Windows关闭消息监听
                 SetConsoleCtrlHandler(ConsoleCtrlHandler, true);
 
-                try
-                {
-                    TrySetupTerminationMonitoring();
-                }
-                catch (Exception monitorEx)
-                {
-                    LogHelper.WriteLogToFile($"设置终止监控失败: {monitorEx.Message}", LogHelper.LogType.Warning);
-                }
-
                 crashListenersInitialized = true;
                 LogHelper.WriteLogToFile("已初始化崩溃监听器");
             }
@@ -260,145 +238,11 @@ namespace Ink_Canvas
             }
         }
 
-        private void TrySetupTerminationMonitoring()
-        {
-            try
-            {
-                processDestroyHookCallback = OnWinEventMainWindowDestroyed;
-
-                // 等主窗口句柄可用后再开始监听
-                Dispatcher.BeginInvoke(new Action(BindMainWindowLifecycle), DispatcherPriority.ApplicationIdle);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化终止监控失败: {ex.GetType().FullName}: {ex.Message}", LogHelper.LogType.Warning);
-            }
-        }
-
-        private void BindMainWindowLifecycle()
-        {
-            try
-            {
-                if (Current?.MainWindow == null)
-                {
-                    return;
-                }
-
-                Current.MainWindow.SourceInitialized -= MainWindow_SourceInitialized;
-                Current.MainWindow.SourceInitialized += MainWindow_SourceInitialized;
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void MainWindow_SourceInitialized(object sender, EventArgs e)
-        {
-            try
-            {
-                if (!(sender is Window window))
-                {
-                    return;
-                }
-
-                monitoredMainWindowHandle = new WindowInteropHelper(window).Handle;
-                if (monitoredMainWindowHandle == IntPtr.Zero)
-                {
-                    return;
-                }
-
-                RegisterMainWindowDestroyHook();
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void RegisterMainWindowDestroyHook()
-        {
-            if (processDestroyHook != IntPtr.Zero || monitoredMainWindowHandle == IntPtr.Zero)
-            {
-                return;
-            }
-
-            processDestroyHook = SetWinEventHook(
-                EVENT_OBJECT_DESTROY,
-                EVENT_OBJECT_DESTROY,
-                IntPtr.Zero,
-                processDestroyHookCallback,
-                (uint)currentProcessId,
-                0,
-                WINEVENT_OUTOFCONTEXT);
-
-            if (processDestroyHook == IntPtr.Zero)
-            {
-                return;
-            }
-        }
-
-        private void OnWinEventMainWindowDestroyed(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
-        {
-            if (eventType != EVENT_OBJECT_DESTROY || mainWindowDestroyedLogged)
-            {
-                return;
-            }
-
-            if (idObject != OBJID_WINDOW || idChild != CHILDID_SELF)
-            {
-                return;
-            }
-
-            if (hwnd != monitoredMainWindowHandle || hwnd == IntPtr.Zero)
-            {
-                return;
-            }
-
-            mainWindowDestroyedLogged = true;
-        }
-
-        private void CleanupTerminationMonitoring()
-        {
-            try
-            {
-                if (processDestroyHook != IntPtr.Zero)
-                {
-                    UnhookWinEvent(processDestroyHook);
-                    processDestroyHook = IntPtr.Zero;
-                }
-            }
-            catch
-            {
-            }
-        }
-
         // Windows控制台控制处理程序
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handler, bool add);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetSystemTimes(out FILETIME lpIdleTime, out FILETIME lpKernelTime, out FILETIME lpUserTime);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct FILETIME
-        {
-            public uint dwLowDateTime;
-            public uint dwHighDateTime;
-        }
-
         private delegate bool ConsoleCtrlDelegate(int ctrlType);
-        private delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
-
-        private const uint EVENT_OBJECT_DESTROY = 0x8001;
-        private const uint WINEVENT_OUTOFCONTEXT = 0x0000;
-        private const int OBJID_WINDOW = 0;
-        private const int CHILDID_SELF = 0;
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWinEvent(IntPtr hWinEventHook);
 
         private static bool ConsoleCtrlHandler(int ctrlType)
         {
@@ -557,7 +401,6 @@ namespace Ink_Canvas
         // 处理进程退出事件
         private void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            CleanupTerminationMonitoring();
             TimeSpan runDuration = DateTime.Now - appStartTime;
             string durationText = FormatTimeSpan(runDuration);
             WriteCrashLog($"应用程序退出，运行时长: {durationText}");
@@ -590,78 +433,6 @@ namespace Ink_Canvas
             return $"{timeSpan.Seconds}秒";
         }
 
-        private static void UpdateCpuUsageSnapshot()
-        {
-            try
-            {
-                if (!GetSystemTimes(out FILETIME idleTime, out FILETIME kernelTime, out FILETIME userTime))
-                {
-                    return;
-                }
-
-                DateTime sampleTime = DateTime.UtcNow;
-                ulong currentIdleTime = ToUInt64(idleTime);
-                ulong currentKernelTime = ToUInt64(kernelTime);
-                ulong currentUserTime = ToUInt64(userTime);
-                TimeSpan currentProcessCpuTime = Process.GetCurrentProcess().TotalProcessorTime;
-
-                lock (cpuUsageLock)
-                {
-                    if (hasCpuUsageSample)
-                    {
-                        ulong idleDelta = currentIdleTime - previousSystemIdleTime;
-                        ulong kernelDelta = currentKernelTime - previousSystemKernelTime;
-                        ulong userDelta = currentUserTime - previousSystemUserTime;
-                        ulong totalDelta = kernelDelta + userDelta;
-
-                        if (totalDelta > 0)
-                        {
-                            ulong busyDelta = totalDelta > idleDelta ? totalDelta - idleDelta : 0;
-                            lastSystemCpuUsagePercent = MathExtensions.Clamp(busyDelta * 100d / totalDelta, 0d, 100d);
-                        }
-
-                        double elapsedSeconds = (sampleTime - previousCpuSampleTime).TotalSeconds;
-                        double processCpuSeconds = (currentProcessCpuTime - previousProcessTotalProcessorTime).TotalSeconds;
-                        if (elapsedSeconds > 0 && Environment.ProcessorCount > 0 && processCpuSeconds >= 0)
-                        {
-                            lastProcessCpuUsagePercent = MathExtensions.Clamp(processCpuSeconds / (elapsedSeconds * Environment.ProcessorCount) * 100d, 0d, 100d);
-                        }
-                    }
-
-                    previousSystemIdleTime = currentIdleTime;
-                    previousSystemKernelTime = currentKernelTime;
-                    previousSystemUserTime = currentUserTime;
-                    previousProcessTotalProcessorTime = currentProcessCpuTime;
-                    previousCpuSampleTime = sampleTime;
-                    hasCpuUsageSample = true;
-                }
-            }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-        }
-
-        /// <summary>
-        /// 立即进行一次有效的 CPU 采样（连续采样两次，间隔 100ms 以产生增量）。
-        /// 仅在需要读取 CPU% 的故障路径（写崩溃日志）调用，避免每秒常驻采样。
-        /// </summary>
-        private static void SampleCpuUsageNow()
-        {
-            UpdateCpuUsageSnapshot();
-            try { Thread.Sleep(100); } catch { }
-            UpdateCpuUsageSnapshot();
-        }
-
-        private static ulong ToUInt64(FILETIME fileTime)
-        {
-            return ((ulong)fileTime.dwHighDateTime << 32) | fileTime.dwLowDateTime;
-        }
-
-        private static string FormatCpuUsagePercent(double? cpuUsagePercent)
-        {
-            return cpuUsagePercent.HasValue
-                ? cpuUsagePercent.Value.ToString("F1", CultureInfo.InvariantCulture) + "%"
-                : "采样不足";
-        }
-
         public static void ShowSplashScreen()
         {
             if (_isSplashScreenShown)
@@ -677,7 +448,6 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile("启动画面对象创建成功，准备显示...");
                 _splashScreen.Show();
                 _isSplashScreenShown = true;
-                splashScreenStartTime = DateTime.Now;
                 splashStopwatch.Restart();
                 LogHelper.WriteLogToFile("启动画面已显示");
             }
@@ -688,11 +458,16 @@ namespace Ink_Canvas
             }
         }
 
+        private static async Task CloseSplashScreenAfterDelayAsync()
+        {
+            await Task.Delay(200);
+            await Current.Dispatcher.InvokeAsync(CloseSplashScreen);
+        }
+
         // 关闭启动画面
         public static void CloseSplashScreen()
         {
             if (!_isSplashScreenShown || _splashScreen == null) return;
-
             try
             {
                 _splashScreen.CloseSplashScreen();
@@ -722,6 +497,30 @@ namespace Ink_Canvas
             }
         }
 
+        // ponytail: 启动期 Settings.json 被 SyncCrashAction/ShouldShowSplash/语言 多次读取，
+        // 这里缓存一次避免重复 File.ReadAllText+反序列化。仅用于启动早期只读场景。
+        private static Ink_Canvas.Settings _startupSettingsCache;
+        private static bool _startupSettingsCacheLoaded;
+
+        private static Ink_Canvas.Settings TryReadStartupSettings()
+        {
+            if (_startupSettingsCacheLoaded) return _startupSettingsCache;
+            _startupSettingsCacheLoaded = true;
+            try
+            {
+                var settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Settings.json");
+                _startupSettingsCache = File.Exists(settingsPath)
+                    ? JsonConvert.DeserializeObject<Ink_Canvas.Settings>(File.ReadAllText(settingsPath))
+                    : null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"读取 Settings.json 失败: {ex.Message}", LogHelper.LogType.Warning);
+                _startupSettingsCache = null;
+            }
+            return _startupSettingsCache;
+        }
+
         private static bool ShouldShowSplashScreen()
         {
             if (BuildConfigHelper.IsMinimized)
@@ -729,28 +528,8 @@ namespace Ink_Canvas
                 return false;
             }
 
-            try
-            {
-                // 检查设置文件中的启动动画开关
-                var settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Settings.json");
-                if (File.Exists(settingsPath))
-                {
-                    var json = File.ReadAllText(settingsPath);
-                    dynamic obj = JsonConvert.DeserializeObject(json);
-                    if (obj?["appearance"]?["enableSplashScreen"] != null)
-                    {
-                        return (bool)obj["appearance"]["enableSplashScreen"];
-                    }
-                }
-
-                // 如果设置文件不存在或没有该设置，返回默认值false
-                return false;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"检查启动动画设置失败: {ex.Message}", LogHelper.LogType.Warning);
-                return false;
-            }
+            // 设置文件不存在或没有该设置时默认不显示
+            return TryReadStartupSettings()?.Appearance?.EnableSplashScreen ?? false;
         }
 
         private static bool IsLaunchByFileOrUri(string[] args)
@@ -771,8 +550,6 @@ namespace Ink_Canvas
         {
             try
             {
-                SampleCpuUsageNow();
-
                 // 确保目录存在
                 if (!Directory.Exists(crashLogFile))
                 {
@@ -789,10 +566,8 @@ namespace Ink_Canvas
                 string memoryUsage = (currentProcess.WorkingSet64 / (1024 * 1024)) + " MB";
                 string cpuTime = currentProcess.TotalProcessorTime.ToString();
                 string processUptime = FormatTimeSpan(DateTime.Now - currentProcess.StartTime);
-                string systemCpuUsage = FormatCpuUsagePercent(lastSystemCpuUsagePercent);
-                string processCpuUsage = FormatCpuUsagePercent(lastProcessCpuUsagePercent);
 
-                string statusInfo = $"[内存: {memoryUsage}, CPU时间: {cpuTime}, 进程CPU占用: {processCpuUsage}, 系统CPU占用: {systemCpuUsage}, 运行时长: {processUptime}]";
+                string statusInfo = $"[内存: {memoryUsage}, CPU时间: {cpuTime}, 运行时长: {processUptime}]";
 
                 // 写入日志
                 File.AppendAllText(
@@ -813,18 +588,14 @@ namespace Ink_Canvas
         {
             try
             {
+                var settings = TryReadStartupSettings();
                 // 优先从 Settings.json 直接读取
-                var settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Settings.json");
-                if (File.Exists(settingsPath))
+                if (settings != null)
                 {
-                    var json = File.ReadAllText(settingsPath);
-                    dynamic obj = JsonConvert.DeserializeObject(json);
-                    int crashAction = 2;
-                    try { crashAction = (int)(obj["startup"]["crashAction"] ?? 2); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-                    CrashAction = (CrashActionType)crashAction;
+                    CrashAction = (CrashActionType)(settings.Startup?.CrashAction ?? 2);
                 }
                 // 从主窗口同步
-                else if (Ink_Canvas.MainWindow.Settings != null && Ink_Canvas.MainWindow.Settings.Startup != null)
+                else if (Ink_Canvas.MainWindow.Settings?.Startup != null)
                 {
                     CrashAction = (CrashActionType)Ink_Canvas.MainWindow.Settings.Startup.CrashAction;
                 }
@@ -933,7 +704,6 @@ namespace Ink_Canvas
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
-            appStartupStartTime = DateTime.Now;
             startupStopwatch.Restart();
 
             TryApplyPreferredLanguageFromSettings();
@@ -948,11 +718,10 @@ namespace Ink_Canvas
                 SetSplashMessage(HomeStrings.Splash_Starting);
                 SetSplashProgress(25);
 
-                // 强制刷新UI，确保启动画面显示
-                Application.Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
+                // 让步一帧以绘制启动画面，不引入固定等待
+                await System.Windows.Threading.Dispatcher.Yield(DispatcherPriority.Render);
             }
 
-            await Task.Delay(100);
             RootPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -1000,7 +769,6 @@ namespace Ink_Canvas
             {
                 SetSplashMessage(HomeStrings.Splash_LoadingConfig);
                 SetSplashProgress(50);
-                await Task.Delay(100);
             }
 
             // 处理更新模式启动
@@ -1259,10 +1027,7 @@ namespace Ink_Canvas
                 // 在特殊模式下，创建一个临时的Mutex以避免其他检查出错
                 string mutexName = isFinalApp ? "InkCanvasForClass CE Final" : "InkCanvasForClass CE Update";
                 mutex = new Mutex(true, mutexName, out bool tempRet);
-
-                // 额外等待一小段时间确保更新进程完全退出
-                await Task.Delay(1000);
-                LogHelper.WriteLogToFile("App | 特殊模式等待完成，继续启动");
+                LogHelper.WriteLogToFile("App | 特殊模式，继续启动");
             }
 
             _taskbar = (TaskbarIcon)FindResource("TaskbarTrayIcon");
@@ -1322,17 +1087,7 @@ namespace Ink_Canvas
                 {
                     SetSplashMessage(HomeStrings.Splash_Complete);
                     SetSplashProgress(100);
-                    Task.Delay(100).ContinueWith(_ =>
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            // 延迟关闭启动画面，让用户看到完成消息
-                            Task.Delay(100).ContinueWith(__ =>
-                            {
-                                Dispatcher.Invoke(() => CloseSplashScreen());
-                            });
-                        });
-                    });
+                    _ = CloseSplashScreenAfterDelayAsync();
                 }
             };
 
@@ -1371,34 +1126,27 @@ namespace Ink_Canvas
 
                 try
                 {
-                    await IACoreDllExtractor.ExtractIACoreDllsAsync();
+                    if (!IACoreDllExtractor.AreAllDllsExtracted())
+                    {
+                        await IACoreDllExtractor.ExtractIACoreDllsAsync();
+                    }
                 }
                 catch (Exception ex)
                 {
                     LogHelper.WriteLogToFile($"释放IACore DLL时出错: {ex.Message}", LogHelper.LogType.Error);
                 }
 
-                try
-                {
-                    var shapeMode = ShapeRecognitionRouter.FromSettingsInt(
-                        Ink_Canvas.Windows.SettingsViews.Helpers.SettingsManager.Settings?.InkToShape?.ShapeRecognitionEngine ?? 0);
-                    if (!ShapeRecognitionRouter.ResolveUseWinRt(shapeMode) && IpcIACoreClient.Instance.IsHelperExecutableAvailable)
-                    {
-                        LogHelper.WriteLogToFile("启动 IACore IPC 辅助进程");
-                        bool ipcStarted = IpcIACoreClient.Instance.Start();
-                        LogHelper.WriteLogToFile($"IACore IPC 辅助进程{(ipcStarted ? "启动成功" : "启动失败")}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"启动 IACore IPC 辅助进程时出错: {ex.Message}", LogHelper.LogType.Error);
-                }
+                // IACore IPC 辅助进程在首次形状识别时按需启动（IpcIACoreClient.EnsureHelperAlive），
+                // 并在 Window_Loaded 空闲时预热，此处不再于启动期预启动。
 
                 try
                 {
-                    LogHelper.WriteLogToFile("开始注册.icstk文件关联");
-                    FileAssociationManager.RegisterFileAssociation();
-                    FileAssociationManager.ShowFileAssociationStatus();
+                    if (!FileAssociationManager.IsFileAssociationRegistered())
+                    {
+                        LogHelper.WriteLogToFile("开始注册.icstk文件关联");
+                        FileAssociationManager.RegisterFileAssociation();
+                        FileAssociationManager.ShowFileAssociationStatus();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1415,15 +1163,7 @@ namespace Ink_Canvas
                     LogHelper.WriteLogToFile($"启动IPC监听器时出错: {ex.Message}", LogHelper.LogType.Error);
                 }
 
-                try
-                {
-                    LogHelper.WriteLogToFile("初始化上传帮助类");
-                    Helpers.UploadHelper.Initialize();
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"初始化上传帮助类时出错: {ex.Message}", LogHelper.LogType.Error);
-                }
+                // 上传帮助类在首次上传时按需初始化（UploadHelper.Initialize）。
 
                 try
                 {
@@ -1460,12 +1200,7 @@ namespace Ink_Canvas
         {
             try
             {
-                var settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Settings.json");
-                if (!File.Exists(settingsPath)) return;
-
-                var json = File.ReadAllText(settingsPath);
-                dynamic obj = JsonConvert.DeserializeObject(json);
-                string preferredLanguage = obj?["appearance"]?["language"]?.ToString();
+                string preferredLanguage = TryReadStartupSettings()?.Appearance?.Language;
                 if (!string.IsNullOrWhiteSpace(preferredLanguage))
                 {
                     LocalizationHelper.TrySetCulture(preferredLanguage);
@@ -1475,24 +1210,6 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"启动时预加载语言失败: {ex.Message}", LogHelper.LogType.Error);
             }
-        }
-
-        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            try
-            {
-                if (SystemInformation.MouseWheelScrollLines == -1)
-                    e.Handled = false;
-                else
-                    try
-                    {
-                        ScrollViewerEx SenderScrollViewer = (ScrollViewerEx)sender;
-                        SenderScrollViewer.ScrollToVerticalOffset(SenderScrollViewer.VerticalOffset - e.Delta * 10 * SystemInformation.MouseWheelScrollLines / (double)120);
-                        e.Handled = true;
-                    }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-            }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         // 用于设置崩溃后操作类型
@@ -1564,8 +1281,6 @@ namespace Ink_Canvas
         private static Timer watchdogTimer;
         private static bool isStartupComplete = false;
         private static DateTime startupCompleteHeartbeat = DateTime.MinValue;
-        private static DateTime splashScreenStartTime = DateTime.MinValue;
-        private static DateTime appStartupStartTime = DateTime.MinValue;
         private static volatile bool isAppExiting = false;
 
         /// <summary>
@@ -1615,26 +1330,9 @@ namespace Ink_Canvas
                 if (IsOobeShowing)
                     return;
 
-                if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
-                {
-                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue
-                        ? splashScreenStartTime
-                        : appStartupStartTime;
-                    TimeSpan elapsedSinceStart = DateTime.Now - startTime;
-                    if (elapsedSinceStart.TotalMinutes >= 2)
-                    {
-                        string timeType = _isSplashScreenShown ? "启动画面已显示" : "应用启动开始";
-                        string restartReason = $"检测到启动假死：{timeType}{elapsedSinceStart.TotalMinutes:F2}分钟，但未收到启动完成心跳，自动重启。";
-                        LogHelper.WriteLogToFile(restartReason, LogHelper.LogType.Error);
-                        WriteCrashLog(restartReason);
-                        SyncCrashActionFromSettings();
-                        if (CrashAction == CrashActionType.SilentRestart)
-                        {
-                            TryRestartWithBreaker(restartReason);
-                        }
-                        return;
-                    }
-                }
+                // 启动完成前看门狗不武装，仅等待；启动耗时在 MainWindow.Loaded 处汇总记录。
+                if (!isStartupComplete)
+                    return;
 
                 if (isStartupComplete)
                 {
@@ -1736,8 +1434,6 @@ namespace Ink_Canvas
 
             try { heartbeatTimer?.Stop(); } catch { }
             try { watchdogTimer?.Change(Timeout.Infinite, Timeout.Infinite); watchdogTimer?.Dispose(); } catch { }
-
-            CleanupTerminationMonitoring();
 
             try
             {

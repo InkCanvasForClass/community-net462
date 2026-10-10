@@ -46,6 +46,10 @@ namespace Ink_Canvas.Properties
 
         public static string EnableMonitoringHint => ResourceManager.GetString(nameof(EnableMonitoringHint), _resourceCulture);
 
+        public static string SettingsPrewarm => ResourceManager.GetString(nameof(SettingsPrewarm), _resourceCulture);
+
+        public static string SettingsPrewarmHint => ResourceManager.GetString(nameof(SettingsPrewarmHint), _resourceCulture);
+
         public static string CurrentSession => ResourceManager.GetString(nameof(CurrentSession), _resourceCulture);
 
         public static string CpuUsage => ResourceManager.GetString(nameof(CpuUsage), _resourceCulture);

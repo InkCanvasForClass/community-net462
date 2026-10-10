@@ -99,10 +99,23 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
+        /// 检查所需DLL是否全部已存在且有效，用于启动期跳过释放。
+        /// </summary>
+        public static bool AreAllDllsExtracted()
+        {
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            foreach (string dllName in RequiredDlls)
+            {
+                if (!IsValidDll(Path.Combine(appDirectory, dllName)))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// 检查DLL文件是否有效
         /// </summary>
-        private static bool IsValidDll(string filePath)
-        {
+        private static bool IsValidDll(string filePath)        {
             try
             {
                 if (!File.Exists(filePath))
@@ -129,39 +142,6 @@ namespace Ink_Canvas.Helpers
             catch
             {
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// 清理释放的DLL文件（可选，在应用退出时调用）
-        /// </summary>
-        public static void CleanupExtractedDlls()
-        {
-            try
-            {
-                string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-                foreach (string dllName in RequiredDlls)
-                {
-                    string filePath = Path.Combine(appDirectory, dllName);
-
-                    if (File.Exists(filePath))
-                    {
-                        try
-                        {
-                            File.Delete(filePath);
-                            LogHelper.WriteLogToFile($"已清理 {dllName}");
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"清理 {dllName} 失败: {ex.Message}", LogHelper.LogType.Warning);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"清理IACore DLL时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
     }

@@ -78,6 +78,13 @@ namespace Ink_Canvas
         [JsonProperty("isMonitoringEnabled")]
         public bool IsMonitoringEnabled { get; set; } = false;
 
+        /// <summary>
+        /// 启动后预加载设置窗口（隐藏），使打开设置无需等待解析/首渲染。代价是常驻占用较多内存。
+        /// </summary>
+        [JsonProperty("isSettingsPrewarmEnabled")]
+        [SettingsTag(SettingsTag.New)]
+        public bool IsSettingsPrewarmEnabled { get; set; } = false;
+
         [JsonProperty("history")]
         public List<PerformanceRunRecord> History { get; set; } = new List<PerformanceRunRecord>();
 
@@ -478,7 +485,7 @@ namespace Ink_Canvas
         [JsonProperty("hasShownOobe")]
         public bool HasShownOobe { get; set; } = false;
         [JsonProperty("enableWindowChromeRendering")]
-        public bool EnableWindowChromeRendering { get; set; } = false;
+        public bool EnableWindowChromeRendering { get; set; } = true;
     }
 
     public enum TrayClickAction

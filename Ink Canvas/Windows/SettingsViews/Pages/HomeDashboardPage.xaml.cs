@@ -24,8 +24,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             InitializeComponent();
             Loaded += HomeDashboardPage_Loaded;
+            Unloaded += HomeDashboardPage_Unloaded;
             DashboardBodyGrid.SizeChanged += (s, e) => ApplyResponsiveLayout(e.NewSize.Width);
         }
+
+        private bool _indexReadySubscribed;
 
         private void HomeDashboardPage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -33,6 +36,22 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             LoadShortcutEntries();
             RebuildFavourites();
             ApplyResponsiveLayout(DashboardBodyGrid.ActualWidth);
+
+            // 索引在后台增量构建完成后刷新收藏（首帧不再同步等全量索引）
+            if (!_indexReadySubscribed && Window.GetWindow(this) is SettingsWindow win)
+            {
+                win.SearchIndexReady += RebuildFavourites;
+                _indexReadySubscribed = true;
+            }
+        }
+
+        private void HomeDashboardPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (_indexReadySubscribed && Window.GetWindow(this) is SettingsWindow win)
+            {
+                win.SearchIndexReady -= RebuildFavourites;
+                _indexReadySubscribed = false;
+            }
         }
 
         private void ApplyVersion()

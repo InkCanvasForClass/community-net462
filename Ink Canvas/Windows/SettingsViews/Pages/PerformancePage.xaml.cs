@@ -24,10 +24,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            _isLoaded = true;
-
-            // Load toggle state
+            // 先载入开关状态（_isLoaded 尚为 false，避免程序性赋值触发副作用）
             ToggleSwitchEnableMonitoring.IsOn = SettingsManager.Settings.Performance.IsMonitoringEnabled;
+            ToggleSwitchSettingsPrewarm.IsOn = SettingsManager.Settings.Performance.IsSettingsPrewarmEnabled;
+
+            _isLoaded = true;
 
             // Update current session UI
             UpdateCurrentSessionUI();
@@ -83,6 +84,21 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
             UpdateCurrentSessionUI();
             RefreshHistoryDisplay();
+        }
+
+        private void ToggleSwitchSettingsPrewarm_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            // 持久化由 SettingsBinder（PropertyPath）负责，这里只做立即生效的副作用
+            if (ToggleSwitchSettingsPrewarm.IsOn)
+            {
+                MainWindow.PrewarmSettingsWindow(Application.Current.MainWindow);
+            }
+            else
+            {
+                MainWindow.ReleaseSettingsWindow();
+            }
         }
 
         private void UpdateCurrentSessionUI()

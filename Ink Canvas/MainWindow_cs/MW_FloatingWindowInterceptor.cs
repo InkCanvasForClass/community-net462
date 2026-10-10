@@ -62,6 +62,11 @@ namespace Ink_Canvas
                 if (toggle != null)
                     Settings.Automation.FloatingWindowInterceptor.IsEnabled = toggle.IsOn;
 
+                if (toggle?.IsOn == true && _floatingWindowInterceptorManager == null)
+                {
+                    InitializeFloatingWindowInterceptor();
+                }
+
                 if (_floatingWindowInterceptorManager != null)
                 {
                     if (Settings.Automation.FloatingWindowInterceptor.IsEnabled)
@@ -173,6 +178,11 @@ namespace Ink_Canvas
         {
             try
             {
+                if (_floatingWindowInterceptorManager == null)
+                {
+                    InitializeFloatingWindowInterceptor();
+                }
+
                 if (_floatingWindowInterceptorManager != null)
                 {
                     _floatingWindowInterceptorManager.SetInterceptRule(type, enabled);

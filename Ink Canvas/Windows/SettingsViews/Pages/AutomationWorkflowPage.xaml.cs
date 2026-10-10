@@ -2,6 +2,7 @@ using Ink_Canvas.WorkflowAutomation;
 using Ink_Canvas.WorkflowAutomation.Enums;
 using Ink_Canvas.WorkflowAutomation.Models;
 using Ink_Canvas.WorkflowAutomation.Services;
+using Ink_Canvas.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
@@ -23,6 +25,16 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
     {
         private bool _isLoaded = false;
         private bool _isUpdatingEditor = false;
+        private int _category = 0; // 0=自动化, 1=状态组, 2=动作组
+
+        // 右侧详情列宽：未选中 20%，选中 50%
+        private const double EmptyRatio = 0.30;
+        private const double SelectedRatio = 0.50;
+        private double _detailRatio = EmptyRatio;
+
+        // 用户手动拖过分隔条后，不再自动改宽度
+        private bool _manualResize = false;
+
         private AutomationService Service => AutomationBootstrap.Service;
 
         // 静态属性供 XAML x:Static 绑定
@@ -50,7 +62,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private void AutomationWorkflowPage_Loaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = true;
-            RefreshWorkflowList();
+            NavigationListBox.ItemsSource = Service.Workflows;
+            StateGroupsListBox.ItemsSource = Service.StateGroups;
+            ActionGroupsListBox.ItemsSource = Service.ActionGroups;
+            if (ComboBoxCategory.SelectedIndex < 0) ComboBoxCategory.SelectedIndex = 0;
+            UpdateCategoryUI();
         }
 
         private void AutomationWorkflowPage_Unloaded(object sender, RoutedEventArgs e)
@@ -60,34 +76,172 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         #region Navigation
 
+        private void ComboBoxCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            _category = Math.Max(0, ComboBoxCategory.SelectedIndex);
+            UpdateCategoryUI();
+        }
+
+        private void HideAllEditors()
+        {
+            WorkflowEditorPanel.Visibility = Visibility.Collapsed;
+            StateGroupEditorPanel.Visibility = Visibility.Collapsed;
+            ActionGroupEditorPanel.Visibility = Visibility.Collapsed;
+            EmptyStatePanel.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>按比例设置右侧详情列宽（瞬切）。手动拖过分隔条后不再自动调整。</summary>
+        private void ApplyDetailWidth(double ratio)
+        {
+            if (_manualResize) return;
+
+            double total = RootGrid.ActualWidth;
+            if (total <= 0) return;
+
+            // Width 是显式值，Auto 列会据此定宽；先清掉可能的动画残留
+            DetailHost.BeginAnimation(FrameworkElement.WidthProperty, null);
+            DetailHost.Width = total * ratio;
+        }
+
+        private void RootGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ApplyDetailWidth(_detailRatio);
+        }
+
+        private void Splitter_DragStarted(object sender, DragStartedEventArgs e)
+        {
+            // 用户手动接管列宽：停止 20%/50% 自动缩放
+            _manualResize = true;
+            DetailHost.BeginAnimation(FrameworkElement.WidthProperty, null);
+            DetailHost.Width = double.NaN;
+        }
+
+        /// <summary>显示右侧详情：隐藏占位提示，编辑器从右滑入+淡入。</summary>
+        private void ShowEditor(UIElement editor)
+        {
+            EmptyStatePanel.Visibility = Visibility.Collapsed;
+            _detailRatio = SelectedRatio;
+            ApplyDetailWidth(_detailRatio);
+            AnimationsHelper.ShowWithSlideFromRightAndFade(editor);
+        }
+
+        /// <summary>收起右侧详情：编辑器淡出后由 helper 置 Collapsed，占位提示恢复。</summary>
+        private void HideEditor(UIElement editor)
+        {
+            _detailRatio = EmptyRatio;
+            ApplyDetailWidth(_detailRatio);
+            AnimationsHelper.HideWithFadeOut(editor);
+            EmptyStatePanel.Visibility = Visibility.Visible;
+        }
+
+        private void UpdateCategoryUI()
+        {
+            NavigationListBox.Visibility = _category == 0 ? Visibility.Visible : Visibility.Collapsed;
+            StateGroupsListBox.Visibility = _category == 1 ? Visibility.Visible : Visibility.Collapsed;
+            ActionGroupsListBox.Visibility = _category == 2 ? Visibility.Visible : Visibility.Collapsed;
+
+            BtnAddItem.Content = _category switch
+            {
+                1 => Properties.AutomationStrings.AutoWf_AddStateGroup,
+                2 => Properties.AutomationStrings.AutoWf_AddActionGroup,
+                _ => Properties.AutomationStrings.AutoWf_AddWorkflow
+            };
+
+            if (_category != 0) NavigationListBox.SelectedItem = null;
+            if (_category != 1) StateGroupsListBox.SelectedItem = null;
+            if (_category != 2) ActionGroupsListBox.SelectedItem = null;
+
+            HideAllEditors();
+
+            _detailRatio = EmptyRatio;
+            ApplyDetailWidth(_detailRatio);
+
+            // 重新进入页面时当前分类的 SelectedItem 会被保留，而选中项未变时
+            // SelectionChanged 不会触发，HideAllEditors 收起的面板就再也回不来
+            // （表现为：列表高亮但右栏空白）。这里按现有选中项主动恢复。
+            var active = _category == 1 ? StateGroupsListBox
+                : _category == 2 ? ActionGroupsListBox
+                : NavigationListBox;
+
+            if (active.SelectedItem != null)
+            {
+                // 不自动选中任何项：进入页面与切换分类均保持空状态，等待用户主动点选
+                switch (_category)
+                {
+                    case 1: StateGroupsListBox_SelectionChanged(active, null); break;
+                    case 2: ActionGroupsListBox_SelectionChanged(active, null); break;
+                    default: NavigationListBox_SelectionChanged(active, null); break;
+                }
+            }
+            else
+            {
+                EmptyStatePanel.Visibility = Visibility.Visible;
+            }
+        }
+
         private void NavigationListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!_isLoaded) return;
+            if (_category != 0) return;
 
             SelectedWorkflow = NavigationListBox.SelectedItem as Workflow;
 
             if (NavigationListBox.SelectedItem is Workflow workflow)
             {
-                WorkflowEditorPanel.Visibility = Visibility.Visible;
-                EmptyStatePanel.Visibility = Visibility.Collapsed;
+                ShowEditor(WorkflowEditorPanel);
+                StateGroupEditorPanel.Visibility = Visibility.Collapsed;
+                ActionGroupEditorPanel.Visibility = Visibility.Collapsed;
                 UpdateEditorBindings(workflow);
             }
             else
             {
-                WorkflowEditorPanel.Visibility = Visibility.Collapsed;
-                EmptyStatePanel.Visibility = Visibility.Visible;
+                HideEditor(WorkflowEditorPanel);
             }
         }
 
-        private void RefreshWorkflowList()
+        private void StateGroupsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Remove old workflow items
-            NavigationListBox.Items.Clear();
+            if (!_isLoaded || _category != 1) return;
 
-            // Add workflow items
-            foreach (var workflow in Service.Workflows)
+            if (StateGroupsListBox.SelectedItem is StateGroup group)
             {
-                NavigationListBox.Items.Add(workflow);
+                StateGroupEditorPanel.DataContext = group;
+                StateGroupRulesetEditor.Ruleset = group.Ruleset;
+                _isUpdatingEditor = true;
+                TextBoxStateGroupName.Text = group.Name;
+                _isUpdatingEditor = false;
+
+                WorkflowEditorPanel.Visibility = Visibility.Collapsed;
+                ActionGroupEditorPanel.Visibility = Visibility.Collapsed;
+                ShowEditor(StateGroupEditorPanel);
+                StateGroupRulesetEditor.RefreshState();
+            }
+            else
+            {
+                HideEditor(StateGroupEditorPanel);
+            }
+        }
+
+        private void ActionGroupsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded || _category != 2) return;
+
+            if (ActionGroupsListBox.SelectedItem is ActionSet set)
+            {
+                ActionGroupEditorPanel.DataContext = set;
+                ActionGroupActionSetEditor.ActionSet = set;
+                _isUpdatingEditor = true;
+                TextBoxActionGroupName.Text = set.Name;
+                _isUpdatingEditor = false;
+
+                WorkflowEditorPanel.Visibility = Visibility.Collapsed;
+                StateGroupEditorPanel.Visibility = Visibility.Collapsed;
+                ShowEditor(ActionGroupEditorPanel);
+            }
+            else
+            {
+                HideEditor(ActionGroupEditorPanel);
             }
         }
 
@@ -107,19 +261,53 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
         }
 
-        private void BtnAddWorkflow_Click(object sender, RoutedEventArgs e)
+        private void BtnAddItem_Click(object sender, RoutedEventArgs e)
+        {
+            switch (_category)
+            {
+                case 1: AddStateGroup(); break;
+                case 2: AddActionGroup(); break;
+                default: AddWorkflow(); break;
+            }
+        }
+
+        private void AddWorkflow()
         {
             var workflow = new Workflow();
             workflow.ActionSet.Name = string.Format(Properties.AutomationStrings.Automation_Workflow_DefaultNameFormat, Service.Workflows.Count + 1);
-            // 初始化一个默认规则组
             workflow.Ruleset.Groups.Add(new RuleGroup
             {
                 Rules = new ObservableCollection<Rule> { new Rule() }
             });
             Service.Workflows.Add(workflow);
             Service.SaveConfig("AddWorkflow");
-            RefreshWorkflowList();
-            NavigationListBox.SelectedIndex = NavigationListBox.Items.Count - 1;
+            NavigationListBox.SelectedItem = workflow;
+        }
+
+        private void AddStateGroup()
+        {
+            var group = new StateGroup
+            {
+                Name = string.Format("{0} {1}", Properties.AutomationStrings.Automation_DefaultStateGroupName, Service.StateGroups.Count + 1)
+            };
+            group.Ruleset.Groups.Add(new RuleGroup
+            {
+                Rules = new ObservableCollection<Rule> { new Rule() }
+            });
+            Service.StateGroups.Add(group);
+            Service.SaveConfig("AddStateGroup");
+            StateGroupsListBox.SelectedItem = group;
+        }
+
+        private void AddActionGroup()
+        {
+            var group = new ActionSet
+            {
+                Name = string.Format("{0} {1}", Properties.AutomationStrings.Automation_DefaultActionGroupName, Service.ActionGroups.Count + 1)
+            };
+            Service.ActionGroups.Add(group);
+            Service.SaveConfig("AddActionGroup");
+            ActionGroupsListBox.SelectedItem = group;
         }
 
         private void BtnRemoveWorkflow_Click(object sender, RoutedEventArgs e)
@@ -127,8 +315,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (sender is not Button btn || btn.Tag is not Workflow workflow) return;
             Service.Workflows.Remove(workflow);
             Service.SaveConfig("RemoveWorkflow");
-            RefreshWorkflowList();
-            NavigationListBox.SelectedIndex = 0;
         }
 
         private void BtnDuplicateWorkflow_Click(object sender, RoutedEventArgs e)
@@ -141,8 +327,51 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 copy.ActionSet.Name += Properties.AutomationStrings.Automation_Workflow_CopySuffix;
                 Service.Workflows.Add(copy);
                 Service.SaveConfig("DuplicateWorkflow");
-                RefreshWorkflowList();
-                NavigationListBox.SelectedIndex = NavigationListBox.Items.Count - 1;
+                NavigationListBox.SelectedItem = copy;
+            }
+        }
+
+        private void BtnRemoveStateGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not StateGroup group) return;
+            Service.StateGroups.Remove(group);
+            Service.SaveConfig("RemoveStateGroup");
+        }
+
+        private void BtnDuplicateStateGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not StateGroup source) return;
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(source);
+            var copy = Newtonsoft.Json.JsonConvert.DeserializeObject<StateGroup>(json);
+            if (copy != null)
+            {
+                copy.Guid = Guid.NewGuid().ToString();
+                copy.Name += Properties.AutomationStrings.Automation_Workflow_CopySuffix;
+                Service.StateGroups.Add(copy);
+                Service.SaveConfig("DuplicateStateGroup");
+                StateGroupsListBox.SelectedItem = copy;
+            }
+        }
+
+        private void BtnRemoveActionGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not ActionSet set) return;
+            Service.ActionGroups.Remove(set);
+            Service.SaveConfig("RemoveActionGroup");
+        }
+
+        private void BtnDuplicateActionGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not ActionSet source) return;
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(source);
+            var copy = Newtonsoft.Json.JsonConvert.DeserializeObject<ActionSet>(json);
+            if (copy != null)
+            {
+                copy.Guid = Guid.NewGuid().ToString();
+                copy.Name += Properties.AutomationStrings.Automation_Workflow_CopySuffix;
+                Service.ActionGroups.Add(copy);
+                Service.SaveConfig("DuplicateActionGroup");
+                ActionGroupsListBox.SelectedItem = copy;
             }
         }
 
@@ -167,14 +396,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 // 触发器
                 TriggersItemsControl.ItemsSource = workflow.Triggers;
 
-                // 行动
-                ActionsItemsControl.ItemsSource = workflow.ActionSet.Actions;
-
-                // 规则集 - 先评估更新 State，再设置 ItemsSource
-                ComboBoxRulesetMode.SelectedIndex = workflow.Ruleset.Mode == RulesetLogicalMode.Or ? 0 : 1;
-                CheckBoxRulesetReversed.IsChecked = workflow.Ruleset.IsReversed;
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-                RuleGroupsItemsControl.ItemsSource = workflow.Ruleset.Groups;
+                // 条件与行动（显式赋值，避免 DataContext 为页面自身时绑定失败）
+                RulesetEditor.Ruleset = workflow.Ruleset;
+                ActionSetEditor.ActionSet = workflow.ActionSet;
 
                 UpdateConditionVisibility(workflow.IsConditionEnabled);
                 UpdateRevertHintVisibility(workflow.ActionSet.IsRevertEnabled);
@@ -185,25 +409,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
         }
 
-        private void UpdateRulesetStateIndicator(Ruleset ruleset)
-        {
-            if (ruleset == null)
-            {
-                EllipseRulesetState.Fill = Brushes.DarkGray;
-                return;
-            }
-
-            // 评估规则集（会自动更新所有层级的 State）
-            Service.RulesetService.IsRulesetSatisfied(ruleset);
-
-            EllipseRulesetState.Fill = ruleset.State switch
-            {
-                2 => Brushes.Green,
-                1 => Brushes.IndianRed,
-                _ => Brushes.DarkGray
-            };
-        }
-
         private void TextBoxWorkflowName_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isUpdatingEditor) return;
@@ -211,6 +416,26 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             {
                 workflow.ActionSet.Name = TextBoxWorkflowName.Text;
                 Service.SaveConfig("NameChanged");
+            }
+        }
+
+        private void TextBoxStateGroupName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isUpdatingEditor) return;
+            if (StateGroupEditorPanel.DataContext is StateGroup group)
+            {
+                group.Name = TextBoxStateGroupName.Text;
+                Service.SaveConfig("StateGroupNameChanged");
+            }
+        }
+
+        private void TextBoxActionGroupName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isUpdatingEditor) return;
+            if (ActionGroupEditorPanel.DataContext is ActionSet set)
+            {
+                set.Name = TextBoxActionGroupName.Text;
+                Service.SaveConfig("ActionGroupNameChanged");
             }
         }
 
@@ -269,211 +494,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             if (sender is ComboBox cb && cb.Tag is TriggerSettings trigger)
             {
-                trigger.Id = cb.SelectedValue as string ?? "";
+                var newId = cb.SelectedValue as string ?? "";
+                if (trigger.Id == newId) return;
+                trigger.Id = newId;
                 Service.SaveConfig("TriggerTypeChanged");
             }
-        }
-
-        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-        {
-            if (parent == null) return null;
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T target) return target;
-
-                var result = FindVisualChild<T>(child);
-                if (result != null) return result;
-            }
-
-            return null;
-        }
-
-        // 行动操作
-        private void BtnAddAction_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedWorkflow is not Workflow workflow) return;
-            var firstAction = AutomationRegistry.RegisteredActions.FirstOrDefault();
-            var action = new Ink_Canvas.WorkflowAutomation.Models.Action { Id = firstAction.Key ?? "" };
-            workflow.ActionSet.Actions.Add(action);
-            Service.SaveConfig("AddAction");
-        }
-
-        private void BtnRemoveAction_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedWorkflow is not Workflow workflow) return;
-            if (sender is not Button btn || btn.Tag is not Ink_Canvas.WorkflowAutomation.Models.Action action) return;
-            workflow.ActionSet.Actions.Remove(action);
-            Service.SaveConfig("RemoveAction");
-        }
-
-        private void ComboBoxActionType_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded || _isUpdatingEditor) return;
-            if (sender is ComboBox cb && cb.Tag is Ink_Canvas.WorkflowAutomation.Models.Action action)
-            {
-                var newId = cb.SelectedValue as string ?? "";
-                // ID 没有变化（例如 ComboBox 因绑定/页面切换重新加载触发 SelectionChanged），
-                // 不应重置 Settings，否则会把用户已保存的设置覆盖为默认值（issue #560）。
-                if (action.Id == newId) return;
-
-                action.Id = newId;
-                action.Settings = null;
-
-                if (FindVisualChild<AutomationSettingsPresenter>(cb.Parent) is { } presenter)
-                    presenter.RefreshContent();
-
-                Service.SaveConfig("ActionTypeChanged");
-            }
-        }
-
-        // 规则集操作
-        private void ComboBoxRulesetMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded || _isUpdatingEditor) return;
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                workflow.Ruleset.Mode = ComboBoxRulesetMode.SelectedIndex == 0 ? RulesetLogicalMode.Or : RulesetLogicalMode.And;
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-                Service.SaveConfig("RulesetModeChanged");
-            }
-        }
-
-        private void CheckBoxRulesetReversed_Changed(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded || _isUpdatingEditor) return;
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                workflow.Ruleset.IsReversed = CheckBoxRulesetReversed.IsChecked == true;
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-                Service.SaveConfig("RulesetReversedChanged");
-            }
-        }
-
-        private void BtnAddRuleGroup_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedWorkflow is not Workflow workflow) return;
-            workflow.Ruleset.Groups.Add(new RuleGroup
-            {
-                Rules = new ObservableCollection<Rule> { new Rule() }
-            });
-            Service.SaveConfig("AddRuleGroup");
-        }
-
-        private void BtnDeleteGroup_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedWorkflow is not Workflow workflow) return;
-            if (sender is not Button btn || btn.Tag is not RuleGroup group) return;
-            workflow.Ruleset.Groups.Remove(group);
-            Service.SaveConfig("DeleteGroup");
-        }
-
-        private void BtnDuplicateGroup_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedWorkflow is not Workflow workflow) return;
-            if (sender is not Button btn || btn.Tag is not RuleGroup source) return;
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(source);
-            var copy = Newtonsoft.Json.JsonConvert.DeserializeObject<RuleGroup>(json);
-            if (copy != null)
-            {
-                workflow.Ruleset.Groups.Add(copy);
-                Service.SaveConfig("DuplicateGroup");
-            }
-        }
-
-        private void ComboBoxGroupMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            if (sender is ComboBox cb && cb.Tag is RuleGroup group)
-            {
-                group.Mode = cb.SelectedIndex == 0 ? RulesetLogicalMode.Or : RulesetLogicalMode.And;
-                if (SelectedWorkflow is Workflow workflow)
-                {
-                    UpdateRulesetStateIndicator(workflow.Ruleset);
-                }
-                Service.SaveConfig("GroupModeChanged");
-            }
-        }
-
-        private void CheckBoxGroupReversed_Changed(object sender, RoutedEventArgs e)
-        {
-            // IsReversed 绑定是 TwoWay，自动更新
-            if (!_isLoaded) return;
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-            }
-            Service.SaveConfig("GroupReversedChanged");
-        }
-
-        private void CheckBoxGroupEnabled_Toggled(object sender, RoutedEventArgs e)
-        {
-            // IsEnabled 绑定是 TwoWay，自动更新
-            if (!_isLoaded) return;
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-            }
-            Service.SaveConfig("GroupEnabledChanged");
-        }
-
-        private void BtnAddRuleToGroup_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button btn || btn.Tag is not RuleGroup group) return;
-            var firstRule = AutomationRegistry.RegisteredRules.FirstOrDefault();
-            var rule = new Rule { Id = firstRule.Key ?? "" };
-            group.Rules.Add(rule);
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-            }
-            Service.SaveConfig("AddRule");
-        }
-
-        private void BtnRemoveRule_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button btn || btn.Tag is not Rule rule) return;
-            // 找到包含此规则的 RuleGroup
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                foreach (var group in workflow.Ruleset.Groups)
-                {
-                    if (group.Rules.Contains(rule))
-                    {
-                        group.Rules.Remove(rule);
-                        UpdateRulesetStateIndicator(workflow.Ruleset);
-                        Service.SaveConfig("RemoveRule");
-                        break;
-                    }
-                }
-            }
-        }
-
-        private void ComboBoxRuleType_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            if (sender is ComboBox cb && cb.Tag is Rule rule)
-            {
-                rule.Id = cb.SelectedValue as string ?? "";
-                EnsureRuleSettingsInstance(rule);
-                if (SelectedWorkflow is Workflow workflow)
-                {
-                    UpdateRulesetStateIndicator(workflow.Ruleset);
-                }
-                Service.SaveConfig("RuleTypeChanged");
-            }
-        }
-
-        private void CheckBoxRuleReversed_Changed(object sender, RoutedEventArgs e)
-        {
-            // IsReversed 绑定是 TwoWay，自动更新
-            if (!_isLoaded) return;
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-            }
-            Service.SaveConfig("RuleReversedChanged");
         }
 
         // 触发/恢复按钮
@@ -491,18 +516,33 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             Service.SaveConfig("ManualRevertAction");
         }
 
-        private void RuleSettingsPresenter_SettingsChanged(object sender, EventArgs e)
+        private void BtnInvokeActionGroup_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedWorkflow is Workflow workflow)
-            {
-                UpdateRulesetStateIndicator(workflow.Ruleset);
-            }
-            Service.SaveConfig("RuleSettingsChanged");
+            if (ActionGroupEditorPanel.DataContext is not ActionSet set) return;
+            Service.ActionService.Invoke(set);
+            Service.SaveConfig("ManualInvokeActionGroup");
         }
 
-        private void ActionSettingsPresenter_SettingsChanged(object sender, EventArgs e)
+        private void BtnRevertActionGroup_Click(object sender, RoutedEventArgs e)
         {
-            Service.SaveConfig("ActionSettingsChanged");
+            if (ActionGroupEditorPanel.DataContext is not ActionSet set) return;
+            Service.ActionService.Revert(set);
+            Service.SaveConfig("ManualRevertActionGroup");
+        }
+
+        private void RulesetEditor_SettingsChanged(object sender, EventArgs e)
+        {
+            Service.SaveConfig("RulesetChanged");
+        }
+
+        private void ActionSetEditor_SettingsChanged(object sender, EventArgs e)
+        {
+            Service.SaveConfig("ActionSetChanged");
+        }
+
+        private void GroupSettingsChanged(object sender, EventArgs e)
+        {
+            Service.SaveConfig("GroupSettingsChanged");
         }
 
         internal static object EnsureSettingsInstance(object settings, Type settingsType)
@@ -528,14 +568,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             }
 
             return actual;
-        }
-
-        private static void EnsureRuleSettingsInstance(Rule rule)
-        {
-            if (!AutomationRegistry.RegisteredRules.TryGetValue(rule.Id, out var info))
-                return;
-
-            rule.Settings = EnsureSettingsInstance(rule.Settings, info.SettingsType);
         }
 
         #endregion
@@ -644,6 +676,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var label = GetPropertyDisplayName(property.Name);
             var value = property.GetValue(settingsObject);
 
+            var groupAttr = property.GetCustomAttribute<GroupSelectorAttribute>();
+            if (groupAttr != null && propertyType == typeof(string))
+            {
+                return CreateGroupSelector(settingsObject, property, groupAttr, label);
+            }
+
             if (propertyType == typeof(string))
             {
                 var container = CreateLabeledContainer(label);
@@ -734,6 +772,56 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             return null;
         }
 
+        private FrameworkElement CreateGroupSelector(object settingsObject, PropertyInfo property, GroupSelectorAttribute attr, string label)
+        {
+            // 横向排列：与同行其他 ComboBox 共享一条基线，避免上下堆叠导致的错位
+            var container = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            container.Children.Add(new TextBlock
+            {
+                Text = label,
+                FontSize = 11,
+                Opacity = 0.72,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 6, 0)
+            });
+
+            var comboBox = new ComboBox
+            {
+                MinWidth = 160,
+                MaxWidth = 260,
+                Height = 30,
+                VerticalAlignment = VerticalAlignment.Center,
+                DisplayMemberPath = "Name",
+                SelectedValuePath = "Guid"
+            };
+
+            var service = AutomationBootstrap.Service;
+            System.Collections.IEnumerable items = null;
+            if (service != null)
+            {
+                items = attr.Kind == GroupKind.State
+                    ? (System.Collections.IEnumerable)service.StateGroups
+                    : service.ActionGroups;
+            }
+            comboBox.ItemsSource = items;
+            comboBox.SelectedValue = property.GetValue(settingsObject) as string ?? "";
+
+            comboBox.SelectionChanged += (_, _) =>
+            {
+                var id = comboBox.SelectedValue as string ?? "";
+                if ((property.GetValue(settingsObject) as string ?? "") == id) return;
+                property.SetValue(settingsObject, id);
+                RaiseSettingsChanged();
+            };
+
+            container.Children.Add(comboBox);
+            return container;
+        }
+
         private static StackPanel CreateLabeledContainer(string label)
         {
             var container = new StackPanel
@@ -787,6 +875,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 "Fold" => Properties.AutomationStrings.Automation_Field_Fold,
                 "EnterAnnotation" => Properties.AutomationStrings.Automation_Field_EnterAnnotation,
                 "Topmost" => Properties.AutomationStrings.Automation_Field_Topmost,
+                "GroupId" => Properties.AutomationStrings.Automation_Field_GroupId,
                 _ => propertyName
             };
         }

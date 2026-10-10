@@ -368,5 +368,27 @@ namespace Ink_Canvas.Properties
         public static string FloatingInterceptor_Rule_SeewoDesktopPen => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoDesktopPen), _resourceCulture);
 
         public static string FloatingInterceptor_Rule_SeewoDesktopSideBar => ResourceManager.GetString(nameof(FloatingInterceptor_Rule_SeewoDesktopSideBar), _resourceCulture);
+
+        public static string AutoWf_Category => ResourceManager.GetString(nameof(AutoWf_Category), _resourceCulture);
+
+        public static string AutoWf_Category_Workflow => ResourceManager.GetString(nameof(AutoWf_Category_Workflow), _resourceCulture);
+
+        public static string AutoWf_Category_StateGroup => ResourceManager.GetString(nameof(AutoWf_Category_StateGroup), _resourceCulture);
+
+        public static string AutoWf_Category_ActionGroup => ResourceManager.GetString(nameof(AutoWf_Category_ActionGroup), _resourceCulture);
+
+        public static string AutoWf_AddStateGroup => ResourceManager.GetString(nameof(AutoWf_AddStateGroup), _resourceCulture);
+
+        public static string AutoWf_AddActionGroup => ResourceManager.GetString(nameof(AutoWf_AddActionGroup), _resourceCulture);
+
+        public static string Automation_DefaultStateGroupName => ResourceManager.GetString(nameof(Automation_DefaultStateGroupName), _resourceCulture);
+
+        public static string Automation_DefaultActionGroupName => ResourceManager.GetString(nameof(Automation_DefaultActionGroupName), _resourceCulture);
+
+        public static string Automation_Field_GroupId => ResourceManager.GetString(nameof(Automation_Field_GroupId), _resourceCulture);
+
+        public static string Automation_Rule_StateGroup => ResourceManager.GetString(nameof(Automation_Rule_StateGroup), _resourceCulture);
+
+        public static string Automation_Action_RunActionGroup => ResourceManager.GetString(nameof(Automation_Action_RunActionGroup), _resourceCulture);
     }
 }

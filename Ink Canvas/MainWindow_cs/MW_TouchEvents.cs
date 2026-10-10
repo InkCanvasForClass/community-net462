@@ -1560,6 +1560,12 @@ namespace Ink_Canvas
         /// </remarks>
         private void InkCanvas_PreviewTouchDown(object sender, TouchEventArgs e)
         {
+            if (!_sliderTouchSupportInitialized)
+            {
+                _sliderTouchSupportInitialized = true;
+                AddTouchSupportToSliders();
+            }
+
             var touchPointForBar = e.GetTouchPoint(this);
             if (TryBlockInkInputOverFloatingBar(touchPointForBar.Position, e))
                 return;
