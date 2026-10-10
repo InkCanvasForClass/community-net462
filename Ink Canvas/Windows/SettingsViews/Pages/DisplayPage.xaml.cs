@@ -75,6 +75,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             // Theme
             ComboBoxTheme.SelectedIndex = settings.Appearance.Theme;
             SelectComboBoxItemByTag(ComboBoxWindowBackdrop, settings.Appearance.WindowBackdrop);
+            ToggleSwitchEnableWindowChromeRendering.IsOn = settings.Startup?.EnableWindowChromeRendering ?? true;
 
             _isApplyingLanguageFromSettings = true;
             try
@@ -167,6 +168,31 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 }
             }
             catch (Exception ex) { Debug.WriteLine($"backdrop change error: {ex.Message}"); }
+        }
+
+        private async void ToggleSwitchEnableWindowChromeRendering_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            try
+            {
+                SettingsManager.Settings.Startup.EnableWindowChromeRendering =
+                    ToggleSwitchEnableWindowChromeRendering.IsOn;
+                SettingsManager.SaveSettingsToFile();
+
+                // 渲染模式仅在窗口构造时读取，必须重启才生效。
+                var dialog = new ContentDialog
+                {
+                    Title = WindowStrings.Window_WindowChromeRendering,
+                    Content = WindowStrings.Window_WindowChromeRendering_RestartRequired,
+                    PrimaryButtonText = CommonStrings.Common_OK,
+                    SecondaryButtonText = CommonStrings.Common_Cancel,
+                    DefaultButton = ContentDialogButton.Primary,
+                    Owner = Window.GetWindow(this)
+                };
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                    AppRestartHelper.RestartWithCurrentPrivileges();
+            }
+            catch (Exception ex) { Debug.WriteLine($"window chrome rendering change error: {ex.Message}"); }
         }
 
         #endregion

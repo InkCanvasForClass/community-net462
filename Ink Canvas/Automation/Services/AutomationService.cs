@@ -73,6 +73,36 @@ namespace Ink_Canvas.WorkflowAutomation.Services
             }
         }
 
+        private ObservableCollection<StateGroup> _stateGroups = new();
+        /// <summary>
+        /// 可复用的状态组
+        /// </summary>
+        public ObservableCollection<StateGroup> StateGroups
+        {
+            get => _stateGroups;
+            set
+            {
+                if (Equals(value, _stateGroups)) return;
+                _stateGroups = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private ObservableCollection<ActionSet> _actionGroups = new();
+        /// <summary>
+        /// 可复用的动作组
+        /// </summary>
+        public ObservableCollection<ActionSet> ActionGroups
+        {
+            get => _actionGroups;
+            set
+            {
+                if (Equals(value, _actionGroups)) return;
+                _actionGroups = value;
+                OnPropertyChanged();
+            }
+        }
+
         private List<string> _configs = new();
         public List<string> Configs
         {
@@ -120,30 +150,61 @@ namespace Ink_Canvas.WorkflowAutomation.Services
                 UnloadWorkflow(workflow);
             }
             Workflows.CollectionChanged -= WorkflowsOnCollectionChanged;
+            StateGroups.CollectionChanged -= GroupsOnCollectionChanged;
+            ActionGroups.CollectionChanged -= GroupsOnCollectionChanged;
+
+            var workflows = new ObservableCollection<Workflow>();
+            var stateGroups = new ObservableCollection<StateGroup>();
+            var actionGroups = new ObservableCollection<ActionSet>();
 
             if (File.Exists(CurrentConfigPath))
             {
                 try
                 {
                     var json = File.ReadAllText(CurrentConfigPath);
-                    Workflows = JsonConvert.DeserializeObject<ObservableCollection<Workflow>>(json) ?? new ObservableCollection<Workflow>();
+                    var token = JToken.Parse(json);
+                    if (token is JArray array)
+                    {
+                        // 兼容旧版本：配置文件为裸的工作流数组
+                        workflows = array.ToObject<ObservableCollection<Workflow>>() ?? new ObservableCollection<Workflow>();
+                    }
+                    else
+                    {
+                        var config = token.ToObject<AutomationConfig>();
+                        if (config != null)
+                        {
+                            workflows = config.Workflows ?? new ObservableCollection<Workflow>();
+                            stateGroups = config.StateGroups ?? new ObservableCollection<StateGroup>();
+                            actionGroups = config.ActionGroups ?? new ObservableCollection<ActionSet>();
+                        }
+                    }
                 }
                 catch
                 {
-                    Workflows = new ObservableCollection<Workflow>();
+                    workflows = new ObservableCollection<Workflow>();
+                    stateGroups = new ObservableCollection<StateGroup>();
+                    actionGroups = new ObservableCollection<ActionSet>();
                 }
             }
             else
             {
-                Workflows = new ObservableCollection<Workflow>();
+                Workflows = workflows;
+                StateGroups = stateGroups;
+                ActionGroups = actionGroups;
                 SaveConfig();
             }
+
+            Workflows = workflows;
+            StateGroups = stateGroups;
+            ActionGroups = actionGroups;
 
             foreach (var workflow in Workflows)
             {
                 LoadWorkflow(workflow);
             }
             Workflows.CollectionChanged += WorkflowsOnCollectionChanged;
+            StateGroups.CollectionChanged += GroupsOnCollectionChanged;
+            ActionGroups.CollectionChanged += GroupsOnCollectionChanged;
 
             // 有工作流才需要 5s 兜底轮询
             RulesetService.SetFallbackEnabled(Workflows.Count > 0);
@@ -156,13 +217,24 @@ namespace Ink_Canvas.WorkflowAutomation.Services
         {
             try
             {
-                var json = JsonConvert.SerializeObject(Workflows, Formatting.Indented);
+                var config = new AutomationConfig
+                {
+                    Workflows = Workflows,
+                    StateGroups = StateGroups,
+                    ActionGroups = ActionGroups
+                };
+                var json = JsonConvert.SerializeObject(config, Formatting.Indented);
                 File.WriteAllText(CurrentConfigPath, json);
             }
             catch
             {
                 // 忽略保存失败
             }
+        }
+
+        private void GroupsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            SaveConfig("GroupsChanged");
         }
 
         private void WorkflowsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

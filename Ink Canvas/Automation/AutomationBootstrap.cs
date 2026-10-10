@@ -94,6 +94,7 @@ namespace Ink_Canvas.WorkflowAutomation
             services.AddAction<ToggleTopmostActionSettings>("inkcanvas.toggletopmost", Properties.AutomationStrings.Automation_Action_ToggleTopmost, "PinOutline");
             services.AddAction<ResetDesktopPositionActionSettings>("inkcanvas.resetdesktopposition", Properties.AutomationStrings.Automation_Action_ResetDesktopPosition, "DockBottom");
             services.AddAction<ResetPPTPositionActionSettings>("inkcanvas.resetpptposition", Properties.AutomationStrings.Automation_Action_ResetPptPosition, "Presentation");
+            services.AddAction<RunActionGroupActionSettings>(RunActionGroupAction.ActionId, Properties.AutomationStrings.Automation_Action_RunActionGroup, "PlayCircleOutline");
 
             // 5. 注册规则（对齐 ClassIsland 的 AddRule<TSettings>()）
             services.AddRule<ProcessRunningRuleSettings>("inkcanvas.processrunning", Properties.AutomationStrings.Automation_Rule_ProcessRunning, "ApplicationCogOutline");
@@ -103,6 +104,7 @@ namespace Ink_Canvas.WorkflowAutomation
             services.AddRule<ForegroundWindowProcessRuleSettings>("inkcanvas.foregroundwindowprocess", Properties.AutomationStrings.Automation_Rule_ForegroundWindowProcess, "Window");
             services.AddRule<IsFloatingBarFoldedRuleSettings>("inkcanvas.isfloatingbarfolded", Properties.AutomationStrings.Automation_Rule_IsFloatingBarFolded, "DockBottom");
             services.AddRule<IsForegroundWhiteboardRuleSettings>("inkcanvas.isforegroundwhiteboard", Properties.AutomationStrings.Automation_Rule_IsForegroundWhiteboard, "Whiteboard");
+            services.AddRule<StateGroupRuleSettings>(StateGroupRule.RuleId, Properties.AutomationStrings.Automation_Rule_StateGroup, "TagMultiple");
 
             // 6. 注册行动处理器（对齐 ClassIsland 的 IHostedService 模式）
             services.AddTransient<FoldActionHandler>();
@@ -114,6 +116,7 @@ namespace Ink_Canvas.WorkflowAutomation
             services.AddTransient<ToggleTopmostActionHandler>();
             services.AddTransient<ResetDesktopPositionActionHandler>();
             services.AddTransient<ResetPPTPositionActionHandler>();
+            services.AddTransient<RunActionGroupActionHandler>();
 
             // 7. 构建容器
             _serviceProvider = services.BuildServiceProvider();
@@ -136,6 +139,7 @@ namespace Ink_Canvas.WorkflowAutomation
             _serviceProvider.GetRequiredService<ToggleTopmostActionHandler>();
             _serviceProvider.GetRequiredService<ResetDesktopPositionActionHandler>();
             _serviceProvider.GetRequiredService<ResetPPTPositionActionHandler>();
+            _serviceProvider.GetRequiredService<RunActionGroupActionHandler>();
 
             // 10. 注册规则处理程序（对齐 ClassIsland 的 RegisterRuleHandler）
             RegisterRuleHandlers();
@@ -158,6 +162,7 @@ namespace Ink_Canvas.WorkflowAutomation
             _rulesetService.RegisterRuleHandler("inkcanvas.foregroundwindowprocess", ForegroundWindowProcessRule.Evaluate);
             _rulesetService.RegisterRuleHandler("inkcanvas.isfloatingbarfolded", IsFloatingBarFoldedRule.Evaluate);
             _rulesetService.RegisterRuleHandler("inkcanvas.isforegroundwhiteboard", IsForegroundWhiteboardRule.Evaluate);
+            _rulesetService.RegisterRuleHandler(StateGroupRule.RuleId, StateGroupRule.Evaluate);
         }
 
         /// <summary>

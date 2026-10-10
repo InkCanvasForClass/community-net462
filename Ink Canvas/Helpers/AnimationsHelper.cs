@@ -261,6 +261,53 @@ namespace Ink_Canvas.Helpers
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
+        public static void ShowWithSlideFromRightAndFade(UIElement element, double duration = 0.25)
+        {
+            try
+            {
+                if (element == null)
+                    throw new ArgumentNullException(nameof(element));
+
+                if (element.Visibility == Visibility.Visible) return;
+
+                var target = ResolveAnimationTarget(element);
+
+                var initialTransform = new TranslateTransform(24, 0);
+                target.RenderTransform = initialTransform;
+                target.Opacity = 0;
+
+                element.Visibility = Visibility.Visible;
+
+                var sb = new Storyboard();
+
+                var fadeInAnimation = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 1,
+                    Duration = TimeSpan.FromSeconds(duration)
+                };
+                fadeInAnimation.EasingFunction = new CubicEase();
+                Storyboard.SetTarget(fadeInAnimation, target);
+                Storyboard.SetTargetProperty(fadeInAnimation, new PropertyPath(UIElement.OpacityProperty));
+
+                var slideAnimation = new DoubleAnimation
+                {
+                    From = 24,
+                    To = 0,
+                    Duration = TimeSpan.FromSeconds(duration)
+                };
+                slideAnimation.EasingFunction = new CubicEase();
+                Storyboard.SetTarget(slideAnimation, target);
+                Storyboard.SetTargetProperty(slideAnimation, new PropertyPath("(UIElement.RenderTransform).(TranslateTransform.X)"));
+
+                sb.Children.Add(fadeInAnimation);
+                sb.Children.Add(slideAnimation);
+
+                sb.Begin((FrameworkElement)target);
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+        }
+
         public static void ShowWithScaleFromLeft(UIElement element, double duration = 0.2)
         {
             try

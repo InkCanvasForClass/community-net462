@@ -1457,6 +1457,7 @@ namespace Ink_Canvas
         private bool _pendingStartupAutoUpdateCheck;
         private bool _sliderTouchSupportInitialized;
         private bool _deferredPhaseBCompleted;
+        private bool _autoSavePathValidated;
 
         /// <summary>
         /// 在窗口加载完成后初始化应用的核心子系统、UI 状态和运行时监控组件。
@@ -1474,8 +1475,7 @@ namespace Ink_Canvas
             InitializePopupManager();
             //加载设置
             LoadSettings(true);
-            // 启动性能监测（如果已启用）
-            PerformanceMonitorHelper.StartIfEnabled();
+            // 启动性能监测已移至本方法末尾的 ContextIdle 延迟初始化。
             // 根据ToolbarPosition设置更新工具栏结构和位置
             UpdateToolbarPosition();
             // 启动时直接设置浮动栏位置，跳过动画
@@ -1486,8 +1486,21 @@ namespace Ink_Canvas
             }
             ApplyLanguageFromSettings();
             Helpers.LocalizationHelper.SyncCommonResources();
-            InitializeNotificationProviders();
-            AutomationBootstrap.Initialize();
+
+            // ponytail: 通知/自动化/性能监测初始化与首帧无关，推迟到 ContextIdle 执行，避免阻塞首次绘制。
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    InitializeNotificationProviders();
+                    AutomationBootstrap.Initialize();
+                    PerformanceMonitorHelper.StartIfEnabled();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"延迟初始化失败: {ex.Message}", LogHelper.LogType.Error);
+                }
+            }), DispatcherPriority.ContextIdle);
 
             // 启动时根据设置恢复调试控制台显示状态
             if (Settings?.Advanced != null && Settings.Advanced.IsDebugConsoleEnabled)
@@ -2602,17 +2615,14 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"[MainWindow] 初始化自动备份管理器时出错: {ex.Message}", LogHelper.LogType.Error);
             }
 
-            try
-            {
-                UploadQueueHelper.InitializeAllQueues();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"[MainWindow] 初始化上传队列时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
+            // 上传队列在首次上传时按需初始化（UploadHelper.Initialize → UploadQueueHelper.InitializeAllQueues）。
 
-            InitializeClipboardMonitoring();
-            InitializeFloatingWindowInterceptor();
+            // 剪贴板监控在进入白板时按需启动（CheckClipboardImageAndShowPasteNotificationWhenEnteringBoard）。
+            // 悬浮窗拦截仅在设置启用时初始化。
+            if (Settings.Automation.FloatingWindowInterceptor.IsEnabled)
+            {
+                InitializeFloatingWindowInterceptor();
+            }
             InitializeGlobalHotkeyManager();
 
             _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
@@ -2629,12 +2639,50 @@ namespace Ink_Canvas
                 InitializeInkFadeManager();
             }), DispatcherPriority.ApplicationIdle);
 
-            _ = Dispatcher.BeginInvoke(new Action(() =>
+            EnsureAutoSavePathValid();
+
+            // PPT 管理器仅在启用 PowerPoint 支持时初始化（关闭时不做任何 PPT 相关启动工作）。
+            if (Settings.PowerPointSettings.PowerPointSupport)
             {
-                if (_sliderTouchSupportInitialized) return;
-                AddTouchSupportToSliders();
-                _sliderTouchSupportInitialized = true;
-            }), DispatcherPriority.ApplicationIdle);
+                InitializePPTManagers();
+                StartPPTMonitoring();
+            }
+
+            try
+            {
+                _windowOverviewModel = new WindowOverviewModel();
+                // F：按自动收纳开关决定是否保活周期扫描
+                _windowOverviewModel.SetScanEnabled(Settings.Automation.IsEnableAutoFold);
+                LogHelper.WriteLogToFile("窗口概览模型已初始化", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化窗口概览模型失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
+            {
+                StartPowerPointProcessMonitoring();
+            }
+
+            if (_pendingStartupAutoUpdateCheck && Settings.Startup?.IsAutoUpdate == true)
+            {
+                _pendingStartupAutoUpdateCheck = false;
+                await Task.Delay(8000);
+                _ = Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    LogHelper.WriteLogToFile("AutoUpdate | Running deferred auto-update check at UI idle");
+                    _ = Task.Run(() => AutoUpdate());
+                }), DispatcherPriority.ApplicationIdle);
+            }
+        }
+
+        /// <summary>
+        /// 校验自动保存目录可用，不可用时回退到程序目录下的 Saves。首次成功后不再重复检测。
+        /// </summary>
+        private void EnsureAutoSavePathValid()
+        {
+            if (_autoSavePathValidated) return;
 
             try
             {
@@ -2667,44 +2715,12 @@ namespace Ink_Canvas
                     SaveSettingsToFile();
                     LogHelper.WriteLogToFile($"自动修正保存路径为: {newPath}");
                 }
+
+                _autoSavePathValidated = true;
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"检测或修正保存路径时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-
-            InitializePPTManagers();
-            if (Settings.PowerPointSettings.PowerPointSupport)
-            {
-                StartPPTMonitoring();
-            }
-
-            try
-            {
-                _windowOverviewModel = new WindowOverviewModel();
-                // F：按自动收纳开关决定是否保活周期扫描
-                _windowOverviewModel.SetScanEnabled(Settings.Automation.IsEnableAutoFold);
-                LogHelper.WriteLogToFile("窗口概览模型已初始化", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化窗口概览模型失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-
-            if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
-            {
-                StartPowerPointProcessMonitoring();
-            }
-
-            if (_pendingStartupAutoUpdateCheck && Settings.Startup?.IsAutoUpdate == true)
-            {
-                _pendingStartupAutoUpdateCheck = false;
-                await Task.Delay(8000);
-                _ = Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    LogHelper.WriteLogToFile("AutoUpdate | Running deferred auto-update check at UI idle");
-                    _ = Task.Run(() => AutoUpdate());
-                }), DispatcherPriority.ApplicationIdle);
             }
         }
 

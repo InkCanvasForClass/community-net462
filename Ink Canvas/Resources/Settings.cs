@@ -478,7 +478,7 @@ namespace Ink_Canvas
         [JsonProperty("hasShownOobe")]
         public bool HasShownOobe { get; set; } = false;
         [JsonProperty("enableWindowChromeRendering")]
-        public bool EnableWindowChromeRendering { get; set; } = false;
+        public bool EnableWindowChromeRendering { get; set; } = true;
     }
 
     public enum TrayClickAction

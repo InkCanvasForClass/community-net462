@@ -17,17 +17,24 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             try
             {
                 var path = Path.Combine(App.RootPath, SettingsFileName);
-                if (!File.Exists(path)) return Settings?.Startup?.EnableWindowChromeRendering ?? false;
+                if (!File.Exists(path)) return Settings?.Startup?.EnableWindowChromeRendering ?? DefaultEnableWindowChromeRendering();
 
                 var json = File.ReadAllText(path);
                 var obj = JObject.Parse(json);
-                return obj.SelectToken("startup.enableWindowChromeRendering")?.Value<bool>() ?? false;
+                return obj.SelectToken("startup.enableWindowChromeRendering")?.Value<bool>() ?? DefaultEnableWindowChromeRendering();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                return Settings?.Startup?.EnableWindowChromeRendering ?? false;
+                return Settings?.Startup?.EnableWindowChromeRendering ?? DefaultEnableWindowChromeRendering();
             }
+        }
+
+        // 键缺失时的默认值：Win8+ 默认启用 DWM/WindowChrome 渲染（GPU 合成，低端机启动更快），
+        // Win7 保持旧的透明回退以兼容。
+        private static bool DefaultEnableWindowChromeRendering()
+        {
+            return Environment.OSVersion.Version >= new Version(6, 2);
         }
 
         public static void SaveSettingsToFile()

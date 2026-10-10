@@ -61,6 +61,15 @@
                         </ComboBox>
                     </ui:SettingsCard>
 
+                    <ui:SettingsCard Header="{x:Static props:WindowStrings.Window_WindowChromeRendering}"
+                                     Description="{x:Static props:WindowStrings.Window_WindowChromeRenderingHint}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowMaximize_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch x:Name="ToggleSwitchEnableWindowChromeRendering"
+                                         Toggled="ToggleSwitchEnableWindowChromeRendering_Toggled" />
+                    </ui:SettingsCard>
+
                     <ui:SettingsCard Header="{x:Static props:ThemeStrings.Theme_LanguageLabel}"
                             Description="{x:Static props:ThemeStrings.Theme_Language_RestartHint}">
                         <ui:SettingsCard.HeaderIcon>
