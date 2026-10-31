@@ -21,7 +21,12 @@ namespace Ink_Canvas.Windows.SettingsViews
         private readonly Dictionary<string, object> _pages = new Dictionary<string, object>();
         private readonly Dictionary<string, RoutedEventHandler> _pageLoadedHandlers = new Dictionary<string, RoutedEventHandler>();
         private readonly HashSet<string> _injectedPages = new HashSet<string>();
+        private readonly HashSet<string> _indexedPageTags = new HashSet<string>();
+        private bool _preloadStarted;
         private readonly Dictionary<string, Ink_Canvas.Plugins.PluginInfo> _pluginPages = new Dictionary<string, Ink_Canvas.Plugins.PluginInfo>();
+
+        /// <summary>搜索/收藏索引增量构建完成后触发，供页面刷新收藏列表。</summary>
+        public event Action SearchIndexReady;
 
         // 保存窗口原始位置和大小
         private double _originalLeft;
@@ -34,6 +39,9 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private bool _isNavigating = false;
         private bool _updateBadgeDismissed = false;
+        private bool _allowClose = false;
+        private bool _loadedOnce = false;
+        private bool _suppressAutoCenter = false;
 
         public SettingsWindow()
         {
@@ -84,10 +92,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "PluginSettingsPage", typeof(PluginSettingsPage) }
             };
 
-            // 默认选中首页
+            // 默认选中首页（页面在首次 Loaded 时导航，避免 Show 前重复解析页面）
             if (NavigationViewControl.MenuItems.Count > 0)
             {
-                NavigateToPage("HomeDashboardPage");
                 NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
                 NavigationViewControl.Header = NavStrings.Nav_Home;
             }
@@ -96,7 +103,10 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             this.Loaded += (sender, e) =>
             {
-                SetMaxSizeAndCenter();
+                if (_loadedOnce) return;
+                _loadedOnce = true;
+
+                if (!_suppressAutoCenter) SetMaxSizeAndCenter();
                 RegisterDpiChangedListener();
 
                 Dispatcher.BeginInvoke(new Action(() =>
@@ -115,7 +125,15 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 }), System.Windows.Threading.DispatcherPriority.Normal);
 
-                _ = PreloadAllPagesAsync();
+                StartPreload();
+            };
+
+            // 关闭改为隐藏以复用窗口：解析/渲染/JIT 只付一次，消除"每次打开都卡"
+            this.Closing += (sender, e) =>
+            {
+                if (_allowClose) return;
+                e.Cancel = true;
+                Hide();
             };
 
             AnnouncementService.UnreadCountChanged += UpdateAnnouncementUnreadBadge;
@@ -173,6 +191,38 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             ApplyCurrentTheme();
             global::Ink_Canvas.Helpers.WindowBackdropHelper.Apply(this, Helpers.SettingsManager.Settings);
+        }
+
+        /// <summary>真正关闭窗口（应用退出/复用清理时调用），绕过"关闭改为隐藏"逻辑。</summary>
+        public void CloseForReal()
+        {
+            _allowClose = true;
+            Close();
+        }
+
+        /// <summary>预热模式：窗口移屏外、不自动居中、不激活，预热首渲染但不打扰用户。</summary>
+        public void SetPrewarmMode(bool on)
+        {
+            _suppressAutoCenter = on;
+        }
+
+        /// <summary>复用已隐藏的窗口：刷新主题并复位到目标页面。</summary>
+        public void PrepareForReuse(string pageTag = null)
+        {
+            _suppressAutoCenter = false;
+            try { SetMaxSizeAndCenter(); } catch { }
+            try { RefreshTheme(); } catch { }
+            UpdateUpdateBadgeVisibility();
+            UpdateAnnouncementUnreadBadge();
+
+            string tag = string.IsNullOrEmpty(pageTag) ? "HomeDashboardPage" : pageTag;
+            NavigateToPage(tag);
+            var navItem = FindNavigationViewItemByTag(tag);
+            if (navItem != null)
+            {
+                NavigationViewControl.SelectedItem = navItem;
+                NavigationViewControl.Header = navItem.Content;
+            }
         }
 
         public void ApplyWindowBackdrop(string backdropName)
@@ -577,11 +627,28 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private List<SearchEntry> _searchIndex;
         private bool _indexBuilt;
+        private bool _indexBuilding;
+        private bool _navEntriesIndexed;
 
+        /// <summary>
+        /// 只在后台增量构建索引，绝不在 UI 线程同步实例化全部页面（那是打开设置卡顿的根因）。
+        /// 静态项（导航项 + 插件项）即时可用；卡片项由 <see cref="PreloadAllPagesAsync"/> 逐页构建。
+        /// </summary>
         private void EnsureSearchIndexBuilt()
         {
-            if (_indexBuilt && _searchIndex != null) return;
-            _searchIndex = new List<SearchEntry>(256);
+            EnsureStaticIndexEntries();
+            if (_indexBuilt || _indexBuilding) return;
+            StartPreload();
+        }
+
+        /// <summary>
+        /// 索引入口：各触发点只需调用此方法，内部保证只启动一次。
+        /// </summary>
+        private void EnsureStaticIndexEntries()
+        {
+            if (_searchIndex == null) _searchIndex = new List<SearchEntry>(256);
+            if (_navEntriesIndexed) return;
+            _navEntriesIndexed = true;
 
             foreach (var item in GetAllNavigationItems())
             {
@@ -593,47 +660,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 }
             }
 
-            foreach (var kv in _pageTypes.ToList())
-            {
-                var tag = kv.Key;
-                if (tag == "Settings") continue;
-                if (kv.Value == typeof(PluginSettingsPage)) continue;
-                if (tag == "FavouritesPage") continue;
-
-                try
-                {
-                    if (!_pages.TryGetValue(tag, out var page))
-                    {
-                        page = Activator.CreateInstance(kv.Value);
-                        _pages[tag] = page;
-                    }
-                    if (page is FrameworkElement feRoot)
-                    {
-                        if (!feRoot.IsLoaded)
-                        {
-                            try { feRoot.ApplyTemplate(); } catch { }
-                        }
-                        CollectEntriesFromPage(feRoot, tag);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(string.Format(NavStrings.Nav_IndexBuildFailed, tag, ex.Message));
-                }
-            }
-
-            foreach (var kv in _pluginPages)
-            {
-                var pageTag = kv.Key;
-                var info = kv.Value;
-                var name = info?.Name;
-                if (!string.IsNullOrWhiteSpace(name))
-                {
-                    _searchIndex.Add(new SearchEntry { Text = string.Format(NavStrings.Nav_PluginSettingsFormat, name), PageTag = pageTag });
-                }
-            }
-
-            _indexBuilt = true;
+            // 插件项由 LoadPluginSettingsPages 在插件加载后单独补入（此时插件尚未加载）
         }
 
         private void CollectEntriesFromPage(DependencyObject root, string pageTag)
@@ -779,8 +806,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                     string.Equals(e.PropertyPath, path, StringComparison.OrdinalIgnoreCase));
                 if (entry == null)
                 {
-                    // 身份规则演进后旧收藏可能已失配，静默清理，避免永久残留脏数据
-                    stale.Add(path);
+                    // 身份规则演进后旧收藏可能已失配，静默清理，避免永久残留脏数据。
+                    // 索引未构建完成时不下此结论，否则会把尚未入索引的收藏清空。
+                    if (_indexBuilt) stale.Add(path);
                     continue;
                 }
 
@@ -942,6 +970,13 @@ namespace Ink_Canvas.Windows.SettingsViews
                         };
 
                         NavigationViewControl.MenuItems.Add(navItem);
+
+                        // 插件项补入搜索索引（静态索引入口可能早于插件加载执行）
+                        _searchIndex?.Add(new SearchEntry
+                        {
+                            Text = string.Format(NavStrings.Nav_PluginSettingsFormat, plugin.Name),
+                            PageTag = pageTag
+                        });
                     }
                 }
             }
@@ -957,9 +992,20 @@ namespace Ink_Canvas.Windows.SettingsViews
             return NavigationViewControl;
         }
 
+        /// <summary>只启动一次后台预加载/索引构建。</summary>
+        private void StartPreload()
+        {
+            if (_preloadStarted) return;
+            _preloadStarted = true;
+            _indexBuilding = true;
+            _ = PreloadAllPagesAsync();
+        }
+
         private async System.Threading.Tasks.Task PreloadAllPagesAsync()
         {
             await System.Threading.Tasks.Task.Delay(1000);
+
+            EnsureStaticIndexEntries();
 
             try
             {
@@ -967,8 +1013,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 int count = 0;
                 foreach (var tag in tags)
                 {
-                    if (_pages.ContainsKey(tag))
-                        continue;
                     if (!_pageTypes.TryGetValue(tag, out var type))
                         continue;
                     if (type == typeof(PluginSettingsPage))
@@ -976,10 +1020,21 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                     try
                     {
-                        if (!_pages.ContainsKey(tag))
+                        if (!_pages.TryGetValue(tag, out var page))
                         {
-                            var page = Activator.CreateInstance(type);
+                            page = Activator.CreateInstance(type);
                             _pages[tag] = page;
+                        }
+
+                        // 顺手构建卡片索引（绝不在打开窗口的那一帧同步做完）
+                        if (_indexedPageTags.Add(tag) && tag != "Settings" && tag != "FavouritesPage"
+                            && page is FrameworkElement feRoot)
+                        {
+                            if (!feRoot.IsLoaded)
+                            {
+                                try { feRoot.ApplyTemplate(); } catch { }
+                            }
+                            CollectEntriesFromPage(feRoot, tag);
                         }
                     }
                     catch (Exception ex)
@@ -1002,6 +1057,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 System.Diagnostics.Debug.WriteLine(string.Format(NavStrings.Nav_PreloadPagesFailed, ex.Message));
             }
+
+            _indexBuilt = true;
+            _indexBuilding = false;
+            SearchIndexReady?.Invoke();
         }
 
         public void UpdateUpdateBadgeVisibility()

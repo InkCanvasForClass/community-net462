@@ -4,6 +4,7 @@
          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
          xmlns:d="http://schemas.microsoft.com/expression/blend"
          xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews.Pages"
+         xmlns:ctrl="clr-namespace:Ink_Canvas.Windows.SettingsViews.Controls"
          xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
          xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
          xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
@@ -22,35 +23,55 @@
         <c:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
         <sys:Double x:Key="SettingsCardSpacing">4</sys:Double>
 
-        <!-- 状态指示器样式（与 ClassIsland RulesetControl 一致） -->
-        <Style TargetType="Ellipse" x:Key="StateIndicatorStyle">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding State, Mode=OneWay}" Value="2">
-                    <Setter Property="Fill" Value="Green"/>
-                    <Setter Property="ToolTip" Value="{x:Static props:AutomationStrings.AutoWf_StateSatisfied}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding State, Mode=OneWay}" Value="1">
-                    <Setter Property="Fill" Value="IndianRed"/>
-                    <Setter Property="ToolTip" Value="{x:Static props:AutomationStrings.AutoWf_StateNotSatisfied}"/>
-                </DataTrigger>
-            </Style.Triggers>
-            <Setter Property="Fill" Value="DarkGray"/>
-            <Setter Property="ToolTip" Value="{x:Static props:AutomationStrings.AutoWf_StateUnknown}"/>
+        <!-- 紧凑的导航列表项：覆盖 iNKORE 默认的 Padding="12,9,12,12" 与 Left 对齐 -->
+        <Style x:Key="NavListItemContainerStyle" TargetType="ListBoxItem">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="6,3,6,3"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="LayoutRoot"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="LayoutRoot" Property="Background"
+                                        Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="LayoutRoot" Property="Background"
+                                        Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-
-        <local:RulesetLogicalModeToIntConverter x:Key="LogicalModeToIntConverter"/>
     </Page.Resources>
 
-    <Grid>
+    <Grid x:Name="RootGrid" SizeChanged="RootGrid_SizeChanged">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280" MinWidth="220"/>
+            <ColumnDefinition Width="*" MinWidth="220"/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
         <!-- ==================== 左侧：导航列表 ==================== -->
         <Grid Grid.Column="0" Margin="8">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -59,61 +80,154 @@
             <!-- 标题 -->
             <TextBlock Grid.Row="0" Text="{x:Static props:AutomationStrings.Automation_Title}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
 
+            <!-- 类型选择 -->
+            <ComboBox Grid.Row="1" x:Name="ComboBoxCategory" HorizontalAlignment="Stretch" Margin="0,0,0,8"
+                      SelectionChanged="ComboBoxCategory_SelectionChanged">
+                <ComboBoxItem Content="{x:Static props:AutomationStrings.AutoWf_Category_Workflow}"/>
+                <ComboBoxItem Content="{x:Static props:AutomationStrings.AutoWf_Category_StateGroup}"/>
+                <ComboBoxItem Content="{x:Static props:AutomationStrings.AutoWf_Category_ActionGroup}"/>
+            </ComboBox>
+
             <!-- 添加按钮 -->
-            <Button Grid.Row="1" x:Name="BtnAddWorkflow"
+            <Button Grid.Row="2" x:Name="BtnAddItem"
                     Content="{x:Static props:AutomationStrings.AutoWf_AddWorkflow}"
-                    Click="BtnAddWorkflow_Click"
+                    Click="BtnAddItem_Click"
                     Padding="12,6" Margin="0,0,0,8" HorizontalAlignment="Left"/>
 
             <!-- 导航列表 -->
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                <ListBox x:Name="NavigationListBox"
-                         SelectionChanged="NavigationListBox_SelectionChanged"
-                         HorizontalContentAlignment="Stretch"
-                         dd:DragDrop.IsDragSource="True"
-                         dd:DragDrop.IsDropTarget="True"
-                         touch:TouchAwareDragDropHelper.IsEnabled="True">
-                    <!-- 工作流项通过 DataTemplate 渲染 -->
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+            <Grid Grid.Row="3">
+                    <!-- 工作流 -->
+                    <ListBox x:Name="NavigationListBox"
+                             ItemContainerStyle="{StaticResource NavListItemContainerStyle}"
+                             SelectionChanged="NavigationListBox_SelectionChanged"
+                             HorizontalContentAlignment="Stretch"
+                             dd:DragDrop.IsDragSource="True"
+                             dd:DragDrop.IsDropTarget="True"
+                             touch:TouchAwareDragDropHelper.IsEnabled="True">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
-                                        Background="Transparent" Padding="2,4" Margin="0,0,4,0"
-                                        Cursor="SizeAll">
-                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Rename_20_Regular}" Width="16" Height="16"
-                                                 VerticalAlignment="Center"/>
-                                </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding ActionSet.Name}"
-                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ui:ToggleSwitch IsOn="{Binding ActionSet.IsEnabled}"
-                                                     Toggled="ToggleWorkflowEnabled_Toggled"
-                                                     Width="44" Height="24" Margin="0,0,4,0"/>
-                                    <Button Content="⧉" Click="BtnDuplicateWorkflow_Click"
-                                            Padding="4,0" Tag="{Binding}" Margin="0,0,4,0"
-                                            ToolTip="{x:Static props:AutomationStrings.AutoWf_Copy}"/>
-                                    <Button Content="✕" Click="BtnRemoveWorkflow_Click"
-                                            Padding="4,0" Tag="{Binding}"
-                                            ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
-                                </StackPanel>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </ScrollViewer>
+                                    <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
+                                            Background="Transparent" Padding="2,4" Margin="0,0,4,0"
+                                            Cursor="SizeAll">
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Rename_20_Regular}" Width="16" Height="16"
+                                                     VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding ActionSet.Name}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                               Margin="0,0,8,0"/>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:ToggleSwitch IsOn="{Binding ActionSet.IsEnabled}"
+                                                         Toggled="ToggleWorkflowEnabled_Toggled"
+                                                         MinWidth="0"
+                                                         Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <Button Content="⧉" Click="BtnDuplicateWorkflow_Click"
+                                                Padding="4,0" Tag="{Binding}" Margin="0,0,4,0"
+                                                MinWidth="40" MinHeight="40" VerticalAlignment="Center"
+                                                ToolTip="{x:Static props:AutomationStrings.AutoWf_Copy}"/>
+                                        <Button Content="✕" Click="BtnRemoveWorkflow_Click"
+                                                Padding="4,0" Tag="{Binding}"
+                                                MinWidth="40" MinHeight="40" VerticalAlignment="Center"
+                                                ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- 状态组 -->
+                    <ListBox x:Name="StateGroupsListBox" Visibility="Collapsed"
+                             ItemContainerStyle="{StaticResource NavListItemContainerStyle}"
+                             SelectionChanged="StateGroupsListBox_SelectionChanged"
+                             HorizontalContentAlignment="Stretch"
+                             dd:DragDrop.IsDragSource="True"
+                             dd:DragDrop.IsDropTarget="True"
+                             touch:TouchAwareDragDropHelper.IsEnabled="True">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
+                                            Background="Transparent" Padding="2,4" Margin="0,0,4,0"
+                                            Cursor="SizeAll">
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ReOrderDotsVertical_20_Filled}" FontSize="10"
+                                                     VerticalAlignment="Center" Opacity="0.45"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                               Margin="0,0,8,0"/>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="⧉" Click="BtnDuplicateStateGroup_Click"
+                                                Padding="4,0" Tag="{Binding}" Margin="0,0,4,0"
+                                                MinWidth="40" MinHeight="40" VerticalAlignment="Center"
+                                                ToolTip="{x:Static props:AutomationStrings.AutoWf_Copy}"/>
+                                        <Button Content="✕" Click="BtnRemoveStateGroup_Click"
+                                                Padding="4,0" Tag="{Binding}"
+                                                MinWidth="40" MinHeight="40" VerticalAlignment="Center"
+                                                ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- 动作组 -->
+                    <ListBox x:Name="ActionGroupsListBox" Visibility="Collapsed"
+                             ItemContainerStyle="{StaticResource NavListItemContainerStyle}"
+                             SelectionChanged="ActionGroupsListBox_SelectionChanged"
+                             HorizontalContentAlignment="Stretch"
+                             dd:DragDrop.IsDragSource="True"
+                             dd:DragDrop.IsDropTarget="True"
+                             touch:TouchAwareDragDropHelper.IsEnabled="True">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
+                                            Background="Transparent" Padding="2,4" Margin="0,0,4,0"
+                                            Cursor="SizeAll">
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ReOrderDotsVertical_20_Filled}" FontSize="10"
+                                                     VerticalAlignment="Center" Opacity="0.45"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                               Margin="0,0,8,0"/>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="⧉" Click="BtnDuplicateActionGroup_Click"
+                                                Padding="4,0" Tag="{Binding}" Margin="0,0,4,0"
+                                                MinWidth="40" MinHeight="40" VerticalAlignment="Center"
+                                                ToolTip="{x:Static props:AutomationStrings.AutoWf_Copy}"/>
+                                        <Button Content="✕" Click="BtnRemoveActionGroup_Click"
+                                                Padding="4,0" Tag="{Binding}"
+                                                MinWidth="40" MinHeight="40" VerticalAlignment="Center"
+                                                ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
         </Grid>
 
-        <GridSplitter Grid.Column="1" Width="1" Background="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+<GridSplitter Grid.Column="1" Width="1" Background="{DynamicResource ControlStrokeColorDefaultBrush}"
+                        DragStarted="Splitter_DragStarted"/>
 
-        <!-- ==================== 右侧：内容区域 ==================== -->
-        <Grid Grid.Column="2">
-
+<!-- ==================== 右侧：内容区域 ==================== -->
+        <Grid Grid.Column="2" x:Name="DetailHost" ClipToBounds="True">
 
             <!-- ========== 工作流编辑器面板 ========== -->
             <ScrollViewer x:Name="WorkflowEditorPanel" Visibility="Collapsed" Padding="16,8">
@@ -194,6 +308,7 @@
                                                 <!-- 删除按钮 -->
                                                 <Button Grid.Column="1" Content="✕" Padding="4,0"
                                                         Margin="0,0,8,0" Click="BtnRemoveTrigger_Click"
+                                                        MinWidth="40" MinHeight="40" VerticalAlignment="Center"
                                                         Tag="{Binding}" ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
 
                                                 <!-- 触发器类型选择 -->
@@ -217,208 +332,28 @@
                     </Border>
 
                     <!-- ===== 条件编辑区（规则集） ===== -->
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            CornerRadius="8" Padding="12" Margin="0,0,0,12">
-                        <StackPanel>
-                            <!-- 标题 + 启用开关 -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:ToggleSwitch x:Name="ToggleIsConditionEnabled" Margin="0,0,8,0"
-                                                 Toggled="ToggleIsConditionEnabled_Toggled"/>
-                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Tag_20_Regular}" FontSize="16" Margin="0,0,8,0"/>
-                                <TextBlock Text="{x:Static props:AutomationStrings.AutoWf_AndConditions}" FontWeight="Medium" VerticalAlignment="Center"/>
-                            </StackPanel>
-
-                            <!-- 条件禁用提示 -->
-                            <TextBlock x:Name="ConditionDisabledHint"
-                                       Text="{x:Static props:AutomationStrings.AutoWf_ConditionDisabledHint}" Opacity="0.5" Margin="0,0,0,8"/>
-
-                            <!-- 条件编辑面板 -->
-                            <StackPanel x:Name="ConditionEditorPanel">
-                                <!-- 规则集级别控制 -->
-                                <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <ComboBox x:Name="ComboBoxRulesetMode" Padding="8,6" Margin="0,0,8,0"
-                                              SelectionChanged="ComboBoxRulesetMode_SelectionChanged">
-                                        <ComboBoxItem Content="{x:Static props:AutomationStrings.AutoWf_AnyGroup}"/>
-                                        <ComboBoxItem Content="{x:Static props:AutomationStrings.AutoWf_AllGroups}"/>
-                                    </ComboBox>
-                                    <CheckBox x:Name="CheckBoxRulesetReversed" Content="{x:Static props:AutomationStrings.AutoWf_Reverse}"
-                                              Margin="0,0,8,0" VerticalAlignment="Center"
-                                              Checked="CheckBoxRulesetReversed_Changed"
-                                              Unchecked="CheckBoxRulesetReversed_Changed"/>
-                                    <Button Content="{x:Static props:AutomationStrings.AutoWf_AddGroup}" Padding="8,4" VerticalAlignment="Center"
-                                            Click="BtnAddRuleGroup_Click"/>
-                                    <Ellipse x:Name="EllipseRulesetState" Width="10" Height="10"
-                                             Margin="8,0,0,0" VerticalAlignment="Center"
-                                             Fill="DarkGray"/>
-                                </WrapPanel>
-
-                                <!-- 条件组列表 -->
-                                <ItemsControl x:Name="RuleGroupsItemsControl"
-                                              dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True"
-                                              touch:TouchAwareDragDropHelper.IsEnabled="True">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                                    BorderThickness="1" CornerRadius="6" Padding="8"
-                                                    Margin="0,4" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- 拖动按钮 -->
-                                                    <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
-                                                            Background="Transparent" Padding="2,4" Margin="0,0,4,0"
-                                                            Cursor="SizeAll">
-                                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ReOrderDotsVertical_20_Filled}" FontSize="10"
-                                                                   VerticalAlignment="Center" Opacity="0.45"/>
-                                                    </Border>
-
-                                                    <StackPanel Grid.Column="1">
-                                                    <!-- 条件组头部 -->
-                                                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                        <ComboBox Padding="8,6" Margin="0,0,8,0"
-                                                                  SelectedIndex="{Binding Mode, Converter={StaticResource LogicalModeToIntConverter}, Mode=TwoWay}"
-                                                                  SelectionChanged="ComboBoxGroupMode_SelectionChanged"
-                                                                  Tag="{Binding}">
-                                                            <ComboBoxItem Content="{x:Static props:AutomationStrings.AutoWf_AnyRule}"/>
-                                                            <ComboBoxItem Content="{x:Static props:AutomationStrings.AutoWf_AllRules}"/>
-                                                        </ComboBox>
-                                                        <CheckBox Content="{x:Static props:AutomationStrings.AutoWf_Reverse}" IsChecked="{Binding IsReversed}"
-                                                                  Checked="CheckBoxGroupReversed_Changed"
-                                                                  Unchecked="CheckBoxGroupReversed_Changed"
-                                                                  Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                        <Button Content="{x:Static props:AutomationStrings.AutoWf_AddRule}" Padding="6,2" Margin="0,0,8,0"
-                                                                VerticalAlignment="Center" Click="BtnAddRuleToGroup_Click"
-                                                                Tag="{Binding}"/>
-
-                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
-                                                                    VerticalAlignment="Center" Margin="8,0,0,0">
-                                                            <Ellipse Width="8" Height="8" Margin="0,0,4,0"
-                                                                     Style="{StaticResource StateIndicatorStyle}"/>
-                                                            <ui:ToggleSwitch IsOn="{Binding IsEnabled}"
-                                                                             Toggled="CheckBoxGroupEnabled_Toggled"
-                                                                             Width="44" Height="24" Margin="0,0,4,0"
-                                                                             ToolTip="{x:Static props:AutomationStrings.AutoWf_EnableGroup}"/>
-                                                            <Button Content="⧉" Padding="4,2" Margin="0,0,4,0"
-                                                                    Click="BtnDuplicateGroup_Click" Tag="{Binding}" ToolTip="{x:Static props:AutomationStrings.AutoWf_Copy}"/>
-                                                            <Button Content="✕" Padding="4,2"
-                                                                    Click="BtnDeleteGroup_Click" Tag="{Binding}" ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
-                                                        </StackPanel>
-                                                    </WrapPanel>
-
-                                                    <!-- 规则列表 -->
-                                                    <ItemsControl ItemsSource="{Binding Rules}" Margin="4,0,0,0">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Grid Margin="0,2">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="Auto"/>
-                                                                        <ColumnDefinition Width="Auto"/>
-                                                                        <ColumnDefinition Width="Auto"/>
-                                                                            <ColumnDefinition Width="220"/>
-                                                                            <ColumnDefinition Width="*"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <Button Grid.Column="0" Content="✕" FontSize="10"
-                                                                            Click="BtnRemoveRule_Click" Padding="4,1"
-                                                                            Margin="0,0,4,0" Tag="{Binding}" ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
-                                                                    <Ellipse Grid.Column="1" Width="8" Height="8"
-                                                                             Margin="0,0,4,0" VerticalAlignment="Center"
-                                                                             Style="{StaticResource StateIndicatorStyle}"/>
-                                                                    <CheckBox Grid.Column="2" Content="{x:Static props:AutomationStrings.AutoWf_Reverse}"
-                                                                              IsChecked="{Binding IsReversed}"
-                                                                              Checked="CheckBoxRuleReversed_Changed"
-                                                                              Unchecked="CheckBoxRuleReversed_Changed"
-                                                                              Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                                    <ComboBox Grid.Column="3"
-                                                                              ItemsSource="{x:Static local:AutomationWorkflowPage.RegisteredRulesList}"
-                                                                              DisplayMemberPath="DisplayName" SelectedValuePath="Id"
-                                                                              SelectedValue="{Binding Id, Mode=TwoWay}"
-                                                                              SelectionChanged="ComboBoxRuleType_SelectionChanged"
-                                                                              Tag="{Binding}" Padding="8,6"/>
-                                                                        <local:AutomationSettingsPresenter Grid.Column="4"
-                                                                                                           Margin="8,0,0,0"
-                                                                                                           VerticalAlignment="Center"
-                                                                                                           Item="{Binding}"
-                                                                                                           SettingsChanged="RuleSettingsPresenter_SettingsChanged"/>
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <ui:ToggleSwitch x:Name="ToggleIsConditionEnabled" Margin="0,0,8,0"
+                                             Toggled="ToggleIsConditionEnabled_Toggled"/>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Tag_20_Regular}" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="{x:Static props:AutomationStrings.AutoWf_AndConditions}" FontWeight="Medium" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Border>
+
+                        <!-- 条件禁用提示 -->
+                        <TextBlock x:Name="ConditionDisabledHint"
+                                   Text="{x:Static props:AutomationStrings.AutoWf_ConditionDisabledHint}" Opacity="0.5" Margin="0,0,0,8"/>
+
+                        <!-- 条件编辑面板 -->
+                        <StackPanel x:Name="ConditionEditorPanel">
+                            <ctrl:AutomationRulesetEditor x:Name="RulesetEditor"
+                                                          SettingsChanged="RulesetEditor_SettingsChanged"/>
+                        </StackPanel>
+                    </StackPanel>
 
                     <!-- ===== 行动编辑区 ===== -->
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            CornerRadius="8" Padding="12" Margin="0,0,0,12">
-                        <StackPanel>
-                            <!-- 标题 -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Play_20_Regular}" FontSize="16" Margin="0,0,8,0"/>
-                                <TextBlock Text="{x:Static props:AutomationStrings.AutoWf_Actions}" FontWeight="Medium" VerticalAlignment="Center"/>
-                            </StackPanel>
-
-                            <!-- 行动列表 -->
-                            <ItemsControl x:Name="ActionsItemsControl" Margin="0,0,0,8"
-                                          dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True"
-                                          touch:TouchAwareDragDropHelper.IsEnabled="True">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                                CornerRadius="4" Padding="8" Margin="0,2">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="220"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <!-- 拖动按钮 -->
-                                                <Border Grid.Column="0" touch:TouchAwareDragDropHelper.IsGripHandle="True"
-                                                        Background="Transparent" Padding="2,4" Margin="0,0,4,0"
-                                                        Cursor="SizeAll">
-                                                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ReOrderDotsVertical_20_Filled}" FontSize="10"
-                                                               VerticalAlignment="Center" Opacity="0.45"/>
-                                                </Border>
-
-                                                <!-- 删除按钮 -->
-                                                <Button Grid.Column="1" Content="✕" Padding="4,0"
-                                                        Margin="0,0,8,0" Click="BtnRemoveAction_Click"
-                                                        Tag="{Binding}" ToolTip="{x:Static props:AutomationStrings.AutoWf_Delete}"/>
-
-                                                <!-- 行动类型选择 -->
-                                                <ComboBox Grid.Column="2"
-                                                          ItemsSource="{x:Static local:AutomationWorkflowPage.RegisteredActionsList}"
-                                                          DisplayMemberPath="DisplayName" SelectedValuePath="Id"
-                                                          SelectedValue="{Binding Id, Mode=TwoWay}"
-                                                          SelectionChanged="ComboBoxActionType_SelectionChanged"
-                                                          Tag="{Binding}" Padding="8,6" MinWidth="150"
-                                                          VerticalAlignment="Center"/>
-                                                <local:AutomationSettingsPresenter Grid.Column="3"
-                                                                                   Margin="8,0,0,0"
-                                                                                   VerticalAlignment="Center"
-                                                                                   Item="{Binding}"
-                                                                                   SettingsChanged="ActionSettingsPresenter_SettingsChanged"/>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-
-                            <!-- 添加行动 -->
-                            <Button Content="{x:Static props:AutomationStrings.AutoWf_AddAction}" Click="BtnAddAction_Click"
-                                    Padding="12,6" HorizontalAlignment="Left"/>
-                        </StackPanel>
-                    </Border>
+                    <ctrl:AutomationActionSetEditor x:Name="ActionSetEditor"
+                                                    SettingsChanged="ActionSetEditor_SettingsChanged"/>
 
                     <!-- ===== 恢复提示 ===== -->
                     <StackPanel x:Name="RevertHintPanel" Orientation="Horizontal" Margin="0,0,0,16" Opacity="0.6">
@@ -428,7 +363,57 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- ========== 未选择工作流时的占位符 ========== -->
+            <!-- ========== 状态组编辑器面板 ========== -->
+            <ScrollViewer x:Name="StateGroupEditorPanel" Visibility="Collapsed" Padding="16,8">
+                <StackPanel>
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static props:AutomationStrings.AutoWf_Name}" FontWeight="Medium" Margin="0,0,0,4"/>
+                            <TextBox x:Name="TextBoxStateGroupName"
+                                     Padding="8,6" MinWidth="200" HorizontalAlignment="Left"
+                                     TextChanged="TextBoxStateGroupName_TextChanged"
+                                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                     BorderThickness="1"/>
+                        </StackPanel>
+                    </Border>
+
+                    <ctrl:AutomationRulesetEditor x:Name="StateGroupRulesetEditor"
+                                                  SettingsChanged="GroupSettingsChanged"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ========== 动作组编辑器面板 ========== -->
+            <ScrollViewer x:Name="ActionGroupEditorPanel" Visibility="Collapsed" Padding="16,8">
+                <StackPanel>
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{x:Static props:AutomationStrings.AutoWf_Name}" FontWeight="Medium" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TextBoxActionGroupName"
+                                         Padding="8,6" MinWidth="200" HorizontalAlignment="Left"
+                                         TextChanged="TextBoxActionGroupName_TextChanged"
+                                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                         BorderThickness="1"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button x:Name="BtnInvokeActionGroup" Content="{x:Static props:AutomationStrings.AutoWf_Invoke}" Padding="12,4" Margin="0,0,8,0" Click="BtnInvokeActionGroup_Click"/>
+                                <Button x:Name="BtnRevertActionGroup" Content="{x:Static props:AutomationStrings.AutoWf_Revert}" Padding="12,4" Click="BtnRevertActionGroup_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <ctrl:AutomationActionSetEditor x:Name="ActionGroupActionSetEditor"
+                                                    SettingsChanged="GroupSettingsChanged"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ========== 未选择时的占位符 ========== -->
             <StackPanel x:Name="EmptyStatePanel" Visibility="Collapsed"
                         VerticalAlignment="Center" HorizontalAlignment="Center">
                 <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Rename_20_Regular}" FontSize="48" HorizontalAlignment="Center" Opacity="0.4"/>

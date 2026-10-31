@@ -186,6 +186,8 @@ namespace Ink_Canvas
         {
             try
             {
+                InitializeClipboardMonitoring();
+
                 if (!Clipboard.ContainsImage())
                     return;
 

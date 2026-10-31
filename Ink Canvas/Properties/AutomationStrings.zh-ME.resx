@@ -665,4 +665,48 @@
   <data name="FloatingInterceptor_Rule_SeewoDesktopSideBar" xml:space="preserve">
     <value>希沃桌面 側欄懸浮視窗</value>
   </data>
+
+  <data name="AutoWf_Category" xml:space="preserve">
+    <value>類型</value>
+  </data>
+
+  <data name="AutoWf_Category_Workflow" xml:space="preserve">
+    <value>自動化</value>
+  </data>
+
+  <data name="AutoWf_Category_StateGroup" xml:space="preserve">
+    <value>狀態組</value>
+  </data>
+
+  <data name="AutoWf_Category_ActionGroup" xml:space="preserve">
+    <value>動作組</value>
+  </data>
+
+  <data name="AutoWf_AddStateGroup" xml:space="preserve">
+    <value>新增狀態組</value>
+  </data>
+
+  <data name="AutoWf_AddActionGroup" xml:space="preserve">
+    <value>新增動作組</value>
+  </data>
+
+  <data name="Automation_DefaultStateGroupName" xml:space="preserve">
+    <value>狀態組</value>
+  </data>
+
+  <data name="Automation_DefaultActionGroupName" xml:space="preserve">
+    <value>動作組</value>
+  </data>
+
+  <data name="Automation_Field_GroupId" xml:space="preserve">
+    <value>組</value>
+  </data>
+
+  <data name="Automation_Rule_StateGroup" xml:space="preserve">
+    <value>狀態組滿足</value>
+  </data>
+
+  <data name="Automation_Action_RunActionGroup" xml:space="preserve">
+    <value>執行動作組</value>
+  </data>
 </root>

@@ -8,6 +8,7 @@
       xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
+      xmlns:helpers="clr-namespace:Ink_Canvas.Windows.SettingsViews.Helpers"
       mc:Ignorable="d"
       Title="{x:Static props:PerformanceStrings.Title}">
 
@@ -45,6 +46,14 @@
                         Icon="{x:Static ui:FluentSystemIcons.TopSpeed_20_Regular}"
                         IsOn="False"
                         Toggled="ToggleSwitchEnableMonitoring_Toggled"/>
+
+                    <controls:LabeledSettingsCard x:Name="ToggleSwitchSettingsPrewarm"
+                        helpers:SettingsBinder.PropertyPath="Performance.IsSettingsPrewarmEnabled"
+                        Header="{x:Static props:PerformanceStrings.SettingsPrewarm}"
+                        Description="{x:Static props:PerformanceStrings.SettingsPrewarmHint}"
+                        Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}"
+                        IsOn="False"
+                        Toggled="ToggleSwitchSettingsPrewarm_Toggled"/>
 
                     <!-- 当前运行状态 -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"

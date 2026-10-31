@@ -4400,7 +4400,8 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         internal async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
-            if (_settingsWindow != null)
+            // 窗口已可见：仅激活，不重复弹密码校验，不重建
+            if (_settingsWindow != null && _settingsWindow.IsVisible)
             {
                 if (_settingsWindow.WindowState == System.Windows.WindowState.Minimized)
                     _settingsWindow.WindowState = System.Windows.WindowState.Normal;
@@ -4429,13 +4430,104 @@ namespace Ink_Canvas
             // 打开设置前退出白板模式并切换到鼠标模式
             if (currentMode != 0) CloseWhiteboardImmediately();
             CursorIcon_Click(null, null);
-            _settingsWindow = new Windows.SettingsViews.SettingsWindow();
-            _settingsWindow.Owner = this;
-            _settingsWindow.Topmost = this.Topmost;
-            _settingsWindow.Closed += (s, args) => _settingsWindow = null;
-            _settingsWindow.Show();
+
+            ShowSettingsWindow(this);
             // 等窗口完成默认导航后再定位深链目标
             _ = Dispatcher.InvokeAsync(new Action(FlushPendingSettingsDeepLink), DispatcherPriority.ApplicationIdle);
+        }
+
+        /// <summary>
+        /// 创建或复用（可能已预热/隐藏）设置窗口并显示。复用消除每次打开重新解析 XAML + 首渲染的开销。
+        /// </summary>
+        internal static void ShowSettingsWindow(Window owner, string pageTag = null)
+        {
+            if (_settingsWindow == null)
+                _settingsWindow = CreateSettingsWindow(owner);
+
+            if (_settingsWindow == null) return;
+
+            if (ReferenceEquals(_settingsWindow.Owner, null))
+                _settingsWindow.Owner = owner;
+            _settingsWindow.Topmost = owner != null && owner.Topmost;
+            _settingsWindow.ShowActivated = true;
+            if (_settingsWindow.WindowState == System.Windows.WindowState.Minimized)
+                _settingsWindow.WindowState = System.Windows.WindowState.Normal;
+
+            _settingsWindow.PrepareForReuse(pageTag);
+            _settingsWindow.Show();
+            _settingsWindow.Activate();
+            _settingsWindow.Focus();
+        }
+
+        private static Windows.SettingsViews.SettingsWindow CreateSettingsWindow(Window owner)
+        {
+            var w = new Windows.SettingsViews.SettingsWindow { Owner = owner };
+            w.Closed += (s, args) => _settingsWindow = null;
+            return w;
+        }
+
+        /// <summary>
+        /// 启动后空闲时创建一次设置窗口（隐藏）以预热 XAML 解析/主题/首渲染，
+        /// 使首次点击设置也无需等待参数解析/首渲染。由设置项 IsSettingsPrewarmEnabled 控制。
+        /// </summary>
+        internal static void PrewarmSettingsWindow(Window owner)
+        {
+            if (_settingsWindow != null)
+            {
+                if (_settingsWindow.IsVisible)
+                {
+                    // 已存在且可见，无需预热
+                    return;
+                }
+                // 已存在但隐藏（之前显示过）：预热后隐藏即可
+                _settingsWindow.Hide();
+                return;
+            }
+            try
+            {
+                var w = new Windows.SettingsViews.SettingsWindow
+                {
+                    Owner = owner,
+                    ShowActivated = false,
+                    Topmost = false,
+                    WindowStartupLocation = WindowStartupLocation.Manual,
+                    // 移出所有屏幕外，避免 DWM 背景/窗口边框在启动时闪一下
+                    Left = SystemParameters.VirtualScreenLeft - 20000,
+                    Top = SystemParameters.VirtualScreenTop - 20000,
+                };
+                w.SetPrewarmMode(true);
+                _settingsWindow = w;
+                w.Closed += (s, args) => _settingsWindow = null;
+
+                EventHandler onRendered = null;
+                onRendered = (s, e) =>
+                {
+                    w.ContentRendered -= onRendered;
+                    w.Hide();
+                };
+                w.ContentRendered += onRendered;
+                w.Show();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"预热设置窗口失败: {ex.Message}", LogHelper.LogType.Warning);
+                _settingsWindow = null;
+            }
+        }
+
+        /// <summary>释放预热的设置窗口（关闭预加载设置项时调用），回收其内存。窗口可见时不动它。</summary>
+        internal static void ReleaseSettingsWindow()
+        {
+            try
+            {
+                if (_settingsWindow != null && !_settingsWindow.IsVisible)
+                {
+                    var w = _settingsWindow;
+                    _settingsWindow = null;
+                    w.CloseForReal();
+                }
+            }
+            catch { _settingsWindow = null; }
         }
 
         /// <summary>

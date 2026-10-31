@@ -51,6 +51,12 @@
   <data name="EnableMonitoringHint" xml:space="preserve">
     <value>Periodically collect CPU and memory usage during runtime, keeping data for the last 30 runs. Disabling will stop collection and clear history.</value>
   </data>
+  <data name="SettingsPrewarm" xml:space="preserve">
+    <value>Preload settings window</value>
+  </data>
+  <data name="SettingsPrewarmHint" xml:space="preserve">
+    <value>Create the settings window in the background at startup so opening settings needs no wait. Uses considerably more memory by default.</value>
+  </data>
   <data name="CurrentSession" xml:space="preserve">
     <value>Current Session</value>
   </data>

@@ -1751,6 +1751,8 @@ namespace Ink_Canvas
         {
             // Stop timers and handlers to avoid background callbacks invoking Dispatcher after shutdown
             StopAllTimersAndHandlers();
+            // 复用的设置窗口默认"关闭即隐藏"（仍占用窗口，阻止应用退出），退出时需真正关闭
+            try { _settingsWindow?.CloseForReal(); } catch { }
             base.OnClosing(e);
         }
 

@@ -16,10 +16,11 @@ namespace Ink_Canvas.Helpers
     {
         private readonly bool _useWindowChromeRendering;
         private readonly bool _dwmEnabled;
+        private readonly bool _isWindows8OrGreater;
         private IntPtr _hwnd;
         private bool _transparentHitThrough;
 
-        public bool IsUsingWindowChromeRendering => _useWindowChromeRendering && _dwmEnabled;
+        public bool IsUsingWindowChromeRendering => _useWindowChromeRendering && _dwmEnabled && _isWindows8OrGreater;
 
         public PerformanceTransparentWin()
         {
@@ -28,6 +29,8 @@ namespace Ink_Canvas.Helpers
 
             _useWindowChromeRendering = SettingsManager.ReadEnableWindowChromeRendering();
             _dwmEnabled = DwmCompositionHelper.IsCompositionEnabled();
+            // DWM/WindowChrome 分层渲染路径依赖 Win8+ 的 DWM 行为；Win7 上保留旧的透明回退以避免兼容问题。
+            _isWindows8OrGreater = Environment.OSVersion.Version >= new Version(6, 2);
 
             if (IsUsingWindowChromeRendering)
             {
@@ -38,6 +41,12 @@ namespace Ink_Canvas.Helpers
                 AllowsTransparency = true;
                 Background = Brushes.Transparent;
             }
+
+            LogHelper.WriteLogToFile(
+                $"窗口渲染路径: {(IsUsingWindowChromeRendering ? "WindowChrome(DWM, GPU合成)" : "AllowsTransparency(软件合成回退)")}, " +
+                $"设置启用={_useWindowChromeRendering}, DWM组合={_dwmEnabled}, Win8+={_isWindows8OrGreater}, " +
+                $"RenderTier={RenderCapability.Tier >> 16}",
+                LogHelper.LogType.Event);
         }
 
         private void ConfigureWindowChromeRendering()

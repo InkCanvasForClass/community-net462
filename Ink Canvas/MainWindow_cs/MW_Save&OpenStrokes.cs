@@ -218,6 +218,8 @@ namespace Ink_Canvas
         {
             try
             {
+                EnsureAutoSavePathValid();
+
                 var savePath = Settings.Automation.AutoSavedStrokesLocation
                                + (saveByUser ? @"\User Saved - " : @"\Auto Saved - ")
                                + (currentMode == 0 ? "Annotation Strokes" : "BlackBoard Strokes");

@@ -51,6 +51,12 @@
   <data name="EnableMonitoringHint" xml:space="preserve">
     <value>在软件运行期间定期采集 CPU 和内存使用情况，记录最近 30 次运行的性能数据。关闭后将停止采集并清除历史记录。</value>
   </data>
+  <data name="SettingsPrewarm" xml:space="preserve">
+    <value>预加载设置窗口</value>
+  </data>
+  <data name="SettingsPrewarmHint" xml:space="preserve">
+    <value>启动后在后台预先创建设置窗口，使打开设置无需等待加载。默认占用较多内存。</value>
+  </data>
   <data name="CurrentSession" xml:space="preserve">
     <value>当前运行状态</value>
   </data>
