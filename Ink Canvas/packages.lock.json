@@ -84,9 +84,9 @@
       },
       "iNKORE.UI.WPF.Modern": {
         "type": "Direct",
-        "requested": "[0.10.2.1, )",
-        "resolved": "0.10.2.1",
-        "contentHash": "nGwuuVul+TcLCTgPmaAZCc0fYFqUpCNZ8PiulVT3gZnsWt/AvxMZ0DSPpuyI/iRPc/NhFIg9lSIR7uaHWV0I/Q==",
+        "requested": "[0.11.0, )",
+        "resolved": "0.11.0",
+        "contentHash": "F6DdPt6ibY+Bo5vgfeRlPPJBAr+xjMeOpGtrBlEUh61g1XXUrf+1YfWKYKsJlGHrJAjQ25W+UldYwIvDu+wH7A==",
         "dependencies": {
           "System.ValueTuple": "4.5.0",
           "iNKORE.UI.WPF": "1.2.8"
@@ -398,7 +398,7 @@
         "type": "Project",
         "dependencies": {
           "iNKORE.UI.WPF": "[1.2.8, )",
-          "iNKORE.UI.WPF.Modern": "[0.10.2.1, )"
+          "iNKORE.UI.WPF.Modern": "[0.11.0, )"
         }
       },
       "inkcanvas.pluginsdk": {
