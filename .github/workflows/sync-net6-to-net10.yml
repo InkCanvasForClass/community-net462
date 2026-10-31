@@ -71,12 +71,57 @@ jobs:
             Write-Host "冲突文件列表:"
             $conflicted | ForEach-Object { Write-Host "  $_" }
 
-            # 1) csproj 冲突：取 net6 版本（ theirs ），然后把 TFM 改回 net10
+            # 1) csproj 冲突：git 已经把两边不冲突的改动合进来了，这里只处理冲突块：
+            #    - ours（net10）的行默认保留：net10 独有的包升级、Properties 都在这里面
+            #    - 但 net6 明确删掉的包（例如换了包 ID）要从 ours 里去掉，否则两个同程序集的包会同时被引用
+            #    - theirs（net6）里新增的包（新 ID）补进来
+            #    最后把 TFM 改回 net10。
             $csprojConflicts = $conflicted | Where-Object { $_ -match "\.csproj$" }
             foreach ($path in $csprojConflicts) {
-              Write-Host "解决 csproj 冲突（取 net6 + 改 TFM）: $path"
-              git checkout --theirs -- $path
-              (Get-Content -LiteralPath $path -Raw) -replace 'net6\.0-windows10\.0\.19041\.0', 'net10.0-windows10.0.19041.0' | Set-Content -LiteralPath $path -NoNewline
+              Write-Host "解决 csproj 冲突（保留 net10 改动 + 应用 net6 的包变更）: $path"
+              $bytes = [IO.File]::ReadAllBytes($path)
+              $hasBom = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
+              $conflictText = [Text.Encoding]::UTF8.GetString($bytes)
+              if ($hasBom) { $conflictText = $conflictText.Substring(1) }
+
+              $baseText = (& git show ":1:$path" 2>$null) -join "`n"
+              $theirsText = (& git show ":3:$path" 2>$null) -join "`n"
+              $baseIds = @([regex]::Matches($baseText, 'PackageReference\s+Include="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
+              $theirsIds = @([regex]::Matches($theirsText, 'PackageReference\s+Include="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
+
+              $lines = $conflictText -split "`r`n"
+              $resolved = [System.Collections.Generic.List[string]]::new()
+              $i = 0
+              while ($i -lt $lines.Count) {
+                if ($lines[$i] -notlike '<<<<<<<*') { $resolved.Add($lines[$i]); $i++; continue }
+
+                $ours = @(); $theirs = @(); $inTheirs = $false; $i++
+                while ($i -lt $lines.Count -and $lines[$i] -notlike '>>>>>>>*') {
+                  if ($lines[$i] -eq '=======') { $inTheirs = $true; $i++; continue }
+                  if ($inTheirs) { $theirs += $lines[$i] } else { $ours += $lines[$i] }
+                  $i++
+                }
+                $i++
+
+                foreach ($line in $ours) {
+                  if ($line -match 'PackageReference\s+Include="([^"]+)"') {
+                    $id = $Matches[1]
+                    if (($baseIds -contains $id) -and ($theirsIds -notcontains $id)) { continue }
+                  }
+                  $resolved.Add($line)
+                }
+                foreach ($line in $theirs) {
+                  if ($line -match 'PackageReference\s+Include="([^"]+)"') {
+                    $id = $Matches[1]
+                    $already = @($resolved | Where-Object { $_ -match ('PackageReference\s+Include="' + [regex]::Escape($id) + '"') })
+                    if ($already.Count -gt 0) { continue }
+                  }
+                  $resolved.Add($line)
+                }
+              }
+
+              $finalText = ($resolved -join "`r`n") -replace 'net6\.0-windows10\.0\.19041\.0', 'net10.0-windows10.0.19041.0'
+              [IO.File]::WriteAllText($path, $finalText, [Text.UTF8Encoding]::new($hasBom))
               git add -- $path
             }
 
