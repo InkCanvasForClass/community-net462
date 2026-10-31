@@ -58,13 +58,13 @@ Please [activate Microsoft Office](https://www.coolhub.top/archives/14).
 
 ### The application fails to launch normally
 
-Please check if `.Net Runtime 6.0` or higher is installed on your computer. If not, please [visit the official website](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) to download and install it.
+Please check if `.NET Framework 4.6.2` or higher is installed on your computer. If not, please [visit the official website](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net462-offline-installer) to download and install it.
 
 If it still doesn't run, please [install `Microsoft Office`](https://www.coolhub.top/archives/11).
 
 ## ✏️ Contribution Guidelines
 
-**Please note that when contributing code, you _must_ submit all changes to the _net6_ branch to ensure that the net6 version is always ahead of the main branch.**
+**When contributing code, set the PR target branch to `17194-ep`.**
 
 ## Todo LIST
 
