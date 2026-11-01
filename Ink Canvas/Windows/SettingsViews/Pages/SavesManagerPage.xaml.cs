@@ -2,11 +2,11 @@ using Ink_Canvas.Helpers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,8 +21,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
     /// </summary>
     public partial class SavesManagerPage
     {
-        private readonly ObservableCollection<SavesFileEntry> _inkEntries = new ObservableCollection<SavesFileEntry>();
-        private readonly ObservableCollection<SavesFileEntry> _shotEntries = new ObservableCollection<SavesFileEntry>();
+        private List<SavesFileEntry> _inkEntries = new List<SavesFileEntry>();
+        private List<SavesFileEntry> _shotEntries = new List<SavesFileEntry>();
+        private CancellationTokenSource _loadCts;
 
         private string _inkSortProp = nameof(SavesFileEntry.ModifiedText);
         private bool _inkSortDesc = true;
@@ -45,52 +46,71 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             ShotSort.SelectedIndex = 0;
 
             Loaded += async (s, e) => await LoadAsync();
+            Unloaded += (s, e) => _loadCts?.Cancel();
         }
 
         #region 加载与分类
 
         private async Task LoadAsync()
         {
-            var root = MainWindow.Settings?.Automation?.AutoSavedStrokesLocation;
-            InkCount.Text = StorageStrings.Storage_Calculating;
-            ShotCount.Text = StorageStrings.Storage_Calculating;
-
-            List<SavesFileEntry> ink, shots;
+            if (!IsLoaded) return;
+            _loadCts?.Cancel();
+            using var cts = new CancellationTokenSource();
+            _loadCts = cts;
             try
             {
-                var result = await Task.Run(() => Scan(root));
-                ink = result.Ink;
-                shots = result.Shots;
+                var root = MainWindow.Settings?.Automation?.AutoSavedStrokesLocation;
+                InkCount.Text = StorageStrings.Storage_Calculating;
+                ShotCount.Text = StorageStrings.Storage_Calculating;
+
+                List<SavesFileEntry> ink, shots;
+                try
+                {
+                    var result = await Task.Run(() => Scan(root, cts.Token), cts.Token);
+                    ink = result.Ink;
+                    shots = result.Shots;
+                }
+                catch (OperationCanceledException) when (cts.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile("SavesManagerPage | 扫描保存文件失败: " + ex, LogHelper.LogType.Error);
+                    ink = new List<SavesFileEntry>();
+                    shots = new List<SavesFileEntry>();
+                }
+
+                if (cts.IsCancellationRequested || !IsLoaded) return;
+
+                // Replace the snapshot once; adding sorted entries individually blocks the UI thread.
+                _inkEntries = ink;
+                _shotEntries = shots;
+                InkList.ItemsSource = _inkEntries;
+                ShotList.ItemsSource = _shotEntries;
+
+                InkSelectAll.IsChecked = false;
+                ShotSelectAll.IsChecked = false;
+
+                ApplySort(InkList, _inkSortProp, _inkSortDesc);
+                ApplySort(ShotList, _shotSortProp, _shotSortDesc);
+
+                InkCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _inkEntries.Count);
+                ShotCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _shotEntries.Count);
             }
-            catch (Exception ex)
+            finally
             {
-                LogHelper.WriteLogToFile("SavesManagerPage | 扫描保存文件失败: " + ex, LogHelper.LogType.Error);
-                ink = new List<SavesFileEntry>();
-                shots = new List<SavesFileEntry>();
+                if (ReferenceEquals(_loadCts, cts)) _loadCts = null;
             }
-
-            _inkEntries.Clear();
-            foreach (var e in ink) _inkEntries.Add(e);
-            _shotEntries.Clear();
-            foreach (var e in shots) _shotEntries.Add(e);
-
-            InkSelectAll.IsChecked = false;
-            ShotSelectAll.IsChecked = false;
-
-            ApplySort(InkList, _inkSortProp, _inkSortDesc);
-            ApplySort(ShotList, _shotSortProp, _shotSortDesc);
-
-            InkCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _inkEntries.Count);
-            ShotCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _shotEntries.Count);
         }
 
-        private static (List<SavesFileEntry> Ink, List<SavesFileEntry> Shots) Scan(string root)
+        private static (List<SavesFileEntry> Ink, List<SavesFileEntry> Shots) Scan(string root, CancellationToken token)
         {
             var ink = new List<SavesFileEntry>();
             var shots = new List<SavesFileEntry>();
             if (string.IsNullOrEmpty(root) || !Directory.Exists(root)) return (ink, shots);
 
-            foreach (var file in EnumerateSafe(root))
+            foreach (var file in EnumerateSafe(root, token))
             {
                 string ext;
                 long size;
@@ -129,21 +149,27 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             return (ink, shots);
         }
 
-        private static IEnumerable<string> EnumerateSafe(string dir)
+        private static IEnumerable<string> EnumerateSafe(string dir, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             IEnumerable<string> files;
-            try { files = Directory.EnumerateFiles(dir); }
+            try { files = Directory.GetFiles(dir); }
             catch { files = Array.Empty<string>(); }
-            foreach (var f in files) yield return f;
+            foreach (var f in files)
+            {
+                token.ThrowIfCancellationRequested();
+                yield return f;
+            }
 
             IEnumerable<string> subDirs;
-            try { subDirs = Directory.EnumerateDirectories(dir); }
+            try { subDirs = Directory.GetDirectories(dir); }
             catch { subDirs = Array.Empty<string>(); }
             foreach (var d in subDirs)
             {
+                token.ThrowIfCancellationRequested();
                 // File Dependency 存放插入画布的图片/PDF，删除会破坏元素，跳过。
                 if (string.Equals(Path.GetFileName(d), "File Dependency", StringComparison.OrdinalIgnoreCase)) continue;
-                foreach (var f in EnumerateSafe(d)) yield return f;
+                foreach (var f in EnumerateSafe(d, token)) yield return f;
             }
         }
 
@@ -291,7 +317,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private async void InkDelete_Click(object sender, RoutedEventArgs e) => await DeleteSelectedAsync(_inkEntries);
         private async void ShotDelete_Click(object sender, RoutedEventArgs e) => await DeleteSelectedAsync(_shotEntries);
 
-        private async Task DeleteSelectedAsync(ObservableCollection<SavesFileEntry> collection)
+        private async Task DeleteSelectedAsync(List<SavesFileEntry> collection)
         {
             var selected = collection.Where(entry => entry.IsSelected).ToList();
             if (selected.Count == 0) return;

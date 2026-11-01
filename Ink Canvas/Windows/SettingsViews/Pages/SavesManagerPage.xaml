@@ -9,6 +9,20 @@
          mc:Ignorable="d"
          Title="{x:Static props:StorageStrings.Storage_ManageSaves_Title}">
 
+    <ui:Page.Resources>
+        <!-- ItemsPresenter must be the scroll content so WPF can find its virtualizing panel. -->
+        <ControlTemplate x:Key="SavesListTemplate" TargetType="ListView">
+            <ui:ScrollViewerEx Focusable="False"
+                               CanContentScroll="True"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Auto"
+                               AutoHideScrollBars="{DynamicResource AutoHideScrollBars}"
+                               Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
+                <ItemsPresenter />
+            </ui:ScrollViewerEx>
+        </ControlTemplate>
+    </ui:Page.Resources>
+
     <Grid Margin="24,0,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -54,9 +68,14 @@
 
                     <ListView x:Name="InkList"
                               Grid.Row="1"
+                              Template="{StaticResource SavesListTemplate}"
                               Background="Transparent"
                               BorderThickness="0"
                               SelectionMode="Single"
+                              ScrollViewer.CanContentScroll="True"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              VirtualizingPanel.ScrollUnit="Pixel"
                               Foreground="{DynamicResource SettingsPageForeground}">
                         <ListView.View>
                             <GridView>
@@ -119,9 +138,14 @@
 
                     <ListView x:Name="ShotList"
                               Grid.Row="1"
+                              Template="{StaticResource SavesListTemplate}"
                               Background="Transparent"
                               BorderThickness="0"
                               SelectionMode="Single"
+                              ScrollViewer.CanContentScroll="True"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              VirtualizingPanel.ScrollUnit="Pixel"
                               Foreground="{DynamicResource SettingsPageForeground}">
                         <ListView.View>
                             <GridView>
