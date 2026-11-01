@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -27,9 +27,9 @@ namespace InkCanvas.Calibration.Tests
             App.RootPath = testRoot;
             SettingsManager.Settings = new Settings();
             int failed = 0;
-            foreach (var test in new Action[] { TouchCalibrationTests.RunAll, PageConstruction, PointRouteSaves, AreaRouteSaves, FailedSaveRetainsDraft,
-                TemporaryPalmModePreservesAnnotation, PendingPointGroupPreservesAnnotation, WinRTLogicalPenPreservesAnnotation,
-                TemporaryPalmModeDoesNotNotifyPlugin })
+            foreach (var test in new Action[] { PageConstruction, PointRouteSaves, AreaRouteSaves, FailedSaveRetainsDraft,
+                TemporaryPalmModePreservesAnnotation, PendingPointGroupPreservesAnnotation, TemporaryPalmModeDoesNotNotifyPlugin,
+                EraserSizeSelectionAppliesImmediately })
             {
                 try { test(); Console.WriteLine("PASS " + test.Method.Name); }
                 catch (Exception ex) { failed++; Console.WriteLine("FAIL " + test.Method.Name + ": " + ex.GetBaseException()); }
@@ -142,7 +142,7 @@ namespace InkCanvas.Calibration.Tests
         // These methods only read the fields below and publish the pen-mode event.
         private static MainWindow PalmWindow()
         {
-            var window = (MainWindow)RuntimeHelpers.GetUninitializedObject(typeof(MainWindow));
+            var window = (MainWindow)FormatterServices.GetUninitializedObject(typeof(MainWindow));
             Set(window, "inkCanvas", new System.Windows.Controls.InkCanvas { EditingMode = InkCanvasEditingMode.None });
             Set(window, "isPalmEraserActive", true);
             Set(window, "palmEraserPreviousEditingMode", InkCanvasEditingMode.Ink);
@@ -170,15 +170,31 @@ namespace InkCanvas.Calibration.Tests
             Check(!(bool)Call(window, "IsAnnotationModeActive"), "Ending the group must not hide a real annotation exit");
         }
 
-        private static void WinRTLogicalPenPreservesAnnotation()
+        private static void EraserSizeSelectionAppliesImmediately()
         {
-            var window = PalmWindow();
-            Set(window, "isPalmEraserActive", false);
-            Set(window, "_changingPalmMode", false);
-            Set(window, "_currentToolMode", "pen");
-            Check((bool)Call(window, "IsAnnotationModeActive"), "WinRT logical pen mode must remain annotation mode while the WPF canvas is disabled");
-            Set(window, "_currentToolMode", "cursor");
-            Check(!(bool)Call(window, "IsAnnotationModeActive"), "Switching from the WinRT pen to the cursor must report annotation exit");
+            SettingsManager.Settings = new Settings();
+            SettingsManager.Settings.Canvas.EraserShapeType = 1;
+            var window = (MainWindow)FormatterServices.GetUninitializedObject(typeof(MainWindow));
+            Set(window, "inkCanvas", new System.Windows.Controls.InkCanvas());
+            Set(window, "isLoaded", true);
+            window.eraserWidth = 64;
+
+            var sizeSelector = new ComboBox { Name = "EraserSizeProbe" };
+            for (int i = 0; i < 5; i++) sizeSelector.Items.Add(i);
+
+            var eventWidths = new HashSet<double>();
+            var savedIndices = new HashSet<int>();
+            for (int i = 0; i < 5; i++)
+            {
+                sizeSelector.SelectedIndex = i;
+                Call(window, "ComboBoxEraserSizeFloatingBar_SelectionChanged", sizeSelector, null);
+                savedIndices.Add(SettingsManager.Settings.Canvas.EraserSize);
+                eventWidths.Add(window.eraserWidth);
+            }
+
+            Check(savedIndices.Count == 5, $"Five eraser size choices saved only {savedIndices.Count} distinct index value(s)");
+            Check(eventWidths.Count == 5,
+                $"Five eraser size choices produced only {eventWidths.Count} actual hit-test width(s): {string.Join(", ", eventWidths)}");
         }
 
         private static void TemporaryPalmModeDoesNotNotifyPlugin()

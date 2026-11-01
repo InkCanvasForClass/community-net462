@@ -3251,6 +3251,8 @@ namespace Ink_Canvas
                 {
                     ComboBoxEraserSizeFloatingBar.SelectedIndex = comboBox.SelectedIndex;
                 }
+
+                ApplyAdvancedEraserShape();
             }
             catch (Exception ex)
             {
