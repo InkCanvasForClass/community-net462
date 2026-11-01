@@ -28,7 +28,8 @@ namespace InkCanvas.Calibration.Tests
             SettingsManager.Settings = new Settings();
             int failed = 0;
             foreach (var test in new Action[] { PageConstruction, PointRouteSaves, AreaRouteSaves, FailedSaveRetainsDraft,
-                TemporaryPalmModePreservesAnnotation, PendingPointGroupPreservesAnnotation, TemporaryPalmModeDoesNotNotifyPlugin })
+                TemporaryPalmModePreservesAnnotation, PendingPointGroupPreservesAnnotation, TemporaryPalmModeDoesNotNotifyPlugin,
+                EraserSizeSelectionAppliesImmediately })
             {
                 try { test(); Console.WriteLine("PASS " + test.Method.Name); }
                 catch (Exception ex) { failed++; Console.WriteLine("FAIL " + test.Method.Name + ": " + ex.GetBaseException()); }
@@ -167,6 +168,33 @@ namespace InkCanvas.Calibration.Tests
             Check((bool)Call(window, "IsAnnotationModeActive"), "Waiting for the grouping window falsely reports annotation exit");
             Set(window, "_palmGroupSavedMode", null);
             Check(!(bool)Call(window, "IsAnnotationModeActive"), "Ending the group must not hide a real annotation exit");
+        }
+
+        private static void EraserSizeSelectionAppliesImmediately()
+        {
+            SettingsManager.Settings = new Settings();
+            SettingsManager.Settings.Canvas.EraserShapeType = 1;
+            var window = (MainWindow)FormatterServices.GetUninitializedObject(typeof(MainWindow));
+            Set(window, "inkCanvas", new System.Windows.Controls.InkCanvas());
+            Set(window, "isLoaded", true);
+            window.eraserWidth = 64;
+
+            var sizeSelector = new ComboBox { Name = "EraserSizeProbe" };
+            for (int i = 0; i < 5; i++) sizeSelector.Items.Add(i);
+
+            var eventWidths = new HashSet<double>();
+            var savedIndices = new HashSet<int>();
+            for (int i = 0; i < 5; i++)
+            {
+                sizeSelector.SelectedIndex = i;
+                Call(window, "ComboBoxEraserSizeFloatingBar_SelectionChanged", sizeSelector, null);
+                savedIndices.Add(SettingsManager.Settings.Canvas.EraserSize);
+                eventWidths.Add(window.eraserWidth);
+            }
+
+            Check(savedIndices.Count == 5, $"Five eraser size choices saved only {savedIndices.Count} distinct index value(s)");
+            Check(eventWidths.Count == 5,
+                $"Five eraser size choices produced only {eventWidths.Count} actual hit-test width(s): {string.Join(", ", eventWidths)}");
         }
 
         private static void TemporaryPalmModeDoesNotNotifyPlugin()
