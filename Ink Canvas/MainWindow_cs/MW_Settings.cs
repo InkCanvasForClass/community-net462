@@ -646,57 +646,15 @@ namespace Ink_Canvas
         /// </summary>
         public void UpdatePPTUIManagerSettings()
         {
-            if (_pptUIManager != null && IsInPPTPresentationMode)
+            if (_pptUIManager != null)
             {
-                var ppt = Settings.PowerPointSettings;
+                _pptUIManager.SyncSettings();
 
-                // 计算有效值：位置 i 若 UseGlobalSettings=true，则采用全局字段值，否则采用位置自身字段值
-                // 偏移按位置类型区分：侧边(左侧/右侧)用全局侧边偏移，底部(左下/右下)用全局底部偏移
-                _pptUIManager.PPTLSButtonPosition = ppt.PPTLSUseGlobalSettings ? ppt.PPTGlobalSideButtonPosition : ppt.PPTLSButtonPosition;
-                _pptUIManager.PPTRSButtonPosition = ppt.PPTRSUseGlobalSettings ? ppt.PPTGlobalSideButtonPosition : ppt.PPTRSButtonPosition;
-                _pptUIManager.PPTLBButtonPosition = ppt.PPTLBUseGlobalSettings ? ppt.PPTGlobalBottomButtonPosition : ppt.PPTLBButtonPosition;
-                _pptUIManager.PPTRBButtonPosition = ppt.PPTRBUseGlobalSettings ? ppt.PPTGlobalBottomButtonPosition : ppt.PPTRBButtonPosition;
-
-                _pptUIManager.PPTLSButtonOpacity = ppt.PPTLSUseGlobalSettings ? ppt.PPTGlobalButtonOpacity : ppt.PPTLSButtonOpacity;
-                _pptUIManager.PPTRSButtonOpacity = ppt.PPTRSUseGlobalSettings ? ppt.PPTGlobalButtonOpacity : ppt.PPTRSButtonOpacity;
-                _pptUIManager.PPTLBButtonOpacity = ppt.PPTLBUseGlobalSettings ? ppt.PPTGlobalButtonOpacity : ppt.PPTLBButtonOpacity;
-                _pptUIManager.PPTRBButtonOpacity = ppt.PPTRBUseGlobalSettings ? ppt.PPTGlobalButtonOpacity : ppt.PPTRBButtonOpacity;
-
-                _pptUIManager.PPTLSButtonScale = ppt.PPTLSUseGlobalSettings ? ppt.PPTNavBarScale : ppt.PPTLSButtonScale;
-                _pptUIManager.PPTRSButtonScale = ppt.PPTRSUseGlobalSettings ? ppt.PPTNavBarScale : ppt.PPTRSButtonScale;
-                _pptUIManager.PPTLBButtonScale = ppt.PPTLBUseGlobalSettings ? ppt.PPTNavBarScale : ppt.PPTLBButtonScale;
-                _pptUIManager.PPTRBButtonScale = ppt.PPTRBUseGlobalSettings ? ppt.PPTNavBarScale : ppt.PPTRBButtonScale;
-
-                // 计算有效的 PPTButtonsDisplayOption：UseGlobalSettings 的位由 PPTGlobalButtonEnabled 决定
-                string str = ppt.PPTButtonsDisplayOption.ToString("D4");
-                if (str.Length < 4) str = "2222";
-                char[] c = str.ToCharArray();
-                // display option index: 0=LB, 1=RB, 2=LS, 3=RS
-                if (ppt.PPTLBUseGlobalSettings) c[0] = ppt.PPTGlobalButtonEnabled ? '2' : '1';
-                if (ppt.PPTRBUseGlobalSettings) c[1] = ppt.PPTGlobalButtonEnabled ? '2' : '1';
-                if (ppt.PPTLSUseGlobalSettings) c[2] = ppt.PPTGlobalButtonEnabled ? '2' : '1';
-                if (ppt.PPTRSUseGlobalSettings) c[3] = ppt.PPTGlobalButtonEnabled ? '2' : '1';
-                _pptUIManager.PPTButtonsDisplayOption = int.Parse(new string(c));
-
-                _pptUIManager.PPTSButtonsOption = ppt.PPTSButtonsOption;
-                _pptUIManager.PPTBButtonsOption = ppt.PPTBButtonsOption;
-                _pptUIManager.EnablePPTButtonPageClickable = ppt.EnablePPTButtonPageClickable;
-                _pptUIManager.EnablePPTButtonLongPressPageTurn = ppt.EnablePPTButtonLongPressPageTurn;
-                _pptUIManager.PPTNavBarScale = ppt.PPTNavBarScale;
-
-                // 有效的显示页码 / 黑色背景通过 PPTSButtonsOption / PPTBButtonsOption 间接传递（原有机制）
-                // 这里同步各位置的 ShowPageNumber / BlackBackground 字段（UseGlobalSettings 时用全局值覆盖位置字段，保证下游读取一致）
-                if (ppt.PPTLSUseGlobalSettings) ppt.PPTLSShowPageNumber = ppt.PPTGlobalShowPageNumber;
-                if (ppt.PPTRSUseGlobalSettings) ppt.PPTRSShowPageNumber = ppt.PPTGlobalShowPageNumber;
-                if (ppt.PPTLBUseGlobalSettings) ppt.PPTLBShowPageNumber = ppt.PPTGlobalShowPageNumber;
-                if (ppt.PPTRBUseGlobalSettings) ppt.PPTRBShowPageNumber = ppt.PPTGlobalShowPageNumber;
-                if (ppt.PPTLSUseGlobalSettings) ppt.PPTLSBlackBackground = ppt.PPTGlobalBlackBackground;
-                if (ppt.PPTRSUseGlobalSettings) ppt.PPTRSBlackBackground = ppt.PPTGlobalBlackBackground;
-                if (ppt.PPTLBUseGlobalSettings) ppt.PPTLBBlackBackground = ppt.PPTGlobalBlackBackground;
-                if (ppt.PPTRBUseGlobalSettings) ppt.PPTRBBlackBackground = ppt.PPTGlobalBlackBackground;
-
-                _pptUIManager.UpdateNavigationPanelsVisibility();
-                _pptUIManager.UpdateNavigationButtonStyles();
+                if (IsInPPTPresentationMode)
+                {
+                    _pptUIManager.UpdateNavigationPanelsVisibility();
+                    _pptUIManager.UpdateNavigationButtonStyles();
+                }
             }
         }
 
@@ -932,6 +890,10 @@ namespace Ink_Canvas
             else
                 Settings.Gesture.IsEnableMultiTouchMode = isOn;
 
+            // 切换多指书写会改变触摸的采集方式：先清掉上一次留下的采集/捕获残余状态，
+            // 否则残留的活动触点集合与触摸捕获会影响后续手势判定
+            ResetTouchInputStateForMultiTouchToggle();
+
             if (isOn)
             {
                 if (!isInMultiTouchMode)
@@ -1089,7 +1051,28 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 多指书写开关切换时的状态清理。
+        /// 多指书写依赖"每个触点独立采集"：若上一次书写有触点未正常抬手（TouchLeave / 异常路径），
+        /// 活动集合、触摸捕获、dec 计数会残留，进而影响之后的手势判定
+        /// （典型现象：关掉多指书写后单指触摸却仍然平移/缩放预览）。
+        /// 这里统一清掉这些运行时状态；并在展台模式下丢弃"触摸前编辑模式"的保存值，
+        /// 让当前工具自身决定编辑模式，避免恢复到过期状态。
+        /// </summary>
+        private void ResetTouchInputStateForMultiTouchToggle()
+        {
+            try { AbortAllActiveTouchInputs(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            try { inkCanvas?.ReleaseAllTouchCaptures(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            try { dec.Clear(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            _boothDownTouchIds.Clear();
 
+            isMultiTouchTimerActive = false;
+            isSingleFingerDragMode = false;
+
+            // 展台模式：丢弃上一次触摸保存的编辑模式，之后由工具/设置自身保持自洽
+            if (_isVideoPresenterSpecialMode)
+                _boothTouchSavedInkEditingMode = null;
+        }
 
         #endregion
 

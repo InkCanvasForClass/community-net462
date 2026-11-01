@@ -121,6 +121,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="InkCanvas.Calibration.Tests" />
     <None Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +130,8 @@
     </PackageReference>
     <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
     <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
-    <PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
+    <!-- 组织维护的非官方 fork：包 ID 为 InkCanvasForClass.UI.WPF.Modern，程序集仍叫 iNKORE.UI.WPF.Modern -->
+    <PackageReference Include="InkCanvasForClass.UI.WPF.Modern" Version="0.11.0-icc.7df536a" />
     <PackageReference Include="iNKORE.UI.WPF" Version="1.2.8" />
     <PackageReference Include="MdXaml" Version="1.27.0" />
     <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1018" />
@@ -153,7 +155,7 @@
     <PackageReference Include="System.Management" Version="10.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- UInk 1.0 规范：主文件为 MessagePack 对象流（Header/HeaderExtension/Canvas/Ink/Shape/Media），由 UInk/ 下的读写器使用 -->
-    <PackageReference Include="MessagePack" Version="3.1.8" />
+    <PackageReference Include="MessagePack" Version="3.1.12" />
     <PackageReference Include="NHotkey.Wpf" Version="4.0.0" />
     <PackageReference Include="OSVersionExt" Version="4.1.0" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />

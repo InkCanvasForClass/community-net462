@@ -47,6 +47,8 @@
 
 **智教联盟 InkCanvasForClass Community Edition 板块：** [forum.smart-teach.cn/t/icc-ce](https://forum.smart-teach.cn/t/icc-ce) ，我们会在此处发布版本更新日志，同时，您也可以在遵守论坛对应管理规则与InkCanvasForClass Community Edition 板块管理条约的情况下，在该板块内提问或发表自己的使用体验。
 
+**官网地址：** [iccce.ink](https://iccce.ink) 
+
 ## ⚠️ 使用须知
 
 在使用和分发本软件前，请务必了解相关开源协议。本软件基于 <https://github.com/InkCanvasForClass/icc-20240610-stable> 修改而来，而 icc-20240610-stable 基于 <https://github.com/ChangSakura/Ink-Canvas> 修改，ICA 则基于 <https://github.com/WXRIW/Ink-Canvas> 修改，增加了包括但不限于隐藏到侧边栏等功能，更改了相关UI和软件操作逻辑。对于墨迹书写功能以及 ICA 独有功能的相关问题反馈，建议优先查阅 <https://github.com/WXRIW/Ink-Canvas/issues> 。**使用前建议戴上大脑使用。**
@@ -89,6 +91,7 @@
 ## ✏️ 贡献指南
 
 **请注意，在贡献代码时，_务必_ 将所有代码提交到 _net10_ 分支，以保证net10版本总是新于main版本。**
+**Fix类修复移至net6分支，如果net6分支没有相关功能（即功能仅存在于net10）时则提交至net10。**
 
 ## Todo LIST
 
@@ -136,6 +139,8 @@
     <tr>
       <td align="center" valign="top" width="20%"><a href="https://github.com/Makitoid"><img src="https://avatars.githubusercontent.com/u/123004192?v=4?s=100" width="100px;" alt="Makitoid Wang"/><br /><sub><b>Makitoid Wang</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=Makitoid" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="20%"><a href="https://hhh2309.github.io/"><img src="https://avatars.githubusercontent.com/u/179317266?v=4?s=100" width="100px;" alt="HHH2309"/><br /><sub><b>HHH2309</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=HHH2309" title="Code">💻</a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/Huoxing-Rusty"><img src="https://avatars.githubusercontent.com/u/220455872?v=4?s=100" width="100px;" alt="Rusty"/><br /><sub><b>Rusty</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=Huoxing-Rusty" title="Code">💻</a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/aTwTz"><img src="https://avatars.githubusercontent.com/u/37306278?v=4?s=100" width="100px;" alt="aTwTz"/><br /><sub><b>aTwTz</b></sub></a><br /><a href="https://github.com/InkCanvasForClass/community/commits?author=aTwTz" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
@@ -156,6 +161,29 @@
 ## License
 
 GPLv3
+
+## 第三方组件
+
+本项目以 NuGet 包方式引用以下第三方组件，随程序编译分发，特此声明并致谢：
+
+### iNKORE.UI.WPF.Modern
+
+- **Project Name**: iNKORE.UI.WPF.Modern
+- **Authors**: iNKORE Studios and all iNKORE.UI.WPF.Modern contributors
+- **Repository**: <https://github.com/iNKORE-NET/UI.WPF.Modern>
+- **License**: [iNKORE.UI.WPF.Modern Software License](https://github.com/iNKORE-NET/UI.WPF.Modern/blob/main/LICENSE.md)（自定义许可证，非 OSI 认证）
+
+本项目通过组织维护的非官方派生包 **InkCanvasForClass.UI.WPF.Modern** 引用该组件（程序集与命名空间仍为 `iNKORE.UI.WPF.Modern`，代码无需改动）。该派生包由组织在 <https://github.com/InkCanvasForClass/UI.WPF.Modern> 构建并发布，保留上游的 `LICENSE.md`、版权声明与署名信息，未修改许可证条款，也不代表 iNKORE Studios 发布或背书。
+
+### iNKORE.UI.WPF
+
+- **License**: LGPL-2.1-or-later
+- **Repository**: <https://github.com/iNKORE-NET/UI.WPF>
+
+### Fluent System Icons（随 iNKORE.UI.WPF.Modern 分发）
+
+- **Copyright**: Copyright (c) 2020 Microsoft Corporation
+- **License**: MIT
 
 ## 项目引用
 

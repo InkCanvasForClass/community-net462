@@ -68,6 +68,19 @@ namespace Ink_Canvas
         [JsonProperty("boardToolbarConfigName")]
         public string BoardToolbarConfigName { get; set; } = "default";
 
+        /// <summary>
+        /// 是否已把视频展台专用组件（拍照/旋转/矫正/展台菜单）播种到白板工具栏右侧分组。
+        /// 只播种一次：用户之后手动删除这些组件，不会再次自动加回。
+        /// </summary>
+        [JsonProperty("boothToolbarSeeded")]
+        public bool BoothToolbarSeeded { get; set; } = false;
+
+        /// <summary>
+        /// 是否已把独立的「展开」组件播种到右侧区域最左侧（仅播一次，删除后不再补回）。
+        /// </summary>
+        [JsonProperty("boothExpandToolbarSeeded")]
+        public bool BoothExpandToolbarSeeded { get; set; } = false;
+
         [JsonProperty("performance")]
         public PerformanceSettings Performance { get; set; } = new PerformanceSettings();
 
@@ -470,9 +483,35 @@ namespace Ink_Canvas
         [JsonProperty("enableVelocityBrushTip")]
         public bool EnableVelocityBrushTip { get; set; }
 
-        /// <summary>为 true 时，白板工具栏「展台」按钮启动希沃视频展台（sweclauncher），否则使用内置展台。</summary>
+        /// <summary>为 true 时，白板工具栏「展台」按钮启动希沃视频展台（sweclauncher），否则使用内置展台。保留作为兼容属性。</summary>
         [JsonProperty("launchSeewoVideoShowcaseForWhiteboardBooth")]
-        public bool LaunchSeewoVideoShowcaseForWhiteboardBooth { get; set; } = false;
+        public bool LaunchSeewoVideoShowcaseForWhiteboardBooth
+        {
+            get => VideoBoothMode == VideoBoothMode.Seewo;
+            set
+            {
+                if (value && VideoBoothMode != VideoBoothMode.Custom)
+                {
+                    VideoBoothMode = VideoBoothMode.Seewo;
+                }
+                else if (!value && VideoBoothMode == VideoBoothMode.Seewo)
+                {
+                    VideoBoothMode = VideoBoothMode.BuiltIn;
+                }
+            }
+        }
+
+        /// <summary>视频展台启动模式：0=内置展台，1=希沃视频展台，2=自定义第三方展台软件。</summary>
+        [JsonProperty("videoBoothMode")]
+        public VideoBoothMode VideoBoothMode { get; set; } = VideoBoothMode.BuiltIn;
+
+        /// <summary>自定义第三方视频展台软件的可执行文件路径（.exe）。</summary>
+        [JsonProperty("videoBoothCustomAppPath")]
+        public string VideoBoothCustomAppPath { get; set; } = string.Empty;
+
+        /// <summary>自定义第三方视频展台软件的启动参数（可选）。</summary>
+        [JsonProperty("videoBoothCustomAppArgs")]
+        public string VideoBoothCustomAppArgs { get; set; } = string.Empty;
 
         /// <summary>
         /// 视频展台持久化：上次选中的摄像头设备名（DsDevice.Name）。
@@ -528,6 +567,13 @@ namespace Ink_Canvas
         /// <summary>垂直镜像（上下翻转）。</summary>
         [JsonProperty("videoPresenterMirrorVertical")]
         public bool VideoPresenterMirrorVertical { get; set; } = false;
+
+        /// <summary>
+        /// 视频展台旋转角度，0/1/2/3 分别对应 0°/90°/180°/270°，0 为摄像头默认方向。
+        /// 与 <see cref="CameraSettings.RotationAngle"/> 独立，仅作用于展台预览/拍照。
+        /// </summary>
+        [JsonProperty("videoPresenterRotationAngle")]
+        public int VideoPresenterRotationAngle { get; set; } = 0;
 
         /// <summary>
         /// 是否在书写位置贴近画布边缘时显示"扩展画布"提示按钮。
@@ -601,6 +647,13 @@ namespace Ink_Canvas
         Yes,
         No,
         Ask
+    }
+
+    public enum VideoBoothMode
+    {
+        BuiltIn = 0,
+        Seewo = 1,
+        Custom = 2
     }
 
     public class Gesture
@@ -867,6 +920,12 @@ namespace Ink_Canvas
         [JsonProperty("hideFloatingBarBorder")]
         public bool HideFloatingBarBorder { get; set; } = false;
 
+        [JsonProperty("enableFloatingBarShadow")]
+        public bool EnableFloatingBarShadow { get; set; } = true;
+
+        [JsonProperty("floatingBarShadowSize")]
+        public double FloatingBarShadowSize { get; set; } = 16;
+
         [JsonProperty("floatingBarBorderColor")]
         public string FloatingBarBorderColor { get; set; } = "";
 
@@ -887,6 +946,9 @@ namespace Ink_Canvas
 
         [JsonProperty("enableHotkeysInMouseMode")]
         public bool EnableHotkeysInMouseMode { get; set; } = false;
+
+        [JsonProperty("keepDrawingHotkeysInMouseMode")]
+        public bool KeepDrawingHotkeysInMouseMode { get; set; } = false;
 
         [JsonProperty("passThroughMouseWheelInDrawingMode")]
         public bool PassThroughMouseWheelInDrawingMode { get; set; } = false;
@@ -1039,6 +1101,78 @@ namespace Ink_Canvas
 
         [JsonProperty("pptNavBarScale")]
         public double PPTNavBarScale { get; set; } = 1.0;
+
+        // 翻页按钮的四边投影阴影（独立于浮动栏阴影设置）
+        [JsonProperty("enablePPTNavBarShadow")]
+        public bool EnablePPTNavBarShadow { get; set; } = true;
+
+        [JsonProperty("pptNavBarShadowSize")]
+        public double PPTNavBarShadowSize { get; set; } = 16;
+
+        // 旧配置没有位置阴影字段时，保留原先所有位置共用的阴影值。
+        [JsonProperty("pptLSShadowEnabled")]
+        public bool? PPTLSShadowEnabled { get; set; }
+
+        [JsonProperty("pptRSShadowEnabled")]
+        public bool? PPTRSShadowEnabled { get; set; }
+
+        [JsonProperty("pptLBShadowEnabled")]
+        public bool? PPTLBShadowEnabled { get; set; }
+
+        [JsonProperty("pptRBShadowEnabled")]
+        public bool? PPTRBShadowEnabled { get; set; }
+
+        [JsonProperty("pptLSShadowSize")]
+        public double? PPTLSShadowSize { get; set; }
+
+        [JsonProperty("pptRSShadowSize")]
+        public double? PPTRSShadowSize { get; set; }
+
+        [JsonProperty("pptLBShadowSize")]
+        public double? PPTLBShadowSize { get; set; }
+
+        [JsonProperty("pptRBShadowSize")]
+        public double? PPTRBShadowSize { get; set; }
+
+        public (bool Enabled, double Size) GetPPTNavBarShadow(Controls.PPTNavBar.NavDirection direction)
+        {
+            var global = (Enabled: EnablePPTNavBarShadow, Size: PPTNavBarShadowSize);
+            return direction switch
+            {
+                Controls.PPTNavBar.NavDirection.LeftSide when !PPTLSUseGlobalSettings =>
+                    (PPTLSShadowEnabled ?? global.Enabled, PPTLSShadowSize ?? global.Size),
+                Controls.PPTNavBar.NavDirection.RightSide when !PPTRSUseGlobalSettings =>
+                    (PPTRSShadowEnabled ?? global.Enabled, PPTRSShadowSize ?? global.Size),
+                Controls.PPTNavBar.NavDirection.LeftBottom when !PPTLBUseGlobalSettings =>
+                    (PPTLBShadowEnabled ?? global.Enabled, PPTLBShadowSize ?? global.Size),
+                Controls.PPTNavBar.NavDirection.RightBottom when !PPTRBUseGlobalSettings =>
+                    (PPTRBShadowEnabled ?? global.Enabled, PPTRBShadowSize ?? global.Size),
+                _ => global
+            };
+        }
+
+        public void SetPPTNavBarShadow(Controls.PPTNavBar.NavDirection direction, bool enabled, double size)
+        {
+            switch (direction)
+            {
+                case Controls.PPTNavBar.NavDirection.LeftSide:
+                    PPTLSShadowEnabled = enabled;
+                    PPTLSShadowSize = size;
+                    break;
+                case Controls.PPTNavBar.NavDirection.RightSide:
+                    PPTRSShadowEnabled = enabled;
+                    PPTRSShadowSize = size;
+                    break;
+                case Controls.PPTNavBar.NavDirection.LeftBottom:
+                    PPTLBShadowEnabled = enabled;
+                    PPTLBShadowSize = size;
+                    break;
+                case Controls.PPTNavBar.NavDirection.RightBottom:
+                    PPTRBShadowEnabled = enabled;
+                    PPTRBShadowSize = size;
+                    break;
+            }
+        }
 
         // 全局默认设置（各位置"使用全局设置"开启时引用这些值）
         [JsonProperty("pptGlobalButtonEnabled")]
@@ -1528,6 +1662,16 @@ namespace Ink_Canvas
 
     public class Advanced
     {
+        [JsonProperty("touchCalibration")]
+        [JsonConverter(typeof(Ink.TouchCalibrationRecordConverter))]
+        public Ink.TouchCalibrationRecord TouchCalibration { get; set; }
+
+        [System.Runtime.Serialization.OnDeserialized]
+        private void ValidateCalibration(System.Runtime.Serialization.StreamingContext context)
+        {
+            // Missing records remain null; invalid/unknown versions never block old profiles.
+            if (TouchCalibration?.IsValid() != true) TouchCalibration = null;
+        }
         [JsonProperty("isSpecialScreen")]
         public bool IsSpecialScreen { get; set; }
 

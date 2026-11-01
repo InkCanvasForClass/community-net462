@@ -150,6 +150,9 @@
   <data name="FloatingBar_ClearAndMouse" xml:space="preserve">
     <value>清并鼠</value>
   </data>
+  <data name="FloatingBar_MouseClear" xml:space="preserve">
+    <value>鼠标(清空)</value>
+  </data>
   <data name="FloatingBar_ExitButton" xml:space="preserve">
     <value>退出</value>
   </data>
@@ -288,6 +291,12 @@
   <data name="ToolbarPage_QuickPaletteDisplayModeDesc" xml:space="preserve">
     <value>选择快捷调色盘的颜色数量</value>
   </data>
+  <data name="ToolbarPage_ComponentName" xml:space="preserve">
+    <value>组件名称</value>
+  </data>
+  <data name="ToolbarPage_ComponentNameDesc" xml:space="preserve">
+    <value>根据需求选择不同的名称</value>
+  </data>
   <data name="ToolbarPage_Size" xml:space="preserve">
     <value>尺寸</value>
   </data>
@@ -353,6 +362,12 @@
   </data>
   <data name="ToolbarPage_RedStyleDesc" xml:space="preserve">
     <value>将该组件的图标和文字显示为红色</value>
+  </data>
+  <data name="ToolbarPage_RedStyleIcon" xml:space="preserve">
+    <value>强调图标</value>
+  </data>
+  <data name="ToolbarPage_RedStyleText" xml:space="preserve">
+    <value>强调文字</value>
   </data>
   <data name="ToolbarPage_Margin" xml:space="preserve">
     <value>边距</value>
@@ -611,6 +626,9 @@
   </data>
   <data name="BoardToolbarPage_GroupVideoBooth" xml:space="preserve">
     <value>视频展台</value>
+  </data>
+  <data name="BoardToolbarPage_ShowInBoothOnly" xml:space="preserve">
+    <value>仅在视频展台模式显示</value>
   </data>
   <data name="BoardToolbarPage_GroupGesture" xml:space="preserve">
     <value>手势与背景</value>

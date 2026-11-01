@@ -56,6 +56,11 @@
 │       │   ├── LabeledSettingsCard: 橡皮擦绑定触控倍率 → ToggleSwitch
 │       │   ├── SettingsCard: 笔尖模式边界宽度 → Slider
 │       │   ├── SettingsCard: 手指模式边界宽度 → Slider
+│       │   ├── SettingsExpander: 触摸与手掌擦校准（CardAutoCalibrate）
+│       │   │   ├── 校准状态 → TextBlock
+│       │   │   ├── 开始/重新校准 → 设置子页 TouchCalibrationPage：描摹 → 手掌 → 手指 → 可选笔尖 → 试写试擦/应用
+│       │   │   ├── 手绘面积模拟 → 按触点数、时间窗口、空间范围自动判掌（不依赖接触面积上报）
+│       │   │   └── 清除校准 → Button（确认后恢复未校准策略）
 │       │   └── LabeledSettingsCard: 四点红外模式 → ToggleSwitch
 │       ├── TextBlock "日志"
 │       │   ├── LabeledSettingsCard: 启用日志 → ToggleSwitch
@@ -352,7 +357,8 @@
 │   │   │   │   ├── TextBlock "组件属性"
 │   │   │   │   │   ├── SettingsCard: 分隔边框 → CheckBox
 │   │   │   │   │   ├── SettingsCard: 红色样式 → CheckBox
-│   │   │   │   │   └── StackPanel: 快速调色板显示模式 → ComboBox
+│   │   │   │   │   ├── StackPanel: 快速调色板显示模式 → ComboBox
+│   │   │   │   │   └── SettingsCard: 清并鼠组件名称 → ComboBox
 │   │   │   │   ├── TextBlock "尺寸"
 │   │   │   │   │   └── Grid: 固定宽高/最小最大宽高 → TextBox × 6
 │   │   │   │   ├── TextBlock "对齐"

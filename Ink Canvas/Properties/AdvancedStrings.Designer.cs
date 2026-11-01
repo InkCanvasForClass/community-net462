@@ -40,6 +40,21 @@ namespace Ink_Canvas.Properties
             return ResourceManager.GetString(key, _resourceCulture);
         }
 
+        public static string CalibrationTitle => GetString(nameof(CalibrationTitle));
+        public static string CalibrationDescription => GetString(nameof(CalibrationDescription));
+        public static string CalibrationStart => GetString(nameof(CalibrationStart));
+        public static string CalibrationClear => GetString(nameof(CalibrationClear));
+        public static string CalibrationWidth => GetString(nameof(CalibrationWidth));
+        public static string CalibrationHeight => GetString(nameof(CalibrationHeight));
+        public static string CalibrationSize => GetString(nameof(CalibrationSize));
+        public static string CalibrationRetry => GetString(nameof(CalibrationRetry));
+        public static string CalibrationBack => GetString(nameof(CalibrationBack));
+        public static string CalibrationSkip => GetString(nameof(CalibrationSkip));
+        public static string CalibrationNext => GetString(nameof(CalibrationNext));
+        public static string CalibrationCancel => GetString(nameof(CalibrationCancel));
+        public static string CalibrationApply => GetString(nameof(CalibrationApply));
+        public static string CalibrationAreaRoute => GetString(nameof(CalibrationAreaRoute));
+
         public static string AvoidFullScreenHelper => ResourceManager.GetString(nameof(AvoidFullScreenHelper), _resourceCulture);
 
         public static string AvoidFullScreenHelperHint => ResourceManager.GetString(nameof(AvoidFullScreenHelperHint), _resourceCulture);
@@ -128,6 +143,7 @@ namespace Ink_Canvas.Properties
 
         public static string Debug_SimulateCrash_Button => ResourceManager.GetString(nameof(Debug_SimulateCrash_Button), _resourceCulture);
 
+        // 心跳测试入口已移除，保留旧资源访问器以兼容既有调用。
         public static string Debug_SimulateHeartbeatTimeout_Header => ResourceManager.GetString(nameof(Debug_SimulateHeartbeatTimeout_Header), _resourceCulture);
 
         public static string Debug_SimulateHeartbeatTimeout_Desc => ResourceManager.GetString(nameof(Debug_SimulateHeartbeatTimeout_Desc), _resourceCulture);

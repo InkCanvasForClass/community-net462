@@ -40,7 +40,7 @@ jobs:
           persist-credentials: false
 
       - name: Super-linter
-        uses: super-linter/super-linter@v8.7.0 # x-release-please-version
+        uses: super-linter/super-linter@v9.0.0 # x-release-please-version
         env:
           ENABLE_GITHUB_PULL_REQUEST_SUMMARY_COMMENT: true
           VALIDATE_ALL_CODEBASE: false

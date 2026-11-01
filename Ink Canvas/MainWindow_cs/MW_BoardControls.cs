@@ -193,6 +193,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void ClearStrokes(bool isErasedByCode)
         {
+            ClearAllSelection();
             _currentCommitType = CommitReason.ClearingCanvas;
             if (isErasedByCode) _currentCommitType = CommitReason.CodeInput;
 
@@ -244,16 +245,9 @@ namespace Ink_Canvas
         {
             try
             {
-                // 隐藏图片选择工具栏
-                if (currentSelectedElement != null)
-                {
-                    // 保存当前编辑模式
-                    var previousEditingMode = inkCanvas.EditingMode;
-                    UnselectElement(currentSelectedElement);
-                    // 恢复编辑模式
-                    inkCanvas.EditingMode = previousEditingMode;
-                    currentSelectedElement = null;
-                }
+                var previousEditingMode = inkCanvas.EditingMode;
+                ClearAllSelection();
+                inkCanvas.EditingMode = previousEditingMode;
 
                 var targetIndex = isBackupMain ? 0 : CurrentWhiteboardIndex;
 
@@ -609,16 +603,9 @@ namespace Ink_Canvas
 
             if (CurrentWhiteboardIndex <= 1) return;
 
-            // 隐藏图片选择工具栏
-            if (currentSelectedElement != null)
-            {
-                // 保存当前编辑模式
-                var previousEditingMode = inkCanvas.EditingMode;
-                UnselectElement(currentSelectedElement);
-                // 恢复编辑模式
-                inkCanvas.EditingMode = previousEditingMode;
-                currentSelectedElement = null;
-            }
+            var previousEditingMode = inkCanvas.EditingMode;
+            ClearAllSelection();
+            inkCanvas.EditingMode = previousEditingMode;
 
             VideoPresenter_BeforePageLeave();
             PauseAllCanvasMediaPlayback();
@@ -667,16 +654,9 @@ namespace Ink_Canvas
                 return;
             }
 
-            // 隐藏图片选择工具栏
-            if (currentSelectedElement != null)
-            {
-                // 保存当前编辑模式
-                var previousEditingMode = inkCanvas.EditingMode;
-                UnselectElement(currentSelectedElement);
-                // 恢复编辑模式
-                inkCanvas.EditingMode = previousEditingMode;
-                currentSelectedElement = null;
-            }
+            var previousEditingMode = inkCanvas.EditingMode;
+            ClearAllSelection();
+            inkCanvas.EditingMode = previousEditingMode;
 
             VideoPresenter_BeforePageLeave();
             PauseAllCanvasMediaPlayback();
@@ -717,16 +697,9 @@ namespace Ink_Canvas
                 inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber)
                 CaptureAndEnqueueScreenshotSave(isHideNotification: true);
 
-            // 隐藏图片选择工具栏
-            if (currentSelectedElement != null)
-            {
-                // 保存当前编辑模式
-                var previousEditingMode = inkCanvas.EditingMode;
-                UnselectElement(currentSelectedElement);
-                // 恢复编辑模式
-                inkCanvas.EditingMode = previousEditingMode;
-                currentSelectedElement = null;
-            }
+            var previousEditingMode = inkCanvas.EditingMode;
+            ClearAllSelection();
+            inkCanvas.EditingMode = previousEditingMode;
 
             VideoPresenter_BeforePageLeave();
             PauseAllCanvasMediaPlayback();
@@ -797,13 +770,9 @@ namespace Ink_Canvas
                 return;
             }
 
-            if (currentSelectedElement != null)
-            {
-                var previousEditingMode = inkCanvas.EditingMode;
-                UnselectElement(currentSelectedElement);
-                inkCanvas.EditingMode = previousEditingMode;
-                currentSelectedElement = null;
-            }
+            var previousEditingMode = inkCanvas.EditingMode;
+            ClearAllSelection();
+            inkCanvas.EditingMode = previousEditingMode;
 
             var oldPluginPageCount = WhiteboardTotalCount;
             var deletingCurrentPluginPage = pageIndex == CurrentWhiteboardIndex;

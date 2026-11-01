@@ -150,6 +150,9 @@
   <data name="FloatingBar_ClearAndMouse" xml:space="preserve">
     <value>Clear &amp; cursor</value>
   </data>
+  <data name="FloatingBar_MouseClear" xml:space="preserve">
+    <value>Cursor (Clear)</value>
+  </data>
   <data name="FloatingBar_ExitButton" xml:space="preserve">
     <value>Exit</value>
   </data>
@@ -288,6 +291,12 @@
   <data name="ToolbarPage_QuickPaletteDisplayModeDesc" xml:space="preserve">
     <value>Choose color count for quick palette</value>
   </data>
+  <data name="ToolbarPage_ComponentName" xml:space="preserve">
+    <value>Component Name</value>
+  </data>
+  <data name="ToolbarPage_ComponentNameDesc" xml:space="preserve">
+    <value>Choose different names based on your needs</value>
+  </data>
   <data name="ToolbarPage_Size" xml:space="preserve">
     <value>Size</value>
   </data>
@@ -353,6 +362,12 @@
   </data>
   <data name="ToolbarPage_RedStyleDesc" xml:space="preserve">
     <value>Display this component's icon and label in red</value>
+  </data>
+  <data name="ToolbarPage_RedStyleIcon" xml:space="preserve">
+    <value>Emphasize icon</value>
+  </data>
+  <data name="ToolbarPage_RedStyleText" xml:space="preserve">
+    <value>Emphasize label</value>
   </data>
   <data name="ToolbarPage_Margin" xml:space="preserve">
     <value>Margin</value>
@@ -611,6 +626,9 @@
   </data>
   <data name="BoardToolbarPage_GroupVideoBooth" xml:space="preserve">
     <value>Video Booth</value>
+  </data>
+  <data name="BoardToolbarPage_ShowInBoothOnly" xml:space="preserve">
+    <value>Show only in Video Booth mode</value>
   </data>
   <data name="BoardToolbarPage_GroupGesture" xml:space="preserve">
     <value>Gesture &amp; Background</value>

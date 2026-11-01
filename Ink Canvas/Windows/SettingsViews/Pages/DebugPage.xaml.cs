@@ -1,6 +1,7 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
@@ -80,18 +81,6 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             throw new System.InvalidOperationException("[Debug] 用户手动触发的模拟崩溃异常");
         }
 
-        private void BtnTestHeartbeatTimeout_Click(object sender, RoutedEventArgs e)
-        {
-            var result = MessageBoxHelper.Show(this,
-                "确定要停止心跳计时器吗？\n\n约10秒后守护检查将检测到心跳超时并触发重启。",
-                "心跳超时测试确认",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
-
-            App.DebugStopHeartbeat();
-        }
-
         private void BtnResetStartupCount_Click(object sender, RoutedEventArgs e)
         {
             StartupCount.Reset();
@@ -125,12 +114,12 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         }
 
         // Issue #546 排查辅助:强制 GC 一次,记录前后 Working Set。不可滥用,仅用于诊断。
-        private void BtnForceGC_Click(object sender, RoutedEventArgs e)
+        private async void BtnForceGC_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 BtnForceGC.IsEnabled = false;
-                var summary = MemoryBreakdownHelper.ForceFullGc();
+                var summary = await Task.Run(MemoryBreakdownHelper.ForceFullGc);
                 LogHelper.WriteLogToFile($"[MemoryBreakdown] 强制 GC 触发 - {summary}", LogHelper.LogType.Info);
             }
             catch (Exception ex)

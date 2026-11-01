@@ -59,7 +59,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             { "AboutPage", typeof(AboutPage) },
             { "Settings", typeof(SettingsPage) },
             { "PluginPage", typeof(PluginPage) },
-            { "PluginSettingsPage", typeof(PluginSettingsPage) }
+            { "PluginSettingsPage", typeof(PluginSettingsPage) },
+            { "PPTPageFlipPreviewPage", typeof(PPTPageFlipPreviewPage) },
+            { "TouchCalibrationPage", typeof(TouchCalibrationPage) }
         };
         private Dictionary<string, Type> _pageTypes;
         private readonly Dictionary<string, object> _pages = new Dictionary<string, object>();
@@ -147,7 +149,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "AboutPage", typeof(AboutPage) },
                 { "Settings", typeof(SettingsPage) },
                 { "PluginPage", typeof(PluginPage) },
-                { "PluginSettingsPage", typeof(PluginSettingsPage) }
+                { "PluginSettingsPage", typeof(PluginSettingsPage) },
+                { "PPTPageFlipPreviewPage", typeof(PPTPageFlipPreviewPage) },
+                { "TouchCalibrationPage", typeof(TouchCalibrationPage) }
             };
 
             // 初始页面统一在 Loaded 阶段导航，避免构造阶段与深链接导航互相覆盖。
@@ -456,17 +460,32 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
-            if (rootFrame.CanGoBack) rootFrame.GoBack();
+            if (rootFrame.Content is TouchCalibrationPage) NavigateToPage("AdvancedPage");
+            else if (rootFrame.CanGoBack) rootFrame.GoBack();
         }
 
         private void OnRootFrameNavigated(object sender, NavigationEventArgs e)
         {
+            Type currentPageType = rootFrame.SourcePageType;
+            NavigationViewControl.IsBackEnabled = currentPageType == typeof(TouchCalibrationPage) || rootFrame.CanGoBack;
+            if (currentPageType == typeof(TouchCalibrationPage))
+            {
+                NavigationViewControl.IsBackEnabled = true;
+                NavigationViewControl.Header = Ink_Canvas.Properties.AdvancedStrings.CalibrationTitle;
+            }
+            else if (currentPageType == typeof(PPTPageFlipPreviewPage))
+            {
+                NavigationViewControl.PaneDisplayMode = iNKORE.UI.WPF.Modern.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+            }
+            else
+            {
+                NavigationViewControl.PaneDisplayMode = iNKORE.UI.WPF.Modern.Controls.NavigationViewPaneDisplayMode.Auto;
+            }
+
             if (_isNavigating)
             {
                 return;
             }
-
-            Type currentPageType = rootFrame.SourcePageType;
 
             // 处理设置项的选中状态
             if (currentPageType == typeof(SettingsPage))
@@ -1379,7 +1398,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         System.Diagnostics.Debug.WriteLine(string.Format(NavStrings.Nav_PreloadPageFailed, tag, ex.Message));
                     }
 
-                    // 每加载一页后让出 UI 线程，防止阻塞心跳定时器
+                    // 每加载一页后让出 UI 线程，保持设置窗口响应。
                     if (++count % 3 == 0)
                     {
                         await System.Threading.Tasks.Task.Delay(50);

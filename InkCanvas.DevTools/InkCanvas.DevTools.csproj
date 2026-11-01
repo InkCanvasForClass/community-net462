@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>InkCanvas.DevTools</RootNamespace>
+    <AssemblyName>InkCanvas.DevTools</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\$(Configuration)\$(Platform)\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 组织维护的非官方 fork：包 ID 为 InkCanvasForClass.UI.WPF.Modern，程序集仍叫 iNKORE.UI.WPF.Modern -->
+    <PackageReference Include="InkCanvasForClass.UI.WPF.Modern" Version="0.11.0-icc.7df536a" />
+    <PackageReference Include="iNKORE.UI.WPF" Version="1.2.8" />
+  </ItemGroup>
+
+</Project>
