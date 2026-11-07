@@ -87,7 +87,7 @@
                 </ui:SettingsExpander>
 
                 <!-- ==================== Announcement Center ==================== -->
-                <TextBlock Text="{x:Static props:AnnouncementStrings.CenterTitle}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                <TextBlock x:Name="AnnouncementsSection" Text="{x:Static props:AnnouncementStrings.CenterTitle}" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                 <Border Margin="0,8,0,12"
                         Padding="16"

@@ -31,7 +31,7 @@
                     Spacing="{StaticResource SettingsCardSpacing}">
 
                     <!-- ===== 浮动栏外观 ===== -->
-                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    <TextBlock x:Name="ToolbarAppearanceSection" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:FloatingBarStrings.FloatingBar_Appearance}" />
 
                     <controls:LabeledSettingsCard x:Name="CardUseLegacyFloatingBarUI"
@@ -244,7 +244,7 @@
                     </ui:SettingsExpander>
 
                     <!-- ===== 工具栏组件 ===== -->
-                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    <TextBlock x:Name="ToolbarComponentsSection" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:FloatingBarStrings.FloatingBar_ToolbarComponents}" />
 
                     <Border BorderThickness="0" CornerRadius="8"
@@ -255,7 +255,7 @@
                     </Border>
 
                     <!-- ===== 工具栏菜单 ===== -->
-                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    <TextBlock x:Name="ToolbarMenuSection" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:FloatingBarStrings.FloatingBar_ToolbarMenu}" />
 
                     <Border BorderThickness="0" CornerRadius="8"

@@ -32,7 +32,7 @@
                     Spacing="{StaticResource SettingsCardSpacing}">
 
                     <!-- ==================== Screen Settings ==================== -->
-                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    <TextBlock x:Name="WindowSection" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:WindowStrings.WindowSettings}" />
 
                     <controls:LabeledSettingsCard x:Name="CardMultiScreenSupport"
@@ -295,7 +295,7 @@
                             helpers:SettingsBinder.PropertyPath="Gesture.IsEnableTwoFingerRotationOnSelection" />
 
                     <!-- ==================== Experimental ==================== -->
-                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    <TextBlock x:Name="ExperimentalSection" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:AdvancedStrings.Experimental}" />
 
                     <controls:LabeledSettingsCard x:Name="CardForceFullScreen"

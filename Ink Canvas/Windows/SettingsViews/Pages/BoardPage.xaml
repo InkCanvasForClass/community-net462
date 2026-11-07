@@ -240,7 +240,7 @@
             <ikw:SimpleStackPanel MaxWidth="1000" HorizontalAlignment="Stretch">
 
                 <!-- ========== SECTION 1: Toolbar Config Profiles ========== -->
-                <TextBlock Text="{x:Static props:FloatingBarStrings.BoardToolbarPage_ConfigProfiles}"
+                <TextBlock x:Name="BoardComponentsSection" Text="{x:Static props:FloatingBarStrings.BoardToolbarPage_ConfigProfiles}"
                            FontSize="14" FontWeight="SemiBold" Margin="0,36,0,6"/>
                 <DockPanel Margin="0,0,0,4">
                     <ComboBox x:Name="ComboBoxConfigFile" SelectionChanged="ComboBoxConfigFile_SelectionChanged"
@@ -433,7 +433,7 @@
                               Cursor="SizeNS" Margin="0,8,0,8"/>
 
                 <!-- ========== SECTION 5: Whiteboard Display (from Appearance) ========== -->
-                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                <TextBlock x:Name="BoardAppearanceSection" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                            Text="{x:Static props:ThemeStrings.Theme_ShowTimeInWhiteboard}" Margin="0,8,0,6"/>
 
                 <controls:LabeledSettingsCard x:Name="CardEnableTimeDisplayInWhiteboardMode"
@@ -615,7 +615,7 @@
                               Cursor="SizeNS" Margin="0,8,0,8"/>
 
                 <!-- ========== SECTION 8: Board Menu Items ========== -->
-                <TextBlock Text="{x:Static props:NavStrings.Nav_BoardMenu}" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,6"/>
+                <TextBlock x:Name="BoardMenuSection" Text="{x:Static props:NavStrings.Nav_BoardMenu}" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,6"/>
                 <TextBlock Text="{x:Static props:CanvasStrings.Board_MenuConfigHint}"
                            Opacity="0.65" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,6"/>
 
