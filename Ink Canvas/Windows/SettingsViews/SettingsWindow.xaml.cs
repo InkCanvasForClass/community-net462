@@ -217,12 +217,6 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             string tag = string.IsNullOrEmpty(pageTag) ? "HomeDashboardPage" : pageTag;
             NavigateToPage(tag);
-            var navItem = FindNavigationViewItemByTag(tag);
-            if (navItem != null)
-            {
-                NavigationViewControl.SelectedItem = navItem;
-                NavigationViewControl.Header = navItem.Content;
-            }
         }
 
         public void ApplyWindowBackdrop(string backdropName)
@@ -387,18 +381,22 @@ namespace Ink_Canvas.Windows.SettingsViews
                         pluginSettingsPage.CurrentPlugin = pluginInfo;
                     }
                     NavigationViewControl.Header = selectedItem.Content;
-
-                    if (tag == "UpdatePage")
-                    {
-                        _updateBadgeDismissed = true;
-                        UpdateUpdateBadgeVisibility();
-                    }
                 }
             }
         }
 
+        /// <summary>打开设置页；PageTag#ElementName 可定位到合并页面内的指定区域。</summary>
         public void NavigateToPage(string pageTag, Ink_Canvas.Plugins.PluginInfo pluginInfo = null)
         {
+            if (string.IsNullOrEmpty(pageTag)) return;
+            string targetName = null;
+            int separator = pageTag.IndexOf('#');
+            if (separator >= 0)
+            {
+                targetName = pageTag.Substring(separator + 1);
+                pageTag = pageTag.Substring(0, separator);
+            }
+
             if (!_pageTypes.TryGetValue(pageTag, out Type pageType))
             {
                 LogHelper.WriteLogToFile($"SettingsWindow: NavigateToPage 找不到页面类型 [{pageTag}]，已注册: [{string.Join(", ", _pageTypes.Keys)}]", LogHelper.LogType.Warning);
@@ -424,7 +422,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 rootFrame.NavigationUIVisibility = NavigationUIVisibility.Hidden;
                 rootFrame.RemoveBackEntry();
-                rootFrame.Navigate(cachedPage);
+                rootFrame.Navigate(cachedPage, targetName);
                 rootFrame.RemoveBackEntry();
             }
             catch (Exception ex)
@@ -475,37 +473,46 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void OnRootFrameNavigated(object sender, NavigationEventArgs e)
         {
-            if (_isNavigating)
+            bool wasNavigating = _isNavigating;
+            try
             {
-                return;
-            }
-
-            Type currentPageType = rootFrame.SourcePageType;
-
-            // 处理设置项的选中状态
-            if (currentPageType == typeof(SettingsPage))
-            {
-                NavigationViewControl.SelectedItem = NavigationViewControl.SettingsItem;
-                NavigationViewControl.Header = NavStrings.Settings_Title;
-                return;
-            }
-
-            // 同步其他页面的选中状态
-            foreach (var kvp in _pageTypes)
-            {
-                if (kvp.Value == currentPageType)
+                // 同步导航时只阻止 SelectionChanged 回跳，不跳过本次 Navigated。
+                _isNavigating = true;
+                string pageTag = _pages.FirstOrDefault(kvp => ReferenceEquals(kvp.Value, e.Content)).Key;
+                if (e.Content is SettingsPage)
                 {
-                    var targetItem = FindNavigationViewItemByTag(kvp.Key);
-                    if (targetItem != null && NavigationViewControl.SelectedItem != targetItem)
+                    NavigationViewControl.SelectedItem = NavigationViewControl.SettingsItem;
+                    NavigationViewControl.Header = NavStrings.Settings_Title;
+                }
+                else if (pageTag != null)
+                {
+                    var targetItem = FindNavigationViewItemByTag(pageTag == "HomePage" ? "HomeDashboardPage" : pageTag);
+                    if (targetItem != null)
                     {
                         NavigationViewControl.SelectedItem = targetItem;
                         NavigationViewControl.Header = targetItem.Content;
                     }
-                    break;
+                    if (pageTag == "UpdatePage")
+                    {
+                        _updateBadgeDismissed = true;
+                        UpdateUpdateBadgeVisibility();
+                    }
                 }
+            }
+            finally
+            {
+                _isNavigating = wasNavigating;
             }
 
             ApplySmoothScrollingToPage(e.Content as FrameworkElement);
+            if (e.ExtraData is string targetName && e.Content is FrameworkElement page)
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (rootFrame.Content == page && page.FindName(targetName) is FrameworkElement target)
+                        target.BringIntoView();
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
         }
 
         private void ApplySmoothScrollingToPage(FrameworkElement root)
@@ -573,36 +580,22 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private NavigationViewItem FindNavigationViewItemByTag(string tag)
         {
-            // 遍历主菜单
-            foreach (var item in NavigationViewControl.MenuItems)
+            NavigationViewItem FindItem(System.Collections.IEnumerable items)
             {
-                if (item is NavigationViewItem navItem)
+                foreach (var item in items)
                 {
-                    if (navItem.Tag as string == tag)
-                        return navItem;
-
-                    // 遍历子菜单，自动展开父项
-                    foreach (var childItem in navItem.MenuItems)
+                    if (!(item is NavigationViewItem navItem)) continue;
+                    if (navItem.Tag as string == tag) return navItem;
+                    var child = FindItem(navItem.MenuItems);
+                    if (child != null)
                     {
-                        if (childItem is NavigationViewItem childNavItem && childNavItem.Tag as string == tag)
-                        {
-                            navItem.IsExpanded = true;
-                            return childNavItem;
-                        }
+                        navItem.IsExpanded = true;
+                        return child;
                     }
                 }
+                return null;
             }
-
-            // 遍历底部菜单
-            foreach (var item in NavigationViewControl.FooterMenuItems)
-            {
-                if (item is NavigationViewItem navItem && navItem.Tag as string == tag)
-                {
-                    return navItem;
-                }
-            }
-
-            return null;
+            return FindItem(NavigationViewControl.MenuItems) ?? FindItem(NavigationViewControl.FooterMenuItems);
         }
         #endregion
 
@@ -760,12 +753,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (entry == null) return;
 
             NavigateToPage(entry.PageTag);
-            var navItem = FindNavigationViewItemByTag(entry.PageTag);
-            if (navItem != null && NavigationViewControl.SelectedItem != navItem)
-            {
-                NavigationViewControl.SelectedItem = navItem;
-                NavigationViewControl.Header = navItem.Content;
-            }
 
             if (entry.Target != null && entry.Target.TryGetTarget(out var fe))
             {
@@ -877,12 +864,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (!string.IsNullOrEmpty(pageTag) && _pageTypes.ContainsKey(pageTag))
             {
                 NavigateToPage(pageTag);
-                var navItem = FindNavigationViewItemByTag(pageTag);
-                if (navItem != null && NavigationViewControl.SelectedItem != navItem)
-                {
-                    NavigationViewControl.SelectedItem = navItem;
-                    NavigationViewControl.Header = navItem.Content;
-                }
             }
         }
 
@@ -913,28 +894,17 @@ namespace Ink_Canvas.Windows.SettingsViews
         private List<NavigationViewItem> GetAllNavigationItems()
         {
             var items = new List<NavigationViewItem>();
-
-            // 主菜单+子菜单
-            foreach (var item in NavigationViewControl.MenuItems)
+            void AddItems(System.Collections.IEnumerable source)
             {
-                if (item is NavigationViewItem navItem)
+                foreach (var item in source)
                 {
+                    if (!(item is NavigationViewItem navItem)) continue;
                     items.Add(navItem);
-                    foreach (var child in navItem.MenuItems)
-                    {
-                        if (child is NavigationViewItem childNavItem)
-                            items.Add(childNavItem);
-                    }
+                    AddItems(navItem.MenuItems);
                 }
             }
-
-            // 底部菜单
-            foreach (var item in NavigationViewControl.FooterMenuItems)
-            {
-                if (item is NavigationViewItem navItem)
-                    items.Add(navItem);
-            }
-
+            AddItems(NavigationViewControl.MenuItems);
+            AddItems(NavigationViewControl.FooterMenuItems);
             return items;
         }
 

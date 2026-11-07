@@ -189,10 +189,10 @@
                                             <Border Style="{StaticResource QuickAccessTileStyle}" Tag="RollCallPage" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.People_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
-                                                    <TextBlock Text="{x:Static props:RandomStrings.Random_Title}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{x:Static props:NavStrings.Nav_RollCall}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />
                                                 </ikw:SimpleStackPanel>
                                             </Border>
-                                            <Border Style="{StaticResource QuickAccessTileStyle}" Tag="ScreenTouchPage" MouseLeftButtonUp="QuickNavCard_Click">
+                                            <Border Style="{StaticResource QuickAccessTileStyle}" Tag="ScreenTouchPage#CardTouchMultiplier" MouseLeftButtonUp="QuickNavCard_Click">
                                                 <ikw:SimpleStackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Tv_20_Regular}" FontSize="24" HorizontalAlignment="Center" />
                                                     <TextBlock Text="{x:Static props:NavStrings.Nav_ScreenTouch}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="88" HorizontalAlignment="Center" />

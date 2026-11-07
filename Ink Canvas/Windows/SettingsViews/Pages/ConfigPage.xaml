@@ -49,7 +49,7 @@
                     </ui:SettingsCard>
 
                     <!-- Backup Section -->
-                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    <TextBlock x:Name="BackupSection" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:StorageStrings.Backup_Title}" />
 
                     <controls:LabeledSettingsCard x:Name="ToggleSwitchIsAutoBackupBeforeUpdate"
