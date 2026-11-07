@@ -468,7 +468,8 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
-            if (rootFrame.CanGoBack) rootFrame.GoBack();
+            if (rootFrame.Content is SavesManagerPage savesManager) savesManager.NavigateBack();
+            else if (rootFrame.CanGoBack) rootFrame.GoBack();
         }
 
         private void OnRootFrameNavigated(object sender, NavigationEventArgs e)
@@ -487,10 +488,15 @@ namespace Ink_Canvas.Windows.SettingsViews
                 else if (pageTag != null)
                 {
                     var targetItem = FindNavigationViewItemByTag(pageTag == "HomePage" ? "HomeDashboardPage" : pageTag);
+                    if (e.Content is SavesManagerPage) targetItem = FindNavigationViewItemByTag("StoragePage");
                     if (targetItem != null)
                     {
                         NavigationViewControl.SelectedItem = targetItem;
                         NavigationViewControl.Header = targetItem.Content;
+                    }
+                    if (e.Content is SavesManagerPage savesManager)
+                    {
+                        NavigationViewControl.Header = savesManager.TakeNavigationHeader();
                     }
                     if (pageTag == "UpdatePage")
                     {

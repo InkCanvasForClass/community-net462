@@ -148,9 +148,35 @@ namespace Ink_Canvas.Properties
 
         public static string Storage_ManageSaves_Title => ResourceManager.GetString(nameof(Storage_ManageSaves_Title), _resourceCulture);
 
-        public static string Storage_ManageSaves_TabInk => ResourceManager.GetString(nameof(Storage_ManageSaves_TabInk), _resourceCulture);
+        public static string Storage_ManageSaves_PresentationType => ResourceManager.GetString(nameof(Storage_ManageSaves_PresentationType), _resourceCulture);
 
-        public static string Storage_ManageSaves_TabScreenshots => ResourceManager.GetString(nameof(Storage_ManageSaves_TabScreenshots), _resourceCulture);
+        public static string Storage_ManageSaves_CleanPresentations => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanPresentations), _resourceCulture);
+
+        public static string Storage_ManageSaves_CleanPresentations_Desc => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanPresentations_Desc), _resourceCulture);
+
+        public static string Storage_ManageSaves_CleanWhiteboard => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanWhiteboard), _resourceCulture);
+
+        public static string Storage_ManageSaves_CleanWhiteboard_Desc => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanWhiteboard_Desc), _resourceCulture);
+
+        public static string Storage_ManageSaves_CleanManual => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanManual), _resourceCulture);
+
+        public static string Storage_ManageSaves_CleanManual_Desc => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanManual_Desc), _resourceCulture);
+
+        public static string Storage_ManageSaves_BackToCategories => ResourceManager.GetString(nameof(Storage_ManageSaves_BackToCategories), _resourceCulture);
+
+        public static string Storage_ManageSaves_BackToStorage => ResourceManager.GetString(nameof(Storage_ManageSaves_BackToStorage), _resourceCulture);
+
+        public static string Storage_ManageSaves_DeletePresentationConfirm_Body => ResourceManager.GetString(nameof(Storage_ManageSaves_DeletePresentationConfirm_Body), _resourceCulture);
+
+        public static string Storage_ManageSaves_DeleteItemsDone => ResourceManager.GetString(nameof(Storage_ManageSaves_DeleteItemsDone), _resourceCulture);
+
+        public static string Storage_ManageSaves_PresentationDeleteBlocked => ResourceManager.GetString(nameof(Storage_ManageSaves_PresentationDeleteBlocked), _resourceCulture);
+
+        public static string Storage_ManageSaves_InvalidPresentationFolder => ResourceManager.GetString(nameof(Storage_ManageSaves_InvalidPresentationFolder), _resourceCulture);
+
+        public static string Storage_ManageSaves_CleanScreenshots => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanScreenshots), _resourceCulture);
+
+        public static string Storage_ManageSaves_CleanScreenshots_Desc => ResourceManager.GetString(nameof(Storage_ManageSaves_CleanScreenshots_Desc), _resourceCulture);
 
         public static string Storage_ManageSaves_SelectAll => ResourceManager.GetString(nameof(Storage_ManageSaves_SelectAll), _resourceCulture);
 

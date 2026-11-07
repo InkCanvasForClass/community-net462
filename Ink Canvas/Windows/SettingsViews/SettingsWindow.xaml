@@ -106,10 +106,9 @@ Title="{x:Static props:NavStrings.Nav_SettingsWindow_Title}"
             <ui:NavigationView.HeaderTemplate>
                 <DataTemplate>
                     <Grid Margin="0,8,0,12">
-                        <TextBlock
-                            Text="{Binding}"
-                            FontSize="20"
-                            FontWeight="SemiBold"/>
+                        <ContentPresenter Content="{Binding}"
+                                          TextElement.FontSize="20"
+                                          TextElement.FontWeight="SemiBold" />
                     </Grid>
                 </DataTemplate>
             </ui:NavigationView.HeaderTemplate>
