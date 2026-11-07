@@ -6,11 +6,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using StorageStrings = Ink_Canvas.Properties.StorageStrings;
 
@@ -22,6 +25,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
     public partial class SavesManagerPage
     {
         private List<SavesFileEntry> _inkEntries = new List<SavesFileEntry>();
+        private List<SavesFileEntry> _visibleInkEntries = new List<SavesFileEntry>();
+        private SavesInkCategory? _inkCategory;
+        private bool _showScreenshots;
         private List<SavesFileEntry> _shotEntries = new List<SavesFileEntry>();
         private CancellationTokenSource _loadCts;
 
@@ -38,7 +44,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             InitializeComponent();
 
-            InkList.ItemsSource = _inkEntries;
+            UpdateInkCategory();
             ShotList.ItemsSource = _shotEntries;
             InkList.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
             ShotList.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
@@ -46,10 +52,22 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             ShotSort.SelectedIndex = 0;
 
             Loaded += async (s, e) => await LoadAsync();
-            Unloaded += (s, e) => _loadCts?.Cancel();
+            Unloaded += (s, e) =>
+            {
+                _loadCts?.Cancel();
+                CategoryContent.BeginAnimation(OpacityProperty, null);
+                ((TranslateTransform)CategoryContent.RenderTransform).BeginAnimation(TranslateTransform.XProperty, null);
+            };
         }
 
         #region 加载与分类
+
+        internal FrameworkElement TakeNavigationHeader()
+        {
+            HeaderHost.Content = null;
+            HeaderHost.Visibility = Visibility.Collapsed;
+            return SavesHeader;
+        }
 
         private async Task LoadAsync()
         {
@@ -86,17 +104,10 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 // Replace the snapshot once; adding sorted entries individually blocks the UI thread.
                 _inkEntries = ink;
                 _shotEntries = shots;
-                InkList.ItemsSource = _inkEntries;
+                UpdateInkCategory();
                 ShotList.ItemsSource = _shotEntries;
 
-                InkSelectAll.IsChecked = false;
-                ShotSelectAll.IsChecked = false;
-
-                ApplySort(InkList, _inkSortProp, _inkSortDesc);
                 ApplySort(ShotList, _shotSortProp, _shotSortDesc);
-
-                InkCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _inkEntries.Count);
-                ShotCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _shotEntries.Count);
             }
             finally
             {
@@ -109,6 +120,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var ink = new List<SavesFileEntry>();
             var shots = new List<SavesFileEntry>();
             if (string.IsNullOrEmpty(root) || !Directory.Exists(root)) return (ink, shots);
+            root = Path.GetFullPath(root);
+            var presentationsRoot = Path.Combine(root, "Auto Saved - Presentations") + Path.DirectorySeparatorChar;
+            var boardRoot = Path.Combine(root, "Auto Saved - BlackBoard Strokes") + Path.DirectorySeparatorChar;
+            var annotationRoot = Path.Combine(root, "Auto Saved - Annotation Strokes") + Path.DirectorySeparatorChar;
+            var presentations = new Dictionary<string, SavesFileEntry>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var file in EnumerateSafe(root, token))
             {
@@ -120,7 +136,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 {
                     ext = Path.GetExtension(file);
                     var fi = new FileInfo(file);
-                    if (!fi.Exists) continue;
+                    if (!fi.Exists || (fi.Attributes & FileAttributes.ReparsePoint) != 0) continue;
                     size = fi.Length;
                     modified = fi.LastWriteTime;
                     created = fi.CreationTime;
@@ -135,13 +151,48 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                     FilePath = file,
                     FileName = Path.GetFileName(file),
                     TypeLabel = ext.TrimStart('.').ToUpperInvariant(),
+                    InkCategory = file.StartsWith(presentationsRoot, StringComparison.OrdinalIgnoreCase)
+                        ? SavesInkCategory.Presentations
+                        : file.StartsWith(boardRoot, StringComparison.OrdinalIgnoreCase)
+                          || file.StartsWith(annotationRoot, StringComparison.OrdinalIgnoreCase)
+                            ? SavesInkCategory.Whiteboard : SavesInkCategory.Manual,
                     Size = size,
                     Modified = modified,
                     Created = created
                 };
 
                 if (InkExtensions.Contains(ext))
-                    ink.Add(entry);
+                {
+                    int separator = file.StartsWith(presentationsRoot, StringComparison.OrdinalIgnoreCase)
+                        ? file.IndexOf(Path.DirectorySeparatorChar, presentationsRoot.Length) : -1;
+                    if (separator < 0)
+                    {
+                        ink.Add(entry);
+                        continue;
+                    }
+
+                    string folder = file.Substring(0, separator);
+                    if (!presentations.TryGetValue(folder, out var presentation))
+                    {
+                        string folderName = Path.GetFileName(folder);
+                        string name = Regex.Replace(folderName, @"_\d+(?:_[0-9a-fA-F]{8})?$", "");
+                        presentation = new SavesFileEntry
+                        {
+                            FilePath = folder,
+                            FileName = string.IsNullOrEmpty(name) ? folderName : name,
+                            TypeLabel = StorageStrings.Storage_ManageSaves_PresentationType,
+                            IsPresentation = true,
+                            InkCategory = SavesInkCategory.Presentations,
+                            Created = created,
+                            Modified = modified
+                        };
+                        presentations.Add(folder, presentation);
+                        ink.Add(presentation);
+                    }
+                    presentation.Size += size;
+                    if (created < presentation.Created) presentation.Created = created;
+                    if (modified > presentation.Modified) presentation.Modified = modified;
+                }
                 else if (ext.Equals(".png", StringComparison.OrdinalIgnoreCase))
                     shots.Add(entry);
             }
@@ -169,8 +220,103 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 token.ThrowIfCancellationRequested();
                 // File Dependency 存放插入画布的图片/PDF，删除会破坏元素，跳过。
                 if (string.Equals(Path.GetFileName(d), "File Dependency", StringComparison.OrdinalIgnoreCase)) continue;
+                try { if ((File.GetAttributes(d) & FileAttributes.ReparsePoint) != 0) continue; }
+                catch { continue; }
                 foreach (var f in EnumerateSafe(d, token)) yield return f;
             }
+        }
+
+        private void InkCategory_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is FrameworkElement card) || !(card.Tag is SavesInkCategory category)) return;
+            _showScreenshots = false;
+            _inkCategory = category;
+            UpdateInkCategory();
+            AnimateCategoryTransition(false);
+        }
+
+        private void InkBack_Click(object sender, RoutedEventArgs e)
+        {
+            _showScreenshots = false;
+            _inkCategory = null;
+            UpdateInkCategory();
+            AnimateCategoryTransition(true);
+        }
+
+        private void NavigationBack_Click(object sender, RoutedEventArgs e)
+            => NavigateBack();
+
+        internal void NavigateBack()
+        {
+            if (_inkCategory.HasValue || _showScreenshots) InkBack_Click(this, null);
+            else StorageBreadcrumb_Click(this, null);
+        }
+
+        private void StorageBreadcrumb_Click(object sender, RoutedEventArgs e)
+            => (Window.GetWindow(this) as SettingsWindow)?.NavigateToPage("StoragePage");
+
+        private void ScreenshotCategory_Click(object sender, RoutedEventArgs e)
+        {
+            _showScreenshots = true;
+            _inkCategory = null;
+            UpdateInkCategory();
+            AnimateCategoryTransition(false);
+        }
+
+        private void AnimateCategoryTransition(bool back)
+        {
+            var offset = (TranslateTransform)CategoryContent.RenderTransform;
+            CategoryContent.BeginAnimation(OpacityProperty, null);
+            offset.BeginAnimation(TranslateTransform.XProperty, null);
+            if (!SystemParameters.ClientAreaAnimation) return;
+
+            var duration = TimeSpan.FromMilliseconds(180);
+            CategoryContent.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, duration)
+            {
+                FillBehavior = FillBehavior.Stop
+            });
+            offset.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(back ? -16 : 16, 0, duration)
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+                FillBehavior = FillBehavior.Stop
+            });
+        }
+
+        private void UpdateInkCategory()
+        {
+            foreach (var entry in _inkEntries) entry.IsSelected = false;
+            foreach (var entry in _shotEntries) entry.IsSelected = false;
+            InkSelectAll.IsChecked = false;
+            ShotSelectAll.IsChecked = false;
+            _visibleInkEntries = _inkEntries.Where(entry => entry.InkCategory == _inkCategory).ToList();
+            InkList.ItemsSource = _visibleInkEntries;
+            PresentationList.ItemsSource = _visibleInkEntries;
+            ApplySort(InkList, _inkSortProp, _inkSortDesc);
+
+            InkRoot.Visibility = _showScreenshots ? Visibility.Collapsed : Visibility.Visible;
+            ShotDetails.Visibility = _showScreenshots ? Visibility.Visible : Visibility.Collapsed;
+            InkCategories.Visibility = _inkCategory == null ? Visibility.Visible : Visibility.Collapsed;
+            InkDetails.Visibility = _inkCategory == null ? Visibility.Collapsed : Visibility.Visible;
+            bool presentations = _inkCategory == SavesInkCategory.Presentations;
+            PresentationList.Visibility = presentations ? Visibility.Visible : Visibility.Collapsed;
+            InkList.Visibility = presentations ? Visibility.Collapsed : Visibility.Visible;
+            InkEmpty.Visibility = _visibleInkEntries.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            InkCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _visibleInkEntries.Count);
+            ShotCount.Text = string.Format(StorageStrings.Storage_ManageSaves_CountFormat, _shotEntries.Count);
+            bool details = _inkCategory.HasValue || _showScreenshots;
+            ManagerBreadcrumb.Visibility = details ? Visibility.Visible : Visibility.Collapsed;
+            ManagerTitle.Visibility = details ? Visibility.Collapsed : Visibility.Visible;
+            CategoryChevron.Visibility = details ? Visibility.Visible : Visibility.Collapsed;
+            InkCategoryTitle.Visibility = details ? Visibility.Visible : Visibility.Collapsed;
+            NavigationBack.ToolTip = details ? StorageStrings.Storage_ManageSaves_BackToCategories
+                : StorageStrings.Storage_ManageSaves_BackToStorage;
+            InkCategoryTitle.Text = _showScreenshots ? StorageStrings.Storage_ManageSaves_CleanScreenshots : _inkCategory switch
+            {
+                SavesInkCategory.Presentations => StorageStrings.Storage_ManageSaves_CleanPresentations,
+                SavesInkCategory.Whiteboard => StorageStrings.Storage_ManageSaves_CleanWhiteboard,
+                SavesInkCategory.Manual => StorageStrings.Storage_ManageSaves_CleanManual,
+                _ => string.Empty
+            };
         }
 
         #endregion
@@ -305,7 +451,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private void InkSelectAll_Changed(object sender, RoutedEventArgs e)
         {
             bool on = InkSelectAll.IsChecked == true;
-            foreach (var entry in _inkEntries) entry.IsSelected = on;
+            foreach (var entry in _visibleInkEntries) entry.IsSelected = on;
         }
 
         private void ShotSelectAll_Changed(object sender, RoutedEventArgs e)
@@ -314,24 +460,34 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             foreach (var entry in _shotEntries) entry.IsSelected = on;
         }
 
-        private async void InkDelete_Click(object sender, RoutedEventArgs e) => await DeleteSelectedAsync(_inkEntries);
+        private async void InkDelete_Click(object sender, RoutedEventArgs e) => await DeleteSelectedAsync(_visibleInkEntries);
         private async void ShotDelete_Click(object sender, RoutedEventArgs e) => await DeleteSelectedAsync(_shotEntries);
 
         private async Task DeleteSelectedAsync(List<SavesFileEntry> collection)
         {
             var selected = collection.Where(entry => entry.IsSelected).ToList();
             if (selected.Count == 0) return;
+            bool hasPresentations = selected.Any(entry => entry.IsPresentation);
+            var root = MainWindow.Settings?.Automation?.AutoSavedStrokesLocation;
 
             var confirm = MessageBox.Show(
-                string.Format(StorageStrings.Storage_ManageSaves_DeleteConfirm_Body, selected.Count),
+                string.Format(hasPresentations ? StorageStrings.Storage_ManageSaves_DeletePresentationConfirm_Body
+                    : StorageStrings.Storage_ManageSaves_DeleteConfirm_Body, selected.Count),
                 StorageStrings.Storage_ManageSaves_DeleteConfirm_Title,
                 MessageBoxButton.OKCancel, MessageBoxImage.Warning);
             if (confirm != MessageBoxResult.OK) return;
+            if (hasPresentations && (Application.Current.MainWindow as MainWindow)?.PPTManager?.IsInSlideShow == true)
+            {
+                MessageBox.Show(StorageStrings.Storage_ManageSaves_PresentationDeleteBlocked,
+                    StorageStrings.Storage_ManageSaves_DeleteConfirm_Title,
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             var errors = new List<string>();
             await Task.Run(() =>
             {
-                foreach (var entry in selected) DeleteEntry(entry, errors);
+                foreach (var entry in selected) DeleteEntry(entry, root, errors);
             });
 
             await LoadAsync();
@@ -346,16 +502,35 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             else
             {
                 MessageBox.Show(
-                    string.Format(StorageStrings.Storage_ManageSaves_DeleteDone, selected.Count),
+                    string.Format(hasPresentations ? StorageStrings.Storage_ManageSaves_DeleteItemsDone
+                        : StorageStrings.Storage_ManageSaves_DeleteDone, selected.Count),
                     StorageStrings.Storage_ManageSaves_DeleteConfirm_Title,
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private static void DeleteEntry(SavesFileEntry entry, List<string> errors)
+        private static void DeleteEntry(SavesFileEntry entry, string root, List<string> errors)
         {
             try
             {
+                if (entry.IsPresentation)
+                {
+                    if (string.IsNullOrEmpty(root))
+                        throw new IOException(StorageStrings.Storage_ManageSaves_InvalidPresentationFolder);
+                    string folder = Path.GetFullPath(entry.FilePath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    string parent = Path.GetFullPath(Path.Combine(root, "Auto Saved - Presentations"))
+                        .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    if (!string.Equals(Directory.GetParent(folder)?.FullName, parent, StringComparison.OrdinalIgnoreCase))
+                        throw new IOException(StorageStrings.Storage_ManageSaves_InvalidPresentationFolder);
+                    if (!Directory.Exists(folder)) return;
+
+                    // A junction in the folder or its ancestors could redirect deletion outside the save root.
+                    for (var dir = new DirectoryInfo(folder); dir != null; dir = dir.Parent)
+                        if ((dir.Attributes & FileAttributes.ReparsePoint) != 0)
+                            throw new IOException(StorageStrings.Storage_ManageSaves_InvalidPresentationFolder);
+                    Directory.Delete(folder, true);
+                    return;
+                }
                 File.Delete(entry.FilePath);
                 var companion = Path.ChangeExtension(entry.FilePath, ".elements.json");
                 if (File.Exists(companion)) File.Delete(companion);
@@ -374,7 +549,17 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private async void ShotRefresh_Click(object sender, RoutedEventArgs e) => await LoadAsync();
 
         private void InkOpenFolder_Click(object sender, RoutedEventArgs e)
-            => OpenFolder(MainWindow.Settings?.Automation?.AutoSavedStrokesLocation);
+        {
+            var root = MainWindow.Settings?.Automation?.AutoSavedStrokesLocation;
+            if (string.IsNullOrEmpty(root)) return;
+            var folder = _inkCategory switch
+            {
+                SavesInkCategory.Presentations => Path.Combine(root, "Auto Saved - Presentations"),
+                SavesInkCategory.Whiteboard => Path.Combine(root, "Auto Saved - BlackBoard Strokes"),
+                _ => root
+            };
+            OpenFolder(Directory.Exists(folder) ? folder : root);
+        }
 
         private void ShotOpenFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -400,6 +585,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private void Reveal_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is SavesFileEntry entry)) return;
+            if (entry.IsPresentation)
+            {
+                OpenFolder(entry.FilePath);
+                return;
+            }
             try
             {
                 Process.Start("explorer.exe", "/select,\"" + entry.FilePath + "\"");
@@ -413,14 +603,18 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         #endregion
     }
 
+    public enum SavesInkCategory { Presentations, Whiteboard, Manual }
+
     /// <summary>
-    /// 管理页面中的单个保存文件条目。
+    /// 管理页面中的保存文件或整份演示文稿墨迹条目。
     /// </summary>
     public class SavesFileEntry : INotifyPropertyChanged
     {
         public string FilePath { get; set; }
         public string FileName { get; set; }
         public string TypeLabel { get; set; }
+        public bool IsPresentation { get; set; }
+        public SavesInkCategory InkCategory { get; set; } = SavesInkCategory.Manual;
         public long Size { get; set; }
         public DateTime Modified { get; set; }
         public DateTime Created { get; set; }

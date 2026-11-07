@@ -305,11 +305,50 @@
   <data name="Storage_ManageSaves_Title" xml:space="preserve">
     <value>墨迹与截图管理</value>
   </data>
-  <data name="Storage_ManageSaves_TabInk" xml:space="preserve">
-    <value>墨迹</value>
+  <data name="Storage_ManageSaves_PresentationType" xml:space="preserve">
+    <value>PPT 墨迹</value>
   </data>
-  <data name="Storage_ManageSaves_TabScreenshots" xml:space="preserve">
-    <value>截图</value>
+  <data name="Storage_ManageSaves_CleanPresentations" xml:space="preserve">
+    <value>清理 PPT 墨迹</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanPresentations_Desc" xml:space="preserve">
+    <value>按课件管理自动保存的墨迹，删除对应的整个墨迹文件夹。</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanWhiteboard" xml:space="preserve">
+    <value>清理白板墨迹</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanWhiteboard_Desc" xml:space="preserve">
+    <value>按文件管理自动保存的白板与批注墨迹。</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanManual" xml:space="preserve">
+    <value>清理手动保存墨迹</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanManual_Desc" xml:space="preserve">
+    <value>按文件管理手动保存及其他位置的墨迹。</value>
+  </data>
+  <data name="Storage_ManageSaves_BackToCategories" xml:space="preserve">
+    <value>返回分类</value>
+  </data>
+  <data name="Storage_ManageSaves_BackToStorage" xml:space="preserve">
+    <value>返回存储管理</value>
+  </data>
+  <data name="Storage_ManageSaves_DeletePresentationConfirm_Body" xml:space="preserve">
+    <value>确定删除选中的 {0} 项吗？PPT 项会删除对应的整个墨迹文件夹，包括墨迹、播放位置、图片关联和其他内容。此操作不可撤销。</value>
+  </data>
+  <data name="Storage_ManageSaves_DeleteItemsDone" xml:space="preserve">
+    <value>已删除 {0} 项</value>
+  </data>
+  <data name="Storage_ManageSaves_PresentationDeleteBlocked" xml:space="preserve">
+    <value>请先结束 PPT 放映，再删除墨迹文件夹，避免放映结束时重新保存墨迹。</value>
+  </data>
+  <data name="Storage_ManageSaves_InvalidPresentationFolder" xml:space="preserve">
+    <value>只能删除保存位置下的演示文稿墨迹文件夹，不能删除其他目录或链接目录。</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanScreenshots" xml:space="preserve">
+    <value>清理截图</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanScreenshots_Desc" xml:space="preserve">
+    <value>按文件管理保存的截图。</value>
   </data>
   <data name="Storage_ManageSaves_SelectAll" xml:space="preserve">
     <value>全选</value>

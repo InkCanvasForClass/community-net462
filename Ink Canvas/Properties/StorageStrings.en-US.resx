@@ -304,11 +304,50 @@
   <data name="Storage_ManageSaves_Title" xml:space="preserve">
     <value>Ink &amp; Screenshot Manager</value>
   </data>
-  <data name="Storage_ManageSaves_TabInk" xml:space="preserve">
-    <value>Ink</value>
+  <data name="Storage_ManageSaves_PresentationType" xml:space="preserve">
+    <value>PPT ink</value>
   </data>
-  <data name="Storage_ManageSaves_TabScreenshots" xml:space="preserve">
-    <value>Screenshots</value>
+  <data name="Storage_ManageSaves_CleanPresentations" xml:space="preserve">
+    <value>Clean PPT ink</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanPresentations_Desc" xml:space="preserve">
+    <value>Manage automatically saved ink by presentation. Deleting an entry removes its entire ink folder.</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanWhiteboard" xml:space="preserve">
+    <value>Clean whiteboard ink</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanWhiteboard_Desc" xml:space="preserve">
+    <value>Manage automatically saved whiteboard and annotation ink as individual files.</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanManual" xml:space="preserve">
+    <value>Clean manually saved ink</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanManual_Desc" xml:space="preserve">
+    <value>Manage manually saved ink and ink in other locations as individual files.</value>
+  </data>
+  <data name="Storage_ManageSaves_BackToCategories" xml:space="preserve">
+    <value>Back to categories</value>
+  </data>
+  <data name="Storage_ManageSaves_BackToStorage" xml:space="preserve">
+    <value>Back to storage management</value>
+  </data>
+  <data name="Storage_ManageSaves_DeletePresentationConfirm_Body" xml:space="preserve">
+    <value>Delete the selected {0} item(s)? Each PPT item deletes its entire ink folder, including ink, playback position, image associations, and all other contents. This cannot be undone.</value>
+  </data>
+  <data name="Storage_ManageSaves_DeleteItemsDone" xml:space="preserve">
+    <value>Deleted {0} item(s)</value>
+  </data>
+  <data name="Storage_ManageSaves_PresentationDeleteBlocked" xml:space="preserve">
+    <value>End the PPT slide show before deleting ink folders to prevent ink from being saved again when the slide show ends.</value>
+  </data>
+  <data name="Storage_ManageSaves_InvalidPresentationFolder" xml:space="preserve">
+    <value>Only presentation ink folders under the save location can be deleted, not other directories or linked directories.</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanScreenshots" xml:space="preserve">
+    <value>Clean screenshots</value>
+  </data>
+  <data name="Storage_ManageSaves_CleanScreenshots_Desc" xml:space="preserve">
+    <value>Manage saved screenshots as individual files.</value>
   </data>
   <data name="Storage_ManageSaves_SelectAll" xml:space="preserve">
     <value>Select all</value>
