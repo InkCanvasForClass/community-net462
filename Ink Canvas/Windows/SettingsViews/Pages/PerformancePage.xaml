@@ -55,6 +55,13 @@
                         IsOn="False"
                         Toggled="ToggleSwitchSettingsPrewarm_Toggled"/>
 
+                    <controls:LabeledSettingsCard x:Name="ToggleSwitchSettingsNavigationAnimation"
+                        helpers:SettingsBinder.PropertyPath="Performance.IsSettingsNavigationAnimationEnabled"
+                        Header="{x:Static props:PerformanceStrings.SettingsNavigationAnimation}"
+                        Description="{x:Static props:PerformanceStrings.SettingsNavigationAnimationHint}"
+                        Icon="{x:Static ui:FluentSystemIcons.PreviewLink_20_Regular}"
+                        IsOn="True"/>
+
                     <!-- 当前运行状态 -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="{x:Static props:PerformanceStrings.CurrentSession}" />

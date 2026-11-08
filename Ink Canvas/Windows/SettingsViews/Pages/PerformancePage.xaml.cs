@@ -27,6 +27,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             // 先载入开关状态（_isLoaded 尚为 false，避免程序性赋值触发副作用）
             ToggleSwitchEnableMonitoring.IsOn = SettingsManager.Settings.Performance.IsMonitoringEnabled;
             ToggleSwitchSettingsPrewarm.IsOn = SettingsManager.Settings.Performance.IsSettingsPrewarmEnabled;
+            ToggleSwitchSettingsNavigationAnimation.IsOn = SettingsManager.Settings.Performance.IsSettingsNavigationAnimationEnabled;
 
             _isLoaded = true;
 

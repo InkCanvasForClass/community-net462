@@ -57,6 +57,12 @@
   <data name="SettingsPrewarmHint" xml:space="preserve">
     <value>启动后在后台预先创建设置窗口，使打开设置无需等待加载。默认占用较多内存。</value>
   </data>
+  <data name="SettingsNavigationAnimation" xml:space="preserve">
+    <value>设置页面切换动画</value>
+  </data>
+  <data name="SettingsNavigationAnimationHint" xml:space="preserve">
+    <value>切换设置页面时播放过渡动画，动画期间页面暂不可点击。默认开启，关闭可减少切页等待。下次切页生效。</value>
+  </data>
   <data name="CurrentSession" xml:space="preserve">
     <value>当前运行状态</value>
   </data>

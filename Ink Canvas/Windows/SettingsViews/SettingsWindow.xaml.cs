@@ -3,6 +3,7 @@ using Ink_Canvas.Properties;
 using Ink_Canvas.Windows.SettingsViews.Pages;
 using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Media.Animation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -422,7 +423,9 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 rootFrame.NavigationUIVisibility = NavigationUIVisibility.Hidden;
                 rootFrame.RemoveBackEntry();
-                rootFrame.Navigate(cachedPage, targetName);
+                rootFrame.Navigate(cachedPage, targetName,
+                    Helpers.SettingsManager.Settings.Performance.IsSettingsNavigationAnimationEnabled
+                        ? new EntranceNavigationTransitionInfo() : new SuppressNavigationTransitionInfo());
                 rootFrame.RemoveBackEntry();
             }
             catch (Exception ex)
@@ -469,7 +472,9 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
             if (rootFrame.Content is SavesManagerPage savesManager) savesManager.NavigateBack();
-            else if (rootFrame.CanGoBack) rootFrame.GoBack();
+            else if (rootFrame.CanGoBack)
+                rootFrame.GoBack(Helpers.SettingsManager.Settings.Performance.IsSettingsNavigationAnimationEnabled
+                    ? new EntranceNavigationTransitionInfo() : new SuppressNavigationTransitionInfo());
         }
 
         private void OnRootFrameNavigated(object sender, NavigationEventArgs e)

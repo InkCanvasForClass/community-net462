@@ -50,6 +50,10 @@ namespace Ink_Canvas.Properties
 
         public static string SettingsPrewarmHint => ResourceManager.GetString(nameof(SettingsPrewarmHint), _resourceCulture);
 
+        public static string SettingsNavigationAnimation => ResourceManager.GetString(nameof(SettingsNavigationAnimation), _resourceCulture);
+
+        public static string SettingsNavigationAnimationHint => ResourceManager.GetString(nameof(SettingsNavigationAnimationHint), _resourceCulture);
+
         public static string CurrentSession => ResourceManager.GetString(nameof(CurrentSession), _resourceCulture);
 
         public static string CpuUsage => ResourceManager.GetString(nameof(CpuUsage), _resourceCulture);

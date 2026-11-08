@@ -85,6 +85,10 @@ namespace Ink_Canvas
         [SettingsTag(SettingsTag.New)]
         public bool IsSettingsPrewarmEnabled { get; set; } = false;
 
+        [JsonProperty("isSettingsNavigationAnimationEnabled")]
+        [SettingsTag(SettingsTag.New)]
+        public bool IsSettingsNavigationAnimationEnabled { get; set; } = true;
+
         [JsonProperty("history")]
         public List<PerformanceRunRecord> History { get; set; } = new List<PerformanceRunRecord>();
 

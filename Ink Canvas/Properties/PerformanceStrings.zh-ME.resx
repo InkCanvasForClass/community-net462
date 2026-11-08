@@ -57,6 +57,12 @@
   <data name="SettingsPrewarmHint" xml:space="preserve">
     <value>启动后偷偷把设置窗口先建好，点开设置就不用等啦。代价是默认占用较多内存。</value>
   </data>
+  <data name="SettingsNavigationAnimation" xml:space="preserve">
+    <value>设置页面切换动画</value>
+  </data>
+  <data name="SettingsNavigationAnimationHint" xml:space="preserve">
+    <value>切页时让设置页面动一动，动画播完才能点。默认开着，关掉切页更利索。下次切页就生效。</value>
+  </data>
   <data name="CurrentSession" xml:space="preserve">
     <value>本次摸鱼状态</value>
   </data>

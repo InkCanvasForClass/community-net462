@@ -57,6 +57,12 @@
   <data name="SettingsPrewarmHint" xml:space="preserve">
     <value>Create the settings window in the background at startup so opening settings needs no wait. Uses considerably more memory by default.</value>
   </data>
+  <data name="SettingsNavigationAnimation" xml:space="preserve">
+    <value>Settings page transitions</value>
+  </data>
+  <data name="SettingsNavigationAnimationHint" xml:space="preserve">
+    <value>Animate settings page changes. Pages cannot be clicked during the transition. On by default; turn off for faster page changes. Applies to the next page change.</value>
+  </data>
   <data name="CurrentSession" xml:space="preserve">
     <value>Current Session</value>
   </data>
