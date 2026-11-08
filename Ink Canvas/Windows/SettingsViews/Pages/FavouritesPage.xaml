@@ -31,8 +31,7 @@
                         Text="{x:Static props:NavStrings.Nav_Favourites}" />
 
                     <ui:SettingsCard x:Name="EmptyHint"
-                        Header="{x:Static props:NavStrings.Nav_Favourites_Empty}"
-                        ContentAlignment="Left">
+                        Header="{x:Static props:NavStrings.Nav_Favourites_Empty}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Star_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
                         </ui:SettingsCard.HeaderIcon>
