@@ -148,7 +148,10 @@
     <value>Original Process Token</value>
   </data>
   <data name="UIAMode_Description" xml:space="preserve">
-    <value>Choose the token acquisition scheme for UIA topmost. User Token obtains the token from explorer.exe, while Original Process Token duplicates the token from the original process.</value>
+    <value>User Token obtains a token from explorer.exe or ctfmon.exe. Original Process Token first duplicates the original instance's token and falls back to User Token if needed. Scheme changes take effect the next time UIA is enabled.</value>
+  </data>
+  <data name="UIAccessTopMostHint" xml:space="preserve">
+    <value>Enabling requires a restart and administrator approval when needed. If approval is canceled or UIAccess cannot be set, this feature is disabled and the app falls back to normal topmost mode without requesting elevation again automatically. Normal topmost may not appear above higher-privilege windows.</value>
   </data>
   <data name="UpdateChannel" xml:space="preserve">
     <value>Update channel</value>

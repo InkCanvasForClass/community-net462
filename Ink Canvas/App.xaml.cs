@@ -101,17 +101,6 @@ namespace Ink_Canvas
             // ClassIsland 项目同样注释掉了该开关，参考其做法保持一致。
             // AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", true);
 
-            try
-            {
-                SetCurrentProcessExplicitAppUserModelID("InkCanvasForClass.CE");
-            }
-            catch
-            {
-            }
-
-            // 配置TLS协议以支持Windows 7
-            ConfigureTlsForWindows7();
-
             // 如果是看门狗子进程，直接进入看门狗主循环并终止主流程
             var args = Environment.GetCommandLineArgs();
             if (args.Length >= 2 && args[1] == "--watchdog")
@@ -121,7 +110,8 @@ namespace Ink_Canvas
                 return;
             }
 
-            if (args.Contains("--enable-uia-topmost-helper"))
+            // helper 只做令牌接力，不初始化 Shell、网络或主应用服务。
+            if (args.Contains(UIAccessHelper.UIA_HELPER_SWITCH))
             {
                 // 检查是否为原进程令牌模式（通过 --uia-source-pid 参数判断）
                 uint sourcePid = 0;
@@ -145,6 +135,17 @@ namespace Ink_Canvas
                 }
                 return;
             }
+
+            try
+            {
+                SetCurrentProcessExplicitAppUserModelID("InkCanvasForClass.CE");
+            }
+            catch
+            {
+            }
+
+            // 配置TLS协议以支持Windows 7
+            ConfigureTlsForWindows7();
 
             // 启动时优先同步设置，确保CrashAction为最新
             SyncCrashActionFromSettings();
@@ -913,7 +914,14 @@ namespace Ink_Canvas
             }
 
             // 如果是更新过程、更新模式、最终应用或跳过Mutex检查，跳过Mutex检查
-            if (!isUpdateInProgress && !isUpdateMode && !isFinalApp && !skipMutexCheck)
+            if (e.Args.Contains(UIAccessHelper.UIA_CHILD_SWITCH) && !e.Args.Contains("-m"))
+            {
+                // 原实例在创建成功后释放 Mutex；接力实例继续持有同一个单实例锁。
+                mutex = new Mutex(false, "InkCanvasForClass CE");
+                try { mutex.WaitOne(); }
+                catch (AbandonedMutexException) { }
+            }
+            else if (!isUpdateInProgress && !isUpdateMode && !isFinalApp && !skipMutexCheck)
             {
                 bool ret;
                 mutex = new Mutex(true, "InkCanvasForClass CE", out ret);

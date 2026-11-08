@@ -8,6 +8,7 @@
       xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
+      xmlns:helpers="clr-namespace:Ink_Canvas.Windows.SettingsViews.Helpers"
       mc:Ignorable="d"
       Title="Display">
 
@@ -82,6 +83,28 @@
                             <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Language_ChineseSimplified}" />
                             <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Language_English}" />
                             <ComboBoxItem Content="{x:Static props:ThemeStrings.Theme_Language_MemeChinese}" />
+                        </ComboBox>
+                    </ui:SettingsCard>
+
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="{x:Static props:StartupStrings.TopMostMode}" />
+
+                    <controls:LabeledSettingsCard x:Name="CardEnableUIAccessTopMost"
+                            Header="{x:Static props:StartupStrings.TopMostMode_UIA}"
+                            Description="{x:Static props:StartupStrings.UIAccessTopMostHint}"
+                            Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}"
+                            helpers:SettingsTags.PropertyPath="Advanced.EnableUIAccessTopMost"
+                            Toggled="CardEnableUIAccessTopMost_Toggled" />
+
+                    <ui:SettingsCard Header="{x:Static props:StartupStrings.UIAMode_Label}"
+                                     Description="{x:Static props:StartupStrings.UIAMode_Description}"
+                                     helpers:SettingsTags.PropertyPath="Advanced.UIAMode">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Pin_20_Regular}" FontSize="20" RenderTransformOrigin="0.5,0.5" RenderTransform="{StaticResource HeaderIconScale}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ComboBox x:Name="ComboBoxUIAMode" SelectionChanged="ComboBoxUIAMode_SelectionChanged">
+                            <ComboBoxItem Content="{x:Static props:StartupStrings.UIAMode_UserToken}" />
+                            <ComboBoxItem Content="{x:Static props:StartupStrings.UIAMode_ProcessToken}" />
                         </ComboBox>
                     </ui:SettingsCard>
 

@@ -17,6 +17,10 @@ namespace Ink_Canvas.Helpers
     {
         #region Constants
 
+        internal const string UIA_HELPER_SWITCH = "--enable-uia-topmost-helper";
+        internal const string UIA_CHILD_SWITCH = "--uia-child";
+        internal const string UIA_FALLBACK_SWITCH = "--uia-fallback";
+
         private const uint TOKEN_QUERY = 0x0008;
         private const uint TOKEN_DUPLICATE = 0x0002;
         private const uint TOKEN_IMPERSONATE = 0x0004;
@@ -354,26 +358,22 @@ namespace Ink_Canvas.Helpers
 
                 try
                 {
-                    if (!GetWinlogonImpersonationToken(sessionId, out IntPtr winlogonToken))
+                    bool hasUIAccess = false;
+                    if (GetWinlogonImpersonationToken(sessionId, out IntPtr winlogonToken))
                     {
-                        LogHelper.WriteLogToFile("UIAccess | 未能获取 winlogon 模拟令牌（需要管理员权限）", LogHelper.LogType.Error);
-                        return false;
-                    }
-
-                    try
-                    {
-                        if (!SetUIAccessOnToken(userToken, winlogonToken))
+                        try
                         {
-                            return false;
+                            hasUIAccess = SetUIAccessOnToken(userToken, winlogonToken);
                         }
+                        finally { CloseHandle(winlogonToken); }
+                    }
 
-                        LogHelper.WriteLogToFile("UIAccess | 已为普通用户令牌设置 UIAccess");
-                        return LaunchWithToken(userToken, extraArgs);
-                    }
-                    finally
-                    {
-                        CloseHandle(winlogonToken);
-                    }
+                    if (!hasUIAccess)
+                        LogHelper.WriteLogToFile("UIAccess | 设置失败，使用已有用户令牌启动普通置顶", LogHelper.LogType.Warning);
+
+                    extraArgs = AppendExtraArg(extraArgs, UIA_CHILD_SWITCH);
+                    if (!hasUIAccess) extraArgs = AppendExtraArg(extraArgs, UIA_FALLBACK_SWITCH);
+                    return LaunchWithToken(userToken, extraArgs);
                 }
                 finally
                 {
@@ -438,26 +438,22 @@ namespace Ink_Canvas.Helpers
 
                 try
                 {
-                    if (!GetWinlogonImpersonationToken(sessionId, out IntPtr winlogonToken))
+                    bool hasUIAccess = false;
+                    if (GetWinlogonImpersonationToken(sessionId, out IntPtr winlogonToken))
                     {
-                        LogHelper.WriteLogToFile("UIAccess | 未能获取 winlogon 模拟令牌（需要管理员权限）", LogHelper.LogType.Error);
-                        return false;
-                    }
-
-                    try
-                    {
-                        if (!SetUIAccessOnToken(userToken, winlogonToken))
+                        try
                         {
-                            return false;
+                            hasUIAccess = SetUIAccessOnToken(userToken, winlogonToken);
                         }
+                        finally { CloseHandle(winlogonToken); }
+                    }
 
-                        LogHelper.WriteLogToFile("UIAccess | 已为普通用户令牌设置 UIAccess（原进程令牌方案）");
-                        return LaunchWithToken_ProcessToken(userToken, AppendExtraArg(extraArgs, "--uia-child"));
-                    }
-                    finally
-                    {
-                        CloseHandle(winlogonToken);
-                    }
+                    if (!hasUIAccess)
+                        LogHelper.WriteLogToFile("UIAccess | 设置失败，使用已有原进程令牌启动普通置顶", LogHelper.LogType.Warning);
+
+                    extraArgs = AppendExtraArg(extraArgs, UIA_CHILD_SWITCH);
+                    if (!hasUIAccess) extraArgs = AppendExtraArg(extraArgs, UIA_FALLBACK_SWITCH);
+                    return LaunchWithToken_ProcessToken(userToken, extraArgs);
                 }
                 finally
                 {
@@ -565,7 +561,8 @@ namespace Ink_Canvas.Helpers
                 }
                 finally
                 {
-                    RevertToSelf();
+                    if (!RevertToSelf())
+                        Environment.FailFast($"UIAccess | 恢复进程身份失败: {Marshal.GetLastWin32Error()}");
                 }
             }
             finally
@@ -600,7 +597,9 @@ namespace Ink_Canvas.Helpers
             }
             finally
             {
-                RevertToSelf();
+                // 身份恢复失败时不可继续启动或降级，否则线程仍可能冒充 SYSTEM。
+                if (!RevertToSelf())
+                    Environment.FailFast($"UIAccess | 恢复进程身份失败: {Marshal.GetLastWin32Error()}");
             }
         }
 
@@ -806,31 +805,12 @@ namespace Ink_Canvas.Helpers
             string exePath = GetExecutablePathForRelaunch();
             string workDir = System.IO.Path.GetDirectoryName(exePath);
 
-            // 重建命令行：保留原始参数，追加 --skip-mutex-check 防止单实例阻塞
             var cmdBuilder = new StringBuilder(32768);
             cmdBuilder.Append('"').Append(exePath).Append('"');
+            cmdBuilder.Append(' ').Append(BuildRelaunchArguments(Environment.GetCommandLineArgs(), extraArgs));
 
-            string[] args = Environment.GetCommandLineArgs();
-            for (int i = 1; i < args.Length; i++)
-            {
-                if (string.Equals(args[i], "--enable-uia-topmost-helper", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                // 单文件发布下，托管入口程序集位于 bundle 解压目录；重启时必须使用真实 exe，
-                // 不能把 EntryAssembly.Location / 解压路径带给新进程。
-                if (string.Equals(args[i], exePath, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                cmdBuilder.Append(' ');
-                AppendQuoted(cmdBuilder, args[i]);
-            }
-
-            if (!string.IsNullOrEmpty(extraArgs))
-                cmdBuilder.Append(' ').Append(extraArgs);
-
-            // 防止单实例 Mutex 阻塞新进程
-            if (Array.IndexOf(args, "--skip-mutex-check") < 0
-                && (extraArgs == null || extraArgs.IndexOf("--skip-mutex-check", StringComparison.Ordinal) < 0))
+            // UIA 子进程等待原实例释放常规 Mutex，其他重启保留原有行为。
+            if (extraArgs == null || extraArgs.IndexOf(UIA_CHILD_SWITCH, StringComparison.Ordinal) < 0)
             {
                 cmdBuilder.Append(" --skip-mutex-check");
             }
@@ -847,7 +827,7 @@ namespace Ink_Canvas.Helpers
             else
             {
                 int envErr = Marshal.GetLastWin32Error();
-                LogHelper.WriteLogToFile($"UIAccess | CreateEnvironmentBlock 失败，使用当前环境继续启动: {envErr}", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"UIAccess | CreateEnvironmentBlock 失败，使用目标用户默认环境继续启动: {envErr}", LogHelper.LogType.Warning);
             }
 
             try
@@ -872,7 +852,7 @@ namespace Ink_Canvas.Helpers
 
                 CloseHandle(pi.hProcess);
                 CloseHandle(pi.hThread);
-                LogHelper.WriteLogToFile($"UIAccess | 已使用 UIAccess 令牌启动新进程 (PID={pi.dwProcessId}, Exe={exePath})");
+                LogHelper.WriteLogToFile($"UIAccess | 已使用用户令牌启动新进程 (PID={pi.dwProcessId}, Exe={exePath})");
                 return true;
             }
             finally
@@ -893,40 +873,7 @@ namespace Ink_Canvas.Helpers
 
             var cmdBuilder = new StringBuilder(32768);
             cmdBuilder.Append('"').Append(exePath).Append('"');
-
-            string[] args = Environment.GetCommandLineArgs();
-            for (int i = 1; i < args.Length; i++)
-            {
-                if (string.Equals(args[i], "--enable-uia-topmost-helper", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (string.Equals(args[i], "--uia-source-pid", StringComparison.OrdinalIgnoreCase))
-                {
-                    i++; // 跳过 PID 值
-                    continue;
-                }
-
-                if (string.Equals(args[i], exePath, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                cmdBuilder.Append(' ');
-                AppendQuoted(cmdBuilder, args[i]);
-            }
-
-            if (!string.IsNullOrWhiteSpace(extraArgs))
-            {
-                cmdBuilder.Append(' ').Append(extraArgs);
-            }
-
-            if (Array.IndexOf(args, "--skip-mutex-check") < 0
-                && (extraArgs == null || extraArgs.IndexOf("--skip-mutex-check", StringComparison.OrdinalIgnoreCase) < 0))
-            {
-                cmdBuilder.Append(" --skip-mutex-check");
-            }
+            cmdBuilder.Append(' ').Append(BuildRelaunchArguments(Environment.GetCommandLineArgs(), extraArgs));
 
             var si = new STARTUPINFOW { cb = (uint)Marshal.SizeOf(typeof(STARTUPINFOW)) };
             GetStartupInfoW(ref si);
@@ -952,8 +899,37 @@ namespace Ink_Canvas.Helpers
 
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
-            LogHelper.WriteLogToFile($"UIAccess | 已使用 UIAccess 令牌启动新进程（原进程令牌方案） (PID={pi.dwProcessId}, Exe={exePath})");
+            LogHelper.WriteLogToFile($"UIAccess | 已使用用户令牌启动新进程（原进程令牌方案） (PID={pi.dwProcessId}, Exe={exePath})");
             return true;
+        }
+
+        internal static string BuildRelaunchArguments(string[] args, string extraArgs = null)
+        {
+            var builder = new StringBuilder();
+            for (int i = 1; i < args.Length; i++)
+            {
+                if (string.Equals(args[i], "--uia-source-pid", StringComparison.OrdinalIgnoreCase))
+                {
+                    i++;
+                    continue;
+                }
+
+                if (string.Equals(args[i], UIA_HELPER_SWITCH, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(args[i], UIA_CHILD_SWITCH, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(args[i], UIA_FALLBACK_SWITCH, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(args[i], "--skip-mutex-check", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (builder.Length > 0) builder.Append(' ');
+                AppendQuoted(builder, args[i]);
+            }
+
+            if (!string.IsNullOrWhiteSpace(extraArgs))
+            {
+                if (builder.Length > 0) builder.Append(' ');
+                builder.Append(extraArgs);
+            }
+            return builder.ToString();
         }
 
         private static string AppendExtraArg(string existing, string newArg)

@@ -74,22 +74,30 @@ namespace Ink_Canvas.Helpers
 
         public static void SwitchToUIATopMostAndRestart()
         {
+            if (Application.Current != null && !Application.Current.Dispatcher.CheckAccess())
+            {
+                Application.Current.Dispatcher.Invoke(new Action(SwitchToUIATopMostAndRestart));
+                return;
+            }
+
+            bool started = false;
+            bool timerStopped = false;
             try
             {
                 SettingsManager.Settings.Advanced.EnableUIAccessTopMost = true;
-
-                if (!SettingsManager.Settings.Advanced.IsAlwaysOnTop)
-                {
-                    SettingsManager.Settings.Advanced.IsAlwaysOnTop = true;
-                }
-
+                SettingsManager.Settings.Advanced.IsAlwaysOnTop = true;
                 SettingsManager.SaveSettingsToFile();
 
-                App.IsUIAccessTopMostEnabled = true;
-                App.IsAppExitByUser = true;
-                (Application.Current as App)?.ReleaseMutexForRestart();
+                if (UIAccessHelper.HasUIAccess())
+                {
+                    started = true;
+                    App.IsUIAccessTopMostEnabled = true;
+                    if (Application.Current?.MainWindow != null)
+                        WindowSettingsHelper.ApplyAlwaysOnTop(Application.Current.MainWindow);
+                    return;
+                }
 
-                bool started;
+                timerStopped = WindowSettingsHelper.OnStopKillProcessTimer?.Invoke() == true;
                 bool useProcessToken = SettingsManager.Settings.Advanced.UIAMode == UIAMode.ProcessToken;
 
                 if (IsRunningAsAdmin())
@@ -106,50 +114,66 @@ namespace Ink_Canvas.Helpers
                 else
                 {
                     string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                    ProcessStartInfo psi;
-
+                    string helperArgs = UIAccessHelper.UIA_HELPER_SWITCH;
                     if (useProcessToken)
+                        helperArgs += $" --uia-source-pid {Process.GetCurrentProcess().Id}";
+
+                    var psi = new ProcessStartInfo(exePath)
                     {
-                        int currentPid = Process.GetCurrentProcess().Id;
-                        psi = new ProcessStartInfo(exePath)
-                        {
-                            Arguments = $"--enable-uia-topmost-helper --uia-source-pid {currentPid}",
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        Process.Start(psi);
-                        // 保持原进程短暂存活，确保提升的 helper 可以复制当前进程令牌。
-                        System.Threading.Thread.Sleep(2000);
-                    }
-                    else
+                        Arguments = UIAccessHelper.BuildRelaunchArguments(Environment.GetCommandLineArgs(), helperArgs),
+                        UseShellExecute = true,
+                        Verb = "runas"
+                    };
+                    using (var helper = Process.Start(psi))
                     {
-                        psi = new ProcessStartInfo(exePath)
+                        if (helper != null)
                         {
-                            Arguments = "--enable-uia-topmost-helper",
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        Process.Start(psi);
+                            // shortcut: 同步等待 helper 的创建结果，不观察应用初始化；若实测 helper 卡住，再加有界接力。
+                            helper.WaitForExit();
+                            started = helper.ExitCode == 0;
+                        }
                     }
-                    started = true;
                 }
 
                 if (started)
                 {
+                    App.IsAppExitByUser = true;
+                    try
+                    {
+                        if (App.watchdogProcess != null && !App.watchdogProcess.HasExited)
+                            App.watchdogProcess.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"UIAccess | 停止看门狗失败: {ex.Message}", LogHelper.LogType.Warning);
+                    }
+                    (Application.Current as App)?.ReleaseMutexForRestart();
                     Application.Current.Shutdown();
-                }
-                else
-                {
-                    App.IsAppExitByUser = false;
-                    App.IsUIAccessTopMostEnabled = false;
                 }
             }
             catch (Exception ex)
             {
-                App.IsAppExitByUser = false;
-                App.IsUIAccessTopMostEnabled = false;
-                Debug.WriteLine($"切换到UIA置顶模式时出错: {ex.Message}");
+                LogHelper.WriteLogToFile($"UIAccess | 重启失败或授权取消: {ex.Message}", LogHelper.LogType.Warning);
             }
+            finally
+            {
+                if (!started)
+                {
+                    if (timerStopped) WindowSettingsHelper.OnStartKillProcessTimer?.Invoke();
+                    FallbackToNormalTopMost();
+                }
+            }
+        }
+
+        internal static void FallbackToNormalTopMost()
+        {
+            App.IsAppExitByUser = false;
+            App.IsUIAccessTopMostEnabled = false;
+            SettingsManager.Settings.Advanced.EnableUIAccessTopMost = false;
+            SettingsManager.SaveSettingsToFile();
+            if (Application.Current?.MainWindow != null)
+                WindowSettingsHelper.ApplyAlwaysOnTop(Application.Current.MainWindow);
+            LogHelper.WriteLogToFile("UIAccess | 已关闭 UIA，保留普通置顶运行", LogHelper.LogType.Warning);
         }
 
         public static void SwitchToNormalTopMostAndRestart()

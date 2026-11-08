@@ -2,7 +2,6 @@ using Ink_Canvas.Helpers;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -65,7 +64,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
 
         #region Timer Callbacks
 
-        public static Action OnStopKillProcessTimer { get; set; }
+        public static Func<bool> OnStopKillProcessTimer { get; set; }
         public static Action OnStartKillProcessTimer { get; set; }
 
         #endregion
@@ -218,80 +217,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             {
                 if (SettingsManager.Settings.Advanced.EnableUIAccessTopMost && SettingsManager.Settings.Advanced.IsAlwaysOnTop)
                 {
-                    var identity = WindowsIdentity.GetCurrent();
-                    var principal = new WindowsPrincipal(identity);
-
-                    if (principal.IsInRole(WindowsBuiltInRole.Administrator))
-                    {
-                        try
-                        {
-                            // 已具有 UIAccess 时无需重启
-                            if (UIAccessHelper.HasUIAccess())
-                            {
-                                LogHelper.WriteLogToFile("UIAccess | 当前进程已具有 UIAccess 权限");
-                                App.IsUIAccessTopMostEnabled = true;
-                                return;
-                            }
-
-                            OnStopKillProcessTimer?.Invoke();
-
-                            if (App.watchdogProcess != null && !App.watchdogProcess.HasExited)
-                            {
-                                App.watchdogProcess.Kill();
-                                App.watchdogProcess = null;
-                            }
-
-                            App.IsUIAccessTopMostEnabled = true;
-                            App.IsAppExitByUser = true;
-                            (Application.Current as App)?.ReleaseMutexForRestart();
-
-                            bool useProcessToken = SettingsManager.Settings.Advanced.UIAMode == UIAMode.ProcessToken;
-                            bool started;
-
-                            if (useProcessToken)
-                            {
-                                started = UIAccessHelper.RestartAsNormalUserWithUIAccess_ProcessToken(sourcePid: (uint)Process.GetCurrentProcess().Id);
-                            }
-                            else
-                            {
-                                started = UIAccessHelper.RestartAsNormalUserWithUIAccess();
-                            }
-                            if (started)
-                            {
-                                Application.Current.Shutdown();
-                            }
-                            else
-                            {
-                                LogHelper.WriteLogToFile("UIAccess | 启动失败，回退到普通管理员模式", LogHelper.LogType.Warning);
-                                App.IsUIAccessTopMostEnabled = false;
-                                App.IsAppExitByUser = false;
-                                App.StartWatchdogIfNeeded();
-                                OnStartKillProcessTimer?.Invoke();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"启用UIA置顶功能时出错: {ex.Message}", LogHelper.LogType.Error);
-                        }
-                    }
-                    else if (UIAccessHelper.HasUIAccess())
-                    {
-                        LogHelper.WriteLogToFile("UIAccess | 当前普通用户进程已具有 UIAccess 权限");
-                        App.IsUIAccessTopMostEnabled = true;
-                    }
-                    else
-                    {
-                        LogHelper.WriteLogToFile("UIA置顶功能需要管理员权限，正在申请管理员权限重启");
-                        OnStopKillProcessTimer?.Invoke();
-
-                        if (App.watchdogProcess != null && !App.watchdogProcess.HasExited)
-                        {
-                            App.watchdogProcess.Kill();
-                            App.watchdogProcess = null;
-                        }
-
-                        AppRestartHelper.SwitchToUIATopMostAndRestart();
-                    }
+                    AppRestartHelper.SwitchToUIATopMostAndRestart();
                 }
                 else
                 {

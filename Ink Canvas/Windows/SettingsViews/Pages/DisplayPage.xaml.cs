@@ -76,6 +76,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             ComboBoxTheme.SelectedIndex = settings.Appearance.Theme;
             SelectComboBoxItemByTag(ComboBoxWindowBackdrop, settings.Appearance.WindowBackdrop);
             ToggleSwitchEnableWindowChromeRendering.IsOn = settings.Startup?.EnableWindowChromeRendering ?? true;
+            CardEnableUIAccessTopMost.IsOn = settings.Advanced.EnableUIAccessTopMost;
+            ComboBoxUIAMode.SelectedIndex = (int)settings.Advanced.UIAMode;
 
             _isApplyingLanguageFromSettings = true;
             try
@@ -196,6 +198,45 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         }
 
         #endregion
+
+        private async void CardEnableUIAccessTopMost_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            CardEnableUIAccessTopMost.IsEnabled = false;
+            try
+            {
+                bool enable = CardEnableUIAccessTopMost.IsOn;
+                var dialog = new ContentDialog
+                {
+                    Title = StartupStrings.TopMostMode,
+                    Content = enable ? StartupStrings.TopMostMode_UIA_RestartRequired : StartupStrings.TopMostMode_Normal_RestartRequired,
+                    PrimaryButtonText = CommonStrings.Common_OK,
+                    SecondaryButtonText = CommonStrings.Common_Cancel,
+                    DefaultButton = ContentDialogButton.Primary,
+                    Owner = Window.GetWindow(this)
+                };
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    if (enable) AppRestartHelper.SwitchToUIATopMostAndRestart();
+                    else AppRestartHelper.SwitchToNormalTopMostAndRestart();
+                }
+            }
+            catch (Exception ex) { Debug.WriteLine($"UIAccess setting change error: {ex.Message}"); }
+            finally
+            {
+                _isLoaded = false;
+                CardEnableUIAccessTopMost.IsOn = SettingsManager.Settings.Advanced.EnableUIAccessTopMost;
+                _isLoaded = true;
+                CardEnableUIAccessTopMost.IsEnabled = true;
+            }
+        }
+
+        private void ComboBoxUIAMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded || ComboBoxUIAMode.SelectedIndex < 0) return;
+            SettingsManager.Settings.Advanced.UIAMode = (UIAMode)ComboBoxUIAMode.SelectedIndex;
+            SettingsManager.SaveSettingsToFile();
+        }
 
         #region Quick Panel
 

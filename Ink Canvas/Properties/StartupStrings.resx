@@ -148,7 +148,10 @@
     <value>基于原进程令牌</value>
   </data>
   <data name="UIAMode_Description" xml:space="preserve">
-    <value>选择 UIA 置顶的令牌获取方案。基于用户令牌从 explorer.exe 获取令牌，基于原进程令牌从原始进程复制令牌。</value>
+    <value>用户令牌方案从 explorer.exe 或 ctfmon.exe 获取令牌；原进程令牌方案优先复制原实例令牌，失败时回退到用户令牌。方案变更在下次启用 UIA 时生效。</value>
+  </data>
+  <data name="UIAccessTopMostHint" xml:space="preserve">
+    <value>启用需要重启，并在必要时确认管理员授权。取消授权或 UIAccess 设置失败时，会关闭此功能并回退为普通置顶，避免再次自动申请提权。普通置顶可能无法覆盖高权限窗口。</value>
   </data>
   <data name="UpdateChannel" xml:space="preserve">
     <value>更新通道</value>

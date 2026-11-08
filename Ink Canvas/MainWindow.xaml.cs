@@ -657,7 +657,12 @@ namespace Ink_Canvas
 
             InitTimers();
 
-            WindowSettingsHelper.OnStopKillProcessTimer = () => timerKillProcess.Stop();
+            WindowSettingsHelper.OnStopKillProcessTimer = () =>
+            {
+                bool wasEnabled = timerKillProcess.Enabled;
+                timerKillProcess.Stop();
+                return wasEnabled;
+            };
             WindowSettingsHelper.OnStartKillProcessTimer = () => timerKillProcess.Start();
             WindowSettingsHelper.OnPPTOnlyModeChanged = (enabled) => CheckMainWindowVisibility();
             timeMachine.OnRedoStateChanged += TimeMachine_OnRedoStateChanged;

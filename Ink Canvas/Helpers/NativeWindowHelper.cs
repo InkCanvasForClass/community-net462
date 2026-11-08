@@ -26,7 +26,7 @@ namespace Ink_Canvas.Helpers
 
         #region P/Invoke
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll")]
@@ -78,18 +78,16 @@ namespace Ink_Canvas.Helpers
         #region 便捷方法
 
         /// <summary>
-        /// 将窗口设为 TOPMOST（同时设置 SetWindowPos + WS_EX_TOPMOST 样式）
+        /// 将窗口提升到 TOPMOST 组前方，返回实际调用结果。
         /// </summary>
-        public static void SetTopmost(IntPtr handle)
+        public static bool SetTopmost(IntPtr handle)
         {
-            SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0,
-                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
+            if (SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOOWNERZORDER))
+                return true;
 
-            int exStyle = GetWindowLong(handle, GWL_EXSTYLE);
-            if ((exStyle & WS_EX_TOPMOST) == 0)
-            {
-                SetWindowLong(handle, GWL_EXSTYLE, exStyle | WS_EX_TOPMOST);
-            }
+            LogHelper.WriteLogToFile($"窗口置顶失败 (HWND={handle}, Error={Marshal.GetLastWin32Error()})", LogHelper.LogType.Warning);
+            return false;
         }
 
         /// <summary>

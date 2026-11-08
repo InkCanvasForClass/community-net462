@@ -112,6 +112,8 @@ namespace Ink_Canvas.Properties
 
         public static string UIAMode_Description => ResourceManager.GetString(nameof(UIAMode_Description), _resourceCulture);
 
+        public static string UIAccessTopMostHint => ResourceManager.GetString(nameof(UIAccessTopMostHint), _resourceCulture);
+
         public static string UpdateChannel => ResourceManager.GetString(nameof(UpdateChannel), _resourceCulture);
 
         public static string UpdateChannelHint => ResourceManager.GetString(nameof(UpdateChannelHint), _resourceCulture);

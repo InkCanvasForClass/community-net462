@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using OSVersionExtension;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
@@ -146,6 +147,13 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile(ex.ToString(), LogHelper.LogType.Error);
+            }
+
+            if (isStartup && (Environment.GetCommandLineArgs().Contains(UIAccessHelper.UIA_FALLBACK_SWITCH)
+                || (Environment.GetCommandLineArgs().Contains(UIAccessHelper.UIA_CHILD_SWITCH) && !UIAccessHelper.HasUIAccess())))
+            {
+                // 在应用窗口设置前禁用 UIA，避免回退子进程再次申请提权。
+                AppRestartHelper.FallbackToNormalTopMost();
             }
 
             try
