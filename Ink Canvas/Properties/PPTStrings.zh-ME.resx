@@ -193,7 +193,7 @@
     <value>VSTO Agent 架构</value>
   </data>
   <data name="PPTAgentArchitectureHint" xml:space="preserve">
-    <value>让 PowerPoint 里面的小插件接管 PPT，ICC 只走 NamedPipe 发号施令，不碰 COM/ROT。</value>
+    <value>该功能尚未开发完全，可能暂时不可用。让 PowerPoint 里面的小插件接管 PPT，ICC 只走 NamedPipe 发号施令，不碰 COM/ROT。</value>
   </data>
   <data name="PPTAgentNotConnected" xml:space="preserve">
     <value>PPT Agent 还没连上</value>
