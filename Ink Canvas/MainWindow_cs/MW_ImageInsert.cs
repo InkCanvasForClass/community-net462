@@ -60,7 +60,7 @@ namespace Ink_Canvas
         /// 4. 处理截图结果并插入到画布
         /// 5. 支持摄像头截图和区域截图
         /// </remarks>
-        private async Task CaptureScreenshotAndInsert()
+        internal async Task CaptureScreenshotAndInsert()
         {
             if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return;
             try

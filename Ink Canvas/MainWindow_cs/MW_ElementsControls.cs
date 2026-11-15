@@ -134,7 +134,7 @@ namespace Ink_Canvas
         /// - 添加ScaleTransform、TranslateTransform和RotateTransform
         /// - 设置元素的RenderTransform
         /// </remarks>
-        private void InitializeElementTransform(FrameworkElement element)
+        internal void InitializeElementTransform(FrameworkElement element)
         {
             var transformGroup = new TransformGroup();
             transformGroup.Children.Add(new ScaleTransform(1, 1));
@@ -154,7 +154,7 @@ namespace Ink_Canvas
         /// - 设置光标为手形
         /// - 禁用InkCanvas对图片的选择处理
         /// </remarks>
-        private void BindElementEvents(FrameworkElement element)
+        internal void BindElementEvents(FrameworkElement element)
         {
             if (element is CanvasMediaControl mediaControl)
             {
@@ -1217,7 +1217,7 @@ namespace Ink_Canvas
             }
         }
 
-        private async Task<FrameworkElement> CreateAndCompressImageAsync(string filePath)
+        internal async Task<FrameworkElement> CreateAndCompressImageAsync(string filePath)
         {
             string fileExtension = Path.GetExtension(filePath);
             if (string.Equals(fileExtension, ".pdf", StringComparison.OrdinalIgnoreCase))
@@ -1745,7 +1745,7 @@ namespace Ink_Canvas
         /// - 只有在没有TransformGroup时才创建
         /// - 包含异常处理
         /// </remarks>
-        private void CenterAndScaleElement(FrameworkElement element)
+        internal void CenterAndScaleElement(FrameworkElement element)
         {
             try
             {
@@ -1843,7 +1843,7 @@ namespace Ink_Canvas
         /// - 清除当前选择，避免显示控制点
         /// - 设置编辑模式为非选择模式
         /// </remarks>
-        private void InitializeInkCanvasSelectionSettings()
+        internal void InitializeInkCanvasSelectionSettings()
         {
             if (inkCanvas != null)
             {

@@ -1,18 +1,22 @@
+using InkCanvasLinkage.Core;
 using System;
 using System.Collections.Generic;
 
-namespace Ink_Canvas.Helpers
+namespace InkCanvasLinkage.Core.Sources
 {
-    public class ComPPTLinkManager : IPPTLinkManager
+    internal class ComPPTLinkManager : IPPTLinkManager
     {
         private readonly PPTManager _inner;
 
-        public ComPPTLinkManager()
+        private readonly LogHelper LogHelper;
+        public ComPPTLinkManager(StaDispatcher dispatcher, PresentationLinkOptions options)
         {
-            _inner = new PPTManager();
+            LogHelper = new LogHelper(options.Log);
+            _inner = new PPTManager(dispatcher, options);
 
             _inner.SlideShowBegin += wn => SlideShowBegin?.Invoke(wn);
-            _inner.SlideShowNextSlide += wn => SlideShowNextSlide?.Invoke(wn);
+            _inner.SlideShowNextSlide += wn => SlideShowNextSlide?.Invoke(new PresentationLinkState(
+                IsConnected, IsInSlideShow, PresentationLinkSnapshot.ReadSlideNumber(wn, GetCurrentSlideNumber), SlidesCount));
             _inner.SlideShowEnd += pres => SlideShowEnd?.Invoke(pres);
             _inner.PresentationOpen += pres => PresentationOpen?.Invoke(pres);
             _inner.PresentationClose += pres => PresentationClose?.Invoke(pres);
@@ -22,7 +26,7 @@ namespace Ink_Canvas.Helpers
 
         #region IPPTLinkManager 事件
         public event Action<object> SlideShowBegin;
-        public event Action<object> SlideShowNextSlide;
+        public event Action<PresentationLinkState> SlideShowNextSlide;
         public event Action<object> SlideShowEnd;
         public event Action<object> PresentationOpen;
         public event Action<object> PresentationClose;
@@ -50,6 +54,7 @@ namespace Ink_Canvas.Helpers
         public int SlidesCount => _inner.SlidesCount;
 
         public object PPTApplication => _inner.PPTApplication;
+        internal void AttachApplication(Microsoft.Office.Interop.PowerPoint.Application application) => _inner.ConnectToPPT(application);
         #endregion
 
         #region 生命周期管理
@@ -94,6 +99,8 @@ namespace Ink_Canvas.Helpers
         public int GetCurrentSlideNumber() => _inner.GetCurrentSlideNumber();
 
         public string GetPresentationName() => _inner.GetPresentationName();
+
+        public PresentationMetadata GetPresentationMetadata() => PresentationLinkSnapshot.ReadMetadata(_inner.GetCurrentActivePresentation());
 
         public bool TryShowSlideNavigation() => _inner.TryShowSlideNavigation();
 

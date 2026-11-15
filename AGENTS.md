@@ -24,7 +24,7 @@ dotnet build "InkCanvas.SettingsTreeView/InkCanvas.SettingsTreeView.csproj"
 
 - CI 构建参数见 [.github/workflows/dotnet-desktop.yml](.github/workflows/dotnet-desktop.yml)。改变 `Platform` 或 `EnableNativeImage` 时，restore 与 build 使用相同参数；`Minimize=true` 会定义 `MINIMIZE` 并排除部分资源及 VSTO 复制。
 - `EnableNativeImage` 默认关闭；启用时改变依赖并关闭 Costura 嵌入。CI 不对 ARM64 启用 NativeImage；不要把它当成普通构建的必要步骤。
-- 仓库没有已跟踪的测试项目或单测试命令；不能用 `dotnet test` 的成功退出代替运行验证。按 `CONTRIBUTING.md`，AI 改动须做运行及受影响功能的回归测试；UI 须检查样式、行为、三语文本和图标。无法验证的项目明确注明原因，不勾选完成。
+- 联动自检项目位于 `tests/InkCanvas.Linkage.SelfTests/`，运行命令与覆盖范围见 `rules/ppt_linkage_progress.md`；它是断言式控制台程序，不由 `dotnet test` 执行。不能用构建或 `dotnet test` 的成功退出代替运行验证。按 `CONTRIBUTING.md`，AI 改动须做运行及受影响功能的回归测试；UI 须检查样式、行为、三语文本和图标。无法验证的项目明确注明原因，不勾选完成。
 - [Lint 工作流](.github/workflows/linter.yml) 设置 `DISABLE_ERRORS: true`；绿灯不代表没有 lint 错误，需查看输出。当前 CI 不运行自动化测试。
 
 ## 容易改错的边界

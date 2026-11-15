@@ -1,7 +1,6 @@
-using Microsoft.Office.Interop.PowerPoint;
+using InkCanvasLinkage.Core;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Ink;
 
 namespace Ink_Canvas.Helpers
@@ -22,6 +21,7 @@ namespace Ink_Canvas.Helpers
         private const int DefaultMaxSlides = 100;
         private int _maxSlides = DefaultMaxSlides;
         private string _currentPresentationId = "";
+        private int _presentationSlideCount;
         private readonly object _lockObject = new object();
         private bool _disposed;
 
@@ -79,8 +79,8 @@ namespace Ink_Canvas.Helpers
         /// 方法会清除所有内存中的笔迹数据，重置墨迹写入锁与快速切换追踪，并根据演示文稿的幻灯片数量分配内部内存缓冲区。
         /// 如果已启用自动保存且设置了 <see cref="AutoSaveLocation"/>，则会尝试加载磁盘上的已保存墨迹文件。
         /// </remarks>
-        /// <param name="presentation">要初始化的 PowerPoint Presentation 实例；为 null 时方法不执行任何操作并直接返回。</param>
-        public void InitializePresentation(Presentation presentation)
+        /// <param name="presentation">联动源提供的文稿元数据；为 null 时不清除现有墨迹。</param>
+        public void InitializePresentation(PresentationMetadata presentation)
         {
             ThrowIfDisposed();
             if (presentation == null) return;
@@ -97,17 +97,8 @@ namespace Ink_Canvas.Helpers
 
                     _currentPresentationId = GeneratePresentationId(presentation);
 
-                    int slideCount = 0;
-                    try
-                    {
-                        slideCount = presentation.Slides.Count;
-                    }
-                    catch (COMException comEx)
-                    {
-                        uint hr = (uint)comEx.HResult;
-                        if (hr == 0x80048010) return;
-                        throw;
-                    }
+                    int slideCount = presentation.TotalSlides;
+                    _presentationSlideCount = slideCount;
 
                     int capacity = slideCount + 2;
                     _maxSlides = Math.Max(_maxSlides, slideCount);
@@ -250,19 +241,36 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>独立保存播放位置，不要求开启墨迹自动保存。</summary>
+        public void SavePlaybackPosition(int slideIndex)
+        {
+            ThrowIfDisposed();
+            if (slideIndex <= 0 || slideIndex > _presentationSlideCount || string.IsNullOrEmpty(AutoSaveLocation)
+                || string.IsNullOrEmpty(_currentPresentationId)) return;
+            lock (_lockObject)
+            {
+                try
+                {
+                    string folder = GetPresentationFolderPath();
+                    Directory.CreateDirectory(folder);
+                    File.WriteAllText(Path.Combine(folder, "Position"), slideIndex.ToString());
+                }
+                catch (Exception ex) { LogHelper.WriteLogToFile($"保存 Position 失败: {ex}", LogHelper.LogType.Warning); }
+            }
+        }
+
         /// <summary>
         /// 保存所有墨迹到文件
         /// </summary>
         /// <remarks>
         /// 将内存中当前演示文稿的每页墨迹保存到磁盘，并根据情况写入当前播放位置文件。
-        /// 仅在 IsAutoSaveEnabled 为真且 AutoSaveLocation 已设置时执行。会在演示文稿专属文件夹中写入按页编号的墨迹文件（带 `.icstk` 扩展名）和可选的 Position 文件。遇到特定 COM 错误（HRESULT 0x80048010）时会中止保存当前幻灯片计数读取而不抛出异常；单页保存失败会记录错误并继续处理其他页。
+        /// 仅在 IsAutoSaveEnabled 为真、AutoSaveLocation 已设置且文稿已初始化时执行。会在演示文稿专属文件夹中写入按页编号的墨迹文件（带 `.icstk` 扩展名）和可选的 Position 文件；单页保存失败会记录错误并继续处理其他页。
         /// </remarks>
-        /// <param name="presentation">要保存墨迹的 PowerPoint 演示文稿对象。</param>
         /// <param name="currentSlideIndex">当前播放的页码；如果大于 0 则以此值写入 Position 文件，否则使用当前被锁定的页码或最后切换的页码作为保存位置。</param>
-        public void SaveAllStrokesToFile(Presentation presentation, int currentSlideIndex = -1)
+        public void SaveAllStrokesToFile(int currentSlideIndex = -1)
         {
             ThrowIfDisposed();
-            if (!IsAutoSaveEnabled || string.IsNullOrEmpty(AutoSaveLocation) || presentation == null) return;
+            if (!IsAutoSaveEnabled || string.IsNullOrEmpty(AutoSaveLocation) || string.IsNullOrEmpty(_currentPresentationId)) return;
 
             lock (_lockObject)
             {
@@ -273,21 +281,9 @@ namespace Ink_Canvas.Helpers
                         Directory.CreateDirectory(folderPath);
 
                     int positionToSave = currentSlideIndex > 0 ? currentSlideIndex : (_lockedSlideIndex > 0 ? _lockedSlideIndex : _lastSwitchSlideIndex);
-                    if (positionToSave > 0)
-                    {
-                        try { File.WriteAllText(Path.Combine(folderPath, "Position"), positionToSave.ToString()); }
-                        catch (Exception ex) { LogHelper.WriteLogToFile($"保存 Position 失败: {ex}", LogHelper.LogType.Warning); }
-                    }
+                    SavePlaybackPosition(positionToSave);
 
-                    int slideCount = 0;
-                    try { slideCount = presentation.Slides.Count; }
-                    catch (COMException comEx)
-                    {
-                        if ((uint)comEx.HResult == 0x80048010) return;
-                        throw;
-                    }
-
-                    for (int i = 1; i <= slideCount && i < _memoryStreams.Length; i++)
+                    for (int i = 1; i <= _presentationSlideCount && i < _memoryStreams.Length; i++)
                     {
                         if (_memoryStreams[i] == null) continue;
                         try
@@ -469,10 +465,14 @@ namespace Ink_Canvas.Helpers
         /// <param name="strokes">要序列化并保存到内存流的笔迹集合。</param>
         private void ReplaceSlideStream(int slideIndex, StrokeCollection strokes)
         {
-            try { _memoryStreams[slideIndex]?.Dispose(); } catch (Exception ex) { LogHelper.WriteLogToFile($"释放旧内存流失败: {ex}", LogHelper.LogType.Warning); }
             var ms = new MemoryStream();
-            strokes.Save(ms);
+            try
+            {
+                if (strokes.Count > 0) strokes.Save(ms);
+            }
+            catch { ms.Dispose(); throw; }
             ms.Position = 0;
+            try { _memoryStreams[slideIndex]?.Dispose(); } catch (Exception ex) { LogHelper.WriteLogToFile($"释放旧内存流失败: {ex}", LogHelper.LogType.Warning); }
             _memoryStreams[slideIndex] = ms;
         }
 
@@ -555,13 +555,14 @@ namespace Ink_Canvas.Helpers
         /// 生成基于演示文稿名称、幻灯片数量和路径哈希的标识符字符串。
         /// </summary>
         /// <returns>由 `名称_幻灯片数_路径哈希` 组成的标识符；若生成失败则返回形如 `unknown_{ticks}` 的回退标识符。</returns>
-        private string GeneratePresentationId(Presentation presentation)
+        private string GeneratePresentationId(PresentationMetadata presentation)
         {
             try
             {
                 string path = presentation.FullName;
+                if (string.IsNullOrEmpty(path)) return $"{presentation.Name}_{presentation.TotalSlides}";
                 string hash = HashHelper.GetFileHash(path);
-                return $"{presentation.Name}_{presentation.Slides.Count}_{hash}";
+                return $"{presentation.Name}_{presentation.TotalSlides}_{hash}";
             }
             catch (Exception ex)
             {

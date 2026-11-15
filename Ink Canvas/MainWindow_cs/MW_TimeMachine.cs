@@ -90,7 +90,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 时间机器实例，用于撤销/重做操作
         /// </summary>
-        private TimeMachine timeMachine = new TimeMachine();
+        internal TimeMachine timeMachine = new TimeMachine();
 
         /// <summary>
         /// 将历史记录应用到画布
