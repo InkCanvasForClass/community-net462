@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [net462, 17194-ep]
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.head_ref || github.sha }}
@@ -198,7 +199,7 @@ jobs:
           } else {
             echo "build_success=false" >> $env:GITHUB_OUTPUT
 
-            if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            if ("${{ github.event_name }}" -eq "workflow_dispatch" -or "${{ github.ref_type }}" -eq "tag") {
               exit 1
             }
           }
