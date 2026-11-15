@@ -32,7 +32,7 @@ namespace InkCanvasLinkage.Core.Sources
                 if (_ownedApplication != null)
                 {
                     try { var name = _ownedApplication.Name; return; }
-                    catch { PresentationLinkSnapshot.Release(_ownedApplication); _ownedApplication = null; }
+                    catch { ReleaseOwnedApplication(); }
                 }
                 if (_backend.IsConnected) return;
                 _ownedApplication = new Application();
@@ -55,7 +55,15 @@ namespace InkCanvasLinkage.Core.Sources
                 finally { PresentationLinkSnapshot.Release(presentations); }
             }
             catch (Exception ex) { _log.WriteLogToFile($"释放增强实例失败: {ex}", LogHelper.LogType.Warning); }
-            finally { PresentationLinkSnapshot.Release(_ownedApplication); _ownedApplication = null; }
+            finally { ReleaseOwnedApplication(); }
+        }
+
+        private void ReleaseOwnedApplication()
+        {
+            // The backend owns the shared RCW until it disconnects.
+            if (!ReferenceEquals(_ownedApplication, _backend.PPTApplication))
+                PresentationLinkSnapshot.Release(_ownedApplication);
+            _ownedApplication = null;
         }
     }
 }

@@ -221,7 +221,7 @@ namespace Ink_Canvas
                 EnsureAutoSavePathValid();
 
                 // The canvas owns the displayed page; source polling may already be ahead of the host queue.
-                if (PresentationLink?.IsInSlideShow == true)
+                if (currentMode == 0 && PresentationLink?.IsInSlideShow == true)
                     _singlePPTInkManager?.ForceSaveSlideStrokes(_currentSlideShowPosition, inkCanvas.Strokes);
 
                 var savePath = Settings.Automation.AutoSavedStrokesLocation
@@ -255,7 +255,7 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true)
                     {
                         hasMultiplePages = true;
                         var totalSlides = _pptManager.SlidesCount;
@@ -284,7 +284,12 @@ namespace Ink_Canvas
                         hasMultiplePages = true;
                         for (int i = 1; i <= WhiteboardTotalCount; i++)
                         {
-                            if (TimeMachineHistories[i] != null)
+                            // The displayed board page may have newer ink than its saved history.
+                            if (i == CurrentWhiteboardIndex)
+                            {
+                                allPageStrokes.Add(inkCanvas.Strokes.Clone());
+                            }
+                            else if (TimeMachineHistories[i] != null)
                             {
                                 var strokes = ApplyHistoriesToNewStrokeCollection(TimeMachineHistories[i]);
                                 allPageStrokes.Add(strokes);
@@ -299,7 +304,7 @@ namespace Ink_Canvas
                     if (hasMultiplePages && allPageStrokes.Count > 0)
                     {
                         // 检查是否是PPT模式
-                        bool isPPTMode = IsInPPTPresentationMode && _pptManager?.IsConnected == true;
+                        bool isPPTMode = currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true;
 
                         if (isPPTMode)
                         {
@@ -373,7 +378,7 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true)
                     {
                         hasMultiplePages = true;
                         // 收集PPT放映模式下的所有页面墨迹
@@ -405,7 +410,11 @@ namespace Ink_Canvas
                         // 收集白板模式下的所有页面墨迹
                         for (int i = 1; i <= WhiteboardTotalCount; i++)
                         {
-                            if (TimeMachineHistories[i] != null)
+                            if (i == CurrentWhiteboardIndex)
+                            {
+                                allPageStrokes.Add(inkCanvas.Strokes.Clone());
+                            }
+                            else if (TimeMachineHistories[i] != null)
                             {
                                 // 从历史记录中恢复墨迹
                                 var strokes = ApplyHistoriesToNewStrokeCollection(TimeMachineHistories[i]);
@@ -437,7 +446,7 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true)
                     {
                         hasMultiplePages = true;
                         var totalSlides = _pptManager.SlidesCount;
@@ -466,7 +475,11 @@ namespace Ink_Canvas
                         hasMultiplePages = true;
                         for (int i = 1; i <= WhiteboardTotalCount; i++)
                         {
-                            if (TimeMachineHistories[i] != null)
+                            if (i == CurrentWhiteboardIndex)
+                            {
+                                allPageStrokes.Add(inkCanvas.Strokes.Clone());
+                            }
+                            else if (TimeMachineHistories[i] != null)
                             {
                                 var strokes = ApplyHistoriesToNewStrokeCollection(TimeMachineHistories[i]);
                                 allPageStrokes.Add(strokes);

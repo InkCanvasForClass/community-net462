@@ -188,6 +188,7 @@ namespace Ink_Canvas
         /// </summary>
         private IPresentationLinkSource _pptManager;
         public PresentationLinkViewModel PresentationLink { get; private set; }
+        private Guid _inkPresentationSessionId;
         private bool IsCurrentPPTSession(PresentationLinkState state) =>
             PresentationLink?.IsCurrentOperation == true && state.PresentationSessionId != Guid.Empty
             && _pptManager?.State.PresentationSessionId == state.PresentationSessionId;
@@ -247,6 +248,7 @@ namespace Ink_Canvas
                     PresentationLink.PresentationOpened += OnPPTPresentationOpen;
                     PresentationLink.PresentationClosed += OnPPTPresentationClose;
                     PresentationLink.SlideShowStateChanged += OnPPTSlideShowStateChanged;
+                    PresentationLink.PropertyChanged += OnPPTLinkPropertyChanged;
                 }
                 WirePPTNavBars();
 
@@ -254,6 +256,43 @@ namespace Ink_Canvas
                 try
                 {
                     SaveCurrentPPTInk();
+                    try
+                    {
+                        // Detaching drops the old source's end events, so restore its UI explicitly.
+                        if (IsInPPTPresentationMode || PresentationLink.IsInSlideShow)
+                        {
+                            IsInPPTPresentationMode = false;
+                            _smartModeRegions = null;
+                            _smartModeSlideIndex = -1;
+                            _mediaPassthroughRects?.Clear();
+                            StopMediaPassthroughTimer();
+                            _isMediaRegionMouseMode = false;
+                            CollapseAllPPTNavBarPreviews();
+                            ResetPPTEnhancedPreviewCache();
+                            _pptUIManager?.UpdateSlideShowStatus(false);
+                            _pptUIManager?.UpdateSidebarExitButtons(false);
+                            _pptUIManager?.SetFloatingBarOpacity(Settings.Appearance.ViewboxFloatingBarOpacityValue);
+                            ApplyFloatingBarMenuOpacity();
+                            if (currentMode == 0)
+                            {
+                                ClearStrokes(true);
+                                TimeMachineHistories[0] = null;
+                                if (GridTransparencyFakeBackground.Background != Brushes.Transparent)
+                                    BtnHideInkCanvas_Click(null, null);
+                                SetCurrentToolMode(InkCanvasEditingMode.None);
+                                UpdateCurrentToolMode("cursor");
+                                SetFloatingBarHighlightPosition("cursor");
+                            }
+                            UpdateToolbarComponentVisibility();
+                            CheckMainWindowVisibility();
+                        }
+                        _pptUIManager?.UpdateConnectionStatus(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"恢复旧 PPT 界面失败: {ex}", LogHelper.LogType.Warning);
+                    }
+                    _inkPresentationSessionId = Guid.Empty;
                     PPTManagerChanged?.Invoke(null);
                     PresentationLink.Attach(null);
                     CancelPresentationNotifications();
@@ -692,6 +731,7 @@ namespace Ink_Canvas
                     }
 
                     _singlePPTInkManager?.InitializePresentation(metadata);
+                    _inkPresentationSessionId = state.PresentationSessionId;
 
                     // Dialogs run sequentially without blocking slide/ink events while the user decides.
                     _ = NotifyPresentationOpenAsync(state);
@@ -840,6 +880,7 @@ namespace Ink_Canvas
                         try
                         {
                             _singlePPTInkManager.InitializePresentation(state.Presentation);
+                            _inkPresentationSessionId = state.PresentationSessionId;
                         }
                         catch (Exception)
                         {
@@ -969,7 +1010,7 @@ namespace Ink_Canvas
                     if (!PresentationLink.IsCurrentOperation) return;
                     if (currentSlide == _previousSlideID) return;
                     int prev = _previousSlideID;
-                    _singlePPTInkManager?.ForceSaveSlideStrokes(prev, inkCanvas.Strokes);
+                    if (currentMode == 0) _singlePPTInkManager?.ForceSaveSlideStrokes(prev, inkCanvas.Strokes);
 
                     _currentSlideShowPosition = currentSlide;
                     _previousSlideID = currentSlide;
@@ -1059,7 +1100,7 @@ namespace Ink_Canvas
                     currentPage = state.CurrentSlide;
                 }
 
-                if (currentPage > 0 && inkCanvas?.Strokes != null)
+                if (currentMode == 0 && currentPage > 0 && inkCanvas?.Strokes != null)
                     _singlePPTInkManager?.ForceSaveSlideStrokes(currentPage, inkCanvas.Strokes);
                 isEnteredSlideShowEndEvent = true;
 
@@ -1526,10 +1567,18 @@ namespace Ink_Canvas
             }
         }
 
+        private void OnPPTLinkPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(PresentationLinkViewModel.TotalSlides)
+                && PresentationLink.IsCurrentOperation && _inkPresentationSessionId != Guid.Empty
+                && PresentationLink.State.PresentationSessionId == _inkPresentationSessionId)
+                _singlePPTInkManager?.UpdateSlideCount(PresentationLink.TotalSlides);
+        }
+
         private void SaveCurrentPPTInk()
         {
             if (_currentSlideShowPosition <= 0) return;
-            if (!isEnteredSlideShowEndEvent)
+            if (currentMode == 0 && !isEnteredSlideShowEndEvent)
                 _singlePPTInkManager?.ForceSaveSlideStrokes(_currentSlideShowPosition, inkCanvas.Strokes);
             if (Settings.PowerPointSettings.IsNotifyPreviousPage)
                 _singlePPTInkManager?.SavePlaybackPosition(_currentSlideShowPosition);

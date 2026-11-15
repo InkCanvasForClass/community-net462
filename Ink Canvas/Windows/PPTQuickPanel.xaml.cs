@@ -106,8 +106,13 @@ namespace Ink_Canvas.Windows
         private Dictionary<FrameworkElement, int> _pptImages = new Dictionary<FrameworkElement, int>();
 
         private Dictionary<int, List<string>> _pptImagePaths = new Dictionary<int, List<string>>();
+        private readonly object _imagePathsIoLock = new object();
         private Ink_Canvas.ViewModels.PresentationLinkViewModel _subscribedPresentationLink;
         private int _imageGeneration;
+        private int _imageSlide;
+        private Guid _imagePresentationSession;
+        private Guid _imageSlideShowSession;
+        private readonly HashSet<int> _loadingSlides = new HashSet<int>();
 
         public PPTQuickPanel()
         {
@@ -212,6 +217,12 @@ namespace Ink_Canvas.Windows
                 if (_pptImages.ContainsKey(element))
                 {
                     int slideNumber = _pptImages[element];
+                    if (!_pptImagePaths.ContainsKey(slideNumber))
+                    {
+                        var loadedPaths = LoadPPTImagePaths(slideNumber);
+                        if (loadedPaths == null) return;
+                        _pptImagePaths[slideNumber] = loadedPaths;
+                    }
                     _pptImages.Remove(element);
 
                     if (_pptImagePaths.ContainsKey(slideNumber))
@@ -223,7 +234,7 @@ namespace Ink_Canvas.Windows
 
                             if (_pptImagePaths[slideNumber].Count == 0)
                             {
-                                _pptImagePaths.Remove(slideNumber);
+                                // 空缓存标记已删除，防止在途旧 JSON 读取重新填入路径。
                                 DeletePPTImagePathsFile(slideNumber);
                             }
                             else
@@ -253,10 +264,13 @@ namespace Ink_Canvas.Windows
                     return;
 
                 var jsonFilePath = Path.Combine(folderPath, slideIndex.ToString("0000") + ".images.json");
-                if (File.Exists(jsonFilePath))
+                lock (_imagePathsIoLock)
                 {
-                    File.Delete(jsonFilePath);
-                    LogHelper.WriteLogToFile($"已删除第{slideIndex}页图片路径JSON文件: {jsonFilePath}");
+                    if (File.Exists(jsonFilePath))
+                    {
+                        File.Delete(jsonFilePath);
+                        LogHelper.WriteLogToFile($"已删除第{slideIndex}页图片路径JSON文件: {jsonFilePath}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -267,50 +281,103 @@ namespace Ink_Canvas.Windows
 
         private void SubscribeToPPTEvents(IPresentationLinkSource manager)
         {
-            _imageGeneration++;
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(() => SubscribeToPPTEvents(manager));
+                return;
+            }
+            ResetPPTImageLoad();
+            _pptImages.Clear();
+            _pptImagePaths.Clear();
             if (_subscribedPresentationLink != null)
             {
                 _subscribedPresentationLink.PresentationOpened -= OnPPTPresentationOpen;
+                _subscribedPresentationLink.PresentationClosed -= OnPPTSlideShowEnd;
                 _subscribedPresentationLink.SlideShowStarted -= OnPPTSlideShowBegin;
                 _subscribedPresentationLink.SlideChanged -= OnPPTSlideChanged;
                 _subscribedPresentationLink.SlideShowEnded -= OnPPTSlideShowEnd;
+                _subscribedPresentationLink.ConnectionChanged -= OnPPTActiveChanged;
+                _subscribedPresentationLink.SlideShowStateChanged -= OnPPTActiveChanged;
             }
             _subscribedPresentationLink = manager == null ? null : _mainWindow?.PresentationLink;
             if (_subscribedPresentationLink == null) return;
             _subscribedPresentationLink.PresentationOpened += OnPPTPresentationOpen;
+            _subscribedPresentationLink.PresentationClosed += OnPPTSlideShowEnd;
             _subscribedPresentationLink.SlideShowStarted += OnPPTSlideShowBegin;
             _subscribedPresentationLink.SlideChanged += OnPPTSlideChanged;
             _subscribedPresentationLink.SlideShowEnded += OnPPTSlideShowEnd;
+            _subscribedPresentationLink.ConnectionChanged += OnPPTActiveChanged;
+            _subscribedPresentationLink.SlideShowStateChanged += OnPPTActiveChanged;
+            if (_subscribedPresentationLink.IsInSlideShow) OnPPTSlideShowBegin(_subscribedPresentationLink.State);
         }
 
         private System.Threading.Tasks.Task OnPPTPresentationOpen(PresentationLinkState state)
         {
-            _imageGeneration++;
-            HideAllPPTImages();
+            ResetPPTImageLoad();
             _pptImages.Clear();
             _pptImagePaths.Clear();
-            LoadAllPPTImagePaths();
             return System.Threading.Tasks.Task.CompletedTask;
         }
 
-        private async System.Threading.Tasks.Task OnPPTSlideShowBegin(PresentationLinkState state)
+        private System.Threading.Tasks.Task OnPPTSlideShowBegin(PresentationLinkState state)
         {
-            LoadAllPPTImagePaths();
-            UpdatePPTImagesVisibility(state.CurrentSlide);
-            if (state.CurrentSlide > 0) await LoadPPTImages(state.CurrentSlide);
+            return OnPPTSlideChanged(state);
         }
 
-        private async System.Threading.Tasks.Task OnPPTSlideChanged(PresentationLinkState state)
+        private System.Threading.Tasks.Task OnPPTSlideChanged(PresentationLinkState state)
         {
-            if (state == null || state.CurrentSlide <= 0) return;
+            if (_subscribedPresentationLink == null || state == null || !state.IsConnected
+                || !state.IsInSlideShow || state.CurrentSlide <= 0) return OnPPTSlideShowEnd(state);
+            if (_imageSlide != state.CurrentSlide || _imagePresentationSession != state.PresentationSessionId
+                || _imageSlideShowSession != state.SlideShowSessionId) ResetPPTImageLoad();
+            _imageSlide = state.CurrentSlide;
+            _imagePresentationSession = state.PresentationSessionId;
+            _imageSlideShowSession = state.SlideShowSessionId;
             UpdatePPTImagesVisibility(state.CurrentSlide);
-            await LoadPPTImages(state.CurrentSlide);
+            int slide = state.CurrentSlide;
+            int generation = _imageGeneration;
+            int sourceGeneration = _subscribedPresentationLink.Generation;
+            if (_loadingSlides.Add(slide))
+            {
+                // 图片 I/O 不占用联动事件的墨迹串行队列。
+                Dispatcher.BeginInvoke(new Action(async () =>
+                {
+                    try { await LoadPPTImages(slide, generation, sourceGeneration); }
+                    catch (Exception ex) { LogHelper.WriteLogToFile($"加载PPT图片失败: {ex}", LogHelper.LogType.Error); }
+                    finally { if (generation == _imageGeneration) _loadingSlides.Remove(slide); }
+                }), DispatcherPriority.Background);
+            }
+            return System.Threading.Tasks.Task.CompletedTask;
         }
 
         private System.Threading.Tasks.Task OnPPTSlideShowEnd(PresentationLinkState state)
         {
-            HideAllPPTImages();
+            ResetPPTImageLoad();
             return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        private System.Threading.Tasks.Task OnPPTActiveChanged(bool active)
+        {
+            if (!active) ResetPPTImageLoad();
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        private void ResetPPTImageLoad()
+        {
+            _imageGeneration++;
+            _imageSlide = 0;
+            _loadingSlides.Clear();
+            HideAllPPTImages();
+        }
+
+        private bool IsCurrentPPTImageLoad(int slideIndex, int generation, int sourceGeneration)
+        {
+            return generation == _imageGeneration && _imageSlide == slideIndex
+                && _subscribedPresentationLink != null && sourceGeneration == _subscribedPresentationLink.Generation
+                && _subscribedPresentationLink.IsConnected && _subscribedPresentationLink.IsInSlideShow
+                && _subscribedPresentationLink.CurrentSlide == slideIndex
+                && _subscribedPresentationLink.State.PresentationSessionId == _imagePresentationSession
+                && _subscribedPresentationLink.State.SlideShowSessionId == _imageSlideShowSession;
         }
 
         private void UpdatePPTImagesVisibility(int currentSlide)
@@ -830,7 +897,8 @@ namespace Ink_Canvas.Windows
             {
                 int generation = _imageGeneration;
                 var state = _mainWindow.PresentationLink.State;
-                await _mainWindow.CaptureScreenshotAndInsert();
+                await _mainWindow.CaptureScreenshotAndInsert(() => generation == _imageGeneration
+                    && ReferenceEquals(state, _mainWindow.PresentationLink.State));
                 if (generation != _imageGeneration || !ReferenceEquals(state, _mainWindow.PresentationLink.State)) return;
                 await SaveScreenshotToPPT();
             }
@@ -944,12 +1012,7 @@ namespace Ink_Canvas.Windows
                     {
                         _pptImages[image] = currentSlideNumber;
 
-                        if (!_pptImagePaths.ContainsKey(currentSlideNumber))
-                        {
-                            _pptImagePaths[currentSlideNumber] = new List<string>();
-                        }
-                        _pptImagePaths[currentSlideNumber].Add(filePath);
-                        SavePPTImagePaths(currentSlideNumber);
+                        AddPPTImagePath(currentSlideNumber, filePath);
 
                         LogHelper.WriteLogToFile($"截图已关联到PPT页面{currentSlideNumber}: {filePath}");
                     }
@@ -972,9 +1035,12 @@ namespace Ink_Canvas.Windows
             int sourceGeneration = _mainWindow.PresentationLink.Generation;
 
             // 确保在UI线程上执行
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
-                if (generation != _imageGeneration || sourceGeneration != _mainWindow.PresentationLink.Generation) return;
+                if (generation != _imageGeneration || sourceGeneration != _mainWindow.PresentationLink.Generation
+                    || (!saveToJson && !IsCurrentPPTImageLoad(slideNumber, generation, sourceGeneration))) return;
+                if (!saveToJson && (!_pptImagePaths.TryGetValue(slideNumber, out var paths)
+                    || !paths.Contains(originalFilePath))) return;
                 try
                 {
                     // 生成唯一名称
@@ -1005,14 +1071,7 @@ namespace Ink_Canvas.Windows
                         _pptImages[element] = currentSlideNumber;
 
                         // 添加到页面图片路径列表
-                        if (!_pptImagePaths.ContainsKey(currentSlideNumber))
-                        {
-                            _pptImagePaths[currentSlideNumber] = new List<string>();
-                        }
-                        _pptImagePaths[currentSlideNumber].Add(originalFilePath);
-
-                        // 保存图片路径到JSON文件
-                        SavePPTImagePaths(currentSlideNumber);
+                        AddPPTImagePath(currentSlideNumber, originalFilePath);
                     }
                     else if (currentSlideNumber > 0)
                     {
@@ -1021,15 +1080,20 @@ namespace Ink_Canvas.Windows
                     }
 
                     // 先添加到画布（与MainWindow的实现保持一致）
-                    element.Visibility = currentSlideNumber > 0 && currentSlideNumber != state.CurrentSlide ? Visibility.Collapsed : Visibility.Visible;
+                    element.Visibility = currentSlideNumber > 0 && (!state.IsInSlideShow || currentSlideNumber != state.CurrentSlide)
+                        ? Visibility.Collapsed : Visibility.Visible;
                     inkCanvas.Children.Add(element);
 
                     // 等待图片加载完成后再进行后续处理
-                    element.Loaded += (s, args) =>
+                    RoutedEventHandler initializeImage = null;
+                    initializeImage = (s, args) =>
                     {
-                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                        element.Loaded -= initializeImage;
+                        Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            if (generation != _imageGeneration || sourceGeneration != _mainWindow.PresentationLink.Generation) return;
+                            if (sourceGeneration != _mainWindow.PresentationLink.Generation
+                                || state.PresentationSessionId != _mainWindow.PresentationLink.State.PresentationSessionId
+                                || !inkCanvas.Children.Contains(element)) return;
                             try
                             {
                                 _mainWindow.InitializeElementTransform(element);
@@ -1044,6 +1108,7 @@ namespace Ink_Canvas.Windows
                             }
                         }), DispatcherPriority.Loaded);
                     };
+                    element.Loaded += initializeImage;
 
                     // 提交历史记录
                     if (saveToJson) _mainWindow.timeMachine.CommitElementInsertHistory(element);
@@ -1098,6 +1163,18 @@ namespace Ink_Canvas.Windows
             }
         }
 
+        private void AddPPTImagePath(int slideIndex, string filePath)
+        {
+            if (!_pptImagePaths.TryGetValue(slideIndex, out var paths))
+            {
+                paths = LoadPPTImagePaths(slideIndex);
+                if (paths == null) throw new IOException("无法读取原 PPT 图片路径，已取消保存以保护原文件。");
+                _pptImagePaths[slideIndex] = paths;
+            }
+            paths.Add(filePath);
+            SavePPTImagePaths(slideIndex);
+        }
+
         /// <summary>
         /// 保存指定页面的图片路径到JSON文件
         /// </summary>
@@ -1110,16 +1187,15 @@ namespace Ink_Canvas.Windows
                 var folderPath = GetPresentationFolderPath();
                 if (string.IsNullOrEmpty(folderPath)) return;
 
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
-
                 var jsonFilePath = Path.Combine(folderPath, slideIndex.ToString("0000") + ".images.json");
                 var imagePaths = _pptImagePaths[slideIndex];
 
                 string json = JsonConvert.SerializeObject(imagePaths, Formatting.Indented);
-                File.WriteAllText(jsonFilePath, json);
+                lock (_imagePathsIoLock)
+                {
+                    Directory.CreateDirectory(folderPath);
+                    File.WriteAllText(jsonFilePath, json);
+                }
 
                 LogHelper.WriteLogToFile($"已保存第{slideIndex}页图片路径到JSON: {jsonFilePath}");
             }
@@ -1132,21 +1208,24 @@ namespace Ink_Canvas.Windows
         /// <summary>
         /// 从JSON文件加载指定页面的图片路径
         /// </summary>
-        private List<string> LoadPPTImagePaths(int slideIndex)
+        private List<string> LoadPPTImagePaths(int slideIndex, string folderPath = null)
         {
             try
             {
                 if (slideIndex <= 0) return new List<string>();
 
-                var folderPath = GetPresentationFolderPath();
+                folderPath = folderPath ?? GetPresentationFolderPath();
                 if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
                     return new List<string>();
 
                 var jsonFilePath = Path.Combine(folderPath, slideIndex.ToString("0000") + ".images.json");
-                if (!File.Exists(jsonFilePath))
-                    return new List<string>();
-
-                string json = File.ReadAllText(jsonFilePath);
+                string json;
+                // Only file I/O shares the gate; parsing must not block UI-side path mutations.
+                lock (_imagePathsIoLock)
+                {
+                    if (!File.Exists(jsonFilePath)) return new List<string>();
+                    json = File.ReadAllText(jsonFilePath);
+                }
                 var imagePaths = JsonConvert.DeserializeObject<List<string>>(json);
 
                 return imagePaths ?? new List<string>();
@@ -1154,23 +1233,27 @@ namespace Ink_Canvas.Windows
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"加载PPT图片路径失败: {ex.Message}", LogHelper.LogType.Error);
-                return new List<string>();
+                return null;
             }
         }
 
         /// <summary>
         /// 加载指定页面的图片
         /// </summary>
-        private async System.Threading.Tasks.Task LoadPPTImages(int slideIndex)
+        private async System.Threading.Tasks.Task LoadPPTImages(int slideIndex, int generation, int sourceGeneration)
         {
-            int generation = _imageGeneration;
-            int sourceGeneration = _mainWindow?.PresentationLink?.Generation ?? -1;
             try
             {
-                if (_mainWindow == null || slideIndex <= 0) return;
+                if (_mainWindow == null || !IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
 
-                var imagePaths = LoadPPTImagePaths(slideIndex);
-                if (imagePaths == null || imagePaths.Count == 0) return;
+                var folderPath = GetPresentationFolderPath();
+                if (string.IsNullOrEmpty(folderPath)) return;
+                var imagePaths = await System.Threading.Tasks.Task.Run(() => LoadPPTImagePaths(slideIndex, folderPath));
+                if (imagePaths == null || !IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
+                if (!_pptImagePaths.TryGetValue(slideIndex, out var currentPaths))
+                    _pptImagePaths[slideIndex] = currentPaths = imagePaths;
+                imagePaths = currentPaths.ToList();
+                if (imagePaths.Count == 0) return;
 
                 // 获取inkCanvas，检查是否已有图片
                 var inkCanvas = _mainWindow.inkCanvas;
@@ -1197,6 +1280,8 @@ namespace Ink_Canvas.Windows
                 {
                     try
                     {
+                        if (!IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
+                        if (!_pptImagePaths[slideIndex].Contains(imagePath)) continue;
                         // 如果图片已存在，跳过
                         if (existingImagePaths.Contains(imagePath))
                         {
@@ -1210,12 +1295,13 @@ namespace Ink_Canvas.Windows
                         }
 
                         var inserted = await _mainWindow.CreateAndCompressImageAsync(imagePath);
-                        if (generation != _imageGeneration || sourceGeneration != _mainWindow.PresentationLink.Generation) return;
+                        if (!IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
+                        if (!_pptImagePaths[slideIndex].Contains(imagePath)) continue;
                         if (inserted != null)
                         {
                             inserted.Tag = imagePath;
                             await InsertImageToMainWindow(inserted, imagePath, false, slideIndex);
-                            if (generation != _imageGeneration || sourceGeneration != _mainWindow.PresentationLink.Generation) return;
+                            if (!IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
                             existingImagePaths.Add(imagePath);
                         }
                     }

@@ -7,14 +7,20 @@ namespace InkCanvasLinkage.Core.Sources
 {
     internal static class ComPresentationCapabilities
     {
-        public static PresentationMetadata ReadDetails(object presentation, PresentationMetadata metadata)
+        public static PresentationMetadata ReadDetails(object presentation, PresentationMetadata metadata, Action<Exception> onError = null)
         {
             bool hidden = false, timing = false;
-            VisitTransitions(presentation, transition =>
+            try
             {
-                hidden |= (int)transition.Hidden == (int)MsoTriState.msoTrue;
-                timing |= (int)transition.AdvanceOnTime == (int)MsoTriState.msoTrue && transition.AdvanceTime > 0;
-            });
+                VisitTransitions(presentation, transition => hidden |= (int)transition.Hidden == (int)MsoTriState.msoTrue);
+            }
+            catch (Exception ex) { onError?.Invoke(ex); }
+            try
+            {
+                VisitTransitions(presentation, transition =>
+                    timing |= (int)transition.AdvanceOnTime == (int)MsoTriState.msoTrue && transition.AdvanceTime > 0);
+            }
+            catch (Exception ex) { onError?.Invoke(ex); }
             return new PresentationMetadata(metadata.Name, metadata.FullName, metadata.TotalSlides, hidden, timing);
         }
 

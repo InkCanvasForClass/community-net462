@@ -94,6 +94,8 @@ namespace InkCanvasLinkage.Core.Sources
                 }
 
                 _shouldStop = false;
+                _isModuleUnloading = false;
+                _recoveryVersion++;
                 _bindingEvents = false;
                 _lastPolledSlideNumber = -1;
                 _polling = 0;
@@ -1485,7 +1487,7 @@ namespace InkCanvasLinkage.Core.Sources
                 if (!IsConnected || !IsInSlideShow || PPTApplication == null) return false;
                 if (!Marshal.IsComObject(PPTApplication)) return false;
 
-                if (SkipAnimationsWhenNavigating) return TryNavigateToSlide(GetCurrentSlideNumber() + (next ? 1 : -1));
+                int current = SkipAnimationsWhenNavigating ? GetCurrentSlideNumber() : 0;
                 slideShowWindows = PPTApplication.SlideShowWindows;
                 if (slideShowWindows == null || ((dynamic)slideShowWindows).Count < 1) return false;
                 slideShowWindow = ((dynamic)slideShowWindows)[1];
@@ -1493,8 +1495,7 @@ namespace InkCanvasLinkage.Core.Sources
                 try { ((dynamic)slideShowWindow).Activate(); } catch { }
                 view = ((dynamic)slideShowWindow).View;
                 if (view == null) return false;
-                if (next) ((dynamic)view).Next();
-                else ((dynamic)view).Previous();
+                NavigateSlideShowView(view, next, SkipAnimationsWhenNavigating, current, SlidesCount);
                 return true;
             }
             catch (COMException comEx)
@@ -1515,6 +1516,14 @@ namespace InkCanvasLinkage.Core.Sources
                 SafeReleaseComObject(slideShowWindow);
                 SafeReleaseComObject(slideShowWindows);
             }
+        }
+
+        internal static void NavigateSlideShowView(dynamic view, bool next, bool skipAnimations, int current, int total)
+        {
+            if (skipAnimations && current > 0 && current <= total && (next ? current < total : current > 1))
+                view.GotoSlide(current + (next ? 1 : -1));
+            else if (next) view.Next();
+            else view.Previous();
         }
 
         public bool TryEndSlideShow()
