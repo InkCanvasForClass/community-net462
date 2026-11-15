@@ -124,7 +124,7 @@ namespace Ink_Canvas.Helpers
                         HideAllNavigationPanels();
                         _mainWindow.UpdatePPTTimeCapsuleVisibility();
                         _mainWindow.UpdatePPTQuickPanelVisibility();
-                        if (MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper)
+                        if (MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper && _mainWindow.currentMode == 0)
                         {
                             // 恢复为非画板模式，重新启用全屏限制
                             AvoidFullScreenHelper.SetBoardMode(false);

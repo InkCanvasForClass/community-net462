@@ -25,6 +25,8 @@ namespace LinkageSelfTests
         {
             try
             {
+                // No upload providers or queues in this isolated regression process, including queued export tasks.
+                typeof(UploadHelper).GetField("_initialized", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, true);
                 CheckContract();
                 CheckSessions();
                 CheckStaDispatcher();
@@ -34,12 +36,20 @@ namespace LinkageSelfTests
                 CheckComMonitoringStartup();
                 CheckComCallbackDispatch();
                 CheckAgentSnapshots();
+                CoreRegressionChecks.Run();
                 RunDispatcherCheck(CheckViewModel);
                 RunDispatcherCheck(CheckFakeInkHost);
+                RunDispatcherCheck(CheckHostSlideCount);
+                RunDispatcherCheck(CheckWhiteboardFullscreen);
+                RunDispatcherCheck(CheckSourceReplacementAfterUiFailure);
+                RunDispatcherCheck(ImageRegressionChecks.Run);
                 CheckPPTStrokeArchive();
                 CheckInkRoundTrip(@"C:\Lessons\lesson.pptx");
                 CheckInkRoundTrip(null);
-                Console.WriteLine("PASS: contract, session deduplication/reentry, STA, COM/Agent snapshots, shared ViewModel queue/source isolation, Fake ink lifecycle, ink/Position and binary/XML ZIP compatibility.");
+                CheckInkSlideCount();
+                CheckWhiteboardDoesNotOverwritePPTInk();
+                RunDispatcherCheck(ExportRegressionChecks.Run);
+                Console.WriteLine("PASS: contract, session deduplication/reentry, STA, COM/Agent snapshots and show events, optional COM detail failures, ROT navigation boundaries/restart, enhanced application cleanup policy, shared ViewModel queue/source isolation, Fake ink lifecycle, growing slide count, whiteboard save/fullscreen/export isolation, source cleanup after UI failure, image lifecycle/path-write races and serialized I/O, one-shot image initialization, stale screenshot guards, ink/Position and binary/XML ZIP compatibility.");
                 return 0;
             }
             catch (Exception ex)
@@ -374,7 +384,7 @@ namespace LinkageSelfTests
             timeout.Start();
             Dispatcher.PushFrame(frame);
             timeout.Stop();
-            if (failure != null) throw failure;
+            if (failure != null) throw new InvalidOperationException($"{check.Method.Name} failed.", failure);
             Assert(completed, "Dispatcher check must execute, not merely build.");
         }
 
@@ -621,6 +631,202 @@ namespace LinkageSelfTests
             finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
         }
 
+        private static void CheckInkSlideCount()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "opencode", "linkage-self-tests", Guid.NewGuid().ToString("N"));
+            try
+            {
+                using (var ink = new PPTInkManager { AutoSaveLocation = root })
+                {
+                    ink.InitializePresentation(new PresentationMetadata("growing.pptx", null, 1));
+                    var strokes = new StrokeCollection
+                    {
+                        new Stroke(new StylusPointCollection { new StylusPoint(10, 10), new StylusPoint(20, 20) })
+                    };
+                    ink.ForceSaveSlideStrokes(1, strokes);
+                    ink.UpdateSlideCount(2);
+                    ink.ForceSaveSlideStrokes(2, strokes);
+                    ink.SaveAllStrokesToFile(2);
+                    string folder = Path.Combine(root, "Auto Saved - Presentations", "growing.pptx_1");
+                    Assert(File.Exists(Path.Combine(folder, "0002.icstk")) && File.ReadAllText(Path.Combine(folder, "Position")) == "2",
+                        "An added page in the spare slot must be included in ink and Position saving.");
+                    ink.UpdateSlideCount(6);
+                    ink.ForceSaveSlideStrokes(6, strokes);
+                    Assert(ink.LoadSlideStrokes(1).Count == 1 && ink.LoadSlideStrokes(2).Count == 1 && ink.LoadSlideStrokes(6).Count == 1,
+                        "Growing beyond capacity must preserve every existing page's ink.");
+                    ink.SaveAllStrokesToFile(6);
+                    Assert(File.Exists(Path.Combine(folder, "0006.icstk")) && File.ReadAllText(Path.Combine(folder, "Position")) == "6",
+                        "Expanded pages must use the existing document folder and accept the new playback position.");
+                    ink.UpdateSlideCount(2);
+                    ink.SavePlaybackPosition(6);
+                    Assert(File.ReadAllText(Path.Combine(folder, "Position")) == "6", "Removed pages must no longer be valid playback positions.");
+                    ink.SavePlaybackPosition(2);
+                    Assert(File.ReadAllText(Path.Combine(folder, "Position")) == "2" && ink.LoadSlideStrokes(1).Count == 1,
+                        "Shrinking page count must preserve remaining ink.");
+                    Throws<ArgumentOutOfRangeException>(() => ink.UpdateSlideCount(-1));
+                    Throws<ArgumentOutOfRangeException>(() => ink.UpdateSlideCount(int.MaxValue));
+                }
+            }
+            finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+        }
+
+        private static async Task CheckHostSlideCount()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "opencode", "linkage-self-tests", Guid.NewGuid().ToString("N"));
+            try
+            {
+                using (var ink = new PPTInkManager { AutoSaveLocation = root })
+                using (var source = new FakeSource())
+                using (var vm = new PresentationLinkViewModel(Dispatcher.CurrentDispatcher, ex => throw ex,
+                    () => { }, () => { }, _ => { }, _ => { }))
+                {
+                    source.StartMonitoring();
+                    source.TryStartSlideShow();
+                    vm.Attach(source);
+                    ink.InitializePresentation(source.State.Presentation);
+                    var host = (Ink_Canvas.MainWindow)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(Ink_Canvas.MainWindow));
+                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    var type = typeof(Ink_Canvas.MainWindow);
+                    type.GetField("_singlePPTInkManager", flags).SetValue(host, ink);
+                    type.GetField("_inkPresentationSessionId", flags).SetValue(host, source.State.PresentationSessionId);
+                    type.GetField("<PresentationLink>k__BackingField", flags).SetValue(host, vm);
+                    var handler = (System.ComponentModel.PropertyChangedEventHandler)Delegate.CreateDelegate(
+                        typeof(System.ComponentModel.PropertyChangedEventHandler), host, type.GetMethod("OnPPTLinkPropertyChanged", flags));
+                    vm.PropertyChanged += handler;
+                    int opened = 0;
+                    vm.PresentationOpened += _ => { opened++; return Task.CompletedTask; };
+                    source.ReplacePresentation(new PresentationMetadata("lesson.pptx", null, 6));
+                    await vm.WhenIdle;
+                    var strokes = new StrokeCollection
+                    {
+                        new Stroke(new StylusPointCollection { new StylusPoint(10, 10), new StylusPoint(20, 20) })
+                    };
+                    ink.ForceSaveSlideStrokes(6, strokes);
+                    ink.SaveAllStrokesToFile(6);
+                    string folder = Path.Combine(root, "Auto Saved - Presentations", "lesson.pptx_3");
+                    Assert(opened == 0 && File.Exists(Path.Combine(folder, "0006.icstk")),
+                        "Same-page count updates without a document-open event must expand the actual host ink cache.");
+                    source.ReplacePresentation(new PresentationMetadata("other.pptx", null, 1));
+                    await vm.WhenIdle;
+                    ink.SavePlaybackPosition(5);
+                    Assert(File.ReadAllText(Path.Combine(folder, "Position")) == "5",
+                        "A different document's count notification must not shrink the old document's ink cache.");
+                    vm.PropertyChanged -= handler;
+                }
+            }
+            finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+        }
+
+        private static void CheckWhiteboardDoesNotOverwritePPTInk()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "opencode", "linkage-self-tests", Guid.NewGuid().ToString("N"));
+            try
+            {
+                using (var ink = new PPTInkManager { AutoSaveLocation = root })
+                {
+                    ink.InitializePresentation(new PresentationMetadata("lesson.pptx", null, 3));
+                    var pptStrokes = new StrokeCollection
+                    {
+                        new Stroke(new StylusPointCollection { new StylusPoint(10, 10), new StylusPoint(20, 20) })
+                    };
+                    ink.ForceSaveSlideStrokes(2, pptStrokes);
+                    // Avoid starting the real application, automation or Office while exercising the host's save method.
+                    var host = (Ink_Canvas.MainWindow)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(Ink_Canvas.MainWindow));
+                    var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+                    var type = typeof(Ink_Canvas.MainWindow);
+                    type.GetField("_singlePPTInkManager", flags).SetValue(host, ink);
+                    type.GetField("_currentSlideShowPosition", flags).SetValue(host, 2);
+                    type.GetField("currentMode", flags).SetValue(host, 1);
+                    var canvas = new System.Windows.Controls.InkCanvas();
+                    canvas.Strokes.Add(new Stroke(new StylusPointCollection { new StylusPoint(50, 50), new StylusPoint(60, 60) }));
+                    type.GetField("inkCanvas", flags).SetValue(host, canvas);
+                    var save = type.GetMethod("SaveCurrentPPTInk", flags);
+                    save.Invoke(host, null);
+                    Assert(Math.Abs(ink.LoadSlideStrokes(2)[0].StylusPoints[0].X - 10) < 0.1,
+                        "Saving during a whiteboard overlay must not overwrite cached PPT ink with board ink.");
+                    type.GetField("currentMode", flags).SetValue(host, 0);
+                    save.Invoke(host, null);
+                    Assert(Math.Abs(ink.LoadSlideStrokes(2)[0].StylusPoints[0].X - 50) < 0.1,
+                        "Saving in annotation mode must still synchronize displayed PPT ink.");
+                }
+            }
+            finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+        }
+
+        private static async Task CheckWhiteboardFullscreen()
+        {
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+            var type = typeof(Ink_Canvas.MainWindow);
+            var host = (Ink_Canvas.MainWindow)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(type);
+            typeof(DispatcherObject).GetField("_dispatcher", flags).SetValue(host, Dispatcher.CurrentDispatcher);
+            type.GetField("currentMode", flags).SetValue(host, 1);
+            type.GetField("isFullScreenApplied", flags).SetValue(host, true);
+            type.GetProperty("IsInPPTPresentationMode", flags).SetValue(host, true);
+            var boardMode = typeof(AvoidFullScreenHelper).GetField("_isBoardMode", BindingFlags.Static | BindingFlags.NonPublic);
+            bool previousBoardMode = (bool)boardMode.GetValue(null);
+            bool previousEnabled = Ink_Canvas.MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper;
+            try
+            {
+                Ink_Canvas.MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper = true;
+                AvoidFullScreenHelper.SetBoardMode(true);
+                new PPTUIManager(host).UpdateSlideShowStatus(false);
+                await Dispatcher.CurrentDispatcher.InvokeAsync(() => { });
+                Assert(!(bool)type.GetProperty("IsInPPTPresentationMode", flags).GetValue(host)
+                    && (bool)type.GetField("isFullScreenApplied", flags).GetValue(host) && (bool)boardMode.GetValue(null),
+                    "Leaving PPT while a whiteboard remains open must clear PPT UI state without disabling board fullscreen.");
+            }
+            finally
+            {
+                Ink_Canvas.MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper = previousEnabled;
+                AvoidFullScreenHelper.SetBoardMode(previousBoardMode);
+            }
+        }
+
+        private static Task CheckSourceReplacementAfterUiFailure()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "opencode", "linkage-self-tests", Guid.NewGuid().ToString("N"));
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+            var type = typeof(Ink_Canvas.MainWindow);
+            var host = (Ink_Canvas.MainWindow)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(type);
+            typeof(DispatcherObject).GetField("_dispatcher", flags).SetValue(host, Dispatcher.CurrentDispatcher);
+            using (var old = new FakeSource())
+            using (var replacement = new FakeSource())
+            using (var vm = new PresentationLinkViewModel(Dispatcher.CurrentDispatcher, ex => throw ex,
+                () => { }, () => { }, _ => { }, _ => { }))
+            using (var ink = new PPTInkManager { AutoSaveLocation = root })
+            {
+                try
+                {
+                    old.StartMonitoring();
+                    old.TryStartSlideShow();
+                    vm.Attach(old);
+                    ink.InitializePresentation(old.State.Presentation);
+                    type.GetField("<PresentationLink>k__BackingField", flags).SetValue(host, vm);
+                    type.GetField("_pptManager", flags).SetValue(host, old);
+                    type.GetField("_singlePPTInkManager", flags).SetValue(host, ink);
+                    type.GetField("_currentSlideShowPosition", flags).SetValue(host, 1);
+                    type.GetField("_pptNavBarsWired", flags).SetValue(host, true);
+                    type.GetField("_pptEnhancedPreviewCacheLock", flags).SetValue(host, new object());
+                    type.GetField("InlineDialogRoot", flags).SetValue(host, new System.Windows.Controls.Grid());
+                    var canvas = new System.Windows.Controls.InkCanvas();
+                    canvas.Strokes.Add(new Stroke(new StylusPointCollection { new StylusPoint(10, 10), new StylusPoint(20, 20) }));
+                    type.GetField("inkCanvas", flags).SetValue(host, canvas);
+                    int failures = 0;
+                    canvas.Strokes.StrokesChanged += (_, __) => { failures++; throw new InvalidOperationException("Injected UI clear failure."); };
+                    host.InitializePPTManagers(replacement);
+                    Assert(failures == 1 && old.IsDisposed && !old.IsConnected && ReferenceEquals(type.GetField("_pptManager", flags).GetValue(host), replacement),
+                        "An actual canvas-clear exception must not prevent stopping, disposing or replacing the old source.");
+                }
+                finally
+                {
+                    var currentInk = (PPTInkManager)type.GetField("_singlePPTInkManager", flags).GetValue(host);
+                    if (!ReferenceEquals(currentInk, ink)) currentInk?.Dispose();
+                    if (Directory.Exists(root)) Directory.Delete(root, true);
+                }
+            }
+            return Task.CompletedTask;
+        }
+
         private static Dictionary<int, StrokeCollection> ReadArchivePages(string directory, int totalSlides)
         {
             var read = typeof(Ink_Canvas.MainWindow).GetMethod("ReadPPTStrokePages", BindingFlags.Static | BindingFlags.NonPublic);
@@ -706,6 +912,7 @@ namespace LinkageSelfTests
         public PresentationCapabilities Capabilities => PresentationCapabilities.SlideNavigation;
         public bool IsSupportWPS { get; set; }
         public bool SkipAnimationsWhenNavigating { get; set; }
+        public bool IsDisposed { get; private set; }
         public bool IsConnected => State.IsConnected;
         public bool IsInSlideShow => State.IsInSlideShow;
         public int SlidesCount => State.TotalSlides;
@@ -731,6 +938,6 @@ namespace LinkageSelfTests
         public bool TryUnhideHiddenSlides() => false;
         public bool TryDisableAutoPlayTimings() => false;
         public bool SetEnhancedMonitoring(bool enabled, bool isShutdown = false) => false;
-        public void Dispose() => StopMonitoring();
+        public void Dispose() { IsDisposed = true; StopMonitoring(); }
     }
 }

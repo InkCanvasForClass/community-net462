@@ -94,7 +94,14 @@ namespace InkCanvasLinkage.Core.Sources
                             metadata = new PresentationMetadata(metadata.Name, metadata.FullName, metadata.TotalSlides,
                                 previous.HasHiddenSlides, previous.HasAutoPlayTimings);
                         else
-                            metadata = ComPresentationCapabilities.ReadDetails(_backend.GetCurrentActivePresentation(), metadata);
+                        {
+                            try
+                            {
+                                metadata = ComPresentationCapabilities.ReadDetails(_backend.GetCurrentActivePresentation(), metadata,
+                                    ex => _log.WriteLogToFile($"读取联动状态失败: {ex}", LogHelper.LogType.Warning));
+                            }
+                            catch (Exception ex) { _log.WriteLogToFile($"读取联动状态失败: {ex}", LogHelper.LogType.Warning); }
+                        }
                     }
                     _session.Update(isConnected, running ?? (agentState?.IsRunning ?? _backend.IsInSlideShow),
                         page ?? (agentState?.SlideIndex ?? _backend.GetCurrentSlideNumber()), metadata);

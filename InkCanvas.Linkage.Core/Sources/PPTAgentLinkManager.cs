@@ -163,7 +163,12 @@ namespace InkCanvasLinkage.Core.Sources
 
         private void HandleState(PPTState state, string eventName)
         {
-            if (_disposed || state == null) return;
+            if (_disposed) return;
+            if (state == null)
+            {
+                if (eventName != PPTEvents.SlideShowBegin && eventName != PPTEvents.SlideShowEnd) return;
+                state = GetStateSnapshot();
+            }
             if (state.SlideIndex < 0 || state.TotalSlides < 0 || state.TotalSlides > int.MaxValue - 2
                 || state.SlideIndex > state.TotalSlides)
             {
@@ -188,10 +193,13 @@ namespace InkCanvasLinkage.Core.Sources
 
                 _lastState = new PPTState
                 {
-                    SlideIndex = state.SlideIndex, TotalSlides = state.TotalSlides, IsRunning = state.IsRunning,
+                    SlideIndex = state.SlideIndex, TotalSlides = state.TotalSlides,
+                    // Explicit show events take precedence over a stale (or missing) snapshot.
+                    IsRunning = eventName == PPTEvents.SlideShowBegin || (eventName != PPTEvents.SlideShowEnd && state.IsRunning),
                     PresentationName = state.PresentationName, PresentationFullName = state.PresentationFullName,
                     HasHiddenSlides = state.HasHiddenSlides, HasAutoPlayTimings = state.HasAutoPlayTimings
                 };
+                state = GetStateSnapshot();
                 _lastIsRunning = state.IsRunning;
                 _lastSlideIndex = state.SlideIndex;
                 _lastPresentationName = state.PresentationName;

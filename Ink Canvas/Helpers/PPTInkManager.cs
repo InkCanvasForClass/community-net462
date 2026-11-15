@@ -114,6 +114,20 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>更新同一文稿的页数，保留已有墨迹及保存目录。</summary>
+        public void UpdateSlideCount(int slideCount)
+        {
+            ThrowIfDisposed();
+            if (slideCount < 0 || slideCount > int.MaxValue - 2) throw new ArgumentOutOfRangeException(nameof(slideCount));
+            lock (_lockObject)
+            {
+                if (slideCount + 2 > _memoryStreams.Length)
+                    Array.Resize(ref _memoryStreams, slideCount + 2);
+                _presentationSlideCount = slideCount;
+                _maxSlides = Math.Max(_maxSlides, slideCount);
+            }
+        }
+
         /// <summary>
         /// 保存当前页面的墨迹
         /// </summary>
@@ -245,10 +259,10 @@ namespace Ink_Canvas.Helpers
         public void SavePlaybackPosition(int slideIndex)
         {
             ThrowIfDisposed();
-            if (slideIndex <= 0 || slideIndex > _presentationSlideCount || string.IsNullOrEmpty(AutoSaveLocation)
-                || string.IsNullOrEmpty(_currentPresentationId)) return;
             lock (_lockObject)
             {
+                if (slideIndex <= 0 || slideIndex > _presentationSlideCount || string.IsNullOrEmpty(AutoSaveLocation)
+                    || string.IsNullOrEmpty(_currentPresentationId)) return;
                 try
                 {
                     string folder = GetPresentationFolderPath();
