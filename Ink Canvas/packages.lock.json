@@ -128,12 +128,6 @@
           "Microsoft.NETFramework.ReferenceAssemblies.net462": "1.0.3"
         }
       },
-      "Microsoft.Office.Interop.PowerPoint": {
-        "type": "Direct",
-        "requested": "[15.0.4420.1018, )",
-        "resolved": "15.0.4420.1018",
-        "contentHash": "3XkJAqbYq93MqqSOPusNE+6Tve5yBkbE92n9W8f+k8Z9AzXeoTMqMYqhZMrzVOp4saHhMMbOD78JkCjvk+qIzw=="
-      },
       "Microsoft.Toolkit.Uwp.Notifications": {
         "type": "Direct",
         "requested": "[7.1.3, )",
@@ -150,12 +144,6 @@
         "requested": "[10.3.0, )",
         "resolved": "10.3.0",
         "contentHash": "AvMDjmJHjz9bdlvxiSdEHHcWP+sZtp7zwule5ab6DaUbgoBnwCsd7nymj69vSz18ypXuEv3SI7ZUNwbIKrvtMA=="
-      },
-      "MicrosoftOfficeCore": {
-        "type": "Direct",
-        "requested": "[15.0.0, )",
-        "resolved": "15.0.0",
-        "contentHash": "/KgYw8uvv0Ut8FPvyEa1XJ/TrLSRgvTv3JgC2IT0/8NwoICzbEJWfmfwsE6Dwi8WH0jVkTEO7zRvGvaKqUOhqQ=="
       },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
@@ -297,6 +285,11 @@
         "resolved": "1.0.3",
         "contentHash": "IzAV30z22ESCeQfxP29oVf4qEo8fBGXLXSU6oacv/9Iqe6PzgHDKCaWfwMBak7bSJQM0F5boXWoZS+kChztRIQ=="
       },
+      "Microsoft.Office.Interop.PowerPoint": {
+        "type": "Transitive",
+        "resolved": "15.0.4420.1018",
+        "contentHash": "3XkJAqbYq93MqqSOPusNE+6Tve5yBkbE92n9W8f+k8Z9AzXeoTMqMYqhZMrzVOp4saHhMMbOD78JkCjvk+qIzw=="
+      },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -314,6 +307,11 @@
           "System.Runtime.WindowsRuntime": "4.6.0",
           "System.Runtime.WindowsRuntime.UI.Xaml": "4.6.0"
         }
+      },
+      "MicrosoftOfficeCore": {
+        "type": "Transitive",
+        "resolved": "15.0.0",
+        "contentHash": "/KgYw8uvv0Ut8FPvyEa1XJ/TrLSRgvTv3JgC2IT0/8NwoICzbEJWfmfwsE6Dwi8WH0jVkTEO7zRvGvaKqUOhqQ=="
       },
       "NHotkey": {
         "type": "Transitive",
@@ -399,6 +397,15 @@
         "dependencies": {
           "iNKORE.UI.WPF": "[1.2.8, )",
           "iNKORE.UI.WPF.Modern": "[0.11.0, )"
+        }
+      },
+      "inkcanvas.linkage.core": {
+        "type": "Project",
+        "dependencies": {
+          "InkCanvas.PPTAgent.Contracts": "[1.0.0, )",
+          "Microsoft.Office.Interop.PowerPoint": "[15.0.4420.1018, )",
+          "MicrosoftOfficeCore": "[15.0.0, )",
+          "Newtonsoft.Json": "[13.0.4, )"
         }
       },
       "inkcanvas.pluginsdk": {

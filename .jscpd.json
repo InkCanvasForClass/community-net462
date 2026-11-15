@@ -1,4 +1,5 @@
 {
+  "threshold": 3,
   "reporters": ["html", "console"],
   "ignore": ["**/Migrations/**", "**/*.Designer.cs", "**/packages.lock.json"]
 }

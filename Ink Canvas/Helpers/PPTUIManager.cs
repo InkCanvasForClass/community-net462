@@ -89,9 +89,6 @@ namespace Ink_Canvas.Helpers
                         _mainWindow.IsInPPTPresentationMode = true;
                         _mainWindow.UpdateToolbarComponentVisibility();
 
-                        // 同步页码到所有翻页条 + 兼容旧绑定的隐藏 placeholder
-                        SetPageNumberOnAllBars(currentSlide, totalSlides);
-
                         UpdateNavigationPanelsVisibility();
                         UpdateNavigationButtonStyles();
                         _mainWindow.UpdatePPTTimeCapsuleVisibility();
@@ -150,52 +147,6 @@ namespace Ink_Canvas.Helpers
                     LogHelper.WriteLogToFile($"更新幻灯片放映状态UI失败: {ex}", LogHelper.LogType.Error);
                 }
             });
-        }
-
-        /// <summary>
-        /// 更新当前页码显示
-        /// </summary>
-        public void UpdateCurrentSlideNumber(int currentSlide, int totalSlides)
-        {
-            _dispatcher.InvokeAsync(() =>
-            {
-                try
-                {
-                    SetPageNumberOnAllBars(currentSlide, totalSlides);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"更新页码显示失败: {ex}", LogHelper.LogType.Error);
-                }
-            });
-        }
-
-        private void SetPageNumberOnAllBars(int currentSlide, int totalSlides)
-        {
-            var bars = new[]
-            {
-                _mainWindow.LeftBottomPanelForPPTNavigation,
-                _mainWindow.RightBottomPanelForPPTNavigation,
-                _mainWindow.LeftSidePanelForPPTNavigation,
-                _mainWindow.RightSidePanelForPPTNavigation,
-            };
-            foreach (var bar in bars)
-            {
-                if (bar == null) continue;
-                bar.CurrentSlide = currentSlide;
-                bar.TotalSlides = totalSlides;
-            }
-            // 兼容旧绑定（其它界面通过 ElementName 引用 PPTBtnPageNow / PPTBtnPageTotal）
-            if (currentSlide > 0 && totalSlides > 0)
-            {
-                _mainWindow.PPTBtnPageNow.Text = currentSlide.ToString();
-                _mainWindow.PPTBtnPageTotal.Text = $"/ {totalSlides}";
-            }
-            else
-            {
-                _mainWindow.PPTBtnPageNow.Text = "?";
-                _mainWindow.PPTBtnPageTotal.Text = "/ ?";
-            }
         }
 
         /// <summary>

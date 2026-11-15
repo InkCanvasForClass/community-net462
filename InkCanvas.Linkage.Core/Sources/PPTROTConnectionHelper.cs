@@ -6,10 +6,12 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
-namespace Ink_Canvas.Helpers
+namespace InkCanvasLinkage.Core.Sources
 {
-    public static class PPTROTConnectionHelper
+    internal class PPTROTConnectionHelper
     {
+        private readonly LogHelper LogHelper;
+        public PPTROTConnectionHelper(LogHelper log) { LogHelper = log; }
         #region Win32 API Declarations
         [DllImport("ole32.dll")]
         private static extern int GetRunningObjectTable(int reserved, out IRunningObjectTable prot);
@@ -59,7 +61,7 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Public Methods
-        public static Microsoft.Office.Interop.PowerPoint.Application TryConnectViaROT(bool isSupportWPS = false)
+        public Microsoft.Office.Interop.PowerPoint.Application TryConnectViaROT(bool isSupportWPS = false)
         {
             try
             {
@@ -162,7 +164,7 @@ namespace Ink_Canvas.Helpers
         /// <param name="bestPriority">输出参数：返回找到的最佳实例的优先级（0 表示未找到或无活动演示）。</param>
         /// <param name="targetPriority">输出参数：返回与 <paramref name="targetApp"/> 对应实例的优先级（如果未提供或未命中则为 0）。</param>
         /// <returns>最合适的 PowerPoint 应用对象（通常为 COM Application 实例），若未找到则返回 null。</returns>
-        public static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
+        public object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
         {
             IRunningObjectTable rot = null;
             IEnumMoniker enumMoniker = null;

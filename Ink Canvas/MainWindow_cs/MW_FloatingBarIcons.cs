@@ -6138,7 +6138,7 @@ namespace Ink_Canvas
         /// 更新当前工具模式缓存
         /// </summary>
         /// <param name="mode">模式名称</param>
-        private void UpdateCurrentToolMode(string mode)
+        internal void UpdateCurrentToolMode(string mode)
         {
             _currentToolMode = NormalizeToolModeForFreeze(mode);
 
