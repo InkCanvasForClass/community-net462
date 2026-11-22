@@ -159,8 +159,8 @@ namespace Ink_Canvas.Windows
             // 获取MainWindow引用
             _mainWindow = Application.Current.MainWindow as MainWindow;
 
-            if (_mainWindow != null) _mainWindow.PPTManagerChanged += SubscribeToPPTEvents;
-            SubscribeToPPTEvents(_mainWindow?.PPTManager);
+            if (_mainWindow?.PresentationLink != null) _mainWindow.PresentationLink.SourceChanged += OnPresentationSourceChanged;
+            OnPresentationSourceChanged();
             SubscribeToInkCanvasChildrenChanges();
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -279,11 +279,13 @@ namespace Ink_Canvas.Windows
             }
         }
 
-        private void SubscribeToPPTEvents(IPresentationLinkSource manager)
+        private void OnPresentationSourceChanged() => SubscribeToPPTEvents(_mainWindow?.PresentationLink?.HasSource == true);
+
+        private void SubscribeToPPTEvents(bool attached)
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.Invoke(() => SubscribeToPPTEvents(manager));
+                Dispatcher.Invoke(() => SubscribeToPPTEvents(attached));
                 return;
             }
             ResetPPTImageLoad();
@@ -299,7 +301,7 @@ namespace Ink_Canvas.Windows
                 _subscribedPresentationLink.ConnectionChanged -= OnPPTActiveChanged;
                 _subscribedPresentationLink.SlideShowStateChanged -= OnPPTActiveChanged;
             }
-            _subscribedPresentationLink = manager == null ? null : _mainWindow?.PresentationLink;
+            _subscribedPresentationLink = attached ? _mainWindow?.PresentationLink : null;
             if (_subscribedPresentationLink == null) return;
             _subscribedPresentationLink.PresentationOpened += OnPPTPresentationOpen;
             _subscribedPresentationLink.PresentationClosed += OnPPTSlideShowEnd;
@@ -417,8 +419,8 @@ namespace Ink_Canvas.Windows
         private void PPTQuickPanel_Unloaded(object sender, RoutedEventArgs e)
         {
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
-            if (_mainWindow != null) _mainWindow.PPTManagerChanged -= SubscribeToPPTEvents;
-            SubscribeToPPTEvents(null);
+            if (_mainWindow?.PresentationLink != null) _mainWindow.PresentationLink.SourceChanged -= OnPresentationSourceChanged;
+            SubscribeToPPTEvents(false);
             UnsubscribeFromInkCanvasChildrenChanges();
         }
 

@@ -850,10 +850,7 @@ namespace Ink_Canvas
 
             if (currentMode == 0)
             {
-                LeftBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                RightBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
+                if (PresentationLink != null) PresentationLink.NavigationSuppressed = true;
                 //進入黑板
 
                 /*
@@ -976,28 +973,6 @@ namespace Ink_Canvas
                 PauseAllCanvasMediaPlayback();
                 HideSubPanelsImmediately();
 
-                // 只有在PPT放映模式下且页数有效时才显示翻页按钮
-                if (ArePPTControlsVisible &&
-                    IsInPPTPresentationMode &&
-                    PPTManager?.IsInSlideShow == true &&
-                    PPTManager?.SlidesCount > 0)
-                {
-                    var dops = Settings.PowerPointSettings.PPTButtonsDisplayOption.ToString();
-                    var dopsc = dops.ToCharArray();
-                    if (dopsc[0] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(LeftBottomPanelForPPTNavigation);
-                    if (dopsc[1] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(RightBottomPanelForPPTNavigation);
-                    if (dopsc[2] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(LeftSidePanelForPPTNavigation);
-                    if (dopsc[3] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(RightSidePanelForPPTNavigation);
-                }
-                else
-                {
-                    // 如果不在放映模式或页数无效，隐藏所有翻页按钮
-                    LeftBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    RightBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                }
-
                 // 使用PPT UI管理器来正确更新翻页按钮显示状态，确保遵循用户设置
                 _pptUIManager?.UpdateNavigationPanelsVisibility();
 
@@ -1030,7 +1005,7 @@ namespace Ink_Canvas
             }
 
             SwitchBackground(null, null);
-
+            ApplyPresentationLinkSettings();
             if (currentMode == 0)
             {
                 // 根据当前编辑模式正确设置工具模式和高光位置
@@ -1123,8 +1098,8 @@ namespace Ink_Canvas
                 {
                     if (IsInPPTPresentationMode)
                     {
-                        var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        var presentationName = _pptManager?.GetPresentationName() ?? "";
+                        var currentSlide = PresentationLink?.CurrentSlide ?? 0;
+                        var presentationName = PresentationLink?.Presentation?.Name ?? "";
                         CaptureAndEnqueueScreenshotSave(true, $"{presentationName}/{currentSlide}_{DateTime.Now:HH-mm-ss}");
                     }
                     else
@@ -3368,8 +3343,8 @@ namespace Ink_Canvas
             {
                 if (IsInPPTPresentationMode)
                 {
-                    var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                    var presentationName = _pptManager?.GetPresentationName() ?? "";
+                    var currentSlide = PresentationLink?.CurrentSlide ?? 0;
+                    var presentationName = PresentationLink?.Presentation?.Name ?? "";
                     CaptureAndEnqueueScreenshotSave(true, $"{presentationName}/{currentSlide}_{DateTime.Now:HH-mm-ss}");
                 }
                 else CaptureAndEnqueueScreenshotSave(true);

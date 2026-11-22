@@ -445,11 +445,11 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             if (!isOn && ppt.IsSupportWPS)
             {
                 ppt.IsSupportWPS = false;
-                if (mw.PPTManager != null) mw.PPTManager.IsSupportWPS = false;
+                if (mw.PresentationLink != null) mw.PresentationLink.IsSupportWPS = false;
             }
             if (isOn)
             {
-                if (mw.PPTManager == null) mw.InitializePPTManagers();
+                if (mw.PresentationLink?.HasSource != true) mw.InitializePPTManagers();
                 mw.StartPPTMonitoring();
             }
             else
@@ -466,7 +466,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
             if (isOn)
             {
                 ppt.IsSupportWPS = false;
-                if (mw.PPTManager != null) mw.PPTManager.IsSupportWPS = false;
+                if (mw.PresentationLink != null) mw.PresentationLink.IsSupportWPS = false;
                 mw.StartPowerPointProcessMonitoring();
             }
             else
@@ -478,8 +478,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         public static void OnSkipAnimationsWhenGoNextChanged(bool isOn)
         {
             var mw = GetMainWindow();
-            if (mw?.PPTManager != null)
-                mw.PPTManager.SkipAnimationsWhenNavigating = isOn;
+            if (mw?.PresentationLink != null)
+                mw.PresentationLink.SkipAnimationsWhenNavigating = isOn;
         }
 
         public static void OnPPTLinkModeChanged()
@@ -528,7 +528,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                 if (!ppt.PowerPointSupport)
                 {
                     ppt.PowerPointSupport = true;
-                    if (mw.PPTManager == null) mw.InitializePPTManagers();
+                    if (mw.PresentationLink?.HasSource != true) mw.InitializePPTManagers();
                     mw.StartPPTMonitoring();
                 }
                 if (ppt.EnablePowerPointEnhancement)
@@ -537,19 +537,19 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
                     mw.StopPowerPointProcessMonitoring();
                 }
             }
-            if (mw.PPTManager != null)
+            if (mw.PresentationLink != null)
             {
-                mw.PPTManager.IsSupportWPS = ppt.IsSupportWPS;
-                mw.PPTManager.SkipAnimationsWhenNavigating = ppt.SkipAnimationsWhenGoNext;
+                mw.PresentationLink.IsSupportWPS = ppt.IsSupportWPS;
+                mw.PresentationLink.SkipAnimationsWhenNavigating = ppt.SkipAnimationsWhenGoNext;
             }
         }
 
         public static void OnShowPPTButtonChanged(bool isOn)
         {
             var mw = GetMainWindow();
+            if (mw?.PresentationLink != null) mw.PresentationLink.ShowNavigationButtons = isOn;
             if (mw?.PPTUIManager != null)
             {
-                mw.PPTUIManager.ShowPPTButton = isOn;
                 mw.PPTUIManager.UpdateNavigationPanelsVisibility();
             }
             mw?.UpdatePPTBtnPreview();
@@ -590,9 +590,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Helpers
         public static void OnPPTButtonsDisplayOptionChanged()
         {
             var mw = GetMainWindow();
+            mw?.ApplyPresentationLinkSettings();
             if (mw?.PPTUIManager != null && mw.IsInPPTPresentationMode)
             {
-                mw.PPTUIManager.PPTButtonsDisplayOption = SettingsManager.Settings.PowerPointSettings.PPTButtonsDisplayOption;
                 mw.PPTUIManager.UpdateNavigationPanelsVisibility();
             }
             mw?.UpdatePPTBtnPreview();

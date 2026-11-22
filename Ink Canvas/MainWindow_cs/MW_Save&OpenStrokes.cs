@@ -255,10 +255,10 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true)
                     {
                         hasMultiplePages = true;
-                        var totalSlides = _pptManager.SlidesCount;
+                        var totalSlides = PresentationLink.TotalSlides;
                         var currentSlide = _currentSlideShowPosition;
 
                         for (int i = 1; i <= totalSlides; i++)
@@ -304,7 +304,7 @@ namespace Ink_Canvas
                     if (hasMultiplePages && allPageStrokes.Count > 0)
                     {
                         // 检查是否是PPT模式
-                        bool isPPTMode = currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true;
+                        bool isPPTMode = currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true;
 
                         if (isPPTMode)
                         {
@@ -378,11 +378,11 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true)
                     {
                         hasMultiplePages = true;
                         // 收集PPT放映模式下的所有页面墨迹
-                        var totalSlides = _pptManager.SlidesCount;
+                        var totalSlides = PresentationLink.TotalSlides;
                         var currentSlide = _currentSlideShowPosition;
 
                         for (int i = 1; i <= totalSlides; i++)
@@ -446,10 +446,10 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (currentMode == 0 && IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true)
                     {
                         hasMultiplePages = true;
-                        var totalSlides = _pptManager.SlidesCount;
+                        var totalSlides = PresentationLink.TotalSlides;
                         var currentSlide = _currentSlideShowPosition;
 
                         for (int i = 1; i <= totalSlides; i++)

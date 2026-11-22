@@ -15,7 +15,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using File = System.IO.File;
@@ -118,17 +117,6 @@ namespace Ink_Canvas
         /// </summary>
         private const int LongPressInterval = 50; // 长按翻页间隔（毫秒）
 
-        // 上次播放位置相关字段
-        /// <summary>
-        /// 上次播放的幻灯片页码。
-        /// </summary>
-        private int _lastPlaybackPage = 0;
-
-        /// <summary>
-        /// 是否应该导航到上次播放页码的标志。
-        /// </summary>
-        private bool _shouldNavigateToLastPage = false;
-
         // 当前播放页码跟踪
         /// <summary>
         /// 当前幻灯片放映的位置（页码）。
@@ -141,12 +129,6 @@ namespace Ink_Canvas
         /// </summary>
         internal int CurrentPPTSlideIndex => _currentSlideShowPosition > 0 ? _currentSlideShowPosition - 1 : 0;
 
-        private readonly object _pptEnhancedPreviewCacheLock = new object();
-        private List<PPTEnhancedPreviewItem> _pptEnhancedPreviewCache;
-        private Task<List<PPTEnhancedPreviewItem>> _pptEnhancedPreviewBuildTask;
-        private CancellationTokenSource _pptEnhancedPreviewCacheCts;
-        private int _pptEnhancedPreviewCacheGeneration;
-        private const int PPTEnhancedPreviewPreloadDelayMs = 100;
         private int _previousSlideID = 0;
 
         /// <summary>
@@ -186,16 +168,8 @@ namespace Ink_Canvas
         /// <summary>
         /// PPT链接管理器，用于管理与PowerPoint的连接和事件处理。
         /// </summary>
-        private IPresentationLinkSource _pptManager;
         public PresentationLinkViewModel PresentationLink { get; private set; }
         private Guid _inkPresentationSessionId;
-        private bool IsCurrentPPTSession(PresentationLinkState state) =>
-            PresentationLink?.IsCurrentOperation == true && state.PresentationSessionId != Guid.Empty
-            && _pptManager?.State.PresentationSessionId == state.PresentationSessionId;
-        private bool IsCurrentPPTSourceSession(IPresentationLinkSource source, PresentationLinkState state, int generation) =>
-            source != null && ReferenceEquals(source, _pptManager) && generation == PresentationLink?.Generation
-            && source.State.PresentationSessionId == state.PresentationSessionId
-            && source.State.SlideShowSessionId == state.SlideShowSessionId;
 
         /// <summary>
         /// PPT墨迹管理器，用于管理PowerPoint幻灯片上的墨迹。
@@ -207,49 +181,42 @@ namespace Ink_Canvas
         /// </summary>
         private PPTUIManager _pptUIManager;
 
-        /// <summary>
-        /// 获取PPT管理器实例
-        /// </summary>
-        /// <remarks>
-        /// 提供对内部PPT链接管理器的公共访问，用于外部代码与PowerPoint进行交互。
-        /// </remarks>
-        public IPresentationLinkSource PPTManager => _pptManager;
-        public event Action<IPresentationLinkSource> PPTManagerChanged;
         public PPTUIManager PPTUIManager => _pptUIManager;
         #endregion
 
         #region PPT Manager Initialization
+        private void InitializePresentationLinkViewModel()
+        {
+            if (PresentationLink != null) return;
+            PresentationLink = new PresentationLinkViewModel(Dispatcher,
+                ex => LogHelper.WriteLogToFile($"PPT 宿主联动失败: {ex}", LogHelper.LogType.Error),
+                new PresentationLinkHost(this));
+            PresentationLink.ConnectionChanged += OnPPTConnectionChanged;
+            PresentationLink.SlideShowStarted += OnPPTSlideShowBegin;
+            PresentationLink.SlideChanged += OnPPTSlideShowNextSlide;
+            PresentationLink.SlideShowEnded += OnPPTSlideShowEnd;
+            PresentationLink.PresentationOpened += OnPPTPresentationOpen;
+            PresentationLink.PresentationClosed += OnPPTPresentationClose;
+            PresentationLink.SlideShowStateChanged += OnPPTSlideShowStateChanged;
+            PresentationLink.PropertyChanged += OnPPTLinkPropertyChanged;
+        }
+
         /// <summary>
         /// 初始化并配置用于 PowerPoint 集成的管理器与相关状态。
         /// </summary>
         /// <remarks>
         /// 清理并释放现有的 PPT 管理器与 COM/Interop 状态，创建并配置新的 PPT 管理器（ROT 或 COM 实现，取决于设置）、单一的 PPT 墨迹管理器及其自动保存行为，以及 PPT UI 管理器与其显示/按钮位置选项。方法内部会订阅必要的 PPT 事件并记录初始化过程中的错误或警告。同时初始化长按页翻页定时器以支持长按翻页功能。
         /// </remarks>
-        /// <param name="source">可选的联动来源（包括 Fake）；主窗口负责停止和释放。</param>
+        /// <param name="source">可选的联动来源（包括 Fake）；ViewModel 负责停止和释放。</param>
         public void InitializePPTManagers(IPresentationLinkSource source = null)
         {
-            if (source != null && ReferenceEquals(source, _pptManager)) return;
+            if (source != null && ReferenceEquals(source, PresentationLink?.Source)) return;
             try
             {
                 // 初始化长按定时器
                 _longPressTimer?.Stop();
                 InitializeLongPressTimer();
-                if (PresentationLink == null)
-                {
-                    PresentationLink = new PresentationLinkViewModel(Dispatcher,
-                        ex => LogHelper.WriteLogToFile($"PPT 宿主联动失败: {ex}", LogHelper.LogType.Error),
-                        () => BtnPPTSlidesUp_Click(null, null), () => BtnPPTSlidesDown_Click(null, null),
-                        page => _pptManager?.TryNavigateToSlide(page),
-                        bar => _ = OnPPTNavBarPageClickAsync(bar as Controls.PPTNavBar ?? LeftBottomPanelForPPTNavigation));
-                    PresentationLink.ConnectionChanged += OnPPTConnectionChanged;
-                    PresentationLink.SlideShowStarted += OnPPTSlideShowBegin;
-                    PresentationLink.SlideChanged += OnPPTSlideShowNextSlide;
-                    PresentationLink.SlideShowEnded += OnPPTSlideShowEnd;
-                    PresentationLink.PresentationOpened += OnPPTPresentationOpen;
-                    PresentationLink.PresentationClosed += OnPPTPresentationClose;
-                    PresentationLink.SlideShowStateChanged += OnPPTSlideShowStateChanged;
-                    PresentationLink.PropertyChanged += OnPPTLinkPropertyChanged;
-                }
+                InitializePresentationLinkViewModel();
                 WirePPTNavBars();
 
                 // 完全清理旧模式
@@ -293,12 +260,8 @@ namespace Ink_Canvas
                         LogHelper.WriteLogToFile($"恢复旧 PPT 界面失败: {ex}", LogHelper.LogType.Warning);
                     }
                     _inkPresentationSessionId = Guid.Empty;
-                    PPTManagerChanged?.Invoke(null);
-                    PresentationLink.Attach(null);
-                    CancelPresentationNotifications();
-                    _pptManager?.StopMonitoring();
-                    _pptManager?.Dispose();
-                    _pptManager = null;
+                    try { CancelPresentationNotifications(); }
+                    finally { PresentationLink.ReleaseSource(); }
                 }
                 catch (Exception ex)
                 {
@@ -316,20 +279,18 @@ namespace Ink_Canvas
 
                 if (source == null && Settings.PowerPointSettings.PPTLinkMode == PPTLinkMode.Agent)
                     VstoRegistrationHelper.EnsureRegistered();
-                _pptManager = source ?? PresentationLinkSourceFactory.Create(
+                PresentationLink.InitializeSource(
                     (PresentationLinkMode)Settings.PowerPointSettings.PPTLinkMode,
                     new PresentationLinkOptions
                     {
+                        SupportWps = Settings.PowerPointSettings.IsSupportWPS,
+                        SkipAnimations = Settings.PowerPointSettings.SkipAnimationsWhenGoNext,
                         DebugProbeEnabled = Settings.Advanced.IsPPTComDebugProbeEnabled,
                         Log = (message, level) => LogHelper.WriteLogToFile(message,
                             level == PresentationLogLevel.Error ? LogHelper.LogType.Error :
                             level == PresentationLogLevel.Warning ? LogHelper.LogType.Warning : LogHelper.LogType.Trace)
-                    });
-
-                _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
-                _pptManager.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
-
-                PresentationLink.Attach(_pptManager);
+                    }, source);
+                ApplyPresentationLinkSettings();
 
                 _singlePPTInkManager?.Dispose();
                 _singlePPTInkManager = new PPTInkManager();
@@ -338,18 +299,12 @@ namespace Ink_Canvas
 
                 // 初始化UI管理器
                 _pptUIManager = new PPTUIManager(this);
-                _pptUIManager.ShowPPTButton = Settings.PowerPointSettings.ShowPPTButton;
-                _pptUIManager.PPTButtonsDisplayOption = Settings.PowerPointSettings.PPTButtonsDisplayOption;
                 _pptUIManager.PPTSButtonsOption = Settings.PowerPointSettings.PPTSButtonsOption;
                 _pptUIManager.PPTBButtonsOption = Settings.PowerPointSettings.PPTBButtonsOption;
                 _pptUIManager.PPTLSButtonPosition = Settings.PowerPointSettings.PPTLSButtonPosition;
                 _pptUIManager.PPTRSButtonPosition = Settings.PowerPointSettings.PPTRSButtonPosition;
                 _pptUIManager.PPTLBButtonPosition = Settings.PowerPointSettings.PPTLBButtonPosition;
                 _pptUIManager.PPTRBButtonPosition = Settings.PowerPointSettings.PPTRBButtonPosition;
-                _pptUIManager.EnablePPTButtonPageClickable = Settings.PowerPointSettings.EnablePPTButtonPageClickable;
-                _pptUIManager.EnablePPTButtonLongPressPageTurn = Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn;
-
-                PPTManagerChanged?.Invoke(_pptManager);
 
                 LogHelper.WriteLogToFile("PPT管理器初始化完成", LogHelper.LogType.Event);
             }
@@ -369,7 +324,7 @@ namespace Ink_Canvas
         {
             if (Settings.PowerPointSettings.PowerPointSupport)
             {
-                _pptManager?.StartMonitoring();
+                PresentationLink?.StartMonitoring();
                 LogHelper.WriteLogToFile("PPT监控已启动", LogHelper.LogType.Event);
             }
         }
@@ -390,7 +345,7 @@ namespace Ink_Canvas
             {
             }
 
-            _pptManager?.StopMonitoring();
+            PresentationLink?.StopMonitoring();
             LogHelper.WriteLogToFile("PPT监控已停止", LogHelper.LogType.Event);
         }
 
@@ -405,7 +360,7 @@ namespace Ink_Canvas
         public void StartPowerPointProcessMonitoring()
         {
             if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
-                _pptManager?.SetEnhancedMonitoring(true);
+                PresentationLink?.SetEnhancedMonitoring(true);
         }
 
         /// <summary>
@@ -413,7 +368,7 @@ namespace Ink_Canvas
         /// </summary>
         public void StopPowerPointProcessMonitoring(bool isShutdown = false)
         {
-            _pptManager?.SetEnhancedMonitoring(false, isShutdown);
+            PresentationLink?.SetEnhancedMonitoring(false, isShutdown);
         }
         #endregion
 
@@ -427,15 +382,11 @@ namespace Ink_Canvas
         {
             try
             {
-                if (_pptManager != null)
+                if (PresentationLink?.HasSource == true)
                 {
                     SaveCurrentPPTInk();
-                    PPTManagerChanged?.Invoke(null);
-                    PresentationLink?.Attach(null);
-                    CancelPresentationNotifications();
-                    _pptManager.StopMonitoring(isShutdown: isShutdown);
-                    _pptManager.Dispose();
-                    _pptManager = null;
+                    try { CancelPresentationNotifications(); }
+                    finally { PresentationLink.ReleaseSource(isShutdown); }
                 }
 
                 _singlePPTInkManager?.Dispose();
@@ -733,8 +684,7 @@ namespace Ink_Canvas
                     _singlePPTInkManager?.InitializePresentation(metadata);
                     _inkPresentationSessionId = state.PresentationSessionId;
 
-                    // Dialogs run sequentially without blocking slide/ink events while the user decides.
-                    _ = NotifyPresentationOpenAsync(state);
+                    ApplyPresentationLinkSettings();
 
                     _pptUIManager?.UpdateConnectionStatus(true);
 
@@ -888,17 +838,7 @@ namespace Ink_Canvas
                     }
 
                     // 处理跳转到首页或上次播放位置
-                    if (Settings.PowerPointSettings.IsAlwaysGoToFirstPageOnReenter)
-                    {
-                        _pptManager?.TryNavigateToSlide(1);
-                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) ExceptionHandler.TryExecute(() => this.Activate(), "激活主窗口失败（PPT 重入首页时）");
-                    }
-                    else if (_shouldNavigateToLastPage && _lastPlaybackPage > 0)
-                    {
-                        _pptManager?.TryNavigateToSlide(_lastPlaybackPage);
-                        _shouldNavigateToLastPage = false;
-                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) ExceptionHandler.TryExecute(() => this.Activate(), "激活主窗口失败（PPT 重入末页时）");
-                    }
+                    ApplyPresentationLinkSettings();
 
                     // 更新UI状态
                     _pptUIManager?.UpdateSlideShowStatus(true, currentSlide, totalSlides);
@@ -1045,8 +985,7 @@ namespace Ink_Canvas
                     return;
                 }
 
-                var response = _pptManager?.Capabilities.HasFlag(PresentationCapabilities.SmartRegions) == true
-                    ? _pptManager.GetSmartRegions() : new PresentationSmartRegions();
+                var response = PresentationLink?.GetSmartRegions() ?? new PresentationSmartRegions();
                 _smartModeRegions = response.Regions;
                 _smartModeSlideIndex = response.SlideIndex;
                 _smartModeSlideWidth = response.SlideWidth;
@@ -1215,60 +1154,6 @@ namespace Ink_Canvas
         #endregion
 
         #region Helper Methods
-        /// <summary>
-        /// 处理演示文稿打开时的导航逻辑：根据设置决定跳转到首页或显示上次播放页通知。
-        /// </summary>
-        /// <param name="pres">当前打开的 PowerPoint 演示文稿（Presentation）实例。</param>
-        /// <remarks>
-        /// 操作包括：
-        /// 1. 如果设置了总是跳转到首页，则尝试导航到第1页
-        /// 2. 否则，如果设置了显示上次播放页通知，则显示上次播放页通知
-        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
-        /// </remarks>
-        private async Task NotifyPresentationOpenAsync(PresentationLinkState state)
-        {
-            if (!IsCurrentPPTSession(state)) return;
-            await HandlePresentationOpenNavigation(state);
-            if (!IsCurrentPPTSession(state)) return;
-            if (Settings.PowerPointSettings.IsNotifyHiddenPage) await CheckAndNotifyHiddenSlides(state);
-            if (!IsCurrentPPTSession(state)) return;
-            if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation) await CheckAndNotifyAutoPlaySettings(state);
-        }
-
-        private async Task HandlePresentationOpenNavigation(PresentationLinkState state)
-        {
-            try
-            {
-                if (Settings.PowerPointSettings.IsAlwaysGoToFirstPageOnReenter)
-                {
-                    _pptManager?.TryNavigateToSlide(1);
-                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) ExceptionHandler.TryExecute(() => this.Activate(), "激活主窗口失败（PPT 重入首页时）");
-                }
-                else if (Settings.PowerPointSettings.IsNotifyPreviousPage)
-                {
-                    await ShowPreviousPageNotification(state);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"处理演示文稿导航失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 显示上次播放页通知：检查演示文稿的上次播放位置并显示跳转提示。
-        /// </summary>
-        /// <param name="pres">当前打开的 PowerPoint 演示文稿（Presentation）实例。</param>
-        /// <remarks>
-        /// 操作包括：
-        /// 1. 检查演示文稿是否为null
-        /// 2. 获取演示文稿路径并计算文件哈希值
-        /// 3. 构建保存位置文件夹路径和位置文件路径
-        /// 4. 检查位置文件是否存在
-        /// 5. 尝试解析位置文件中的页码
-        /// 6. 如果解析成功且页码大于0，则保存上次播放页码并显示跳转提示窗口
-        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
-        /// </remarks>
         private TaskCompletionSource<bool> _inlineDialogTcs;
 
         private void CancelPresentationNotifications()
@@ -1276,8 +1161,6 @@ namespace Ink_Canvas
             _inlineDialogTcs?.TrySetResult(false);
             _inlineDialogTcs = null;
             InlineDialogRoot.Visibility = Visibility.Collapsed;
-            IsShowingRestoreHiddenSlidesWindow = false;
-            IsShowingAutoplaySlidesWindow = false;
         }
 
         private async Task<bool> ShowInlineYesNoDialog(string title, string content)
@@ -1376,154 +1259,6 @@ namespace Ink_Canvas
             _inlineDialogTcs?.TrySetResult(false);
         }
 
-        private async Task ShowPreviousPageNotification(PresentationLinkState state)
-        {
-            try
-            {
-                var presentationName = state.Presentation?.Name;
-                var totalSlides = state.TotalSlides;
-                if (string.IsNullOrEmpty(presentationName) || totalSlides <= 0) return;
-
-                var folderPath = GetPresentationStrokeFolderPath(state.Presentation);
-                var positionFile = Path.Combine(folderPath, "Position");
-
-                if (!File.Exists(positionFile)) return;
-
-                if (int.TryParse(File.ReadAllText(positionFile), out var page) && page > 0 && page <= totalSlides)
-                {
-                    _lastPlaybackPage = page;
-                    var result = await ShowInlineYesNoDialog("Ink Canvas For Class CE", string.Format(Properties.PPTStrings.PPT_RememberLastPage_Prompt, page));
-                    if (result && IsCurrentPPTSession(state))
-                    {
-                        try
-                        {
-                            if (_pptManager?.TryNavigateToSlide(page) == true)
-                            {
-                                if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) ExceptionHandler.TryExecute(() => this.Activate(), "激活主窗口失败（PPT 翻页时）");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"跳转到第{page}页失败: {ex}", LogHelper.LogType.Error);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"显示上次播放页通知失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 检查并通知隐藏幻灯片：扫描演示文稿中的所有幻灯片，检测隐藏幻灯片并显示取消隐藏的提示。
-        /// </summary>
-        /// <param name="pres">要检查的 PowerPoint 演示文稿（Presentation）实例。</param>
-        /// <remarks>
-        /// 操作包括：
-        /// 1. 检查演示文稿及其幻灯片集合是否为null
-        /// 2. 遍历所有幻灯片，检测是否存在隐藏的幻灯片
-        /// 3. 如果存在隐藏幻灯片且未显示过恢复隐藏幻灯片窗口，则显示确认窗口
-        /// 4. 如果用户确认，则取消所有幻灯片的隐藏状态
-        /// 5. 无论用户选择如何，都会重置IsShowingRestoreHiddenSlidesWindow标志
-        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
-        /// </remarks>
-        private async Task CheckAndNotifyHiddenSlides(PresentationLinkState state)
-        {
-            try
-            {
-                bool hasHiddenSlides = state.Presentation?.HasHiddenSlides == true
-                    && _pptManager.Capabilities.HasFlag(PresentationCapabilities.HiddenSlides);
-
-                if (hasHiddenSlides && !IsShowingRestoreHiddenSlidesWindow)
-                {
-                    IsShowingRestoreHiddenSlidesWindow = true;
-                    var result = await ShowInlineYesNoDialog("Ink Canvas For Class CE", Properties.PPTStrings.PPT_HiddenSlides_Detected);
-                    if (!IsCurrentPPTSession(state)) return;
-                    if (result && IsCurrentPPTSession(state))
-                    {
-                        try
-                        {
-                            _pptManager?.TryUnhideHiddenSlides();
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"取消隐藏幻灯片失败: {ex}", LogHelper.LogType.Error);
-                        }
-                        finally
-                        {
-                            IsShowingRestoreHiddenSlidesWindow = false;
-                        }
-                    }
-                    else
-                    {
-                        IsShowingRestoreHiddenSlidesWindow = false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (IsCurrentPPTSession(state)) IsShowingRestoreHiddenSlidesWindow = false;
-                LogHelper.WriteLogToFile($"检查隐藏幻灯片失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 检查并通知自动播放设置：扫描演示文稿中的所有幻灯片，检测自动播放或排练计时设置并显示取消提示。
-        /// </summary>
-        /// <param name="pres">要检查的 PowerPoint 演示文稿（Presentation）实例。</param>
-        /// <remarks>
-        /// 操作包括：
-        /// 1. 检查是否正在显示PPT放映结束按钮，如果是则直接返回
-        /// 2. 检查演示文稿及其幻灯片集合是否为null
-        /// 3. 遍历所有幻灯片，检测是否存在自动播放或排练计时设置
-        /// 4. 如果存在自动播放设置且未显示过自动播放提示窗口，则显示确认窗口
-        /// 5. 如果用户确认，则将演示文稿的放映设置设置为手动播放模式
-        /// 6. 无论用户选择如何，都会重置IsShowingAutoplaySlidesWindow标志
-        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
-        /// </remarks>
-        private async Task CheckAndNotifyAutoPlaySettings(PresentationLinkState state)
-        {
-            try
-            {
-                if (IsInPPTPresentationMode) return;
-
-                bool hasSlideTimings = state.Presentation?.HasAutoPlayTimings == true
-                    && _pptManager.Capabilities.HasFlag(PresentationCapabilities.AutoPlayTimings);
-
-                if (hasSlideTimings && !IsShowingAutoplaySlidesWindow)
-                {
-                    IsShowingAutoplaySlidesWindow = true;
-                    var result = await ShowInlineYesNoDialog("Ink Canvas For Class CE", Properties.PPTStrings.PPT_AutoPlay_Detected);
-                    if (!IsCurrentPPTSession(state)) return;
-                    if (result && IsCurrentPPTSession(state))
-                    {
-                        try
-                        {
-                            _pptManager?.TryDisableAutoPlayTimings();
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"设置手动播放模式失败: {ex}", LogHelper.LogType.Error);
-                        }
-                        finally
-                        {
-                            IsShowingAutoplaySlidesWindow = false;
-                        }
-                    }
-                    else
-                    {
-                        IsShowingAutoplaySlidesWindow = false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (IsCurrentPPTSession(state)) IsShowingAutoplaySlidesWindow = false;
-                LogHelper.WriteLogToFile($"检查自动播放设置失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
         /// <summary>
         /// 加载当前幻灯片的墨迹：清空画布和历史记录，然后加载指定幻灯片的墨迹。
         /// </summary>
@@ -1593,10 +1328,7 @@ namespace Ink_Canvas
         /// 具体重置的字段包括：
         /// 1. 播放结束重入保护标志（isEnteredSlideShowEndEvent）
         /// 2. 演示文稿黑边指示（isPresentationHaveBlackSpace）
-        /// 3. 上次播放页码（_lastPlaybackPage）
-        /// 4. 导航标志（_shouldNavigateToLastPage）
-        /// 5. 当前放映位置（_currentSlideShowPosition）
-        /// 6. 滑动切换处理状态（_isProcessingSlideSwitch）
+        /// 3. 当前放映位置（_currentSlideShowPosition）
         /// 
         /// 该方法在执行过程中会：
         /// - 使用线程安全的方式重置滑动切换处理状态
@@ -1612,10 +1344,6 @@ namespace Ink_Canvas
 
                 // 重置演示文稿黑边状态
                 isPresentationHaveBlackSpace = false;
-
-                // 重置上次播放位置相关字段
-                _lastPlaybackPage = 0;
-                _shouldNavigateToLastPage = false;
 
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
@@ -1639,34 +1367,18 @@ namespace Ink_Canvas
         /// 延迟约 800 毫秒后在 UI 线程上检查连接状态：若已连接仅记录事件日志，若未连接则弹出提示并记录警告；
         /// 若过程中抛出异常则记录错误日志、将 UI 连接状态置为断开并提示用户未找到幻灯片。
         /// </remarks>
-        private void BtnCheckPPT_Click(object sender, RoutedEventArgs e)
+        private async void BtnCheckPPT_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 // 使用新的PPT管理器进行连接检查
-                if (_pptManager == null)
+                if (PresentationLink?.HasSource != true)
                 {
                     InitializePPTManagers();
                 }
 
-                _pptManager?.ReloadConnection();
-                _pptManager?.StartMonitoring();
-
-                Task.Delay(800).ContinueWith(_ =>
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        if (_pptManager?.IsConnected == true)
-                        {
-                            LogHelper.WriteLogToFile("手动PPT连接检查成功", LogHelper.LogType.Event);
-                        }
-                        else
-                        {
-                            MessageBox.Show(Properties.PPTStrings.PPT_SlidesNotFound);
-                            LogHelper.WriteLogToFile("手动PPT连接检查失败", LogHelper.LogType.Warning);
-                        }
-                    });
-                });
+                if (PresentationLink?.ReloadCommand.CanExecute(null) == true)
+                    await PresentationLink.ReloadCommand.ExecuteAsync(null);
             }
             catch (Exception ex)
             {
@@ -1702,9 +1414,9 @@ namespace Ink_Canvas
             {
                 Settings.PowerPointSettings.IsSupportWPS = false;
 
-                if (_pptManager != null)
+                if (PresentationLink?.HasSource == true)
                 {
-                    _pptManager.IsSupportWPS = false;
+                    PresentationLink.IsSupportWPS = false;
                 }
             }
 
@@ -1748,7 +1460,7 @@ namespace Ink_Canvas
                 {
                     Settings.PowerPointSettings.PowerPointSupport = true;
 
-                    if (_pptManager == null)
+                    if (PresentationLink?.HasSource != true)
                     {
                         InitializePPTManagers();
                     }
@@ -1762,10 +1474,10 @@ namespace Ink_Canvas
                 }
             }
 
-            if (_pptManager != null)
+            if (PresentationLink?.HasSource == true)
             {
-                _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
-                _pptManager.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
+                PresentationLink.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
+                PresentationLink.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
             }
 
             SaveSettingsToFile();
@@ -1779,9 +1491,9 @@ namespace Ink_Canvas
             if (toggle != null)
                 Settings.PowerPointSettings.SkipAnimationsWhenGoNext = toggle.IsOn;
 
-            if (_pptManager != null)
+            if (PresentationLink?.HasSource == true)
             {
-                _pptManager.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
+                PresentationLink.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
             }
 
             SaveSettingsToFile();
@@ -1794,21 +1506,14 @@ namespace Ink_Canvas
         private static bool isWPSSupportOn => Settings.PowerPointSettings.IsSupportWPS;
 
         /// <summary>
-        /// 指示是否正在显示恢复隐藏幻灯片的窗口
-        /// </summary>
-        public static bool IsShowingRestoreHiddenSlidesWindow;
-
-        /// <summary>
-        /// 指示是否正在显示自动播放提示窗口
-        /// </summary>
-        private static bool IsShowingAutoplaySlidesWindow;
-
-        /// <summary>
         /// 处理“上一页”按钮的点击操作：在满足自动保存条件时保存当前幻灯片截图并尝试切换到上一张幻灯片；在切换失败或发生异常时记录日志并更新连接状态。
         /// </summary>
         /// <param name="sender">事件的来源对象（通常是触发按钮）。</param>
         /// <param name="e">路由事件参数。</param>
-        private async void BtnPPTSlidesUp_Click(object sender, RoutedEventArgs e) => await NavigatePPTSlideAsync(false);
+        private void BtnPPTSlidesUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (PresentationLink?.PreviousCommand.CanExecute(null) == true) PresentationLink.PreviousCommand.Execute(null);
+        }
 
         /// <summary>
         /// 处理“下一页”按钮点击：在满足自动保存条件时保存当前幻灯片的截图并尝试切换到下一张幻灯片。
@@ -1816,46 +1521,9 @@ namespace Ink_Canvas
         /// <remarks>
         /// 如果切换操作失败或发生异常，会写入日志并将 PPT 连接状态更新为断开。
         /// </remarks>
-        private async void BtnPPTSlidesDown_Click(object sender, RoutedEventArgs e) => await NavigatePPTSlideAsync(true);
-
-        private async Task NavigatePPTSlideAsync(bool next)
+        private void BtnPPTSlidesDown_Click(object sender, RoutedEventArgs e)
         {
-            var source = _pptManager;
-            var state = source?.State;
-            int generation = PresentationLink?.Generation ?? -1;
-            if (state?.IsInSlideShow != true) return;
-            int strokeCount = inkCanvas?.Strokes?.Count ?? 0;
-            bool needScreenshot = strokeCount > Settings.Automation.MinimumAutomationStrokeNumber &&
-                Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint;
-
-            if (needScreenshot)
-            {
-                if (state.CurrentSlide > 0)
-                {
-                    CaptureAndEnqueueScreenshotSave(true, $"{state.Presentation?.Name}/{state.CurrentSlide}");
-                }
-            }
-
-            try
-            {
-                bool succeeded = await Task.Run(() => IsCurrentPPTSourceSession(source, state, generation)
-                    && (next ? source.TryNavigateNext() : source.TryNavigatePrevious()));
-                if (!IsCurrentPPTSourceSession(source, state, generation)) return;
-                if (succeeded)
-                {
-                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
-                        ExceptionHandler.TryExecute(() => Activate(), "激活主窗口失败（PPT 翻页时）");
-                }
-                else
-                {
-                    LogHelper.WriteLogToFile("PPT翻页失败", LogHelper.LogType.Warning);
-                    _pptUIManager?.UpdateConnectionStatus(source.IsConnected);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"PPT翻页操作异常: {ex}", LogHelper.LogType.Error);
-            }
+            if (PresentationLink?.NextCommand.CanExecute(null) == true) PresentationLink.NextCommand.Execute(null);
         }
 
         /// <summary>
@@ -1873,166 +1541,7 @@ namespace Ink_Canvas
         private void PPTNavigationBtn_MouseLeave(object sender, MouseEventArgs e) { }
         private void PPTNavigationBtn_MouseUp(object sender, MouseButtonEventArgs e) { }
 
-        /// <summary>由 PPTNavBar 控件 PageClick 事件触发的页码点击逻辑。</summary>
-        private async Task OnPPTNavBarPageClickAsync(Controls.PPTNavBar bar)
-        {
-            var source = _pptManager;
-            var state = source?.State;
-            int generation = PresentationLink?.Generation ?? -1;
-            if (!Settings.PowerPointSettings.EnablePPTButtonPageClickable) return;
-            if (_pptManager?.IsConnected != true || _pptManager?.IsInSlideShow != true)
-            {
-                LogHelper.WriteLogToFile("PPT未连接或未在放映状态，无法执行页码点击操作", LogHelper.LogType.Warning);
-                return;
-            }
-
-            try
-            {
-                GridTransparencyFakeBackground.Opacity = 1;
-                GridTransparencyFakeBackground.Background = new SolidColorBrush(StringToColor("#01FFFFFF"));
-                SetTransparentNotHitThrough();
-                CursorIcon_Click(null, null);
-
-                if (Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview && bar != null)
-                {
-                    // 侧边条点击时,把增强预览重定向到同侧的底部条上展开
-                    var targetBar = ResolvePreviewTargetBar(bar);
-                    if (targetBar == null)
-                    {
-                        _pptManager.TryShowSlideNavigation();
-                    }
-                    else if (targetBar.IsPreviewExpanded)
-                    {
-                        targetBar.IsPreviewExpanded = false;
-                    }
-                    else
-                    {
-                        var slides = await GetOrBuildPPTEnhancedPreviewItemsAsync(EnsurePPTEnhancedPreviewCacheToken());
-                        if (!IsCurrentPPTSourceSession(source, state, generation)) return;
-                        if (slides == null || slides.Count == 0)
-                        {
-                            LogHelper.WriteLogToFile("PPT增强预览未生成可用缩略图，改用默认导航", LogHelper.LogType.Warning);
-                            _pptManager.TryShowSlideNavigation();
-                        }
-                        else
-                        {
-                            var items = new List<PresentationPreviewItem>(slides.Count);
-                            foreach (var s in slides)
-                            {
-                                items.Add(new PresentationPreviewItem
-                                {
-                                    SlideNumber = s.SlideNumber,
-                                    Thumbnail = s.Thumbnail
-                                });
-                            }
-                            PresentationLink.PreviewItems = items;
-                            targetBar.IsPreviewExpanded = true;
-                        }
-                    }
-                }
-                else
-                {
-                    if (_pptManager.TryShowSlideNavigation())
-                    {
-                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
-                        {
-                            ExceptionHandler.TryExecute(() => this.Activate(), "激活主窗口失败（PPT 导航时）");
-                        }
-                    }
-                    else
-                    {
-                        LogHelper.WriteLogToFile("显示PPT幻灯片导航失败", LogHelper.LogType.Warning);
-                    }
-                }
-
-                if (!isFloatingBarFolded)
-                {
-                    await Task.Delay(100);
-                    if (!IsCurrentPPTSourceSession(source, state, generation)) return;
-                    ViewboxFloatingBarMarginAnimation(60);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"PPT翻页控件操作失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
-        private void OnPPTNavBarSlideSelected(Controls.PPTNavBar bar, int slideNumber)
-        {
-            try { _pptManager?.TryNavigateToSlide(slideNumber); }
-            catch (Exception ex) { LogHelper.WriteLogToFile($"PPT增强预览跳转异常: {ex}", LogHelper.LogType.Error); }
-            finally { if (bar != null) bar.IsPreviewExpanded = false; }
-        }
-
-        /// <summary>
-        /// 选择承载增强预览的底部条:
-        /// - 来自侧边条的点击重定向到同侧底部条;
-        /// - 若同侧底部条不可用,退化到任意可用的底部条;
-        /// - 来自底部条的点击保持原行为。
-        /// </summary>
-        private Controls.PPTNavBar ResolvePreviewTargetBar(Controls.PPTNavBar source)
-        {
-            if (source == null) return null;
-            switch (source.Direction)
-            {
-                case Controls.PPTNavBar.NavDirection.LeftSide:
-                    return PickVisibleBar(LeftBottomPanelForPPTNavigation, RightBottomPanelForPPTNavigation) ?? source;
-                case Controls.PPTNavBar.NavDirection.RightSide:
-                    return PickVisibleBar(RightBottomPanelForPPTNavigation, LeftBottomPanelForPPTNavigation) ?? source;
-                default:
-                    return source;
-            }
-        }
-
-        private static Controls.PPTNavBar PickVisibleBar(params Controls.PPTNavBar[] candidates)
-        {
-            foreach (var c in candidates)
-            {
-                if (c != null && c.Visibility == Visibility.Visible) return c;
-            }
-            return null;
-        }
-
-        private sealed class PPTEnhancedPreviewItem : IDisposable
-        {
-            public int SlideNumber { get; set; }
-            public MemoryStream ThumbnailStream { get; set; }
-            public BitmapImage Thumbnail { get; set; }
-
-            public void Dispose()
-            {
-                ThumbnailStream?.Dispose();
-                ThumbnailStream = null;
-                Thumbnail = null;
-            }
-        }
-
-        private void CollapseAllPPTNavBarPreviews()
-        {
-            if (PresentationLink != null) PresentationLink.PreviewItems = null;
-            var bars = new[]
-            {
-                LeftBottomPanelForPPTNavigation,
-                RightBottomPanelForPPTNavigation,
-                LeftSidePanelForPPTNavigation,
-                RightSidePanelForPPTNavigation,
-            };
-            foreach (var bar in bars)
-            {
-                if (bar == null) continue;
-                ExceptionHandler.TryExecute(
-                    () =>
-                    {
-                        bar.IsPreviewExpanded = false;
-                    },
-                    "重置 PPT 导航栏预览状态失败",
-                    continueOnError: true);
-            }
-        }
+        private void CollapseAllPPTNavBarPreviews() => PresentationLink?.CollapsePreview();
 
         /// <summary>在 MainWindow 加载完成后调用,把 4 个 PPTNavBar 的事件接到本类。</summary>
         private bool _pptNavBarsWired;
@@ -2061,6 +1570,14 @@ namespace Ink_Canvas
                 bar.SetBinding(Controls.PPTNavBar.NextCommandProperty, new System.Windows.Data.Binding(nameof(PresentationLink.NextCommand)));
                 bar.SetBinding(Controls.PPTNavBar.NavigateCommandProperty, new System.Windows.Data.Binding(nameof(PresentationLink.NavigateCommand)));
                 bar.SetBinding(Controls.PPTNavBar.PageCommandProperty, new System.Windows.Data.Binding(nameof(PresentationLink.ShowNavigationCommand)));
+                var previewProperties = new[] { nameof(PresentationLink.IsLeftBottomPreviewExpanded), nameof(PresentationLink.IsRightBottomPreviewExpanded),
+                    nameof(PresentationLink.IsLeftSidePreviewExpanded), nameof(PresentationLink.IsRightSidePreviewExpanded) };
+                bar.SetBinding(Controls.PPTNavBar.IsPreviewExpandedProperty,
+                    new System.Windows.Data.Binding(previewProperties[(int)bar.Direction]) { Mode = System.Windows.Data.BindingMode.TwoWay });
+                var visibilityProperties = new[] { nameof(PresentationLink.IsLeftBottomNavigationVisible), nameof(PresentationLink.IsRightBottomNavigationVisible),
+                    nameof(PresentationLink.IsLeftSideNavigationVisible), nameof(PresentationLink.IsRightSideNavigationVisible) };
+                bar.SetBinding(Controls.PPTNavBar.IsNavigationVisibleProperty,
+                    new System.Windows.Data.Binding(visibilityProperties[(int)bar.Direction]));
                 bar.PreviousPressedDown += (s, e) =>
                 {
                     if (Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn)
@@ -2072,8 +1589,6 @@ namespace Ink_Canvas
                         StartLongPressDetection(s, true);
                 };
                 bar.PressEnded += (s, e) => StopLongPressDetection();
-                var captured = bar;
-                bar.PreviewExpandedChanged += (s, expanded) => OnPPTNavBarPreviewExpandedChanged(captured, expanded);
             }
 
             PPTBtnPageNow.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding(nameof(PresentationLink.CurrentSlideText)) { Source = PresentationLink });
@@ -2081,284 +1596,12 @@ namespace Ink_Canvas
             _pptNavBarsWired = true;
         }
 
-        private bool _suppressPreviewExpandedSync;
-
-        private void OnPPTNavBarPreviewExpandedChanged(Controls.PPTNavBar bar, bool expanded)
-        {
-            if (_suppressPreviewExpandedSync) return;
-            try
-            {
-                _suppressPreviewExpandedSync = true;
-
-                if (expanded)
-                {
-                    // 仅允许同时一侧展开
-                    foreach (var other in new[]
-                    {
-                        LeftBottomPanelForPPTNavigation,
-                        RightBottomPanelForPPTNavigation,
-                        LeftSidePanelForPPTNavigation,
-                        RightSidePanelForPPTNavigation,
-                    })
-                    {
-                        if (other == null || ReferenceEquals(other, bar)) continue;
-                        if (other.IsPreviewExpanded) other.IsPreviewExpanded = false;
-                    }
-                }
-
-                // 底部条展开时,隐藏同侧的中部侧边条避免遮挡;收起后还原可见性
-                ApplyBottomBarSideOcclusion();
-            }
-            finally
-            {
-                _suppressPreviewExpandedSync = false;
-            }
-        }
-
-        private void ApplyBottomBarSideOcclusion()
-        {
-            var leftBottomExpanded = LeftBottomPanelForPPTNavigation != null && LeftBottomPanelForPPTNavigation.IsPreviewExpanded;
-            var rightBottomExpanded = RightBottomPanelForPPTNavigation != null && RightBottomPanelForPPTNavigation.IsPreviewExpanded;
-
-            // 同侧的侧边条在底部条展开时隐藏
-            if (LeftSidePanelForPPTNavigation != null)
-            {
-                if (leftBottomExpanded)
-                {
-                    LeftSidePanelForPPTNavigation.Tag = LeftSidePanelForPPTNavigation.Visibility;
-                    LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                }
-                else if (LeftSidePanelForPPTNavigation.Tag is Visibility cached)
-                {
-                    LeftSidePanelForPPTNavigation.Visibility = cached;
-                    LeftSidePanelForPPTNavigation.ClearValue(TagProperty);
-                }
-            }
-            if (RightSidePanelForPPTNavigation != null)
-            {
-                if (rightBottomExpanded)
-                {
-                    RightSidePanelForPPTNavigation.Tag = RightSidePanelForPPTNavigation.Visibility;
-                    RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                }
-                else if (RightSidePanelForPPTNavigation.Tag is Visibility cached)
-                {
-                    RightSidePanelForPPTNavigation.Visibility = cached;
-                    RightSidePanelForPPTNavigation.ClearValue(TagProperty);
-                }
-            }
-        }
-
-        private CancellationToken EnsurePPTEnhancedPreviewCacheToken()
-        {
-            lock (_pptEnhancedPreviewCacheLock)
-            {
-                if (_pptEnhancedPreviewCacheCts == null)
-                    _pptEnhancedPreviewCacheCts = new CancellationTokenSource();
-
-                return _pptEnhancedPreviewCacheCts.Token;
-            }
-        }
-
-        private void ResetPPTEnhancedPreviewCache()
-        {
-            CancellationTokenSource ctsToCancel = null;
-            List<PPTEnhancedPreviewItem> cacheToDispose = null;
-
-            lock (_pptEnhancedPreviewCacheLock)
-            {
-                _pptEnhancedPreviewCacheGeneration++;
-                ctsToCancel = _pptEnhancedPreviewCacheCts;
-                _pptEnhancedPreviewCacheCts = null;
-                _pptEnhancedPreviewBuildTask = null;
-                cacheToDispose = _pptEnhancedPreviewCache;
-                _pptEnhancedPreviewCache = null;
-            }
-
-            try
-            {
-                ctsToCancel?.Cancel();
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                ctsToCancel?.Dispose();
-            }
-            catch
-            {
-            }
-
-            DisposePPTEnhancedPreviewItems(cacheToDispose);
-        }
+        private void ResetPPTEnhancedPreviewCache() => PresentationLink?.ResetPreviewCache();
 
         private void SchedulePPTEnhancedPreviewPreload()
         {
-            if (!Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview) return;
-            if (_pptManager?.IsConnected != true) return;
-
-            var token = EnsurePPTEnhancedPreviewCacheToken();
-            _ = PreloadPPTEnhancedPreviewAfterDelayAsync(token);
-        }
-
-        private async Task PreloadPPTEnhancedPreviewAfterDelayAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                await Task.Delay(PPTEnhancedPreviewPreloadDelayMs, cancellationToken);
-                if (cancellationToken.IsCancellationRequested) return;
-                if (_pptManager?.IsConnected != true) return;
-                if (!Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview) return;
-
-                var slides = await GetOrBuildPPTEnhancedPreviewItemsAsync(cancellationToken);
-                if (!cancellationToken.IsCancellationRequested && slides != null && slides.Count > 0)
-                {
-                    LogHelper.WriteLogToFile($"PPT enhanced preview preloaded {slides.Count} thumbnails.", LogHelper.LogType.Trace);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"PPT enhanced preview preload failed: {ex}", LogHelper.LogType.Warning);
-            }
-        }
-
-        private Task<List<PPTEnhancedPreviewItem>> GetOrBuildPPTEnhancedPreviewItemsAsync(CancellationToken cancellationToken)
-        {
-            lock (_pptEnhancedPreviewCacheLock)
-            {
-                if (_pptEnhancedPreviewCache != null && _pptEnhancedPreviewCache.Count > 0)
-                    return Task.FromResult(_pptEnhancedPreviewCache);
-
-                if (_pptEnhancedPreviewBuildTask != null && !_pptEnhancedPreviewBuildTask.IsCompleted)
-                    return _pptEnhancedPreviewBuildTask;
-
-                int generation = _pptEnhancedPreviewCacheGeneration;
-                var source = _pptManager;
-                var task = Task.Run(() => BuildPPTPreviewItems(source, cancellationToken), cancellationToken);
-                _pptEnhancedPreviewBuildTask = task;
-
-                task.ContinueWith(
-                    completedTask => StorePPTEnhancedPreviewBuildResult(completedTask, generation),
-                    CancellationToken.None,
-                    TaskContinuationOptions.ExecuteSynchronously,
-                    TaskScheduler.Default);
-
-                return task;
-            }
-        }
-
-        private void StorePPTEnhancedPreviewBuildResult(Task<List<PPTEnhancedPreviewItem>> task, int generation)
-        {
-            List<PPTEnhancedPreviewItem> itemsToDispose = null;
-
-            if (task.IsFaulted)
-            {
-                LogHelper.WriteLogToFile($"PPT enhanced preview build failed: {task.Exception?.GetBaseException()}", LogHelper.LogType.Warning);
-            }
-
-            lock (_pptEnhancedPreviewCacheLock)
-            {
-                if (ReferenceEquals(_pptEnhancedPreviewBuildTask, task))
-                    _pptEnhancedPreviewBuildTask = null;
-
-                if (task.Status == TaskStatus.RanToCompletion)
-                {
-                    var result = task.Result;
-                    if (generation == _pptEnhancedPreviewCacheGeneration && result != null && result.Count > 0)
-                    {
-                        itemsToDispose = _pptEnhancedPreviewCache;
-                        _pptEnhancedPreviewCache = result;
-                    }
-                    else
-                    {
-                        itemsToDispose = result;
-                    }
-                }
-            }
-
-            DisposePPTEnhancedPreviewItems(itemsToDispose);
-        }
-
-        private static void DisposePPTEnhancedPreviewItems(List<PPTEnhancedPreviewItem> items)
-        {
-            if (items == null) return;
-            foreach (var item in items)
-                item?.Dispose();
-        }
-
-        private List<PPTEnhancedPreviewItem> BuildPPTPreviewItems(IPresentationLinkSource source, CancellationToken cancellationToken)
-        {
-            var result = new List<PPTEnhancedPreviewItem>();
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var thumbnails = source?.Capabilities.HasFlag(PresentationCapabilities.Thumbnails) == true
-                    ? source.ExportSlideThumbnails(480, 270) : null;
-                if (thumbnails == null || thumbnails.Count == 0) return result;
-
-                foreach (var thumbnail in thumbnails)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    if (thumbnail?.PngBytes == null || thumbnail.PngBytes.Length == 0) continue;
-
-                    var thumbnailStream = new MemoryStream(thumbnail.PngBytes, false);
-                    var image = LoadBitmapImage(thumbnailStream);
-                    if (image == null)
-                    {
-                        thumbnailStream.Dispose();
-                        continue;
-                    }
-
-                    thumbnailStream.Position = 0;
-                    result.Add(new PPTEnhancedPreviewItem
-                    {
-                        SlideNumber = thumbnail.SlideNumber,
-                        ThumbnailStream = thumbnailStream,
-                        Thumbnail = image
-                    });
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                DisposePPTEnhancedPreviewItems(result);
-                throw;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"构建PPT增强预览列表失败: {ex}", LogHelper.LogType.Error);
-            }
-
-            return result;
-        }
-
-        private static BitmapImage LoadBitmapImage(MemoryStream stream)
-        {
-            try
-            {
-                if (stream == null || stream.Length == 0) return null;
-                lock (stream)
-                {
-                    stream.Position = 0;
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.StreamSource = stream;
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-                    stream.Position = 0;
-                    return bitmap;
-                }
-            }
-            catch
-            {
-                return null;
-            }
+            ApplyPresentationLinkSettings();
+            if (PresentationLink != null) _ = PresentationLink.PreloadPreviewAsync();
         }
 
         /// <summary>
@@ -2374,51 +1617,13 @@ namespace Ink_Canvas
         /// </remarks>
         private void BtnPPTSlideShow_Click(object sender, RoutedEventArgs e)
         {
-            var source = _pptManager;
-            var state = source?.State;
-            int generation = PresentationLink?.Generation ?? -1;
-            new Thread(() =>
-            {
-                try
-                {
-                    if (state == null || !IsCurrentPPTSourceSession(source, state, generation)) return;
-                    if (source.TryStartSlideShow() != true)
-                    {
-                        LogHelper.WriteLogToFile("启动幻灯片放映失败", LogHelper.LogType.Warning);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"启动幻灯片放映异常: {ex}", LogHelper.LogType.Error);
-                }
-            }) { IsBackground = true }.Start();
+            if (PresentationLink?.StartSlideShowCommand.CanExecute(null) == true) PresentationLink.StartSlideShowCommand.Execute(null);
         }
 
         public async Task ExitPPTPresentation()
         {
-            var source = _pptManager;
-            var state = source?.State;
-            int generation = PresentationLink?.Generation ?? -1;
-            if (state?.IsInSlideShow != true) return;
-            try
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    if (IsCurrentPPTSourceSession(source, state, generation)) CursorIcon_Click(null, null);
-                });
-
-                await Task.Delay(100);
-                if (!IsCurrentPPTSourceSession(source, state, generation)) return;
-                // Saving and desktop restoration belong to the normalized end event, not the command.
-                bool ended = await Task.Run(() => IsCurrentPPTSourceSession(source, state, generation) && source.TryEndSlideShow());
-                if (!ended && IsCurrentPPTSourceSession(source, state, generation))
-                    LogHelper.WriteLogToFile("结束PPT放映失败", LogHelper.LogType.Warning);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"结束PPT放映操作异常: {ex}", LogHelper.LogType.Error);
-
-            }
+            if (PresentationLink?.EndSlideShowCommand.CanExecute(null) == true)
+                await PresentationLink.EndSlideShowCommand.ExecuteAsync(null);
         }
 
         /// <summary>

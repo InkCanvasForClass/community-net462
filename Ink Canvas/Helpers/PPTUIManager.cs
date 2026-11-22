@@ -11,16 +11,12 @@ namespace Ink_Canvas.Helpers
     public class PPTUIManager
     {
         #region Properties
-        public bool ShowPPTButton { get; set; } = true;
-        public int PPTButtonsDisplayOption { get; set; } = 2222;
         public int PPTSButtonsOption { get; set; } = 221;
         public int PPTBButtonsOption { get; set; } = 121;
         public int PPTLSButtonPosition { get; set; } = 0;
         public int PPTRSButtonPosition { get; set; } = 0;
         public int PPTLBButtonPosition { get; set; } = 0;
         public int PPTRBButtonPosition { get; set; } = 0;
-        public bool EnablePPTButtonPageClickable { get; set; } = true;
-        public bool EnablePPTButtonLongPressPageTurn { get; set; } = true;
         public double PPTLSButtonOpacity { get; set; } = 0.5;
         public double PPTRSButtonOpacity { get; set; } = 0.5;
         public double PPTLBButtonOpacity { get; set; } = 0.5;
@@ -62,7 +58,7 @@ namespace Ink_Canvas.Helpers
                         // Old UI removed:                         _mainWindow.BtnPPTSlideShow.Visibility = Visibility.Collapsed;
                         _mainWindow.IsInPPTPresentationMode = false;
                         _mainWindow.UpdateToolbarComponentVisibility();
-                        HideAllNavigationPanels();
+                        RefreshNavigationPanelsVisibility();
                     }
                 }
                 catch (Exception ex)
@@ -121,7 +117,7 @@ namespace Ink_Canvas.Helpers
                         // Old UI removed:                         _mainWindow.BtnPPTSlideShow.Visibility = Visibility.Visible;
                         _mainWindow.IsInPPTPresentationMode = false;
                         _mainWindow.UpdateToolbarComponentVisibility();
-                        HideAllNavigationPanels();
+                        RefreshNavigationPanelsVisibility();
                         _mainWindow.UpdatePPTTimeCapsuleVisibility();
                         _mainWindow.UpdatePPTQuickPanelVisibility();
                         if (MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper && _mainWindow.currentMode == 0)
@@ -161,7 +157,7 @@ namespace Ink_Canvas.Helpers
                     if (!isInSlideShow)
                     {
                         // 如果不在放映模式，隐藏所有导航面板
-                        HideAllNavigationPanels();
+                        RefreshNavigationPanelsVisibility();
                     }
                 }
                 catch (Exception ex)
@@ -180,23 +176,7 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    // 检查是否应该显示PPT按钮
-                    // 不仅要检查按钮设置，还要确保确实在PPT放映模式下且页数有效
-                    bool isInSlideShow = _mainWindow.PPTManager?.IsInSlideShow == true;
-                    int slidesCount = _mainWindow.PPTManager?.SlidesCount ?? 0;
-                    bool hasValidPageCount = slidesCount > 0;
-
-                    bool shouldShowButtons = ShowPPTButton &&
-                                          _mainWindow.IsInPPTPresentationMode &&
-                                          isInSlideShow &&
-                                          hasValidPageCount &&
-                                          !MainWindow.Settings.Automation.IsAutoFoldInPPTSlideShow;
-
-                    if (!shouldShowButtons)
-                    {
-                        HideAllNavigationPanels();
-                        return;
-                    }
+                    _mainWindow.ApplyPresentationLinkSettings();
 
                     // 设置侧边按钮位置
                     _mainWindow.LeftSidePanelForPPTNavigation.Margin = new Thickness(0, 0, 0, PPTLSButtonPosition * 2);
@@ -206,36 +186,8 @@ namespace Ink_Canvas.Helpers
                     _mainWindow.LeftBottomPanelForPPTNavigation.Margin = new Thickness(6 + PPTLBButtonPosition, 0, 0, 6);
                     _mainWindow.RightBottomPanelForPPTNavigation.Margin = new Thickness(0, 0, 6 + PPTRBButtonPosition, 6);
 
-                    // 根据显示选项设置面板可见性
-                    var displayOption = PPTButtonsDisplayOption.ToString();
-                    if (displayOption.Length >= 4)
-                    {
-                        var options = displayOption.ToCharArray();
-
-                        // 左下角面板
-                        if (options[0] == '2')
-                            AnimationsHelper.ShowWithFadeIn(_mainWindow.LeftBottomPanelForPPTNavigation);
-                        else
-                            _mainWindow.LeftBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-
-                        // 右下角面板
-                        if (options[1] == '2')
-                            AnimationsHelper.ShowWithFadeIn(_mainWindow.RightBottomPanelForPPTNavigation);
-                        else
-                            _mainWindow.RightBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-
-                        // 左侧面板
-                        if (options[2] == '2')
-                            AnimationsHelper.ShowWithFadeIn(_mainWindow.LeftSidePanelForPPTNavigation);
-                        else
-                            _mainWindow.LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-
-                        // 右侧面板
-                        if (options[3] == '2')
-                            AnimationsHelper.ShowWithFadeIn(_mainWindow.RightSidePanelForPPTNavigation);
-                        else
-                            _mainWindow.RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    }
+                    // Reapply animation after native window resizing; visibility comes from bindings.
+                    RefreshNavigationPanelsVisibility();
                 }
                 catch (Exception ex)
                 {
@@ -265,24 +217,14 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
-        /// 隐藏所有导航面板
+        /// 根据 ViewModel 绑定的状态刷新导航面板
         /// </summary>
-        public void HideAllNavigationPanels()
+        private void RefreshNavigationPanelsVisibility()
         {
-            _dispatcher.InvokeAsync(() =>
-            {
-                try
-                {
-                    _mainWindow.LeftBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    _mainWindow.RightBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    _mainWindow.LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    _mainWindow.RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"隐藏导航面板失败: {ex}", LogHelper.LogType.Error);
-                }
-            });
+            _mainWindow.LeftBottomPanelForPPTNavigation.RefreshNavigationVisibility();
+            _mainWindow.RightBottomPanelForPPTNavigation.RefreshNavigationVisibility();
+            _mainWindow.LeftSidePanelForPPTNavigation.RefreshNavigationVisibility();
+            _mainWindow.RightSidePanelForPPTNavigation.RefreshNavigationVisibility();
         }
 
         /// <summary>

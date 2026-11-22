@@ -15,10 +15,11 @@ namespace Ink_Canvas.ViewModels
         public System.Windows.Media.Imaging.BitmapImage Thumbnail { get; set; }
     }
 
-    public sealed class PresentationLinkViewModel : ObservableObject, IDisposable
+    public sealed partial class PresentationLinkViewModel : ObservableObject, IDisposable
     {
         private readonly Dispatcher _dispatcher;
         private readonly Action<Exception> _error;
+        private readonly IPresentationLinkHost _host;
         private readonly object _gate = new object();
         private Task _tail = Task.CompletedTask;
         private int _generation;
@@ -27,16 +28,31 @@ namespace Ink_Canvas.ViewModels
         private Action _detachSource;
         private PresentationLinkState _state = new PresentationLinkState(false, false, 0, 0);
         private IList<PresentationPreviewItem> _previewItems;
+        private bool _ownsSource;
+        private readonly SemaphoreSlim _commandGate = new SemaphoreSlim(1, 1);
 
-        public PresentationLinkViewModel(Dispatcher dispatcher, Action<Exception> error,
-            Action previous, Action next, Action<int> navigate, Action<object> showNavigation)
+        public PresentationLinkViewModel(Dispatcher dispatcher, Action<Exception> error, IPresentationLinkHost host = null)
         {
-            _dispatcher = dispatcher;
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _error = error;
-            PreviousCommand = new RelayCommand(previous, () => IsConnected && IsInSlideShow);
-            NextCommand = new RelayCommand(next, () => IsConnected && IsInSlideShow);
-            NavigateCommand = new RelayCommand<int>(navigate, page => IsConnected && page > 0 && page <= TotalSlides);
-            ShowNavigationCommand = new RelayCommand<object>(showNavigation, _ => IsConnected);
+            _host = host;
+            PreviousCommand = new AsyncRelayCommand(() => NavigateRelativeAsync(false), () => IsConnected && IsInSlideShow);
+            NextCommand = new AsyncRelayCommand(() => NavigateRelativeAsync(true), () => IsConnected && IsInSlideShow);
+            NavigateCommand = new AsyncRelayCommand<int>(async page =>
+            {
+                var state = _source?.State;
+                int generation = Generation;
+                await NavigateToSlideAsync(page);
+                if (IsCurrentSession(state, generation, true)) CollapsePreview();
+            },
+                page => IsConnected && page > 0 && page <= TotalSlides);
+            ShowNavigationCommand = new AsyncRelayCommand<int>(ShowNavigationAsync,
+                _ => PageNavigationEnabled && IsConnected && IsInSlideShow);
+            StartSlideShowCommand = new AsyncRelayCommand(() => RunSourceAsync(source => source.TryStartSlideShow()),
+                () => IsConnected && !IsInSlideShow);
+            EndSlideShowCommand = new AsyncRelayCommand(() => RunSourceAsync(source => source.TryEndSlideShow(), true,
+                _ => _host?.BeforeEndSlideShowAsync() ?? Task.CompletedTask), () => IsConnected && IsInSlideShow);
+            ReloadCommand = new AsyncRelayCommand(ReloadAsync, () => HasSource);
         }
 
         public PresentationLinkState State => _state;
@@ -48,11 +64,16 @@ namespace Ink_Canvas.ViewModels
         public PresentationCapabilities Capabilities => _source?.Capabilities ?? PresentationCapabilities.None;
         public string CurrentSlideText => CurrentSlide > 0 ? CurrentSlide.ToString() : "?";
         public string TotalSlidesText => TotalSlides > 0 ? $"/ {TotalSlides}" : "/ ?";
-        public IList<PresentationPreviewItem> PreviewItems { get => _previewItems; set => SetProperty(ref _previewItems, value); }
-        public IRelayCommand PreviousCommand { get; }
-        public IRelayCommand NextCommand { get; }
-        public IRelayCommand<int> NavigateCommand { get; }
-        public IRelayCommand<object> ShowNavigationCommand { get; }
+        public IList<PresentationPreviewItem> PreviewItems { get => _previewItems; private set => SetProperty(ref _previewItems, value); }
+        public IAsyncRelayCommand PreviousCommand { get; }
+        public IAsyncRelayCommand NextCommand { get; }
+        public IAsyncRelayCommand<int> NavigateCommand { get; }
+        public IAsyncRelayCommand<int> ShowNavigationCommand { get; }
+        public IAsyncRelayCommand StartSlideShowCommand { get; }
+        public IAsyncRelayCommand EndSlideShowCommand { get; }
+        public IAsyncRelayCommand ReloadCommand { get; }
+        internal IPresentationLinkSource Source => _source;
+        public bool HasSource => _source != null;
         public int Generation => _generation;
         public bool IsCurrentOperation => !_operationGeneration.Value.HasValue || _operationGeneration.Value == _generation;
         public Task WhenIdle { get { lock (_gate) return _tail; } }
@@ -64,24 +85,44 @@ namespace Ink_Canvas.ViewModels
         public event Func<PresentationLinkState, Task> SlideShowEnded;
         public event Func<bool, Task> ConnectionChanged;
         public event Func<bool, Task> SlideShowStateChanged;
+        public event Action SourceChanged;
 
+        /// <summary>Observe a source. Use InitializeSource when this ViewModel owns its lifetime.</summary>
         public void Attach(IPresentationLinkSource source)
         {
+            if (source != null && ReferenceEquals(source, _source)) return;
+            if (_ownsSource) ReleaseSource();
             int generation;
             lock (_gate) generation = ++_generation;
             _detachSource?.Invoke();
             _detachSource = null;
             _source = source;
-            PreviewItems = null;
+            _skipAnimationsWhenNavigating = source?.SkipAnimationsWhenNavigating == true;
+            ResetPreviewCache();
             Apply(source?.State ?? new PresentationLinkState(false, false, 0, 0));
-            if (source == null) return;
+            if (source == null) { SourceChanged?.Invoke(); return; }
             // Capture subscription identity too: an event already in flight can outlive unsubscription.
             Action<PresentationLinkState> changed = state => Enqueue(() => { Apply(state); return Task.CompletedTask; }, generation);
-            Action<PresentationLinkState> opened = state => Enqueue(() => { Apply(state); return Invoke(PresentationOpened, state); }, generation);
+            Action<PresentationLinkState> opened = state => Enqueue(async () =>
+            {
+                Apply(state);
+                await Invoke(PresentationOpened, state);
+                if (IsCurrentSession(state)) _ = NotifyPresentationOpenedAsync(state);
+            }, generation);
             Action<PresentationLinkState> closed = state => Enqueue(() => Invoke(PresentationClosed, state), generation);
-            Action<PresentationLinkState> began = state => Enqueue(() => { Apply(state); return Invoke(SlideShowStarted, state); }, generation);
+            Action<PresentationLinkState> began = state => Enqueue(async () =>
+            {
+                Apply(state);
+                await Invoke(SlideShowStarted, state);
+                await NavigateOnSlideShowBeginAsync(state);
+            }, generation);
             Action<PresentationLinkState> slide = state => Enqueue(() => { Apply(state); return Invoke(SlideChanged, state); }, generation);
-            Action<PresentationLinkState> ended = state => Enqueue(() => Invoke(SlideShowEnded, state), generation);
+            Action<PresentationLinkState> ended = state => Enqueue(() =>
+            {
+                Apply(new PresentationLinkState(state.IsConnected, false, state.CurrentSlide, state.TotalSlides,
+                    state.Presentation, state.PresentationSessionId, state.SlideShowSessionId));
+                return Invoke(SlideShowEnded, state);
+            }, generation);
             Action<bool> connection = value => Enqueue(() => Invoke(ConnectionChanged, value), generation);
             Action<bool> showState = value => Enqueue(() => Invoke(SlideShowStateChanged, value), generation);
             source.StateChanged += changed;
@@ -103,6 +144,7 @@ namespace Ink_Canvas.ViewModels
                 source.PPTConnectionChanged -= connection;
                 source.SlideShowStateChanged -= showState;
             };
+            SourceChanged?.Invoke();
         }
 
         private void Enqueue(Func<Task> work, int generation)
@@ -131,12 +173,18 @@ namespace Ink_Canvas.ViewModels
 
         private void Apply(PresentationLinkState state)
         {
+            if (_state.PresentationSessionId != state.PresentationSessionId || _state.TotalSlides != state.TotalSlides
+                || (_state.IsInSlideShow && !state.IsInSlideShow) || !state.IsConnected)
+                ResetPreviewCache();
             _state = state;
             foreach (string property in new[] { nameof(State), nameof(CurrentSlide), nameof(TotalSlides), nameof(IsConnected),
-                nameof(IsInSlideShow), nameof(Presentation), nameof(Capabilities), nameof(CurrentSlideText), nameof(TotalSlidesText) })
+                nameof(IsInSlideShow), nameof(Presentation), nameof(Capabilities), nameof(CurrentSlideText), nameof(TotalSlidesText),
+                nameof(HasSource) })
                 OnPropertyChanged(property);
+            NotifyNavigationVisibility();
             PreviousCommand.NotifyCanExecuteChanged(); NextCommand.NotifyCanExecuteChanged();
             NavigateCommand.NotifyCanExecuteChanged(); ShowNavigationCommand.NotifyCanExecuteChanged();
+            StartSlideShowCommand.NotifyCanExecuteChanged(); EndSlideShowCommand.NotifyCanExecuteChanged(); ReloadCommand.NotifyCanExecuteChanged();
         }
 
         private async Task Invoke<T>(Func<T, Task> handlers, T value)
@@ -148,6 +196,10 @@ namespace Ink_Canvas.ViewModels
                 await handler(value);
             }
         }
-        public void Dispose() => Attach(null);
+        public void Dispose()
+        {
+            if (_ownsSource) ReleaseSource();
+            else Attach(null);
+        }
     }
 }

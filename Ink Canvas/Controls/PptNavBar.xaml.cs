@@ -44,6 +44,16 @@ namespace Ink_Canvas.Controls
             nameof(IsPreviewExpanded), typeof(bool), typeof(PPTNavBar),
             new PropertyMetadata(false, OnIsPreviewExpandedChanged));
 
+        public static readonly DependencyProperty IsNavigationVisibleProperty = DependencyProperty.Register(
+            nameof(IsNavigationVisible), typeof(bool), typeof(PPTNavBar),
+            new PropertyMetadata(false, (d, e) => ((PPTNavBar)d).RefreshNavigationVisibility()));
+        public bool IsNavigationVisible => (bool)GetValue(IsNavigationVisibleProperty);
+        public void RefreshNavigationVisibility()
+        {
+            if (IsNavigationVisible) Helpers.AnimationsHelper.ShowWithFadeIn(this);
+            else Visibility = Visibility.Collapsed;
+        }
+
         public static readonly DependencyProperty PreviousCommandProperty = DependencyProperty.Register(nameof(PreviousCommand), typeof(ICommand), typeof(PPTNavBar));
         public static readonly DependencyProperty NextCommandProperty = DependencyProperty.Register(nameof(NextCommand), typeof(ICommand), typeof(PPTNavBar));
         public static readonly DependencyProperty PageCommandProperty = DependencyProperty.Register(nameof(PageCommand), typeof(ICommand), typeof(PPTNavBar));
@@ -85,7 +95,7 @@ namespace Ink_Canvas.Controls
         public bool IsPreviewExpanded
         {
             get => (bool)GetValue(IsPreviewExpandedProperty);
-            set => SetValue(IsPreviewExpandedProperty, value);
+            set => SetCurrentValue(IsPreviewExpandedProperty, value);
         }
 
         public event EventHandler PreviousPressedDown;
@@ -353,7 +363,7 @@ namespace Ink_Canvas.Controls
             SetFeedback(PageButtonFeedbackBorder, 0);
             if (_lastDown != sender) return;
             _lastDown = null;
-            Execute(PageCommand, this);
+            Execute(PageCommand, (int)Direction);
         }
 
         private void PageButton_MouseLeave(object sender, MouseEventArgs e)

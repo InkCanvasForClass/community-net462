@@ -476,7 +476,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 StorageStrings.Storage_ManageSaves_DeleteConfirm_Title,
                 MessageBoxButton.OKCancel, MessageBoxImage.Warning);
             if (confirm != MessageBoxResult.OK) return;
-            if (hasPresentations && (Application.Current.MainWindow as MainWindow)?.PPTManager?.IsInSlideShow == true)
+            if (hasPresentations && (Application.Current.MainWindow as MainWindow)?.PresentationLink?.IsInSlideShow == true)
             {
                 MessageBox.Show(StorageStrings.Storage_ManageSaves_PresentationDeleteBlocked,
                     StorageStrings.Storage_ManageSaves_DeleteConfirm_Title,
