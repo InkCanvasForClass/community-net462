@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using Ink_Canvas.Helpers;
-using InkCanvasPPTAgent.Contracts;
 using Cursor = System.Windows.Forms.Cursor;
 
 namespace Ink_Canvas
@@ -50,35 +49,6 @@ namespace Ink_Canvas
             // 如果 VSTO 未返回 slide 尺寸，尝试多种回退
             if (_smartModeSlideWidth <= 0 || _smartModeSlideHeight <= 0)
             {
-                // 回退1：通过 COM 对象
-                try
-                {
-                    var pres = pptApplication?.ActivePresentation;
-                    if (pres != null)
-                    {
-                        _smartModeSlideWidth = pres.PageSetup.SlideWidth;
-                        _smartModeSlideHeight = pres.PageSetup.SlideHeight;
-                        LogHelper.WriteLogToFile($"[SmartMode] COM 回退: Slide={_smartModeSlideWidth}x{_smartModeSlideHeight}磅", LogHelper.LogType.Info);
-                    }
-                }
-                catch { }
-
-                // 回退2：通过 _pptManager
-                if (_smartModeSlideWidth <= 0)
-                {
-                    try
-                    {
-                        var pres = _pptManager?.GetCurrentActivePresentation() as Microsoft.Office.Interop.PowerPoint.Presentation;
-                        if (pres != null)
-                        {
-                            _smartModeSlideWidth = pres.PageSetup.SlideWidth;
-                            _smartModeSlideHeight = pres.PageSetup.SlideHeight;
-                            LogHelper.WriteLogToFile($"[SmartMode] PPTManager 回退: Slide={_smartModeSlideWidth}x{_smartModeSlideHeight}磅", LogHelper.LogType.Info);
-                        }
-                    }
-                    catch { }
-                }
-
                 // 回退3：使用标准 16:9 尺寸
                 if (_smartModeSlideWidth <= 0)
                 {

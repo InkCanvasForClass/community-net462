@@ -1,6 +1,5 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
-using InkCanvasPPTAgent.Contracts;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -68,6 +67,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void UpdatePPTArchitectureDependentCards()
         {
+            CardPPTArchitecture.Description = SettingsManager.Settings.PowerPointSettings.PPTLinkMode == PPTLinkMode.Agent
+                ? Properties.PPTStrings.PPTAgentArchitectureHint : null;
             bool isComArchitecture = SettingsManager.Settings.PowerPointSettings.PPTLinkMode == PPTLinkMode.Com;
             var visibility = isComArchitecture ? Visibility.Visible : Visibility.Collapsed;
             CardPowerPointEnhancement.Visibility = visibility;

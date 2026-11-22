@@ -440,6 +440,8 @@ namespace Ink_Canvas
                 处于画板模式内：Topmost == false / currentMode != 0
                 处于 PPT 放映内：BtnPPTSlideShowEnd.Visibility
             */
+            // Stable ViewModel exists before child views load, even when linkage starts disabled.
+            InitializePresentationLinkViewModel();
             InitializeComponent();
 
             if (BorderTools.Child is FrameworkElement btChild) btChild.Visibility = Visibility.Collapsed;
@@ -1250,7 +1252,7 @@ namespace Ink_Canvas
                     // 只有在PPT放映模式下才响应翻页手势
                     if (ArePPTControlsVisible &&
                         IsInPPTPresentationMode &&
-                        PPTManager?.IsInSlideShow == true)
+                        PresentationLink?.IsInSlideShow == true)
                     {
                         if (gest.ApplicationGesture == ApplicationGesture.Left)
                         {

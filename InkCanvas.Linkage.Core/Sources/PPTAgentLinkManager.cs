@@ -1,12 +1,13 @@
-using Ink_Canvas.IPC;
+using InkCanvasLinkage.Core.Sources;
+using InkCanvasLinkage.Core;
 using InkCanvasPPTAgent.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ink_Canvas.Helpers
+namespace InkCanvasLinkage.Core.Sources
 {
-    public sealed class PPTAgentLinkManager : IPPTLinkManager
+    internal sealed class PPTAgentLinkManager : IPPTLinkManager
     {
         private readonly object _stateLock = new object();
         private PPTAgentPipeClient _client;
@@ -18,12 +19,13 @@ namespace Ink_Canvas.Helpers
         private bool _disposed;
 
         public event Action<object> SlideShowBegin;
-        public event Action<object> SlideShowNextSlide;
+        public event Action<PresentationLinkState> SlideShowNextSlide;
         public event Action<object> SlideShowEnd;
         public event Action<object> PresentationOpen;
         public event Action<object> PresentationClose;
         public event Action<bool> PPTConnectionChanged;
         public event Action<bool> SlideShowStateChanged;
+        internal event Action StateUpdated;
 
         public bool IsConnected => _client?.IsConnected == true;
         public bool IsInSlideShow => GetStateSnapshot().IsRunning;
@@ -32,6 +34,12 @@ namespace Ink_Canvas.Helpers
         public int SlidesCount => GetStateSnapshot().TotalSlides;
         public object PPTApplication => null;
 
+        private readonly LogHelper LogHelper;
+        public PPTAgentLinkManager(PresentationLinkOptions options)
+        {
+            LogHelper = new LogHelper(options.Log);
+        }
+
         public PPTState CurrentState => GetStateSnapshot();
 
         public void StartMonitoring()
@@ -39,23 +47,30 @@ namespace Ink_Canvas.Helpers
             if (_disposed) return;
             if (_client != null) return;
 
-            _client = new PPTAgentPipeClient();
-            _client.ConnectionChanged += OnConnectionChanged;
-            _client.StateReceived += state => HandleState(state, null);
-            _client.EventReceived += (eventName, state) => HandleState(state, eventName);
-            _client.Start();
+            var client = new PPTAgentPipeClient(LogHelper);
+            lock (_stateLock) _client = client;
+            client.ConnectionChanged += connected =>
+            {
+                lock (_stateLock) { if (ReferenceEquals(_client, client) && !_disposed) OnConnectionChanged(connected); }
+            };
+            client.StateReceived += state =>
+            {
+                lock (_stateLock) { if (ReferenceEquals(_client, client) && !_disposed) HandleState(state, null); }
+            };
+            client.EventReceived += (eventName, state) =>
+            {
+                lock (_stateLock) { if (ReferenceEquals(_client, client) && !_disposed) HandleState(state, eventName); }
+            };
+            client.Start();
 
             LogHelper.WriteLogToFile("PPT Agent 联动监控已启动", LogHelper.LogType.Event);
         }
 
         public void StopMonitoring(bool isShutdown = false)
         {
-            var client = _client;
-            if (client == null) return;
-
-            client.ConnectionChanged -= OnConnectionChanged;
-            client.Dispose();
-            _client = null;
+            PPTAgentPipeClient client;
+            lock (_stateLock) { client = _client; _client = null; }
+            client?.Dispose();
             OnConnectionChanged(false);
             LogHelper.WriteLogToFile("PPT Agent 联动监控已停止", LogHelper.LogType.Event);
         }
@@ -80,6 +95,14 @@ namespace Ink_Canvas.Helpers
         public int GetCurrentSlideNumber() => GetStateSnapshot().SlideIndex;
 
         public string GetPresentationName() => GetStateSnapshot().PresentationName ?? string.Empty;
+
+        public PresentationMetadata GetPresentationMetadata()
+        {
+            var state = GetStateSnapshot();
+            return string.IsNullOrEmpty(state.PresentationName) ? null
+                : new PresentationMetadata(state.PresentationName, state.PresentationFullName, state.TotalSlides,
+                    state.HasHiddenSlides, state.HasAutoPlayTimings);
+        }
 
         public bool TryShowSlideNavigation() => Send(PPTCommands.ShowSlideNavigation);
 
@@ -140,7 +163,18 @@ namespace Ink_Canvas.Helpers
 
         private void HandleState(PPTState state, string eventName)
         {
-            if (state == null) return;
+            if (_disposed) return;
+            if (state == null)
+            {
+                if (eventName != PPTEvents.SlideShowBegin && eventName != PPTEvents.SlideShowEnd) return;
+                state = GetStateSnapshot();
+            }
+            if (state.SlideIndex < 0 || state.TotalSlides < 0 || state.TotalSlides > int.MaxValue - 2
+                || state.SlideIndex > state.TotalSlides)
+            {
+                LogHelper.WriteLogToFile("PPT Agent 返回了无效的幻灯片页码或总数", LogHelper.LogType.Warning);
+                return;
+            }
 
             bool raiseConnection = false;
             bool raiseShowStateChanged = false;
@@ -157,7 +191,15 @@ namespace Ink_Canvas.Helpers
                 var oldSlide = _lastSlideIndex;
                 var oldPresentation = _lastPresentationName;
 
-                _lastState = state;
+                _lastState = new PPTState
+                {
+                    SlideIndex = state.SlideIndex, TotalSlides = state.TotalSlides,
+                    // Explicit show events take precedence over a stale (or missing) snapshot.
+                    IsRunning = eventName == PPTEvents.SlideShowBegin || (eventName != PPTEvents.SlideShowEnd && state.IsRunning),
+                    PresentationName = state.PresentationName, PresentationFullName = state.PresentationFullName,
+                    HasHiddenSlides = state.HasHiddenSlides, HasAutoPlayTimings = state.HasAutoPlayTimings
+                };
+                state = GetStateSnapshot();
                 _lastIsRunning = state.IsRunning;
                 _lastSlideIndex = state.SlideIndex;
                 _lastPresentationName = state.PresentationName;
@@ -199,8 +241,9 @@ namespace Ink_Canvas.Helpers
             if (raisePresentationClose) PresentationClose?.Invoke(state);
             if (raiseShowStateChanged) SlideShowStateChanged?.Invoke(newShowState);
             if (raiseSlideShowBegin) SlideShowBegin?.Invoke(state);
-            if (raiseSlideShowNext) SlideShowNextSlide?.Invoke(state);
+            if (raiseSlideShowNext) SlideShowNextSlide?.Invoke(new PresentationLinkState(true, state.IsRunning, state.SlideIndex, state.TotalSlides));
             if (raiseSlideShowEnd) SlideShowEnd?.Invoke(state);
+            if (eventName != PPTEvents.PresentationClose) StateUpdated?.Invoke();
         }
 
         private PPTState GetStateSnapshot()

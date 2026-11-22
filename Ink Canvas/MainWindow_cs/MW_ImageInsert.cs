@@ -60,7 +60,7 @@ namespace Ink_Canvas
         /// 4. 处理截图结果并插入到画布
         /// 5. 支持摄像头截图和区域截图
         /// </remarks>
-        private async Task CaptureScreenshotAndInsert()
+        internal async Task CaptureScreenshotAndInsert(Func<bool> canInsert = null)
         {
             if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return;
             try
@@ -82,6 +82,11 @@ namespace Ink_Canvas
 
                 if (screenshotResult.HasValue)
                 {
+                    if (canInsert?.Invoke() == false)
+                    {
+                        screenshotResult.Value.CameraImage?.Dispose();
+                        return;
+                    }
                     if (screenshotResult.Value.AddToWhiteboard)
                     {
                         await AddScreenshotToNewWhiteboardPage(screenshotResult.Value);
@@ -92,12 +97,12 @@ namespace Ink_Canvas
                     if (screenshotResult.Value.CameraBitmapSource != null)
                     {
                         // 摄像头截图（使用BitmapSource）
-                        await InsertBitmapSourceToCanvas(screenshotResult.Value.CameraBitmapSource, Properties.MainWindowStrings.Main_ImageInsert_CameraInserted, Properties.MainWindowStrings.Main_ImageInsert_CameraFailed);
+                        await InsertBitmapSourceToCanvas(screenshotResult.Value.CameraBitmapSource, Properties.MainWindowStrings.Main_ImageInsert_CameraInserted, Properties.MainWindowStrings.Main_ImageInsert_CameraFailed, canInsert);
                     }
                     else if (screenshotResult.Value.CameraImage != null)
                     {
                         // 摄像头截图（使用Bitmap）
-                        await InsertScreenshotToCanvas(screenshotResult.Value.CameraImage);
+                        await InsertScreenshotToCanvas(screenshotResult.Value.CameraImage, canInsert);
                     }
                     else if (screenshotResult.Value.Area.Width > 0 && screenshotResult.Value.Area.Height > 0)
                     {
@@ -141,7 +146,7 @@ namespace Ink_Canvas
                                     }
 
                                     // 将截图转换为WPF Image并插入到画布
-                                    await InsertScreenshotToCanvas(finalBitmap);
+                                    await InsertScreenshotToCanvas(finalBitmap, canInsert);
                                 }
                                 finally
                                 {
@@ -498,11 +503,12 @@ namespace Ink_Canvas
         /// 10. 提交历史记录
         /// 11. 插入图片后切换到选择模式并刷新浮动栏高光显示
         /// </remarks>
-        private Task InsertScreenshotToCanvas(Bitmap bitmap)
+        private Task InsertScreenshotToCanvas(Bitmap bitmap, Func<bool> canInsert = null)
         {
-            if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return Task.CompletedTask;
             try
             {
+                if (canInsert?.Invoke() == false) return Task.CompletedTask;
+                if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return Task.CompletedTask;
                 // 验证位图有效性
                 if (bitmap == null || bitmap.Width <= 0 || bitmap.Height <= 0)
                 {
@@ -595,8 +601,9 @@ namespace Ink_Canvas
         /// 8. 提交历史记录
         /// 9. 插入图片后切换到选择模式并刷新浮动栏高光显示
         /// </remarks>
-        private Task InsertBitmapSourceToCanvas(BitmapSource bitmapSource, string successMessage = null, string failureMessagePrefix = null)
+        private Task InsertBitmapSourceToCanvas(BitmapSource bitmapSource, string successMessage = null, string failureMessagePrefix = null, Func<bool> canInsert = null)
         {
+            if (canInsert?.Invoke() == false) return Task.CompletedTask;
             successMessage = successMessage ?? Properties.MainWindowStrings.Main_ImageInsert_Inserted;
             failureMessagePrefix = failureMessagePrefix ?? Properties.MainWindowStrings.Main_ImageInsert_InsertFailed;
             if (TryBlockFrozenPageMutation(Properties.MainWindowStrings.Main_Freeze_Action_InsertScreenshot)) return Task.CompletedTask;

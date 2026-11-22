@@ -139,10 +139,7 @@ namespace Ink_Canvas
 
             await Dispatcher.InvokeAsync(() =>
             {
-                LeftBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                RightBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
+                ApplyPresentationLinkSettings();
                 GridForFloatingBarDraging.Visibility = Visibility.Collapsed;
                 ViewboxFloatingBarMarginAnimation(-60);
                 HideSubPanels("cursor");
@@ -408,27 +405,8 @@ namespace Ink_Canvas
                     PenIcon_Click(null, null);
                 }
 
-                // 只有在PPT放映模式下且页数有效时才显示翻页按钮
-                if (ArePPTControlsVisible &&
-                    IsInPPTPresentationMode &&
-                    PPTManager?.IsInSlideShow == true &&
-                    PPTManager?.SlidesCount > 0)
-                {
-                    var dops = Settings.PowerPointSettings.PPTButtonsDisplayOption.ToString();
-                    var dopsc = dops.ToCharArray();
-                    if (dopsc[0] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(LeftBottomPanelForPPTNavigation);
-                    if (dopsc[1] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(RightBottomPanelForPPTNavigation);
-                    if (dopsc[2] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(LeftSidePanelForPPTNavigation);
-                    if (dopsc[3] == '2' && !isDisplayingOrHidingBlackboard) AnimationsHelper.ShowWithFadeIn(RightSidePanelForPPTNavigation);
-                }
-                else
-                {
-                    // 如果条件不满足，确保隐藏翻页按钮
-                    LeftBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    RightBottomPanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                    RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-                }
+                ApplyPresentationLinkSettings();
+                _pptUIManager?.UpdateNavigationPanelsVisibility();
 
                 // 新只在屏幕模式下显示浮动栏
                 if (currentMode == 0)

@@ -236,6 +236,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             var auto = SettingsManager.Settings.Automation;
             bool previousState = auto.IsAutoFoldInPPTSlideShow;
             auto.IsAutoFoldInPPTSlideShow = CardAutoFoldInPPTSlideShow.IsOn;
+            (System.Windows.Application.Current.MainWindow as MainWindow)?.ApplyPresentationLinkSettings();
             if (previousState != auto.IsAutoFoldInPPTSlideShow)
             {
                 LogHelper.WriteLogToFile($"PPT自动收纳设置已变更: {auto.IsAutoFoldInPPTSlideShow}", LogHelper.LogType.Trace);

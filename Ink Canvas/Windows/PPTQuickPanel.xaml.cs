@@ -1,5 +1,6 @@
 using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
+using InkCanvasLinkage.Core;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
@@ -105,6 +106,13 @@ namespace Ink_Canvas.Windows
         private Dictionary<FrameworkElement, int> _pptImages = new Dictionary<FrameworkElement, int>();
 
         private Dictionary<int, List<string>> _pptImagePaths = new Dictionary<int, List<string>>();
+        private readonly object _imagePathsIoLock = new object();
+        private Ink_Canvas.ViewModels.PresentationLinkViewModel _subscribedPresentationLink;
+        private int _imageGeneration;
+        private int _imageSlide;
+        private Guid _imagePresentationSession;
+        private Guid _imageSlideShowSession;
+        private readonly HashSet<int> _loadingSlides = new HashSet<int>();
 
         public PPTQuickPanel()
         {
@@ -151,7 +159,8 @@ namespace Ink_Canvas.Windows
             // 获取MainWindow引用
             _mainWindow = Application.Current.MainWindow as MainWindow;
 
-            SubscribeToPPTEvents();
+            if (_mainWindow?.PresentationLink != null) _mainWindow.PresentationLink.SourceChanged += OnPresentationSourceChanged;
+            OnPresentationSourceChanged();
             SubscribeToInkCanvasChildrenChanges();
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -165,19 +174,7 @@ namespace Ink_Canvas.Windows
             {
                 if (_mainWindow == null) return;
 
-                System.Windows.Controls.InkCanvas inkCanvas = null;
-                var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                if (inkCanvasField != null)
-                {
-                    inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
-                if (inkCanvas == null)
-                {
-                    var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    inkCanvas = inkCanvasProperty?.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
+                var inkCanvas = _mainWindow.inkCanvas;
 
                 if (inkCanvas != null && inkCanvas.Children is INotifyCollectionChanged notifyCollection)
                 {
@@ -220,6 +217,12 @@ namespace Ink_Canvas.Windows
                 if (_pptImages.ContainsKey(element))
                 {
                     int slideNumber = _pptImages[element];
+                    if (!_pptImagePaths.ContainsKey(slideNumber))
+                    {
+                        var loadedPaths = LoadPPTImagePaths(slideNumber);
+                        if (loadedPaths == null) return;
+                        _pptImagePaths[slideNumber] = loadedPaths;
+                    }
                     _pptImages.Remove(element);
 
                     if (_pptImagePaths.ContainsKey(slideNumber))
@@ -231,7 +234,7 @@ namespace Ink_Canvas.Windows
 
                             if (_pptImagePaths[slideNumber].Count == 0)
                             {
-                                _pptImagePaths.Remove(slideNumber);
+                                // 空缓存标记已删除，防止在途旧 JSON 读取重新填入路径。
                                 DeletePPTImagePathsFile(slideNumber);
                             }
                             else
@@ -261,10 +264,13 @@ namespace Ink_Canvas.Windows
                     return;
 
                 var jsonFilePath = Path.Combine(folderPath, slideIndex.ToString("0000") + ".images.json");
-                if (File.Exists(jsonFilePath))
+                lock (_imagePathsIoLock)
                 {
-                    File.Delete(jsonFilePath);
-                    LogHelper.WriteLogToFile($"已删除第{slideIndex}页图片路径JSON文件: {jsonFilePath}");
+                    if (File.Exists(jsonFilePath))
+                    {
+                        File.Delete(jsonFilePath);
+                        LogHelper.WriteLogToFile($"已删除第{slideIndex}页图片路径JSON文件: {jsonFilePath}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -273,182 +279,107 @@ namespace Ink_Canvas.Windows
             }
         }
 
-        private void SubscribeToPPTEvents()
+        private void OnPresentationSourceChanged() => SubscribeToPPTEvents(_mainWindow?.PresentationLink?.HasSource == true);
+
+        private void SubscribeToPPTEvents(bool attached)
         {
-            try
+            if (!Dispatcher.CheckAccess())
             {
-                if (_mainWindow == null) return;
-
-                // 获取PPTManager
-                var pptManagerProperty = _mainWindow.GetType().GetProperty("PPTManager",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                var pptManager = pptManagerProperty?.GetValue(_mainWindow);
-
-                if (pptManager != null)
-                {
-                    // 订阅PPT演示文稿打开事件
-                    var presentationOpenEvent = pptManager.GetType().GetEvent("PresentationOpen");
-                    if (presentationOpenEvent != null)
-                    {
-                        var openHandler = new Action<object>(OnPPTPresentationOpen);
-                        presentationOpenEvent.AddEventHandler(pptManager, openHandler);
-                    }
-
-                    // 订阅PPT开始事件
-                    var slideShowBeginEvent = pptManager.GetType().GetEvent("SlideShowBegin");
-                    if (slideShowBeginEvent != null)
-                    {
-                        var beginHandler = new Action<object>(OnPPTSlideShowBegin);
-                        slideShowBeginEvent.AddEventHandler(pptManager, beginHandler);
-                    }
-
-                    // 订阅PPT翻页事件
-                    var slideShowNextSlideEvent = pptManager.GetType().GetEvent("SlideShowNextSlide");
-                    if (slideShowNextSlideEvent != null)
-                    {
-                        var handler = new Action<object>(OnPPTSlideChanged);
-                        slideShowNextSlideEvent.AddEventHandler(pptManager, handler);
-                    }
-
-                    // 订阅PPT结束事件
-                    var slideShowEndEvent = pptManager.GetType().GetEvent("SlideShowEnd");
-                    if (slideShowEndEvent != null)
-                    {
-                        var handler = new Action<object>(OnPPTSlideShowEnd);
-                        slideShowEndEvent.AddEventHandler(pptManager, handler);
-                    }
-                }
+                Dispatcher.Invoke(() => SubscribeToPPTEvents(attached));
+                return;
             }
-            catch (Exception ex)
+            ResetPPTImageLoad();
+            _pptImages.Clear();
+            _pptImagePaths.Clear();
+            if (_subscribedPresentationLink != null)
             {
-                LogHelper.WriteLogToFile($"订阅PPT事件失败: {ex.Message}", LogHelper.LogType.Error);
+                _subscribedPresentationLink.PresentationOpened -= OnPPTPresentationOpen;
+                _subscribedPresentationLink.PresentationClosed -= OnPPTSlideShowEnd;
+                _subscribedPresentationLink.SlideShowStarted -= OnPPTSlideShowBegin;
+                _subscribedPresentationLink.SlideChanged -= OnPPTSlideChanged;
+                _subscribedPresentationLink.SlideShowEnded -= OnPPTSlideShowEnd;
+                _subscribedPresentationLink.ConnectionChanged -= OnPPTActiveChanged;
+                _subscribedPresentationLink.SlideShowStateChanged -= OnPPTActiveChanged;
             }
+            _subscribedPresentationLink = attached ? _mainWindow?.PresentationLink : null;
+            if (_subscribedPresentationLink == null) return;
+            _subscribedPresentationLink.PresentationOpened += OnPPTPresentationOpen;
+            _subscribedPresentationLink.PresentationClosed += OnPPTSlideShowEnd;
+            _subscribedPresentationLink.SlideShowStarted += OnPPTSlideShowBegin;
+            _subscribedPresentationLink.SlideChanged += OnPPTSlideChanged;
+            _subscribedPresentationLink.SlideShowEnded += OnPPTSlideShowEnd;
+            _subscribedPresentationLink.ConnectionChanged += OnPPTActiveChanged;
+            _subscribedPresentationLink.SlideShowStateChanged += OnPPTActiveChanged;
+            if (_subscribedPresentationLink.IsInSlideShow) OnPPTSlideShowBegin(_subscribedPresentationLink.State);
         }
 
-        private void OnPPTPresentationOpen(object presentation)
+        private System.Threading.Tasks.Task OnPPTPresentationOpen(PresentationLinkState state)
         {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                try
-                {
-                    // PPT打开时，加载所有图片路径
-                    LoadAllPPTImagePaths();
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"处理PPT打开事件失败: {ex.Message}", LogHelper.LogType.Error);
-                }
-            }), DispatcherPriority.Normal);
+            ResetPPTImageLoad();
+            _pptImages.Clear();
+            _pptImagePaths.Clear();
+            return System.Threading.Tasks.Task.CompletedTask;
         }
 
-        private void OnPPTSlideShowBegin(object window)
+        private System.Threading.Tasks.Task OnPPTSlideShowBegin(PresentationLinkState state)
         {
-            Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
-            {
-                try
-                {
-                    // PPT开始时，加载所有图片路径并加载当前页面的图片
-                    LoadAllPPTImagePaths();
-
-                    if (_mainWindow == null) return;
-
-                    // 获取当前PPT页面编号
-                    var pptManagerProperty = _mainWindow.GetType().GetProperty("PPTManager",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var pptManager = pptManagerProperty?.GetValue(_mainWindow);
-
-                    if (pptManager != null)
-                    {
-                        var getCurrentSlideNumberMethod = pptManager.GetType().GetMethod("GetCurrentSlideNumber");
-                        int currentSlide = 0;
-                        if (getCurrentSlideNumberMethod != null)
-                        {
-                            var result = getCurrentSlideNumberMethod.Invoke(pptManager, null);
-                            if (result != null)
-                            {
-                                currentSlide = (int)result;
-                            }
-                        }
-
-                        // 加载当前页面的图片
-                        if (currentSlide > 0)
-                        {
-                            await LoadPPTImages(currentSlide);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"处理PPT开始事件失败: {ex.Message}", LogHelper.LogType.Error);
-                }
-            }), DispatcherPriority.Normal);
+            return OnPPTSlideChanged(state);
         }
 
-        private void OnPPTSlideChanged(object window)
+        private System.Threading.Tasks.Task OnPPTSlideChanged(PresentationLinkState state)
         {
-            Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
+            if (_subscribedPresentationLink == null || state == null || !state.IsConnected
+                || !state.IsInSlideShow || state.CurrentSlide <= 0) return OnPPTSlideShowEnd(state);
+            if (_imageSlide != state.CurrentSlide || _imagePresentationSession != state.PresentationSessionId
+                || _imageSlideShowSession != state.SlideShowSessionId) ResetPPTImageLoad();
+            _imageSlide = state.CurrentSlide;
+            _imagePresentationSession = state.PresentationSessionId;
+            _imageSlideShowSession = state.SlideShowSessionId;
+            UpdatePPTImagesVisibility(state.CurrentSlide);
+            int slide = state.CurrentSlide;
+            int generation = _imageGeneration;
+            int sourceGeneration = _subscribedPresentationLink.Generation;
+            if (_loadingSlides.Add(slide))
             {
-                try
+                // 图片 I/O 不占用联动事件的墨迹串行队列。
+                Dispatcher.BeginInvoke(new Action(async () =>
                 {
-                    if (_mainWindow == null) return;
-
-                    // 获取当前PPT页面编号
-                    var pptManagerProperty = _mainWindow.GetType().GetProperty("PPTManager",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var pptManager = pptManagerProperty?.GetValue(_mainWindow);
-
-                    if (pptManager != null)
-                    {
-                        var getCurrentSlideNumberMethod = pptManager.GetType().GetMethod("GetCurrentSlideNumber");
-                        int currentSlide = 0;
-                        if (getCurrentSlideNumberMethod != null)
-                        {
-                            var result = getCurrentSlideNumberMethod.Invoke(pptManager, null);
-                            if (result != null)
-                            {
-                                currentSlide = (int)result;
-                            }
-                        }
-
-                        // 更新图片可见性
-                        UpdatePPTImagesVisibility(currentSlide);
-
-                        // 加载当前页面的图片（如果还没有加载）
-                        if (currentSlide > 0 && (!_pptImagePaths.ContainsKey(currentSlide) || _pptImagePaths[currentSlide].Count == 0))
-                        {
-                            // 先加载图片路径
-                            var imagePaths = LoadPPTImagePaths(currentSlide);
-                            if (imagePaths != null && imagePaths.Count > 0)
-                            {
-                                _pptImagePaths[currentSlide] = imagePaths;
-
-                                // 加载图片
-                                await LoadPPTImages(currentSlide);
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"处理PPT翻页事件失败: {ex.Message}", LogHelper.LogType.Error);
-                }
-            }), DispatcherPriority.Normal);
+                    try { await LoadPPTImages(slide, generation, sourceGeneration); }
+                    catch (Exception ex) { LogHelper.WriteLogToFile($"加载PPT图片失败: {ex}", LogHelper.LogType.Error); }
+                    finally { if (generation == _imageGeneration) _loadingSlides.Remove(slide); }
+                }), DispatcherPriority.Background);
+            }
+            return System.Threading.Tasks.Task.CompletedTask;
         }
 
-        private void OnPPTSlideShowEnd(object presentation)
+        private System.Threading.Tasks.Task OnPPTSlideShowEnd(PresentationLinkState state)
         {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                try
-                {
-                    // PPT退出时隐藏所有图片
-                    HideAllPPTImages();
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"处理PPT结束事件失败: {ex.Message}", LogHelper.LogType.Error);
-                }
-            }), DispatcherPriority.Normal);
+            ResetPPTImageLoad();
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        private System.Threading.Tasks.Task OnPPTActiveChanged(bool active)
+        {
+            if (!active) ResetPPTImageLoad();
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        private void ResetPPTImageLoad()
+        {
+            _imageGeneration++;
+            _imageSlide = 0;
+            _loadingSlides.Clear();
+            HideAllPPTImages();
+        }
+
+        private bool IsCurrentPPTImageLoad(int slideIndex, int generation, int sourceGeneration)
+        {
+            return generation == _imageGeneration && _imageSlide == slideIndex
+                && _subscribedPresentationLink != null && sourceGeneration == _subscribedPresentationLink.Generation
+                && _subscribedPresentationLink.IsConnected && _subscribedPresentationLink.IsInSlideShow
+                && _subscribedPresentationLink.CurrentSlide == slideIndex
+                && _subscribedPresentationLink.State.PresentationSessionId == _imagePresentationSession
+                && _subscribedPresentationLink.State.SlideShowSessionId == _imageSlideShowSession;
         }
 
         private void UpdatePPTImagesVisibility(int currentSlide)
@@ -488,6 +419,8 @@ namespace Ink_Canvas.Windows
         private void PPTQuickPanel_Unloaded(object sender, RoutedEventArgs e)
         {
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+            if (_mainWindow?.PresentationLink != null) _mainWindow.PresentationLink.SourceChanged -= OnPresentationSourceChanged;
+            SubscribeToPPTEvents(false);
             UnsubscribeFromInkCanvasChildrenChanges();
         }
 
@@ -497,19 +430,7 @@ namespace Ink_Canvas.Windows
             {
                 if (_mainWindow == null) return;
 
-                System.Windows.Controls.InkCanvas inkCanvas = null;
-                var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                if (inkCanvasField != null)
-                {
-                    inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
-                if (inkCanvas == null)
-                {
-                    var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    inkCanvas = inkCanvasProperty?.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
+                var inkCanvas = _mainWindow.inkCanvas;
 
                 if (inkCanvas != null && inkCanvas.Children is INotifyCollectionChanged notifyCollection)
                 {
@@ -953,25 +874,14 @@ namespace Ink_Canvas.Windows
                 {
                     string filePath = dialog.FileName;
 
-                    var createImageMethod = _mainWindow.GetType().GetMethod("CreateAndCompressImageAsync",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                    if (createImageMethod != null)
+                    int generation = _imageGeneration;
+                    var state = _mainWindow.PresentationLink.State;
+                    var inserted = await _mainWindow.CreateAndCompressImageAsync(filePath);
+                    if (inserted != null && generation == _imageGeneration
+                        && ReferenceEquals(state, _mainWindow.PresentationLink.State))
                     {
-                        var imageTask = createImageMethod.Invoke(_mainWindow, new object[] { filePath }) as System.Threading.Tasks.Task<FrameworkElement>;
-                        if (imageTask != null)
-                        {
-                            var inserted = await imageTask;
-                            if (inserted != null)
-                            {
-                                inserted.Tag = filePath;
-                                await InsertImageToMainWindow(inserted, filePath);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        LogHelper.WriteLogToFile("无法找到CreateAndCompressImageAsync方法", LogHelper.LogType.Warning);
+                        inserted.Tag = filePath;
+                        await InsertImageToMainWindow(inserted, filePath);
                     }
                 }
             }
@@ -987,22 +897,12 @@ namespace Ink_Canvas.Windows
 
             try
             {
-                var captureScreenshotMethod = _mainWindow.GetType().GetMethod("CaptureScreenshotAndInsert",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                if (captureScreenshotMethod != null)
-                {
-                    var task = captureScreenshotMethod.Invoke(_mainWindow, null) as System.Threading.Tasks.Task;
-                    if (task != null)
-                    {
-                        await task;
-                        await SaveScreenshotToPPT();
-                    }
-                }
-                else
-                {
-                    LogHelper.WriteLogToFile("无法找到CaptureScreenshotAndInsert方法", LogHelper.LogType.Warning);
-                }
+                int generation = _imageGeneration;
+                var state = _mainWindow.PresentationLink.State;
+                await _mainWindow.CaptureScreenshotAndInsert(() => generation == _imageGeneration
+                    && ReferenceEquals(state, _mainWindow.PresentationLink.State));
+                if (generation != _imageGeneration || !ReferenceEquals(state, _mainWindow.PresentationLink.State)) return;
+                await SaveScreenshotToPPT();
             }
             catch (Exception ex)
             {
@@ -1012,23 +912,13 @@ namespace Ink_Canvas.Windows
 
         private async System.Threading.Tasks.Task SaveScreenshotToPPT()
         {
+            int generation = _imageGeneration;
+            var state = _mainWindow?.PresentationLink.State;
             try
             {
                 if (_mainWindow == null) return;
 
-                System.Windows.Controls.InkCanvas inkCanvas = null;
-                var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                if (inkCanvasField != null)
-                {
-                    inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
-                if (inkCanvas == null)
-                {
-                    var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    inkCanvas = inkCanvasProperty?.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
+                var inkCanvas = _mainWindow.inkCanvas;
 
                 if (inkCanvas == null) return;
 
@@ -1044,6 +934,7 @@ namespace Ink_Canvas.Windows
                 if (lastScreenshot == null) return;
 
                 string screenshotFilePath = await SaveScreenshotToFile(lastScreenshot);
+                if (generation != _imageGeneration || !ReferenceEquals(state, _mainWindow.PresentationLink.State)) return;
 
                 if (string.IsNullOrEmpty(screenshotFilePath))
                 {
@@ -1066,32 +957,8 @@ namespace Ink_Canvas.Windows
             {
                 if (image?.Source == null) return null;
 
-                string savePath = null;
-                var settingsProperty = _mainWindow.GetType().GetProperty("Settings");
-                if (settingsProperty != null)
-                {
-                    var settings = settingsProperty.GetValue(_mainWindow);
-                    if (settings != null)
-                    {
-                        var autoSavedStrokesLocationProperty = settings.GetType().GetProperty("Automation");
-                        if (autoSavedStrokesLocationProperty != null)
-                        {
-                            var automation = autoSavedStrokesLocationProperty.GetValue(settings);
-                            if (automation != null)
-                            {
-                                var locationProperty = automation.GetType().GetProperty("AutoSavedStrokesLocation");
-                                if (locationProperty != null)
-                                {
-                                    var location = locationProperty.GetValue(automation) as string;
-                                    if (!string.IsNullOrEmpty(location))
-                                    {
-                                        savePath = Path.Combine(location, "File Dependency");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                string location = MainWindow.Settings.Automation.AutoSavedStrokesLocation;
+                string savePath = string.IsNullOrEmpty(location) ? null : Path.Combine(location, "File Dependency");
 
                 if (string.IsNullOrEmpty(savePath))
                 {
@@ -1133,60 +1000,21 @@ namespace Ink_Canvas.Windows
         private async System.Threading.Tasks.Task ManageScreenshotInPPT(System.Windows.Controls.Image image, string filePath)
         {
             if (_mainWindow == null || image == null || string.IsNullOrEmpty(filePath)) return;
+            int generation = _imageGeneration;
+            var state = _mainWindow.PresentationLink.State;
 
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 try
                 {
-                    int currentSlideNumber = 0;
-                    try
-                    {
-                        var pptManagerProperty = _mainWindow.GetType().GetProperty("PPTManager",
-                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                        var pptManager = pptManagerProperty?.GetValue(_mainWindow);
-
-                        if (pptManager != null)
-                        {
-                            var isInSlideShowProperty = pptManager.GetType().GetProperty("IsInSlideShow");
-                            bool isInSlideShow = false;
-                            if (isInSlideShowProperty != null)
-                            {
-                                var result = isInSlideShowProperty.GetValue(pptManager);
-                                if (result != null)
-                                {
-                                    isInSlideShow = (bool)result;
-                                }
-                            }
-
-                            if (isInSlideShow)
-                            {
-                                var getCurrentSlideNumberMethod = pptManager.GetType().GetMethod("GetCurrentSlideNumber");
-                                if (getCurrentSlideNumberMethod != null)
-                                {
-                                    var result = getCurrentSlideNumberMethod.Invoke(pptManager, null);
-                                    if (result != null)
-                                    {
-                                        currentSlideNumber = (int)result;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"获取当前PPT页面编号失败: {ex.Message}", LogHelper.LogType.Warning);
-                    }
+                    if (generation != _imageGeneration || !ReferenceEquals(state, _mainWindow.PresentationLink.State)) return;
+                    int currentSlideNumber = state?.IsInSlideShow == true ? state.CurrentSlide : 0;
 
                     if (currentSlideNumber > 0 && !string.IsNullOrEmpty(filePath))
                     {
                         _pptImages[image] = currentSlideNumber;
 
-                        if (!_pptImagePaths.ContainsKey(currentSlideNumber))
-                        {
-                            _pptImagePaths[currentSlideNumber] = new List<string>();
-                        }
-                        _pptImagePaths[currentSlideNumber].Add(filePath);
-                        SavePPTImagePaths(currentSlideNumber);
+                        AddPPTImagePath(currentSlideNumber, filePath);
 
                         LogHelper.WriteLogToFile($"截图已关联到PPT页面{currentSlideNumber}: {filePath}");
                     }
@@ -1202,13 +1030,19 @@ namespace Ink_Canvas.Windows
             }, DispatcherPriority.Normal);
         }
 
-        private async System.Threading.Tasks.Task InsertImageToMainWindow(FrameworkElement element, string originalFilePath = null, bool saveToJson = true)
+        private async System.Threading.Tasks.Task InsertImageToMainWindow(FrameworkElement element, string originalFilePath = null, bool saveToJson = true, int slideNumber = 0)
         {
             if (_mainWindow == null || element == null) return;
+            int generation = _imageGeneration;
+            int sourceGeneration = _mainWindow.PresentationLink.Generation;
 
             // 确保在UI线程上执行
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
+                if (generation != _imageGeneration || sourceGeneration != _mainWindow.PresentationLink.Generation
+                    || (!saveToJson && !IsCurrentPPTImageLoad(slideNumber, generation, sourceGeneration))) return;
+                if (!saveToJson && (!_pptImagePaths.TryGetValue(slideNumber, out var paths)
+                    || !paths.Contains(originalFilePath))) return;
                 try
                 {
                     // 生成唯一名称
@@ -1219,23 +1053,7 @@ namespace Ink_Canvas.Windows
                     element.IsHitTestVisible = true;
                     element.Focusable = false;
 
-                    System.Windows.Controls.InkCanvas inkCanvas = null;
-                    var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    if (inkCanvasField != null)
-                    {
-                        inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                    }
-
-                    if (inkCanvas == null)
-                    {
-                        var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas",
-                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                        if (inkCanvasProperty != null)
-                        {
-                            inkCanvas = inkCanvasProperty.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                        }
-                    }
+                    var inkCanvas = _mainWindow.inkCanvas;
 
                     if (inkCanvas == null)
                     {
@@ -1243,50 +1061,11 @@ namespace Ink_Canvas.Windows
                         return;
                     }
 
-                    // 初始化InkCanvas选择设置
-                    var initializeInkCanvasSelectionSettingsMethod = _mainWindow.GetType().GetMethod("InitializeInkCanvasSelectionSettings",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    initializeInkCanvasSelectionSettingsMethod?.Invoke(_mainWindow, null);
+                    if (saveToJson) _mainWindow.InitializeInkCanvasSelectionSettings();
 
                     // 获取当前PPT页面编号（如果在PPT模式下）
-                    int currentSlideNumber = 0;
-                    try
-                    {
-                        var pptManagerProperty = _mainWindow.GetType().GetProperty("PPTManager",
-                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                        var pptManager = pptManagerProperty?.GetValue(_mainWindow);
-
-                        if (pptManager != null)
-                        {
-                            var isInSlideShowProperty = pptManager.GetType().GetProperty("IsInSlideShow");
-                            bool isInSlideShow = false;
-                            if (isInSlideShowProperty != null)
-                            {
-                                var result = isInSlideShowProperty.GetValue(pptManager);
-                                if (result != null)
-                                {
-                                    isInSlideShow = (bool)result;
-                                }
-                            }
-
-                            if (isInSlideShow)
-                            {
-                                var getCurrentSlideNumberMethod = pptManager.GetType().GetMethod("GetCurrentSlideNumber");
-                                if (getCurrentSlideNumberMethod != null)
-                                {
-                                    var result = getCurrentSlideNumberMethod.Invoke(pptManager, null);
-                                    if (result != null)
-                                    {
-                                        currentSlideNumber = (int)result;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"获取当前PPT页面编号失败: {ex.Message}", LogHelper.LogType.Warning);
-                    }
+                    var state = _mainWindow.PresentationLink.State;
+                    int currentSlideNumber = slideNumber > 0 ? slideNumber : state.IsInSlideShow ? state.CurrentSlide : 0;
 
                     // 如果在PPT模式下，记录图片和页面编号的关联，并保存图片路径
                     if (currentSlideNumber > 0 && !string.IsNullOrEmpty(originalFilePath) && saveToJson)
@@ -1294,14 +1073,7 @@ namespace Ink_Canvas.Windows
                         _pptImages[element] = currentSlideNumber;
 
                         // 添加到页面图片路径列表
-                        if (!_pptImagePaths.ContainsKey(currentSlideNumber))
-                        {
-                            _pptImagePaths[currentSlideNumber] = new List<string>();
-                        }
-                        _pptImagePaths[currentSlideNumber].Add(originalFilePath);
-
-                        // 保存图片路径到JSON文件
-                        SavePPTImagePaths(currentSlideNumber);
+                        AddPPTImagePath(currentSlideNumber, originalFilePath);
                     }
                     else if (currentSlideNumber > 0)
                     {
@@ -1310,29 +1082,25 @@ namespace Ink_Canvas.Windows
                     }
 
                     // 先添加到画布（与MainWindow的实现保持一致）
+                    element.Visibility = currentSlideNumber > 0 && (!state.IsInSlideShow || currentSlideNumber != state.CurrentSlide)
+                        ? Visibility.Collapsed : Visibility.Visible;
                     inkCanvas.Children.Add(element);
 
                     // 等待图片加载完成后再进行后续处理
-                    element.Loaded += (s, args) =>
+                    RoutedEventHandler initializeImage = null;
+                    initializeImage = (s, args) =>
                     {
-                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                        element.Loaded -= initializeImage;
+                        Dispatcher.BeginInvoke(new Action(() =>
                         {
+                            if (sourceGeneration != _mainWindow.PresentationLink.Generation
+                                || state.PresentationSessionId != _mainWindow.PresentationLink.State.PresentationSessionId
+                                || !inkCanvas.Children.Contains(element)) return;
                             try
                             {
-                                // 初始化TransformGroup
-                                var initializeTransformMethod = _mainWindow.GetType().GetMethod("InitializeElementTransform",
-                                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                                initializeTransformMethod?.Invoke(_mainWindow, new object[] { element });
-
-                                // 居中缩放
-                                var centerMethod = _mainWindow.GetType().GetMethod("CenterAndScaleElement",
-                                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                                centerMethod?.Invoke(_mainWindow, new object[] { element });
-
-                                // 绑定事件处理器
-                                var bindEventsMethod = _mainWindow.GetType().GetMethod("BindElementEvents",
-                                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                                bindEventsMethod?.Invoke(_mainWindow, new object[] { element });
+                                _mainWindow.InitializeElementTransform(element);
+                                _mainWindow.CenterAndScaleElement(element);
+                                _mainWindow.BindElementEvents(element);
 
                                 LogHelper.WriteLogToFile($"图片插入完成: {element.Name}, PPT页面: {currentSlideNumber}");
                             }
@@ -1342,29 +1110,18 @@ namespace Ink_Canvas.Windows
                             }
                         }), DispatcherPriority.Loaded);
                     };
+                    element.Loaded += initializeImage;
 
                     // 提交历史记录
-                    var timeMachineProperty = _mainWindow.GetType().GetProperty("timeMachine",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    var timeMachine = timeMachineProperty?.GetValue(_mainWindow);
-                    if (timeMachine != null)
-                    {
-                        var commitMethod = timeMachine.GetType().GetMethod("CommitElementInsertHistory");
-                        commitMethod?.Invoke(timeMachine, new object[] { element });
-                    }
+                    if (saveToJson) _mainWindow.timeMachine.CommitElementInsertHistory(element);
 
                     // 切换到选择模式
-                    var setModeMethod = _mainWindow.GetType().GetMethod("SetCurrentToolMode",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    setModeMethod?.Invoke(_mainWindow, new object[] { System.Windows.Controls.InkCanvasEditingMode.Select });
-
-                    var updateModeMethod = _mainWindow.GetType().GetMethod("UpdateCurrentToolMode",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    updateModeMethod?.Invoke(_mainWindow, new object[] { "select" });
-
-                    var hidePanelsMethod = _mainWindow.GetType().GetMethod("HideSubPanels",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    hidePanelsMethod?.Invoke(_mainWindow, new object[] { "select" });
+                    if (saveToJson)
+                    {
+                        _mainWindow.SetCurrentToolMode(System.Windows.Controls.InkCanvasEditingMode.Select);
+                        _mainWindow.UpdateCurrentToolMode("select");
+                        _mainWindow.HideSubPanels("select");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1382,225 +1139,8 @@ namespace Ink_Canvas.Windows
         /// </summary>
         private string GetPresentationFolderPath()
         {
-            try
-            {
-                if (_mainWindow == null) return null;
-
-                // 获取PPTInkManager
-                var singlePPTInkManagerField = _mainWindow.GetType().GetField("_singlePPTInkManager",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var singlePPTInkManager = singlePPTInkManagerField?.GetValue(_mainWindow);
-
-                if (singlePPTInkManager != null)
-                {
-                    // 使用反射获取AutoSaveLocation
-                    var autoSaveLocationProperty = singlePPTInkManager.GetType().GetProperty("AutoSaveLocation");
-                    var autoSaveLocation = autoSaveLocationProperty?.GetValue(singlePPTInkManager) as string;
-
-                    if (!string.IsNullOrEmpty(autoSaveLocation))
-                    {
-                        // 获取PPTManager以获取当前演示文稿信息
-                        var pptManagerProperty = _mainWindow.GetType().GetProperty("PPTManager",
-                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                        var pptManager = pptManagerProperty?.GetValue(_mainWindow);
-
-                        if (pptManager != null)
-                        {
-                            // 尝试获取当前演示文稿，使用重试机制
-                            Microsoft.Office.Interop.PowerPoint.Presentation presentation = null;
-
-                            // 首先尝试使用 CurrentPresentation 属性（可能是缓存的）
-                            try
-                            {
-                                var currentPresentationProperty = pptManager.GetType().GetProperty("CurrentPresentation",
-                                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                                presentation = currentPresentationProperty?.GetValue(pptManager) as Microsoft.Office.Interop.PowerPoint.Presentation;
-                            }
-                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-
-                            // 如果 CurrentPresentation 不可用，尝试 GetCurrentActivePresentation
-                            if (presentation == null)
-                            {
-                                try
-                                {
-                                    var getCurrentActivePresentationMethod = pptManager.GetType().GetMethod("GetCurrentActivePresentation");
-                                    presentation = getCurrentActivePresentationMethod?.Invoke(pptManager, null) as Microsoft.Office.Interop.PowerPoint.Presentation;
-                                }
-                                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-                            }
-
-                            if (presentation != null)
-                            {
-                                try
-                                {
-                                    // 立即检查COM对象是否仍然有效
-                                    if (!System.Runtime.InteropServices.Marshal.IsComObject(presentation))
-                                    {
-                                        return null;
-                                    }
-
-                                    // 尝试访问对象以验证其有效性
-                                    try
-                                    {
-                                        var _ = System.Runtime.InteropServices.Marshal.GetIUnknownForObject(presentation);
-                                        System.Runtime.InteropServices.Marshal.Release(_);
-                                    }
-                                    catch (System.Runtime.InteropServices.InvalidComObjectException)
-                                    {
-                                        // COM对象已失效，静默返回
-                                        return null;
-                                    }
-
-                                    // 立即生成演示文稿ID（在对象失效前）
-                                    string presentationId = GeneratePresentationId(presentation);
-                                    if (string.IsNullOrEmpty(presentationId) || presentationId.StartsWith("unknown_") || presentationId.StartsWith("invalid_") || presentationId.StartsWith("com_error_"))
-                                    {
-                                        // 生成ID失败，返回null而不是抛出异常
-                                        return null;
-                                    }
-
-                                    return Path.Combine(autoSaveLocation, "Auto Saved - Presentations", presentationId);
-                                }
-                                catch (System.Runtime.InteropServices.InvalidComObjectException)
-                                {
-                                    // COM对象已失效，静默返回（不记录错误日志）
-                                    return null;
-                                }
-                                catch (System.Runtime.InteropServices.COMException)
-                                {
-                                    // COM异常，对象可能已失效，静默返回（不记录错误日志）
-                                    return null;
-                                }
-                                catch (Exception ex)
-                                {
-                                    // 其他异常，只记录非COM相关异常
-                                    if (!(ex is System.Runtime.InteropServices.InvalidComObjectException) &&
-                                        !(ex is System.Runtime.InteropServices.COMException))
-                                    {
-                                        LogHelper.WriteLogToFile($"获取PPT文件夹路径时发生非COM异常: {ex.Message}", LogHelper.LogType.Warning);
-                                    }
-                                    return null;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (System.Runtime.InteropServices.InvalidComObjectException)
-            {
-                // COM对象已失效，静默返回（不记录错误日志）
-                return null;
-            }
-            catch (System.Runtime.InteropServices.COMException)
-            {
-                // COM异常，对象可能已失效，静默返回（不记录错误日志）
-                return null;
-            }
-            catch (Exception ex)
-            {
-                // 只记录非COM相关异常
-                if (!(ex is System.Runtime.InteropServices.InvalidComObjectException) &&
-                    !(ex is System.Runtime.InteropServices.COMException))
-                {
-                    LogHelper.WriteLogToFile($"获取PPT文件夹路径失败: {ex.Message}", LogHelper.LogType.Error);
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 生成演示文稿ID（与PPTInkManager一致）
-        /// </summary>
-        private string GeneratePresentationId(Microsoft.Office.Interop.PowerPoint.Presentation presentation)
-        {
-            if (presentation == null)
-            {
-                return $"unknown_{DateTime.Now.Ticks}";
-            }
-
-            try
-            {
-                // 检查COM对象是否仍然有效
-                if (!System.Runtime.InteropServices.Marshal.IsComObject(presentation))
-                {
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-
-                // 验证COM对象有效性
-                try
-                {
-                    var _ = System.Runtime.InteropServices.Marshal.GetIUnknownForObject(presentation);
-                    System.Runtime.InteropServices.Marshal.Release(_);
-                }
-                catch (System.Runtime.InteropServices.InvalidComObjectException)
-                {
-                    // COM对象已失效
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-
-                // 逐个访问属性，每个都进行异常处理
-                string presentationName = null;
-                string presentationPath = null;
-                int slidesCount = 0;
-
-                try
-                {
-                    presentationName = presentation.Name;
-                }
-                catch (System.Runtime.InteropServices.InvalidComObjectException)
-                {
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-                catch (System.Runtime.InteropServices.COMException)
-                {
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-
-                try
-                {
-                    presentationPath = presentation.FullName;
-                }
-                catch (System.Runtime.InteropServices.InvalidComObjectException)
-                {
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-                catch (System.Runtime.InteropServices.COMException)
-                {
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-
-                try
-                {
-                    slidesCount = presentation.Slides.Count;
-                }
-                catch (System.Runtime.InteropServices.InvalidComObjectException)
-                {
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-                catch (System.Runtime.InteropServices.COMException)
-                {
-                    return $"unknown_{DateTime.Now.Ticks}";
-                }
-
-                var fileHash = GetFileHash(presentationPath);
-                return $"{presentationName}_{slidesCount}_{fileHash}";
-            }
-            catch (System.Runtime.InteropServices.InvalidComObjectException)
-            {
-                // COM对象已失效
-                return $"unknown_{DateTime.Now.Ticks}";
-            }
-            catch (System.Runtime.InteropServices.COMException)
-            {
-                // COM异常，对象可能已失效
-                return $"unknown_{DateTime.Now.Ticks}";
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"生成演示文稿ID失败: {ex}", LogHelper.LogType.Error);
-                return $"unknown_{DateTime.Now.Ticks}";
-            }
+            var metadata = _mainWindow?.PresentationLink?.Presentation;
+            return metadata == null ? null : _mainWindow.GetPresentationStrokeFolderPath(metadata);
         }
 
         /// <summary>
@@ -1625,6 +1165,18 @@ namespace Ink_Canvas.Windows
             }
         }
 
+        private void AddPPTImagePath(int slideIndex, string filePath)
+        {
+            if (!_pptImagePaths.TryGetValue(slideIndex, out var paths))
+            {
+                paths = LoadPPTImagePaths(slideIndex);
+                if (paths == null) throw new IOException("无法读取原 PPT 图片路径，已取消保存以保护原文件。");
+                _pptImagePaths[slideIndex] = paths;
+            }
+            paths.Add(filePath);
+            SavePPTImagePaths(slideIndex);
+        }
+
         /// <summary>
         /// 保存指定页面的图片路径到JSON文件
         /// </summary>
@@ -1637,16 +1189,15 @@ namespace Ink_Canvas.Windows
                 var folderPath = GetPresentationFolderPath();
                 if (string.IsNullOrEmpty(folderPath)) return;
 
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
-
                 var jsonFilePath = Path.Combine(folderPath, slideIndex.ToString("0000") + ".images.json");
                 var imagePaths = _pptImagePaths[slideIndex];
 
                 string json = JsonConvert.SerializeObject(imagePaths, Formatting.Indented);
-                File.WriteAllText(jsonFilePath, json);
+                lock (_imagePathsIoLock)
+                {
+                    Directory.CreateDirectory(folderPath);
+                    File.WriteAllText(jsonFilePath, json);
+                }
 
                 LogHelper.WriteLogToFile($"已保存第{slideIndex}页图片路径到JSON: {jsonFilePath}");
             }
@@ -1659,21 +1210,24 @@ namespace Ink_Canvas.Windows
         /// <summary>
         /// 从JSON文件加载指定页面的图片路径
         /// </summary>
-        private List<string> LoadPPTImagePaths(int slideIndex)
+        private List<string> LoadPPTImagePaths(int slideIndex, string folderPath = null)
         {
             try
             {
                 if (slideIndex <= 0) return new List<string>();
 
-                var folderPath = GetPresentationFolderPath();
+                folderPath = folderPath ?? GetPresentationFolderPath();
                 if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
                     return new List<string>();
 
                 var jsonFilePath = Path.Combine(folderPath, slideIndex.ToString("0000") + ".images.json");
-                if (!File.Exists(jsonFilePath))
-                    return new List<string>();
-
-                string json = File.ReadAllText(jsonFilePath);
+                string json;
+                // Only file I/O shares the gate; parsing must not block UI-side path mutations.
+                lock (_imagePathsIoLock)
+                {
+                    if (!File.Exists(jsonFilePath)) return new List<string>();
+                    json = File.ReadAllText(jsonFilePath);
+                }
                 var imagePaths = JsonConvert.DeserializeObject<List<string>>(json);
 
                 return imagePaths ?? new List<string>();
@@ -1681,36 +1235,30 @@ namespace Ink_Canvas.Windows
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"加载PPT图片路径失败: {ex.Message}", LogHelper.LogType.Error);
-                return new List<string>();
+                return null;
             }
         }
 
         /// <summary>
         /// 加载指定页面的图片
         /// </summary>
-        private async System.Threading.Tasks.Task LoadPPTImages(int slideIndex)
+        private async System.Threading.Tasks.Task LoadPPTImages(int slideIndex, int generation, int sourceGeneration)
         {
             try
             {
-                if (_mainWindow == null || slideIndex <= 0) return;
+                if (_mainWindow == null || !IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
 
-                var imagePaths = LoadPPTImagePaths(slideIndex);
-                if (imagePaths == null || imagePaths.Count == 0) return;
+                var folderPath = GetPresentationFolderPath();
+                if (string.IsNullOrEmpty(folderPath)) return;
+                var imagePaths = await System.Threading.Tasks.Task.Run(() => LoadPPTImagePaths(slideIndex, folderPath));
+                if (imagePaths == null || !IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
+                if (!_pptImagePaths.TryGetValue(slideIndex, out var currentPaths))
+                    _pptImagePaths[slideIndex] = currentPaths = imagePaths;
+                imagePaths = currentPaths.ToList();
+                if (imagePaths.Count == 0) return;
 
                 // 获取inkCanvas，检查是否已有图片
-                System.Windows.Controls.InkCanvas inkCanvas = null;
-                var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                if (inkCanvasField != null)
-                {
-                    inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
-                if (inkCanvas == null)
-                {
-                    var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    inkCanvas = inkCanvasProperty?.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
-                }
+                var inkCanvas = _mainWindow.inkCanvas;
 
                 if (inkCanvas == null) return;
 
@@ -1718,30 +1266,24 @@ namespace Ink_Canvas.Windows
                 var existingImagePaths = new HashSet<string>();
                 foreach (var existingImage in inkCanvas.Children.OfType<System.Windows.Controls.Image>())
                 {
-                    if (existingImage.Tag is string tagPath && !string.IsNullOrEmpty(tagPath))
+                    if (_pptImages.TryGetValue(existingImage, out int page) && page == slideIndex
+                        && existingImage.Tag is string tagPath && !string.IsNullOrEmpty(tagPath))
                         existingImagePaths.Add(tagPath);
                 }
 
                 foreach (var existingPdf in inkCanvas.Children.OfType<PdfEmbeddedView>())
                 {
-                    if (existingPdf.Tag is string tagPath && !string.IsNullOrEmpty(tagPath))
+                    if (_pptImages.TryGetValue(existingPdf, out int page) && page == slideIndex
+                        && existingPdf.Tag is string tagPath && !string.IsNullOrEmpty(tagPath))
                         existingImagePaths.Add(tagPath);
-                }
-
-                // 使用反射调用MainWindow的CreateAndCompressImageAsync方法
-                var createImageMethod = _mainWindow.GetType().GetMethod("CreateAndCompressImageAsync",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                if (createImageMethod == null)
-                {
-                    LogHelper.WriteLogToFile("无法找到CreateAndCompressImageAsync方法", LogHelper.LogType.Warning);
-                    return;
                 }
 
                 foreach (var imagePath in imagePaths)
                 {
                     try
                     {
+                        if (!IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
+                        if (!_pptImagePaths[slideIndex].Contains(imagePath)) continue;
                         // 如果图片已存在，跳过
                         if (existingImagePaths.Contains(imagePath))
                         {
@@ -1754,18 +1296,15 @@ namespace Ink_Canvas.Windows
                             continue;
                         }
 
-                        var imageTask = createImageMethod.Invoke(_mainWindow, new object[] { imagePath }) as System.Threading.Tasks.Task<FrameworkElement>;
-                        if (imageTask != null)
+                        var inserted = await _mainWindow.CreateAndCompressImageAsync(imagePath);
+                        if (!IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
+                        if (!_pptImagePaths[slideIndex].Contains(imagePath)) continue;
+                        if (inserted != null)
                         {
-                            var inserted = await imageTask;
-                            if (inserted != null)
-                            {
-                                // 保存原始文件路径到Tag
-                                inserted.Tag = imagePath;
-
-                                // 插入图片（不保存路径，因为已经存在）
-                                await InsertImageToMainWindow(inserted, imagePath, false);
-                            }
+                            inserted.Tag = imagePath;
+                            await InsertImageToMainWindow(inserted, imagePath, false, slideIndex);
+                            if (!IsCurrentPPTImageLoad(slideIndex, generation, sourceGeneration)) return;
+                            existingImagePaths.Add(imagePath);
                         }
                     }
                     catch (Exception ex)

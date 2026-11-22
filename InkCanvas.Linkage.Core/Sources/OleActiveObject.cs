@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ink_Canvas.Helpers
+namespace InkCanvasLinkage.Core.Sources
 {
     /// <summary>
     /// .NET Core / 5+ 未提供 <see cref="Marshal.GetActiveObject"/>，通过 OLE 实现等效行为。

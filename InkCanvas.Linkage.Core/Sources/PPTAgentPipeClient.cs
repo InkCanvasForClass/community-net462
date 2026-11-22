@@ -1,4 +1,3 @@
-using Ink_Canvas.Helpers;
 using InkCanvasPPTAgent.Contracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -9,9 +8,9 @@ using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ink_Canvas.IPC
+namespace InkCanvasLinkage.Core.Sources
 {
-    public sealed class PPTAgentPipeClient : IDisposable
+    internal sealed class PPTAgentPipeClient : IDisposable
     {
         private readonly object _sendLock = new object();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<JToken>> _pendingRequests = new ConcurrentDictionary<string, TaskCompletionSource<JToken>>();
@@ -21,6 +20,8 @@ namespace Ink_Canvas.IPC
         private Task _connectLoopTask;
         private volatile bool _isConnected;
         private bool _disposed;
+        private readonly LogHelper LogHelper;
+        public PPTAgentPipeClient(LogHelper log) { LogHelper = log; }
 
         public event Action<bool> ConnectionChanged;
         public event Action<PPTState> StateReceived;
@@ -34,19 +35,28 @@ namespace Ink_Canvas.IPC
             if (_cts != null) return;
 
             _cts = new CancellationTokenSource();
-            _connectLoopTask = Task.Run(() => ConnectLoop(_cts.Token));
+            var token = _cts.Token;
+            _connectLoopTask = Task.Run(() => ConnectLoop(token));
         }
 
         public void Stop()
         {
             try
             {
-                var cts = _cts;
-                _cts = null;
-                cts?.Cancel();
-                ClosePipe();
-                FailPendingRequests(new IOException("PPT Agent pipe stopped."));
-                cts?.Dispose();
+                CancellationTokenSource cts;
+                lock (_sendLock)
+                {
+                    cts = _cts;
+                    _cts = null;
+                    cts?.Cancel();
+                    ClosePipe();
+                    FailPendingRequests(new IOException("PPT Agent pipe stopped."));
+                }
+                if (cts != null)
+                {
+                    if (_connectLoopTask == null) cts.Dispose();
+                    else _ = _connectLoopTask.ContinueWith(_ => cts.Dispose());
+                }
             }
             catch (Exception ex)
             {
@@ -123,8 +133,12 @@ namespace Ink_Canvas.IPC
                     pipe = new NamedPipeClientStream(".", PipeConstants.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
                     await pipe.ConnectAsync(PipeConstants.ConnectTimeoutMilliseconds, token).ConfigureAwait(false);
 
-                    _pipe = pipe;
-                    SetConnected(true);
+                    lock (_sendLock)
+                    {
+                        if (token.IsCancellationRequested) break;
+                        _pipe = pipe;
+                        SetConnected(true);
+                    }
                     SendCommand(PPTCommands.State);
 
                     Listen(pipe, token);
@@ -148,10 +162,16 @@ namespace Ink_Canvas.IPC
                 }
                 finally
                 {
-                    if (ReferenceEquals(_pipe, pipe))
-                        _pipe = null;
-                    SetConnected(false);
-                    FailPendingRequests(new IOException("PPT Agent pipe disconnected."));
+                    lock (_sendLock)
+                    {
+                        if (ReferenceEquals(_pipe, pipe))
+                        {
+                            _pipe = null;
+                            SetConnected(false);
+                            FailPendingRequests(new IOException("PPT Agent pipe disconnected."));
+                        }
+                    }
+                    pipe?.Dispose();
                 }
 
                 if (!token.IsCancellationRequested)

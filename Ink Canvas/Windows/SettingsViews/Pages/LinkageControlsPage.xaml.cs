@@ -107,6 +107,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             SettingsManager.Settings.PowerPointSettings.EnablePPTButtonPageClickable = CardEnablePPTButtonPageClickable.IsOn;
             SettingsManager.SaveSettingsToFile();
+            (System.Windows.Application.Current.MainWindow as MainWindow)?.ApplyPresentationLinkSettings();
         }
 
         private void ToggleSwitchEnablePPTButtonEnhancedPreview_OnToggled(object sender, RoutedEventArgs e)
@@ -114,6 +115,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             if (!_isLoaded) return;
             SettingsManager.Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview = CardEnablePPTButtonEnhancedPreview.IsOn;
             SettingsManager.SaveSettingsToFile();
+            (System.Windows.Application.Current.MainWindow as MainWindow)?.ApplyPresentationLinkSettings();
         }
 
         private void ToggleSwitchEnablePPTButtonLongPressPageTurn_OnToggled(object sender, RoutedEventArgs e)

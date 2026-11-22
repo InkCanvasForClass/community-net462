@@ -220,6 +220,10 @@ namespace Ink_Canvas
             {
                 EnsureAutoSavePathValid();
 
+                // The canvas owns the displayed page; source polling may already be ahead of the host queue.
+                if (currentMode == 0 && PresentationLink?.IsInSlideShow == true)
+                    _singlePPTInkManager?.ForceSaveSlideStrokes(_currentSlideShowPosition, inkCanvas.Strokes);
+
                 var savePath = Settings.Automation.AutoSavedStrokesLocation
                                + (saveByUser ? @"\User Saved - " : @"\Auto Saved - ")
                                + (currentMode == 0 ? "Annotation Strokes" : "BlackBoard Strokes");
@@ -251,11 +255,11 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true)
                     {
                         hasMultiplePages = true;
-                        var totalSlides = _pptManager.SlidesCount;
-                        var currentSlide = _pptManager.GetCurrentSlideNumber();
+                        var totalSlides = PresentationLink.TotalSlides;
+                        var currentSlide = _currentSlideShowPosition;
 
                         for (int i = 1; i <= totalSlides; i++)
                         {
@@ -280,7 +284,12 @@ namespace Ink_Canvas
                         hasMultiplePages = true;
                         for (int i = 1; i <= WhiteboardTotalCount; i++)
                         {
-                            if (TimeMachineHistories[i] != null)
+                            // The displayed board page may have newer ink than its saved history.
+                            if (i == CurrentWhiteboardIndex)
+                            {
+                                allPageStrokes.Add(inkCanvas.Strokes.Clone());
+                            }
+                            else if (TimeMachineHistories[i] != null)
                             {
                                 var strokes = ApplyHistoriesToNewStrokeCollection(TimeMachineHistories[i]);
                                 allPageStrokes.Add(strokes);
@@ -295,7 +304,7 @@ namespace Ink_Canvas
                     if (hasMultiplePages && allPageStrokes.Count > 0)
                     {
                         // 检查是否是PPT模式
-                        bool isPPTMode = IsInPPTPresentationMode && _pptManager?.IsConnected == true;
+                        bool isPPTMode = currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true;
 
                         if (isPPTMode)
                         {
@@ -369,12 +378,12 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true)
                     {
                         hasMultiplePages = true;
                         // 收集PPT放映模式下的所有页面墨迹
-                        var totalSlides = _pptManager.SlidesCount;
-                        var currentSlide = _pptManager.GetCurrentSlideNumber();
+                        var totalSlides = PresentationLink.TotalSlides;
+                        var currentSlide = _currentSlideShowPosition;
 
                         for (int i = 1; i <= totalSlides; i++)
                         {
@@ -401,7 +410,11 @@ namespace Ink_Canvas
                         // 收集白板模式下的所有页面墨迹
                         for (int i = 1; i <= WhiteboardTotalCount; i++)
                         {
-                            if (TimeMachineHistories[i] != null)
+                            if (i == CurrentWhiteboardIndex)
+                            {
+                                allPageStrokes.Add(inkCanvas.Strokes.Clone());
+                            }
+                            else if (TimeMachineHistories[i] != null)
                             {
                                 // 从历史记录中恢复墨迹
                                 var strokes = ApplyHistoriesToNewStrokeCollection(TimeMachineHistories[i]);
@@ -433,11 +446,11 @@ namespace Ink_Canvas
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
                     // 检查PPT放映模式下的多页面墨迹
-                    if (IsInPPTPresentationMode && _pptManager?.IsConnected == true)
+                    if (currentMode == 0 && IsInPPTPresentationMode && PresentationLink?.IsConnected == true)
                     {
                         hasMultiplePages = true;
-                        var totalSlides = _pptManager.SlidesCount;
-                        var currentSlide = _pptManager.GetCurrentSlideNumber();
+                        var totalSlides = PresentationLink.TotalSlides;
+                        var currentSlide = _currentSlideShowPosition;
 
                         for (int i = 1; i <= totalSlides; i++)
                         {
@@ -462,7 +475,11 @@ namespace Ink_Canvas
                         hasMultiplePages = true;
                         for (int i = 1; i <= WhiteboardTotalCount; i++)
                         {
-                            if (TimeMachineHistories[i] != null)
+                            if (i == CurrentWhiteboardIndex)
+                            {
+                                allPageStrokes.Add(inkCanvas.Strokes.Clone());
+                            }
+                            else if (TimeMachineHistories[i] != null)
                             {
                                 var strokes = ApplyHistoriesToNewStrokeCollection(TimeMachineHistories[i]);
                                 allPageStrokes.Add(strokes);
@@ -698,11 +715,12 @@ namespace Ink_Canvas
                             writer.WriteLine($"当前页面: {CurrentWhiteboardIndex}");
                             writer.WriteLine($"总页面数: {WhiteboardTotalCount}");
                         }
-                        else if (pptApplication != null)
+                        else if (PresentationLink?.Presentation != null)
                         {
-                            writer.WriteLine($"PPT名称: {pptApplication.SlideShowWindows[1].Presentation.Name}");
-                            writer.WriteLine($"PPT总页数: {pptApplication.SlideShowWindows[1].Presentation.Slides.Count}");
-                            writer.WriteLine($"PPT文件路径: {pptApplication.SlideShowWindows[1].Presentation.FullName}");
+                            var presentation = PresentationLink.Presentation;
+                            writer.WriteLine($"PPT名称: {presentation.Name}");
+                            writer.WriteLine($"PPT总页数: {presentation.TotalSlides}");
+                            writer.WriteLine($"PPT文件路径: {presentation.FullName}");
                         }
 
                         for (int i = 0; i < allPageStrokes.Count; i++)
@@ -808,11 +826,12 @@ namespace Ink_Canvas
                             writer.WriteLine($"当前页面: {CurrentWhiteboardIndex}");
                             writer.WriteLine($"总页面数: {WhiteboardTotalCount}");
                         }
-                        else if (pptApplication != null)
+                        else if (PresentationLink?.Presentation != null)
                         {
-                            writer.WriteLine($"PPT名称: {pptApplication.SlideShowWindows[1].Presentation.Name}");
-                            writer.WriteLine($"PPT总页数: {pptApplication.SlideShowWindows[1].Presentation.Slides.Count}");
-                            writer.WriteLine($"PPT文件路径: {pptApplication.SlideShowWindows[1].Presentation.FullName}");
+                            var presentation = PresentationLink.Presentation;
+                            writer.WriteLine($"PPT名称: {presentation.Name}");
+                            writer.WriteLine($"PPT总页数: {presentation.TotalSlides}");
+                            writer.WriteLine($"PPT文件路径: {presentation.FullName}");
                         }
 
                         for (int i = 0; i < allPageStrokes.Count; i++)
@@ -1084,7 +1103,7 @@ namespace Ink_Canvas
                     bool isWhiteboardMode = metadata.ContainsKey("模式") && metadata["模式"].Contains(FloatingBarStrings.FloatingBar_Whiteboard);
 
                     // 检查当前是否处于PPT模式
-                    bool isCurrentlyInPPTMode = IsInPPTPresentationMode && pptApplication != null;
+                    bool isCurrentlyInPPTMode = IsInPPTPresentationMode && PresentationLink?.IsInSlideShow == true;
 
                     // 检查当前是否处于白板模式
                     bool isCurrentlyInWhiteboardMode = currentMode != 0;
@@ -1167,7 +1186,7 @@ namespace Ink_Canvas
             try
             {
                 // 确保当前处于PPT放映模式
-                if (!IsInPPTPresentationMode || pptApplication == null)
+                if (!IsInPPTPresentationMode || PresentationLink?.IsInSlideShow != true)
                 {
                     throw new InvalidOperationException(Properties.MainWindowStrings.Main_Ink_NotInPptMode);
                 }
@@ -1176,7 +1195,7 @@ namespace Ink_Canvas
                 if (metadata.ContainsKey("PPT文件路径"))
                 {
                     string savedPPTPath = metadata["PPT文件路径"];
-                    string currentPPTPath = pptApplication.SlideShowWindows[1].Presentation.FullName;
+                    string currentPPTPath = PresentationLink.Presentation?.FullName;
 
                     if (!string.IsNullOrEmpty(savedPPTPath) && !string.IsNullOrEmpty(currentPPTPath))
                     {
@@ -1191,53 +1210,22 @@ namespace Ink_Canvas
                     }
                 }
 
-                // 清空当前墨迹
+                // 读取所有页面的墨迹文件（支持.icstk和.xml格式）
+                int totalSlides = PresentationLink.TotalSlides;
+                var restoredPages = ReadPPTStrokePages(tempDir, totalSlides);
+
+                // Do not discard existing ink until every archive page has loaded successfully.
                 ClearStrokes(true);
                 timeMachine.ClearStrokeHistory();
-
-                // 重置PPT墨迹存储
                 _singlePPTInkManager?.ClearAllStrokes();
-
-                // 读取所有页面的墨迹文件（支持.icstk和.xml格式）
-                var icstkFiles = Directory.GetFiles(tempDir, "page_*.icstk");
-                var xmlFiles = Directory.GetFiles(tempDir, "page_*.xml");
-                var allFiles = new List<string>();
-                allFiles.AddRange(icstkFiles);
-                allFiles.AddRange(xmlFiles);
-
-                foreach (var file in allFiles)
-                {
-                    var fileName = Path.GetFileNameWithoutExtension(file);
-                    if (fileName.StartsWith("page_") && int.TryParse(fileName.Substring(5), out int pageNumber))
-                    {
-                        StrokeCollection strokes = null;
-                        string extension = Path.GetExtension(file).ToLower();
-
-                        if (extension == ".xml")
-                        {
-                            // 从XML文件加载
-                            strokes = LoadStrokesFromXML(file);
-                        }
-                        else
-                        {
-                            // 从二进制文件加载
-                            using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read))
-                            {
-                                strokes = new StrokeCollection(fs);
-                            }
-                        }
-
-                        if (strokes != null && strokes.Count > 0)
-                        {
-                            _singlePPTInkManager?.ForceSaveSlideStrokes(pageNumber, strokes);
-                        }
-                    }
-                }
+                for (int page = 1; page <= totalSlides; page++)
+                    _singlePPTInkManager?.ForceSaveSlideStrokes(page,
+                        restoredPages.TryGetValue(page, out var strokes) ? strokes : new StrokeCollection());
 
                 // 恢复当前页面的墨迹
-                if (_pptManager?.IsInSlideShow == true)
+                if (PresentationLink.IsInSlideShow)
                 {
-                    int currentSlide = _pptManager.GetCurrentSlideNumber();
+                    int currentSlide = _currentSlideShowPosition;
                     var currentStrokes = _singlePPTInkManager?.LoadSlideStrokes(currentSlide);
                     if (currentStrokes != null && currentStrokes.Count > 0)
                     {
@@ -1245,13 +1233,33 @@ namespace Ink_Canvas
                     }
                 }
 
-                LogHelper.WriteLogToFile($"成功恢复PPT墨迹，共{allFiles.Count}页");
+                LogHelper.WriteLogToFile($"成功恢复PPT墨迹，共{restoredPages.Count}页");
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"恢复PPT墨迹失败: {ex}", LogHelper.LogType.Error);
                 throw;
             }
+        }
+
+        private static Dictionary<int, StrokeCollection> ReadPPTStrokePages(string directory, int totalSlides)
+        {
+            var pages = new Dictionary<int, StrokeCollection>();
+            var files = new List<string>(Directory.GetFiles(directory, "page_*.icstk"));
+            files.AddRange(Directory.GetFiles(directory, "page_*.xml"));
+            foreach (var file in files)
+            {
+                string name = Path.GetFileNameWithoutExtension(file);
+                if (!int.TryParse(name.Substring(5), out int page) || page <= 0 || page > totalSlides)
+                    throw new InvalidDataException($"Invalid PPT stroke page: {name}.");
+                if (string.Equals(Path.GetExtension(file), ".xml", StringComparison.OrdinalIgnoreCase))
+                    pages[page] = LoadStrokesFromXML(file);
+                else
+                {
+                    using (var stream = File.OpenRead(file)) pages[page] = new StrokeCollection(stream);
+                }
+            }
+            return pages;
         }
 
         /// <summary>
@@ -1421,7 +1429,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 从XML文件加载StrokeCollection（辅助方法，用于ZIP文件恢复）
         /// </summary>
-        private StrokeCollection LoadStrokesFromXML(string xmlPath)
+        private static StrokeCollection LoadStrokesFromXML(string xmlPath)
         {
             try
             {
@@ -1429,7 +1437,7 @@ namespace Ink_Canvas
                 var root = doc.Root;
                 if (root == null || root.Name != "InkCanvasStrokes")
                 {
-                    return new StrokeCollection();
+                    throw new InvalidDataException(Properties.MainWindowStrings.Main_Ink_InvalidXmlFormat);
                 }
 
                 var strokes = new StrokeCollection();
@@ -1463,14 +1471,14 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"从XML加载墨迹失败: {ex}", LogHelper.LogType.Error);
-                return new StrokeCollection();
+                throw;
             }
         }
 
         /// <summary>
         /// 从字符串解析DrawingAttributes
         /// </summary>
-        private DrawingAttributes ParseDrawingAttributes(string attributesStr)
+        private static DrawingAttributes ParseDrawingAttributes(string attributesStr)
         {
             var da = new DrawingAttributes();
             var parts = attributesStr.Split(';');

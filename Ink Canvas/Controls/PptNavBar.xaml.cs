@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using PreviewItem = Ink_Canvas.ViewModels.PresentationPreviewItem;
 
 namespace Ink_Canvas.Controls
 {
@@ -15,12 +16,6 @@ namespace Ink_Canvas.Controls
     /// </summary>
     public partial class PPTNavBar : UserControl
     {
-        public sealed class PreviewItem
-        {
-            public int SlideNumber { get; set; }
-            public BitmapImage Thumbnail { get; set; }
-        }
-
         public enum NavDirection
         {
             LeftBottom,
@@ -49,6 +44,30 @@ namespace Ink_Canvas.Controls
             nameof(IsPreviewExpanded), typeof(bool), typeof(PPTNavBar),
             new PropertyMetadata(false, OnIsPreviewExpandedChanged));
 
+        public static readonly DependencyProperty IsNavigationVisibleProperty = DependencyProperty.Register(
+            nameof(IsNavigationVisible), typeof(bool), typeof(PPTNavBar),
+            new PropertyMetadata(false, (d, e) => ((PPTNavBar)d).RefreshNavigationVisibility()));
+        public bool IsNavigationVisible => (bool)GetValue(IsNavigationVisibleProperty);
+        public void RefreshNavigationVisibility()
+        {
+            if (IsNavigationVisible) Helpers.AnimationsHelper.ShowWithFadeIn(this);
+            else Visibility = Visibility.Collapsed;
+        }
+
+        public static readonly DependencyProperty PreviousCommandProperty = DependencyProperty.Register(nameof(PreviousCommand), typeof(ICommand), typeof(PPTNavBar));
+        public static readonly DependencyProperty NextCommandProperty = DependencyProperty.Register(nameof(NextCommand), typeof(ICommand), typeof(PPTNavBar));
+        public static readonly DependencyProperty PageCommandProperty = DependencyProperty.Register(nameof(PageCommand), typeof(ICommand), typeof(PPTNavBar));
+        public static readonly DependencyProperty NavigateCommandProperty = DependencyProperty.Register(nameof(NavigateCommand), typeof(ICommand), typeof(PPTNavBar));
+        public ICommand PreviousCommand { get => (ICommand)GetValue(PreviousCommandProperty); set => SetValue(PreviousCommandProperty, value); }
+        public ICommand NextCommand { get => (ICommand)GetValue(NextCommandProperty); set => SetValue(NextCommandProperty, value); }
+        public ICommand PageCommand { get => (ICommand)GetValue(PageCommandProperty); set => SetValue(PageCommandProperty, value); }
+        public ICommand NavigateCommand { get => (ICommand)GetValue(NavigateCommandProperty); set => SetValue(NavigateCommandProperty, value); }
+
+        private static void Execute(ICommand command, object parameter = null)
+        {
+            if (command?.CanExecute(parameter) == true) command.Execute(parameter);
+        }
+
         public NavDirection Direction
         {
             get => (NavDirection)GetValue(DirectionProperty);
@@ -76,13 +95,9 @@ namespace Ink_Canvas.Controls
         public bool IsPreviewExpanded
         {
             get => (bool)GetValue(IsPreviewExpandedProperty);
-            set => SetValue(IsPreviewExpandedProperty, value);
+            set => SetCurrentValue(IsPreviewExpandedProperty, value);
         }
 
-        public event EventHandler PreviousClick;
-        public event EventHandler NextClick;
-        public event EventHandler PageClick;
-        public event EventHandler<int> SlideSelected;
         public event EventHandler PreviousPressedDown;
         public event EventHandler NextPressedDown;
         public event EventHandler PressEnded;
@@ -304,7 +319,7 @@ namespace Ink_Canvas.Controls
             PressEnded?.Invoke(this, EventArgs.Empty);
             if (_lastDown != sender) return;
             _lastDown = null;
-            PreviousClick?.Invoke(this, EventArgs.Empty);
+            Execute(PreviousCommand);
         }
 
         private void PreviousButton_MouseLeave(object sender, MouseEventArgs e)
@@ -327,7 +342,7 @@ namespace Ink_Canvas.Controls
             PressEnded?.Invoke(this, EventArgs.Empty);
             if (_lastDown != sender) return;
             _lastDown = null;
-            NextClick?.Invoke(this, EventArgs.Empty);
+            Execute(NextCommand);
         }
 
         private void NextButton_MouseLeave(object sender, MouseEventArgs e)
@@ -348,7 +363,7 @@ namespace Ink_Canvas.Controls
             SetFeedback(PageButtonFeedbackBorder, 0);
             if (_lastDown != sender) return;
             _lastDown = null;
-            PageClick?.Invoke(this, EventArgs.Empty);
+            Execute(PageCommand, (int)Direction);
         }
 
         private void PageButton_MouseLeave(object sender, MouseEventArgs e)
@@ -361,7 +376,8 @@ namespace Ink_Canvas.Controls
         {
             if (PreviewList.SelectedItem is PreviewItem item)
             {
-                SlideSelected?.Invoke(this, item.SlideNumber);
+                Execute(NavigateCommand, item.SlideNumber);
+                IsPreviewExpanded = false;
             }
         }
 
