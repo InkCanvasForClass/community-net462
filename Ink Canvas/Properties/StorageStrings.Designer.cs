@@ -126,6 +126,10 @@ namespace Ink_Canvas.Properties
 
         public static string Storage_DiskPercent => ResourceManager.GetString(nameof(Storage_DiskPercent), _resourceCulture);
 
+        public static string Storage_ExportUInkOnSave => ResourceManager.GetString(nameof(Storage_ExportUInkOnSave), _resourceCulture);
+
+        public static string Storage_ExportUInkOnSave_Desc => ResourceManager.GetString(nameof(Storage_ExportUInkOnSave_Desc), _resourceCulture);
+
         public static string Storage_Ink_Desc => ResourceManager.GetString(nameof(Storage_Ink_Desc), _resourceCulture);
 
         public static string Storage_Ink_Header => ResourceManager.GetString(nameof(Storage_Ink_Header), _resourceCulture);

@@ -89,6 +89,15 @@
   <data name="Main_Strokes_OpenFailed" xml:space="preserve">
     <value>墨迹打开失败，这波寄了</value>
   </data>
+  <data name="Main_UInk_CopyFailedAfterSave" xml:space="preserve">
+    <value>原格式存稳了，UInk 副本导出没成功。</value>
+  </data>
+  <data name="Main_UInk_CopyFailed" xml:space="preserve">
+    <value>UInk 副本导出没成功。</value>
+  </data>
+  <data name="Main_UInk_ImportedSinglePage" xml:space="preserve">
+    <value>这次只导入了 UInk 的第 {0} / {1} 页，其他页还在原文件里。</value>
+  </data>
   <data name="Main_Strokes_OpenIccSuccess" xml:space="preserve">
     <value>ICC压缩包已成功开箱，共{0}页，血赚！</value>
   </data>
@@ -96,7 +105,7 @@
     <value>打开墨迹文件</value>
   </data>
   <data name="Main_Strokes_OpenFileDialogFilter" xml:space="preserve">
-    <value>Ink Canvas 墨迹文件 (*.icstk)|*.icstk|XML墨迹文件 (*.xml)|*.xml|ICC压缩包 (*.zip)|*.zip|啥都能开的文件 (*.icstk;*.xml;*.zip)|*.icstk;*.xml;*.zip</value>
+    <value>Ink Canvas 墨迹文件 (*.icstk)|*.icstk|UInk 墨迹文件（单页导入） (*.uink)|*.uink|XML墨迹文件 (*.xml)|*.xml|ICC压缩包 (*.zip)|*.zip|啥都能开的文件 (*.icstk;*.uink;*.xml;*.zip)|*.icstk;*.uink;*.xml;*.zip</value>
   </data>
   <data name="Main_Strokes_SaveMultiPageXmlSuccess" xml:space="preserve">
     <value>多页面XML墨迹存为 {0} 个文件，文档狂魔！</value>

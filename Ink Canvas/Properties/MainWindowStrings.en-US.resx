@@ -92,6 +92,15 @@
   <data name="Main_Strokes_OpenFailed" xml:space="preserve">
     <value>Failed to open strokes</value>
   </data>
+  <data name="Main_UInk_CopyFailedAfterSave" xml:space="preserve">
+    <value>Strokes were saved in the original format, but the UInk copy failed to export.</value>
+  </data>
+  <data name="Main_UInk_CopyFailed" xml:space="preserve">
+    <value>Failed to export the UInk copy.</value>
+  </data>
+  <data name="Main_UInk_ImportedSinglePage" xml:space="preserve">
+    <value>Only page {0} of {1} was imported from UInk. Other pages were not imported.</value>
+  </data>
   <data name="Main_Strokes_OpenIccSuccess" xml:space="preserve">
     <value>ICC archive opened successfully, {0} pages</value>
   </data>
@@ -99,7 +108,7 @@
     <value>Open Strokes File</value>
   </data>
   <data name="Main_Strokes_OpenFileDialogFilter" xml:space="preserve">
-    <value>Ink Canvas Strokes File (*.icstk)|*.icstk|XML Strokes File (*.xml)|*.xml|ICC Archive (*.zip)|*.zip|All Supported Files (*.icstk;*.xml;*.zip)|*.icstk;*.xml;*.zip</value>
+    <value>Ink Canvas Strokes File (*.icstk)|*.icstk|UInk Ink File (single-page import) (*.uink)|*.uink|XML Strokes File (*.xml)|*.xml|ICC Archive (*.zip)|*.zip|All Supported Files (*.icstk;*.uink;*.xml;*.zip)|*.icstk;*.uink;*.xml;*.zip</value>
   </data>
   <data name="Main_Strokes_SaveMultiPageXmlSuccess" xml:space="preserve">
     <value>Multi-page XML strokes saved as {0} XML files</value>

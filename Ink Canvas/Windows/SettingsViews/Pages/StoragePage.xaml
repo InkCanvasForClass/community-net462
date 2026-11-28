@@ -268,6 +268,12 @@
                     Icon="{x:Static ui:FluentSystemIcons.Save_20_Regular}"
                     Toggled="ToggleSwitchSaveStrokesAsXML_Toggled"/>
 
+                <controls:LabeledSettingsCard x:Name="CardExportUInkOnSave"
+                    Header="{x:Static props:StorageStrings.Storage_ExportUInkOnSave}"
+                    Description="{x:Static props:StorageStrings.Storage_ExportUInkOnSave_Desc}"
+                    Icon="{x:Static ui:FluentSystemIcons.ArrowUpload_20_Regular}"
+                    Toggled="ToggleSwitchExportUInkOnSave_Toggled"/>
+
                 <controls:LabeledSettingsCard x:Name="CardEnableAutoSaveStrokes"
                     Header="{x:Static props:StorageStrings.Storage_AutoSaveInk}"
                     Description="{x:Static props:CanvasStrings.CanvasAndInkPanel_Hint_9}"

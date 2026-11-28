@@ -248,6 +248,24 @@ namespace Ink_Canvas
                     //savePathWithName = savePath + @"\" + DateTime.Now.ToString("u").Replace(':', '-') + ".icstk";
                     savePathWithName = savePath + @"\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss-fff") + ".icstk";
 
+                // 用户手动保存时，可选择同时导出一份同名的 UInk 副本，便于跨软件互通。
+                // 开关位于 设置 → 存储 → 保存时附带导出 UInk，默认关闭。
+                bool uinkCopyFailed = false;
+                bool originalSaved = true;
+                if (saveByUser && Settings.Automation.IsExportUInkOnSave)
+                {
+                    try
+                    {
+                        ExportUInkTo(Path.ChangeExtension(savePathWithName, UInkFileExtension));
+                    }
+                    catch (Exception uinkEx)
+                    {
+                        uinkCopyFailed = true;
+                        newNotice = false; // 原格式保存完成后统一提示结果。
+                        LogHelper.WriteLogToFile("UInk 导出失败 | " + uinkEx, LogHelper.LogType.Warning);
+                    }
+                }
+
                 if (Settings.Automation.IsSaveStrokesAsXML)
                 {
                     // XML保存模式 - 检查是否存在多页面墨迹
@@ -336,6 +354,7 @@ namespace Ink_Canvas
                                 }
                             }
 
+                            originalSaved = savedCount > 0;
                             if (newNotice)
                             {
                                 Task.Delay(100).ContinueWith(t =>
@@ -522,6 +541,7 @@ namespace Ink_Canvas
                             }
                         }
 
+                        originalSaved = allPageStrokes.Any(strokes => strokes.Count > 0);
                         if (newNotice)
                         {
                             Task.Delay(100).ContinueWith(t =>
@@ -590,6 +610,9 @@ namespace Ink_Canvas
                         File.WriteAllText(elementsPath, JsonConvert.SerializeObject(elementInfos, Newtonsoft.Json.Formatting.Indented));
                     }
                 }
+
+                if (uinkCopyFailed)
+                    ShowNotification(originalSaved ? MainWindowStrings.Main_UInk_CopyFailedAfterSave : MainWindowStrings.Main_UInk_CopyFailed);
             }
             catch (Exception ex)
             {
@@ -1046,12 +1069,17 @@ namespace Ink_Canvas
 
             try
             {
-                string fileExtension = Path.GetExtension(openFileDialog.FileName).ToLower();
+                string fileExtension = Path.GetExtension(openFileDialog.FileName).ToLowerInvariant();
 
                 if (fileExtension == ".zip")
                 {
                     // 处理ICC压缩包（可能包含XML格式）
                     OpenICCZipFile(openFileDialog.FileName);
+                }
+                else if (fileExtension == UInkFileExtension)
+                {
+                    // 处理 UInk 1.1 墨迹文件
+                    if (!OpenUInkFile(openFileDialog.FileName)) return;
                 }
                 else if (fileExtension == ".xml")
                 {
