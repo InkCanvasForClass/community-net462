@@ -943,6 +943,13 @@ namespace Ink_Canvas
         [JsonProperty("isSaveStrokesAsXML")]
         public bool IsSaveStrokesAsXML { get; set; } = false;
 
+        /// <summary>
+        /// 手动保存笔迹时，是否在同一目录附带导出一份同名的 UInk（.uink）副本。
+        /// 默认关闭，避免在用户目录里产生非预期的额外文件。
+        /// </summary>
+        [JsonProperty("isExportUInkOnSave")]
+        public bool IsExportUInkOnSave { get; set; } = false;
+
         [JsonProperty("isAutoEnterAnnotationAfterKillHite")]
         public bool IsAutoEnterAnnotationAfterKillHite { get; set; }
 

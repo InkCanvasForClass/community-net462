@@ -413,6 +413,9 @@
       },
       "inkcanvas.pptagent.contracts": {
         "type": "Project"
+      },
+      "inkcanvas.uink": {
+        "type": "Project"
       }
     },
     ".NETFramework,Version=v4.6.2/win-arm64": {

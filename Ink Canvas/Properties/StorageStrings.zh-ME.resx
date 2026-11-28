@@ -172,6 +172,12 @@
   <data name="Storage_DiskPercent" xml:space="preserve">
     <value>占磁盘比例</value>
   </data>
+  <data name="Storage_ExportUInkOnSave" xml:space="preserve">
+    <value>保存时附带导出 UInk</value>
+  </data>
+  <data name="Storage_ExportUInkOnSave_Desc" xml:space="preserve">
+    <value>手动保存笔迹文件时，在同一目录额外生成一份同名的 .uink 文件，便于在支持 UInk 1.1 的其他软件中打开</value>
+  </data>
   <data name="Storage_Ink_Desc" xml:space="preserve">
     <value>位于 Saves 目录下的 .icstk / .xml / 截图 .png 等墨迹文件</value>
   </data>

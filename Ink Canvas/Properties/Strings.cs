@@ -982,6 +982,8 @@ namespace Ink_Canvas.Properties
             dict["Storage_Custom_Header"] = ("StorageStrings", "Storage_Custom_Header");
             dict["Storage_Custom_Hint"] = ("StorageStrings", "Storage_Custom_Hint");
             dict["Storage_DiskPercent"] = ("StorageStrings", "Storage_DiskPercent");
+            dict["Storage_ExportUInkOnSave"] = ("StorageStrings", "Storage_ExportUInkOnSave");
+            dict["Storage_ExportUInkOnSave_Desc"] = ("StorageStrings", "Storage_ExportUInkOnSave_Desc");
             dict["Storage_Ink_Desc"] = ("StorageStrings", "Storage_Ink_Desc");
             dict["Storage_Ink_Header"] = ("StorageStrings", "Storage_Ink_Header");
             dict["Storage_Legend_Backups"] = ("StorageStrings", "Storage_Legend_Backups");

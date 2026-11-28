@@ -67,6 +67,12 @@ namespace Ink_Canvas.Properties
 
         public static string Main_Strokes_OpenFailed => ResourceManager.GetString(nameof(Main_Strokes_OpenFailed), _resourceCulture);
 
+        public static string Main_UInk_CopyFailedAfterSave => ResourceManager.GetString(nameof(Main_UInk_CopyFailedAfterSave), _resourceCulture);
+
+        public static string Main_UInk_CopyFailed => ResourceManager.GetString(nameof(Main_UInk_CopyFailed), _resourceCulture);
+
+        public static string Main_UInk_ImportedSinglePage => ResourceManager.GetString(nameof(Main_UInk_ImportedSinglePage), _resourceCulture);
+
         public static string Main_Strokes_OpenIccSuccess => ResourceManager.GetString(nameof(Main_Strokes_OpenIccSuccess), _resourceCulture);
 
         public static string Main_Strokes_OpenFileDialogTitle => ResourceManager.GetString(nameof(Main_Strokes_OpenFileDialogTitle), _resourceCulture);
